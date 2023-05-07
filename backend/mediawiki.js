@@ -1,25 +1,6 @@
 const express = require("express");
+const request = require("request");
 const app = express();
-const port = 3000;
-
-app.use(logger);
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
-
-app.get("/test", (req, res) => {
-  res.send("TEST!");
-});
-
-function logger(req, res, next) {
-  console.log("Log");
-  next();
-}
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
 
 app.get("/mediawiki", (req, res) => {
   // Fetch the MediaWiki data.

@@ -56,7 +56,7 @@ $wgEmailAuthentication = true;
 ## Database settings
 $wgDBtype = "mysql";
 $wgDBserver = "db";
-$wgDBname = "my_wiki";
+$wgDBname = "WikiAdviser";
 $wgDBuser = "root";
 $wgDBpassword = "mediawiki";
 
@@ -86,7 +86,7 @@ $wgUseInstantCommons = false;
 # Periodically send a pingback to https://www.mediawiki.org/ with basic data
 # about this MediaWiki instance. The Wikimedia Foundation shares this data
 # with MediaWiki developers to help guide future development efforts.
-$wgPingback = true;
+$wgPingback = false;
 
 # Site language code, should be one of the list in ./includes/languages/data/Names.php
 $wgLanguageCode = "en";
@@ -99,14 +99,14 @@ $wgLocaltimezone = "UTC";
 ## be publicly accessible from the web.
 #$wgCacheDirectory = "$IP/cache";
 
-$wgSecretKey = "986067c2fc30bff0b1bc576cd5d1ea3f8a61d1d9993c0f06b289536ce4ec515a";
+$wgSecretKey = "c92f4fbb687d658ff5bd78378ce4ac69cdd1e111436abbf078b85c4531ffab6e";
 
 # Changing this will log out all existing sessions.
 $wgAuthenticationTokenVersion = "1";
 
 # Site upgrade key. Must be set to a string (default provided) to turn on the
 # web installer while LocalSettings.php is in place
-$wgUpgradeKey = "1a41d89798dc23b7";
+$wgUpgradeKey = "ef6ae83a157f871e";
 
 ## For attaching licensing metadata to pages, and displaying an
 ## appropriate copyright notice / icon. GNU Free Documentation
@@ -157,8 +157,6 @@ wfLoadExtension( 'Cite' );
 wfLoadExtension( 'Scribunto' );
 wfLoadExtension( 'ParserFunctions' );
 wfLoadExtension( 'PageForms' );
-
-
 
 # End of automatically generated settings.
 # Add more configuration options below.

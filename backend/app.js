@@ -1,39 +1,53 @@
 const express = require("express");
+var https = require("https");
+const axios = require("axios");
 const app = express();
 const port = 3000;
-
-app.use(logger);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
-
-app.get("/test", (req, res) => {
-  res.send("TEST!");
-});
-
-function logger(req, res, next) {
-  console.log("Log");
-  next();
-}
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
 app.get("/mediawiki", (req, res) => {
-  // Fetch the MediaWiki data.
-  request(
-    "http://localhost:80/api.php?action=query&prop=revisions&titles=Main_Page",
-    (err, response, body) => {
-      if (err) {
-        return res.status(500).send("Error fetching MediaWiki data.");
-      } // Parse the MediaWiki data.
-      const data = JSON.parse(body);
+  // Fetch the local Mediawiki data. (Example: wikitext of Main_Page)
+  title = "Main_Page";
+  url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+  axios
+    .get(
+      url,
+      // Ignore SSL/TLS certificate verification
+      {
+        httpsAgent: new https.Agent({
+          rejectUnauthorized: false,
+        }),
+      }
+    )
+    .then((response) => {
+      const content =
+        response.data.query.pages[0].revisions[0].slots.main.content;
+      res.json(content);
+    })
+    .catch((error) => {
+      console.log(error.response.data.error);
+    });
+});
 
-      // Send the MediaWiki data to the client.
-      res.json(data);
-      console.log(data);
-    }
-  );
+app.get("/wikipedia", (req, res) => {
+  // Fetch the wikitext of a Wikipedia Article.
+  title = "Hedi_Slimane";
+  url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+  axios
+    .get(url)
+    .then((response) => {
+      const content =
+        response.data.query.pages[0].revisions[0].slots.main.content;
+      res.json(content);
+    })
+    .catch((error) => {
+      console.log(error.response.data.error);
+    });
 });

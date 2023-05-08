@@ -1,6 +1,6 @@
 - Setup mediawiki
   - https://www.canasta.wiki/setup
-  - Export Templates/Modules from [wikipedia](https://en.wikipedia.org/wiki/Special:Export) and import into localhost/wiki/Special:Import
+  - Export Templates/Modules from [wikipedia](https://en.wikipedia.org/wiki/Special:Export) and import into https://localhost/wiki/Special:Import
     - Template:Authority control
     - Template:Cite journal
     - Template:Cite news

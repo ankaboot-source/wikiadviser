@@ -15,9 +15,6 @@ app.use(function (req, res, next) {
   );
   next();
 });
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
@@ -73,4 +70,8 @@ app.post("/api/html_diff", (req, res) => {
 
 app.get("/api/html_diff", (req, res) => {
   res.send(data.html);
+});
+
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
 });

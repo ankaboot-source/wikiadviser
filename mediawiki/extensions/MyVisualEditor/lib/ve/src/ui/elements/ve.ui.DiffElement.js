@@ -15,6 +15,7 @@
  * @param {ve.dm.VisualDiff} [visualDiff] Diff to visualize
  * @param {Object} [config]
  */
+/* eslint-disable */
 ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
   var diff = visualDiff.diff;
 
@@ -62,7 +63,20 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
     )
     .addClass("ve-ui-diffElement");
 
-  console.log("this.$element[0]", this.$element[0]);
+  console.log("this.$element[0]", typeof this.$element[0].outerHTML);
+  fetch("http://localhost:3000/api/html_diff", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ html: this.$element[0].outerHTML }),
+  })
+    .then((response) => {
+      console.log("Data sent.");
+    })
+    .catch((error) => {
+      console.error("Error sending data:", error);
+    });
 };
 
 /* Inheritance */

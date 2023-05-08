@@ -6,7 +6,7 @@ const port = 3000;
 const bodyParser = require("body-parser");
 const data = { html: "" };
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "300kb" }));
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(

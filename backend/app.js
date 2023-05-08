@@ -4,6 +4,7 @@ const axios = require("axios");
 const app = express();
 const port = 3000;
 const bodyParser = require("body-parser");
+const data = { html: "" };
 
 app.use(bodyParser.json());
 app.use(function (req, res, next) {
@@ -66,5 +67,11 @@ app.get("/wikipedia", (req, res) => {
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
   console.log("Data received:", html.length);
+  data.html = html;
   res.send("Data received");
+});
+
+app.get("/api/html_diff", (req, res) => {
+  res.send(data.html);
+  console.log("Data sent");
 });

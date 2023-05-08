@@ -160,7 +160,6 @@ ve.ui.MWSaveDialog.prototype.setDiffAndReview = function ( wikitextDiffPromise, 
 		// Run styles so links render with their appropriate classes
 		ve.init.platform.linkCache.styleParsoidElements( diffElement.$document, baseDoc );
 		mw.libs.ve.fixFragmentLinks( diffElement.$document[ 0 ], mw.Title.newFromText( ve.init.target.getPageName() ), 'mw-save-visualdiff-' );
-		console.log("diffElement",diffElement);
 		console.log("diffElement.$element[0]",diffElement.$element[0]);
 		debugger;
 		return diffElement;

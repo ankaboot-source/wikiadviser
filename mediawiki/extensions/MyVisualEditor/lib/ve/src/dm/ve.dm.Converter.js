@@ -1233,7 +1233,6 @@ ve.dm.Converter.prototype.getDomFromModel = function ( model, mode ) {
 
 	var doc = ve.createDocumentFromHtml( '' );
 	this.getDomSubtreeFromModel( model, doc.body, mode );
-	console.log('doc',doc);
 	return doc;
 };
 

@@ -73,5 +73,4 @@ app.post("/api/html_diff", (req, res) => {
 
 app.get("/api/html_diff", (req, res) => {
   res.send(data.html);
-  console.log("Data sent");
 });

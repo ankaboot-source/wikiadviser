@@ -119,6 +119,37 @@ $wgRightsIcon = "";
 # Path to the GNU diff3 utility. Used for conflict resolution.
 $wgDiff3 = "/usr/bin/diff3";
 
+/*
+#All of these are attempts to allow loading Mediawiki in an iframe.
+#Currently using ignore x-frame-options web extension as there is no apparent quick fix.
+
+$wgBreakFrames = false;
+$wgApiFrameOptions = false;
+$wgEditPageFrameOptions = false;
+$wgCSPFalsePositiveUrls = [
+	'https://3hub.co' => true,
+	'https://morepro.info' => true,
+	'https://p.ato.mx' => true,
+	'https://s.ato.mx' => true,
+	'https://adserver.adtech.de' => true,
+	'https://ums.adtechus.com' => true,
+	'https://cas.criteo.com' => true,
+	'https://cat.nl.eu.criteo.com' => true,
+	'https://atpixel.alephd.com' => true,
+	'https://rtb.metrigo.com' => true,
+	'https://d5p.de17a.com' => true,
+	'https://ad.lkqd.net/vpaid/vpaid.js' => true, // 1.29+
+	'https://ad.lkqd.net/vpaid/vpaid.js?fusion=1.0' => true, // 1.33+
+	'https://t.lkqd.net/t' => true, // 1.33+
+	'chrome-extension' => true, // 1.33+
+	'https://localhost' => true, 
+	'http://localhost:5173/' => true, 
+];
+$wgCSPHeader = true;
+$wgCSPReportOnlyHeader = true;
+$wgCSPHeader = "frame-ancestors 'self'";
+*/
+
 ## Default skin: you can change the default skin. Use the internal symbolic
 ## names, e.g. 'vector' or 'monobook':
 $wgDefaultSkin = 'vector-2022';
@@ -146,7 +177,7 @@ wfLoadExtension( 'MyVisualEditor' );
 #$wgVisualEditorEnableDiffPage = true;
 #$wgVisualEditorEnableDiffPageBetaFeature = true;
 wfLoadExtension( 'WikiEditor' );
-$wgHiddenPrefs[] = 'usebetatoolbar';
+//$wgHiddenPrefs[] = 'usebetatoolbar';
 $wgWikiEditorRealtimePreview = true;
 
 wfLoadExtension( 'TemplateStyles' );

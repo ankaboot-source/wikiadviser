@@ -62,8 +62,9 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
       this.$sidebar.append(this.descriptions.$element)
     )
     .addClass("ve-ui-diffElement");
-
-  console.log("this.$element[0]", typeof this.$element[0].outerHTML);
+      
+  debugger;
+  console.log("this.$element[0]", this.$element[0].outerHTML);
 
   // Post data to the backend
   fetch("http://localhost:3000/api/html_diff", {
@@ -370,7 +371,6 @@ ve.ui.DiffElement.prototype.renderDiff = function (diff, internalListDiff) {
   var documentSpacerNode = document.createElement("div");
   documentSpacerNode.setAttribute("class", "ve-ui-diffElement-spacer");
   documentSpacerNode.appendChild(document.createTextNode("⋮"));
-  console.log("⋮");
 
   var internalListSpacerNode = document.createElement("li");
   internalListSpacerNode.setAttribute(
@@ -574,8 +574,6 @@ ve.ui.DiffElement.prototype.wrapNodeData = function (nodeDoc, nodeData) {
   ).body;
 
   // Convert NodeList to real array
-  console.log("documentSlice", documentSlice);
-  console.log("nodeElements", nodeElements);
   return Array.prototype.slice.call(nodeElements.childNodes);
 };
 
@@ -1719,7 +1717,6 @@ ve.ui.DiffElement.prototype.annotateNode = function (linearDiff) {
     start: 0,
     end: diffDoc.getLength(),
   });
-  console.log("annotatedLinearDiff", annotatedLinearDiff);
 
   return annotatedLinearDiff;
 };

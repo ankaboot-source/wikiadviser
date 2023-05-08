@@ -683,6 +683,7 @@ ve.ui.MWSaveDialog.prototype.initialize = function () {
 	this.$body.append( this.panels.$element );
 
 	this.setupDeferred.resolve();
+	debugger
 };
 
 ve.ui.MWSaveDialog.prototype.updateOptionsBar = function () {

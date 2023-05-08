@@ -2,11 +2,7 @@
   <div>
     <h1>&nbsp;WikiAdviser</h1>
     <div style="display: flex">
-      <iframe
-        class="flex-item m-auto"
-        src="https://localhost/wiki/Main_Page?veaction=edit"
-      ></iframe>
-
+      <EditorComponentVue class="flex-item m-auto" />
       <DiffComponentVue class="flex-item m-auto" />
     </div>
   </div>
@@ -14,6 +10,7 @@
 
 <script setup lang="ts">
 import DiffComponentVue from './components/Diff-component.vue'
+import EditorComponentVue from './components/Editor-component.vue'
 </script>
 
 <style scoped>

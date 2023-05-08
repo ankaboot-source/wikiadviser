@@ -1,0 +1,18 @@
+- Setup mediawiki
+  - https://www.canasta.wiki/setup
+  - Export Templates/Modules from [wikipedia](https://en.wikipedia.org/wiki/Special:Export) and import into localhost/wiki/Special:Import
+    - Template:Authority control
+      Template:Cite journal
+      Template:Cite news
+      Template:Cite web
+      Template:IPA-fr
+      Template:Infobox person
+      Template:Official website
+      Template:Reflist
+      Template:Short description
+      Template:SDcat
+      Template:Pagetype
+      Module:Authority_control
+      Module:SDcat
+      MediaWiki:Common.css
+      MediaWiki:Common.js

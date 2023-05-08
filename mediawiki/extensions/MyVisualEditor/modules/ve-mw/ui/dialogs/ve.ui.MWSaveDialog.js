@@ -17,6 +17,7 @@
  * @constructor
  * @param {Object} [config] Config options
  */
+/* eslint-disable */
 ve.ui.MWSaveDialog = function VeUiMwSaveDialog( config ) {
 	// Parent constructor
 	ve.ui.MWSaveDialog.super.call( this, config );
@@ -136,7 +137,9 @@ ve.ui.MWSaveDialog.static.actions = [
  * @param {jQuery.Promise} visualDiffGeneratorPromise Visual diff promise
  * @param {HTMLDocument} [baseDoc] Base document against which to normalise links when rendering visualDiff
  */
+
 ve.ui.MWSaveDialog.prototype.setDiffAndReview = function ( wikitextDiffPromise, visualDiffGeneratorPromise, baseDoc ) {
+	
 	var dialog = this;
 
 	this.clearDiff();

@@ -15,17 +15,16 @@ app.use(function (req, res, next) {
   );
   next();
 });
+app.listen(port, () => {
+  console.log(`Server listening on port ${port}`);
+});
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
-});
-
-app.get("/mediawiki", (req, res) => {
-  // Fetch the local Mediawiki data. (Example: wikitext of Main_Page)
+app.get("/mediawiki_wikitext", (req, res) => {
+  // Fetch the local Mediawiki wikitext. (Example: wikitext of Main_Page)
   title = "Main_Page";
   url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
   axios
@@ -48,7 +47,7 @@ app.get("/mediawiki", (req, res) => {
     });
 });
 
-app.get("/wikipedia", (req, res) => {
+app.get("/wikipedia_wikitext", (req, res) => {
   // Fetch the wikitext of a Wikipedia Article.
   title = "Hedi_Slimane";
   url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
@@ -64,6 +63,7 @@ app.get("/wikipedia", (req, res) => {
     });
 });
 
+//POST and GET the html diff of the local mediawiki
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
   console.log("Data received:", html.length);

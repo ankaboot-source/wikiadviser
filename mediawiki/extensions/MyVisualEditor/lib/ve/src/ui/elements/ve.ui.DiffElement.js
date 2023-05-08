@@ -64,6 +64,8 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
     .addClass("ve-ui-diffElement");
 
   console.log("this.$element[0]", typeof this.$element[0].outerHTML);
+
+  // Post data to the backend
   fetch("http://localhost:3000/api/html_diff", {
     method: "POST",
     headers: {

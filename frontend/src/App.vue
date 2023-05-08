@@ -1,14 +1,13 @@
 <template>
   <div>
-    <h1>Data received:</h1>
-    <div>
+    <h1>&nbsp;WikiAdviser</h1>
+    <div style="display: flex">
       <iframe
-        style="width: 50vw; height: 80vh"
+        class="flex-item m-auto"
         src="https://localhost/wiki/Main_Page?veaction=edit"
       ></iframe>
-    </div>
-    <div>
-      <DiffComponentVue />
+
+      <DiffComponentVue class="flex-item m-auto" />
     </div>
   </div>
 </template>
@@ -17,4 +16,12 @@
 import DiffComponentVue from './components/Diff-component.vue'
 </script>
 
-<style scoped></style>
+<style scoped>
+.m-auto {
+  margin: auto;
+}
+.flex-item {
+  width: 47vw;
+  height: 80vh;
+}
+</style>

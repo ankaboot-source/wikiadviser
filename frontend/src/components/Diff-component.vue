@@ -17,6 +17,9 @@ const fetchData = async () => {
     data.value = response.data
   } catch (error) {
     console.error(error)
+  } finally {
+    // Call fetchData again after the request completes to implement long polling
+    setTimeout(() => fetchData(), 1000)
   }
 }
 

@@ -63,7 +63,7 @@ app.get("/wikipedia_wikitext", (req, res) => {
 //POST and GET the html diff of the local mediawiki
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
-  console.log("Data received:", html.length);
+  console.log("Data received:", Buffer.byteLength(html, "utf8"), "bytes");
   data.html = html;
   res.send("Data received");
 });

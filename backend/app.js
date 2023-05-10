@@ -64,28 +64,33 @@ app.get("/wikipedia_wikitext", (req, res) => {
 //POST and GET the html diff of the local mediawiki
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
-  var id = 0;
   console.log("Data received:", Buffer.byteLength(html, "utf8"), "bytes");
-  res.send("Data received");
+
+  let typeOfEdit = "";
+  let id = 0;
+  const userid = "User1";
+  const date = new Date().toLocaleString("fr");
 
   const $ = cheerio.load(html);
-  const date = new Date().toLocaleString("fr");
 
   // Go through elements that have the attribute data-diff-action
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
       const diffAction = $element.attr("data-diff-action");
+
       // Create the wrap element with the wanted metadata
       const $wrapElement = $("<span>");
       $wrapElement.attr("status", "Awaiting Reviewer Approval");
 
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
-      // Check if the element has "remove" or "change-remove" diff action
+
+      typeOfEdit = diffAction;
+
+      // Wrapping related changes: Check if the element has "remove" or "change-remove" diff action
       if (diffAction === "remove" || diffAction === "change-remove") {
         const $nextElement = $element.next();
-
         // Check if the next element has "insert" or "change-insert" diff action
         if (
           $nextElement.attr("data-diff-action") === "insert" ||
@@ -93,16 +98,28 @@ app.post("/api/html_diff", (req, res) => {
         ) {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
-          // Remove the next element
+
+          // type-of-edit attribute if remove succeeded by an insert
+          if ($nextElement.attr("data-diff-action") === "insert") {
+            typeOfEdit = "modify";
+          } else {
+            // change-remove is always succeeded by a change-insert
+            typeOfEdit = "change";
+          }
+
+          // Remove the last element
           $nextElement.remove();
         }
       }
+      $wrapElement.attr("type-of-edit", typeOfEdit);
       $element.replaceWith($wrapElement);
     }
   );
+
   $("[status]").each((index, element) => {
     const $element = $(element);
     $element.attr("data-diff-id", id++);
+    $element.attr("user", userid);
     $element.attr("date", date);
   });
   data.html = $.html();

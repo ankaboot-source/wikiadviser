@@ -161,7 +161,7 @@ ve.ui.MWSaveDialog.prototype.setDiffAndReview = function ( wikitextDiffPromise, 
 		ve.init.platform.linkCache.styleParsoidElements( diffElement.$document, baseDoc );
 		mw.libs.ve.fixFragmentLinks( diffElement.$document[ 0 ], mw.Title.newFromText( ve.init.target.getPageName() ), 'mw-save-visualdiff-' );
 		console.log("diffElement.$element[0]",diffElement.$element[0]);
-		debugger;
+		//debugger;
 		return diffElement;
 	}
 
@@ -682,7 +682,7 @@ ve.ui.MWSaveDialog.prototype.initialize = function () {
 	this.$body.append( this.panels.$element );
 
 	this.setupDeferred.resolve();
-	debugger
+	//debugger
 };
 
 ve.ui.MWSaveDialog.prototype.updateOptionsBar = function () {

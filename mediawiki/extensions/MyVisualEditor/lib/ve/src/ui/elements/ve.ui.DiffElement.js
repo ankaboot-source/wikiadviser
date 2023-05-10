@@ -63,7 +63,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
     )
     .addClass("ve-ui-diffElement");
       
-  debugger;
+  //debugger;
   console.log("this.$element[0]", this.$element[0].outerHTML);
 
   // Post data to the backend

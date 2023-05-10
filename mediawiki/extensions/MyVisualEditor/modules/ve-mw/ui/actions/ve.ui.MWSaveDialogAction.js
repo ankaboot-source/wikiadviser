@@ -26,7 +26,7 @@ ve.ui.MWSaveDialogAction = function VeUiMWSaveDialogAction() {
 OO.inheritClass( ve.ui.MWSaveDialogAction, ve.ui.Action );
 
 /* Static Properties */
-debugger;
+//debugger;
 ve.ui.MWSaveDialogAction.static.name = 'mwSaveDialog';
 
 ve.ui.MWSaveDialogAction.static.methods = [ 'save', 'review', 'preview' ];

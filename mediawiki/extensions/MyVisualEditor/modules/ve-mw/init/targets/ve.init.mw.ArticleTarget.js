@@ -1904,7 +1904,7 @@ ve.init.mw.ArticleTarget.prototype.showSaveDialog = function ( action, checkboxN
 	// Get the save dialog
 	this.getSurface().getDialogs().getWindow( 'mwSave' ).done( function ( win ) {
 		var windowAction = ve.ui.actionFactory.create( 'window', target.getSurface() );
-		debugger;
+		//debugger;
 		action = 'review';
 
 		if ( !target.saveDialog ) {

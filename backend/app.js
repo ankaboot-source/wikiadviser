@@ -64,46 +64,87 @@ app.get("/wikipedia_wikitext", (req, res) => {
 //POST and GET the html diff of the local mediawiki
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
-  var id = 0;
   console.log("Data received:", Buffer.byteLength(html, "utf8"), "bytes");
-  res.send("Data received");
+
+  let typeOfEdit = "";
+  let id = 0;
+  let changeid = 0;
+  const userid = "User1";
+  const date = new Date().toLocaleString("fr");
 
   const $ = cheerio.load(html);
-  const date = new Date().toLocaleString("fr");
 
   // Go through elements that have the attribute data-diff-action
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
-      const diffAction = $element.attr("data-diff-action");
+      const diffAction = $element.data("diff-action");
+
       // Create the wrap element with the wanted metadata
       const $wrapElement = $("<span>");
-      $wrapElement.attr("status", "Awaiting Reviewer Approval");
+      $wrapElement.attr("data-status", "Awaiting Reviewer Approval");
+      $wrapElement.attr("data-description", "");
 
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
-      // Check if the element has "remove" or "change-remove" diff action
-      if (diffAction === "remove" || diffAction === "change-remove") {
-        const $nextElement = $element.next();
 
+      typeOfEdit = diffAction;
+
+      // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "remove" or "change-remove" diff
+      if (
+        !$element[0].next?.data?.trim() &&
+        (diffAction === "remove" || diffAction === "change-remove")
+      ) {
+        const $nextElement = $element.next();
         // Check if the next element has "insert" or "change-insert" diff action
         if (
-          $nextElement.attr("data-diff-action") === "insert" ||
-          $nextElement.attr("data-diff-action") === "change-insert"
+          $nextElement.data("diff-action") === "insert" ||
+          $nextElement.data("diff-action") === "change-insert"
         ) {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
-          // Remove the next element
+
+          // type-of-edit attribute if remove succeeded by an insert
+          if ($nextElement.data("diff-action") === "insert") {
+            typeOfEdit = "modify";
+          } else {
+            // change-remove is always succeeded by a change-insert
+            typeOfEdit = "change";
+            // Add description attribute
+            const list = [];
+            const listItems = $(".ve-ui-diffElement-sidebar >")
+              .children()
+              .eq(changeid++)
+              .children()
+              .children();
+            listItems.each(function (i, elem) {
+              list.push($(elem).text());
+            });
+            console.log(list);
+            // Delimiter <|> since it is unlikely to be present in any of the array elements
+            $wrapElement.attr("data-description", list.join("<|>"));
+          }
+          // Remove the last element
           $nextElement.remove();
         }
       }
+      $wrapElement.attr("data-type-of-edit", typeOfEdit);
       $element.replaceWith($wrapElement);
     }
   );
-  $("[status]").each((index, element) => {
+
+  // Remove sidebar
+  $(".ve-ui-diffElement-sidebar").remove();
+  $(".ve-ui-diffElement-hasDescriptions").removeClass(
+    "ve-ui-diffElement-hasDescriptions"
+  );
+
+  // Add more data
+  $("[data-status]").each((index, element) => {
     const $element = $(element);
-    $element.attr("data-diff-id", id++);
-    $element.attr("date", date);
+    $element.attr("data-id", id++);
+    $element.attr("data-user", userid);
+    $element.attr("data-date", date);
   });
   data.html = $.html();
 });

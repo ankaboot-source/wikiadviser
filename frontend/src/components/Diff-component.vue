@@ -32,7 +32,7 @@ const handleClick = (event: MouseEvent) => {
   let target = event.target as HTMLElement
   const rest = target
   let ancestry = 0
-  while (target && !target.getAttribute('status')) {
+  while (target && !target.getAttribute('data-status')) {
     target = target.parentElement!
     ancestry++
   }
@@ -76,8 +76,8 @@ b {
   border-bottom: 3px solid rgba(174, 30, 66, 0.45);
   border-top: 3px solid rgba(174, 30, 66, 0.45);
   text-decoration: line-through;
-  text-decoration-color: rgba(87, 15, 33, 0.5);
-  text-decoration-thickness: 3px;
+  text-decoration-color: rgba(87, 15, 33, 0.45);
+  text-decoration-thickness: 2px;
 }
 [data-diff-action='remove']:hover,
 [data-diff-action='remove']:hover > caption,
@@ -103,28 +103,28 @@ b {
   border-top: 3px solid rgba(18, 109, 31, 0.5);
 }
 
-/* Status */
-[status] {
+/* data-status */
+[data-status] {
   cursor: pointer;
 }
-[status='Awaiting Reviewer Approval'] {
-  background-color: rgba(255, 201, 0, 0.2) !important;
+[data-status='Awaiting Reviewer Approval'] {
+  background-color: rgba(255, 211, 67, 0.2) !important;
 }
-[status='Awaiting Reviewer Approval']:hover {
-  background-color: rgba(255, 201, 0, 0.3) !important;
+[data-status='Awaiting Reviewer Approval']:hover {
+  background-color: rgba(255, 211, 67, 0.3) !important;
 }
 
-[status='Edit Rejected'] {
+[data-status='Edit Rejected'] {
   background-color: rgba(255, 112, 112, 0.2) !important;
 }
-[status='Edit Rejected']:hover {
+[data-status='Edit Rejected']:hover {
   background-color: rgba(255, 112, 112, 0.3) !important;
 }
 
-[status='Edit Approved'] {
+[data-status='Edit Approved'] {
   background-color: rgba(16, 146, 0, 0.2) !important;
 }
-[status='Edit Approved']:hover {
+[data-status='Edit Approved']:hover {
   background-color: rgba(16, 146, 0, 0.3) !important;
 }
 </style>

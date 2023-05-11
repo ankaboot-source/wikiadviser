@@ -1,27 +1,25 @@
 const express = require("express");
-var https = require("https");
+const https = require("https");
 const axios = require("axios");
 const cheerio = require("cheerio");
+const cors = require("cors");
 const app = express();
 const port = 3000;
 const bodyParser = require("body-parser");
 const data = { html: "" };
 
 app.use(bodyParser.json({ limit: "300kb" }));
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-  next();
-});
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/mediawiki_wikitext", (req, res) => {
+app.get("/api/mediawiki_wikitext", (req, res) => {
   // Fetch the local Mediawiki wikitext. (Example: wikitext of Main_Page)
   title = "Main_Page";
   url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
@@ -45,7 +43,7 @@ app.get("/mediawiki_wikitext", (req, res) => {
     });
 });
 
-app.get("/wikipedia_wikitext", (req, res) => {
+app.get("/api/wikipedia_wikitext", (req, res) => {
   // Fetch the wikitext of a Wikipedia Article.
   title = "Hedi_Slimane";
   url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;

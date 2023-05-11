@@ -67,7 +67,6 @@ const diffItems = computed(() => {
 </script>
 <style scoped>
 table {
-  overflow: clip !important;
   border-collapse: collapse;
   text-align: left;
   width: 100%;
@@ -79,5 +78,11 @@ table tr {
 table th,
 table td {
   padding: 10px 20px;
+}
+th {
+  background-color: white;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 </style>

@@ -7,6 +7,7 @@
           <th>Status</th>
           <th>Type of Edit</th>
           <th>Description</th>
+          <th>Content</th>
           <th>Date</th>
           <th>User</th>
         </tr>
@@ -21,6 +22,7 @@
               <li v-for="description in item.description" :key="description">{{ description }}</li>
             </ul>
           </td>
+          <td @click="handleClick($event)" v-html="item.content"></td>
           <td>{{ item.date }}</td>
           <td>{{ item.user }}</td>
         </tr>
@@ -56,6 +58,7 @@ const diffItems = computed(() => {
   // Convert the NodeList to an array and map each element to an object with its data
   const items = Array.from(elements).map((element, index) => ({
     id: index,
+    content: element.outerHTML,
     status: element.getAttribute('data-status'),
     description: element.getAttribute('data-description')?.split('<|>'),
     typeOfEdit: element.getAttribute('data-type-of-edit'),
@@ -64,6 +67,11 @@ const diffItems = computed(() => {
   }))
   return items
 })
+
+const handleClick = (event: MouseEvent) => {
+  //Prevent visting links:
+  event.preventDefault()
+}
 </script>
 <style scoped>
 table {
@@ -83,6 +91,6 @@ th {
   background-color: white;
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 2;
 }
 </style>

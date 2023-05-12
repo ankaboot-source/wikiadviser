@@ -6,9 +6,9 @@
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
 
-import '../css/styles/index';
-import '../css/styles/ve.scss';
-import '../css/styles/diff.scss';
+import 'src/css/styles/index.scss';
+import 'src/css/styles/ve.scss';
+import 'src/css/styles/diff.scss';
 
 const fetchData = async () => {
   try {

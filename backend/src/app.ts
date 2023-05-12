@@ -1,11 +1,11 @@
-const express = require("express");
-const https = require("https");
-const axios = require("axios");
-const cheerio = require("cheerio");
-const cors = require("cors");
+import express from "express";
+import https from "https";
+import axios from "axios";
+import cheerio, { load } from "cheerio";
+import cors from "cors";
+import bodyParser from "body-parser";
 const app = express();
 const port = 3000;
-const bodyParser = require("body-parser");
 const data = { html: "" };
 
 app.use(bodyParser.json({ limit: "300kb" }));
@@ -21,8 +21,8 @@ app.get("/", (req, res) => {
 
 app.get("/api/mediawiki_wikitext", (req, res) => {
   // Fetch the local Mediawiki wikitext. (Example: wikitext of Main_Page)
-  title = "Main_Page";
-  url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+  const title = "Main_Page";
+  const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
   axios
     .get(
       url,
@@ -45,8 +45,8 @@ app.get("/api/mediawiki_wikitext", (req, res) => {
 
 app.get("/api/wikipedia_wikitext", (req, res) => {
   // Fetch the wikitext of a Wikipedia Article.
-  title = "Hedi_Slimane";
-  url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+  const title = "Hedi_Slimane";
+  const url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
   axios
     .get(url)
     .then((response) => {
@@ -70,7 +70,7 @@ app.post("/api/html_diff", (req, res) => {
   const userid = "User1";
   const date = new Date().toLocaleString("fr");
 
-  const $ = cheerio.load(html);
+  const $ = load(html);
 
   // Go through elements that have the attribute data-diff-action
   $("[data-diff-action]:not([data-diff-action='none'])").each(
@@ -86,11 +86,12 @@ app.post("/api/html_diff", (req, res) => {
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
 
-      typeOfEdit = diffAction;
+      let typeOfEdit: any = diffAction;
 
       // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "remove" or "change-remove" diff
+      const node: any = $element[0].next;
       if (
-        !$element[0].next?.data?.trim() &&
+        !node?.data?.trim() &&
         (diffAction === "remove" || diffAction === "change-remove")
       ) {
         const $nextElement = $element.next();
@@ -109,7 +110,7 @@ app.post("/api/html_diff", (req, res) => {
             // change-remove is always succeeded by a change-insert
             typeOfEdit = "change";
             // Add description attribute
-            const list = [];
+            const list: any[] = [];
             const listItems = $(".ve-ui-diffElement-sidebar >")
               .children()
               .eq(changeid++)
@@ -140,7 +141,7 @@ app.post("/api/html_diff", (req, res) => {
   // Add more data
   $("[data-status]").each((index, element) => {
     const $element = $(element);
-    $element.attr("data-id", id++);
+    $element.attr("data-id", `${id++}`);
     $element.attr("data-user", userid);
     $element.attr("data-date", date);
   });

@@ -5,8 +5,8 @@
         <tr>
           <th>Id</th>
           <th>Status</th>
-          <th>Description</th>
           <th>Type of Edit</th>
+          <th>Description</th>
           <th>Date</th>
           <th>User</th>
         </tr>

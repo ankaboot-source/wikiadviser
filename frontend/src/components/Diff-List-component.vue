@@ -19,7 +19,9 @@
           <td>{{ item.typeOfEdit }}</td>
           <td>
             <ul v-if="item.description?.[0]?.length">
-              <li v-for="description in item.description" :key="description">{{ description }}</li>
+              <li v-for="description in item.description" :key="description">
+                {{ description }}
+              </li>
             </ul>
           </td>
           <td @click="handleClick($event)" v-html="item.content"></td>
@@ -32,46 +34,46 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-import { onMounted, ref, computed } from 'vue'
-const data = ref('')
+import axios from 'axios';
+import { onMounted, ref, computed } from 'vue';
+const data = ref('');
 
 const fetchData = async () => {
   try {
-    const response = await axios.get('http://localhost:3000/api/html_diff')
-    data.value = response.data
+    const response = await axios.get('http://localhost:3000/api/html_diff');
+    data.value = response.data;
   } catch (error) {
-    console.error(error)
+    console.error(error);
   } finally {
     // Call fetchData again after the request completes to implement long polling
-    setTimeout(() => fetchData(), 1000)
+    setTimeout(() => fetchData(), 1000);
   }
-}
-onMounted(fetchData)
+};
+onMounted(fetchData);
 
 const diffItems = computed(() => {
   // Parse the HTML string to create a DOM element
-  const parser = new DOMParser()
-  const doc = parser.parseFromString(data.value, 'text/html')
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(data.value, 'text/html');
   // Use the DOM API to get elements with the desired attribute
-  const elements = doc.querySelectorAll('[data-status]')
+  const elements = doc.querySelectorAll('[data-status]');
   // Convert the NodeList to an array and map each element to an object with its data
   const items = Array.from(elements).map((element, index) => ({
     id: index,
     content: element.outerHTML,
     status: element.getAttribute('data-status'),
-    description: element.getAttribute('data-description')?.split('<|>'),
     typeOfEdit: element.getAttribute('data-type-of-edit'),
+    description: element.getAttribute('data-description')?.split('<|>'),
     user: element.getAttribute('data-user'),
-    date: element.getAttribute('data-date')
-  }))
-  return items
-})
+    date: element.getAttribute('data-date'),
+  }));
+  return items;
+});
 
 const handleClick = (event: MouseEvent) => {
   //Prevent visting links:
-  event.preventDefault()
-}
+  event.preventDefault();
+};
 </script>
 <style scoped>
 table {

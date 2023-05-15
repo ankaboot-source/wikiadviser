@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>&nbsp;WikiAdviser</h1>
+    <h1 class="q-ma-none q-pa-none">&nbsp;WikiAdviser</h1>
     <div style="display: flex; text-align: center">
       <h2 style="flex: 1">Mediawiki</h2>
       <h2 style="flex: 1">Differences</h2>

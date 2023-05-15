@@ -119,7 +119,6 @@ app.post("/api/html_diff", (req, res) => {
             listItems.each(function (i, elem) {
               list.push($(elem).text());
             });
-            console.log(list);
             // Delimiter <|> since it is unlikely to be present in any of the array elements
             $wrapElement.attr("data-description", list.join("<|>"));
           }

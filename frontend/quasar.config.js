@@ -10,6 +10,16 @@
 
 const { configure } = require('quasar/wrappers');
 
+// This will load from `.env` if it exists, but not override existing `process.env.*` values
+require('dotenv').config();
+
+// process.env now contains the terminal variables and the ones from the .env file
+// Precedence:
+//   1. Terminal variables (API_URL=https://api.com quasar build)
+//   2. `.env` file
+// If you want .env file to override the terminal variables,
+// use `require('dotenv').config({ override: true })` instead
+
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -62,7 +72,11 @@ module.exports = configure(function (/* ctx */) {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
+        SUPABASE_SECRET_PROJECT_TOKEN:
+          process.env.SUPABASE_SECRET_PROJECT_TOKEN,
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,

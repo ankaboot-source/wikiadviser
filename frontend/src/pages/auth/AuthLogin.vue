@@ -1,14 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <q-header class="bg-white text-black text-center">
-      <q-toolbar>
-        <q-toolbar-title>
-          <q-icon name="public" />
-          <b>WikiAdviser</b>
-        </q-toolbar-title>
-      </q-toolbar>
-    </q-header>
-
+    <app-header></app-header>
     <q-page-container>
       <q-page>
         <q-form
@@ -102,6 +94,7 @@
 
 <script setup>
 import supabaseClient from 'src/api/supabase';
+import AppHeader from 'src/layouts/AppHeader.vue';
 import { ref } from 'vue';
 
 supabaseClient;

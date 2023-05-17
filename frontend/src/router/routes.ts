@@ -3,6 +3,10 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    component: () => import('pages/ArticlesPage.vue'),
+  },
+  {
+    path: '/login',
     component: () => import('pages/auth/AuthLogin.vue'),
   },
   {

@@ -29,7 +29,7 @@
     </div>
   </q-card-section>
 </template>
-<script setup>
+<script setup lang="ts">
 import axios from 'axios';
 import SearchList from 'src/components/search/SearchList.vue';
 import supabaseClient from 'src/api/supabase';
@@ -43,18 +43,17 @@ const apiSearch = computed(
     `
     https://fr.wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
 );
-const results = ref(null);
+const results = ref({});
 watch(apiSearch, async (apiSearch) => {
   isSearching.value = true;
   try {
     const response = await axios.get(apiSearch);
     results.value = response.data?.query?.pages;
-
     if (results.value) {
       results.value = Object.values(results.value);
     }
   } catch (error) {
-    console.error(error.response.data.error);
+    console.error(error);
   }
   isSearching.value = false;
 });

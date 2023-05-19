@@ -2,13 +2,15 @@ import { RouteRecordRaw } from 'vue-router';
 
 const routes: RouteRecordRaw[] = [
   {
-    path: '/',
+    path: '/articles',
+    alias: '/',
+    name: 'articles',
     component: () => import('pages/ArticlesPage.vue'),
   },
   {
-    path: '/demo',
-    name: 'demo',
-    component: () => import('pages/WikiAdviser.vue'),
+    path: '/articles/:title',
+    name: 'article',
+    component: () => import('pages/ArticlePage.vue'),
   },
   {
     path: '/auth',

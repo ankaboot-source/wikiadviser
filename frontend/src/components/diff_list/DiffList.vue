@@ -1,41 +1,23 @@
 <template>
-  <div>
-    <table>
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>Status</th>
-          <th>Type of Edit</th>
-          <th>Description</th>
-          <th>Content</th>
-          <th>Date</th>
-          <th>User</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in diffItems" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.status }}</td>
-          <td>{{ item.typeOfEdit }}</td>
-          <td>
-            <ul v-if="item.description?.[0]?.length">
-              <li v-for="description in item.description" :key="description">
-                {{ description }}
-              </li>
-            </ul>
-          </td>
-          <td @click="handleClick($event)" v-html="item.content"></td>
-          <td>{{ item.date }}</td>
-          <td>{{ item.user }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <q-scroll-area class="q-ma-md" style="max-width: 450px">
+    <q-list
+      bordered
+      class="rounded-borders q-pa-md"
+      style="background-color: rgb(246, 248, 250)"
+    >
+      <diff-item
+        v-for="item in diffItems"
+        :key="item.id"
+        :item="item"
+      ></diff-item>
+    </q-list>
+  </q-scroll-area>
 </template>
 
 <script setup lang="ts">
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
+import DiffItem from './DiffItem.vue';
 const data = ref('');
 
 const fetchData = async () => {
@@ -69,30 +51,5 @@ const diffItems = computed(() => {
   }));
   return items;
 });
-
-const handleClick = (event: MouseEvent) => {
-  //Prevent visting links:
-  event.preventDefault();
-};
 </script>
-<style scoped>
-table {
-  border-collapse: collapse;
-  text-align: left;
-  width: 100%;
-  border-left: 1px solid;
-}
-table tr {
-  border-bottom: 1px solid;
-}
-table th,
-table td {
-  padding: 10px 20px;
-}
-th {
-  background-color: white;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-}
-</style>
+<style scoped></style>

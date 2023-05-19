@@ -1,33 +1,29 @@
 <template>
-  <div>
-    <h1 class="q-ma-none q-pa-none">&nbsp;WikiAdviser</h1>
-    <div style="display: flex; text-align: center">
-      <h2 style="flex: 1">Mediawiki</h2>
-      <h2 style="flex: 1">Differences</h2>
-      <h2 style="flex: 1">Differences List</h2>
-    </div>
-
-    <div style="display: flex">
-      <EditorComponentVue class="flex-item m-auto" />
-      <DiffComponentVue class="flex-item m-auto" />
-      <DiffListComponent class="flex-item m-auto" />
-    </div>
-  </div>
+  <q-layout view="hHh lpR fFf" style="min-height: 100%">
+    <app-header> </app-header>
+    <q-page-container>
+      <div class="row text-center q-pb-md q-pt-md">
+        <div class="col text-h5">Edit</div>
+        <div class="col text-h5">Suggestions</div>
+        <div class="col text-h5">Suggestions List</div>
+      </div>
+      <div
+        class="row justify-around"
+        style="height: 80vh; border-top: 1px solid #ddd"
+      >
+        <editor-component class="col-4" />
+        <diff-component class="col-4" style="border-right: 1px solid #ddd" />
+        <diff-list class="col-3" />
+      </div>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script setup lang="ts">
-import DiffListComponent from 'src/components/Diff-List-component.vue';
-import DiffComponentVue from 'src/components/Diff-component.vue';
-import EditorComponentVue from 'src/components/Editor-component.vue';
+import EditorComponent from 'src/components/Editor-component.vue';
+import DiffComponent from 'src/components/Diff-component.vue';
+import DiffList from 'src/components/diff_list/DiffList.vue';
+import AppHeader from 'src/layouts/AppHeader.vue';
 </script>
 
-<style scoped>
-.m-auto {
-  margin: auto;
-}
-.flex-item {
-  flex: 1;
-  height: 80vh;
-  overflow-y: scroll;
-}
-</style>
+<style scoped></style>

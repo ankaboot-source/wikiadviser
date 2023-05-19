@@ -1,17 +1,13 @@
 <template>
   <div class="app-search relative-position">
     <q-list padding>
-      <result-entry
-        v-for="entry in props.results"
-        :key="entry"
-        :entry="entry"
-      />
+      <search-item v-for="item in props.results" :key="item" :item="item" />
     </q-list>
   </div>
 </template>
 
-<script setup>
-import ResultEntry from 'src/components/search/ResultEntry.vue';
+<script setup lang="ts">
+import SearchItem from 'src/components/search/SearchItem.vue';
 
 const props = defineProps({
   results: Object,

@@ -1,5 +1,7 @@
 <template>
-  <div v-html="data" @click="handleClick($event)"></div>
+  <q-scroll-area>
+    <div v-html="data" @click="handleClick($event)" class="q-mr-md"></div>
+  </q-scroll-area>
 </template>
 
 <script setup lang="ts">

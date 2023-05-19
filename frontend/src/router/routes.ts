@@ -6,12 +6,13 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ArticlesPage.vue'),
   },
   {
-    path: '/login',
-    component: () => import('pages/auth/AuthLogin.vue'),
+    path: '/demo',
+    name: 'demo',
+    component: () => import('pages/WikiAdviser.vue'),
   },
   {
-    path: '/WikiAdviser',
-    component: () => import('pages/WikiAdviser.vue'),
+    path: '/auth',
+    component: () => import('pages/auth/AuthLogin.vue'),
   },
 
   // Always leave this as last one,

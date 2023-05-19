@@ -34,9 +34,14 @@ app.get("/api/mediawiki_wikitext", (req, res) => {
       }
     )
     .then((response) => {
-      const content =
-        response.data.query.pages[0].revisions[0].slots.main.content;
-      res.json(content);
+      try {
+        const content =
+          response.data.query.pages[0].revisions[0].slots.main.content;
+        res.json(content);
+      } catch (error) {
+        console.error(error);
+        res.send(`${error}`);
+      }
     })
     .catch((error) => {
       console.log(error.response.data.error);
@@ -88,40 +93,30 @@ app.post("/api/html_diff", (req, res) => {
 
       let typeOfEdit: any = diffAction;
 
-      // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "remove" or "change-remove" diff
+      // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "change-remove" diff
       const node: any = $element[0].next;
-      if (
-        !node?.data?.trim() &&
-        (diffAction === "remove" || diffAction === "change-remove")
-      ) {
+      if (!node?.data?.trim() && diffAction === "change-remove") {
         const $nextElement = $element.next();
-        // Check if the next element has "insert" or "change-insert" diff action
-        if (
-          $nextElement.data("diff-action") === "insert" ||
-          $nextElement.data("diff-action") === "change-insert"
-        ) {
+        // Check if the next element has "change-insert" diff action
+        if ($nextElement.data("diff-action") === "change-insert") {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
 
-          // type-of-edit attribute if remove succeeded by an insert
-          if ($nextElement.data("diff-action") === "insert") {
-            typeOfEdit = "modify";
-          } else {
-            // change-remove is always succeeded by a change-insert
-            typeOfEdit = "change";
-            // Add description attribute
-            const list: any[] = [];
-            const listItems = $(".ve-ui-diffElement-sidebar >")
-              .children()
-              .eq(changeid++)
-              .children()
-              .children();
-            listItems.each(function (i, elem) {
-              list.push($(elem).text());
-            });
-            // Delimiter <|> since it is unlikely to be present in any of the array elements
-            $wrapElement.attr("data-description", list.join("<|>"));
-          }
+          // change-remove is always succeeded by a change-insert
+          typeOfEdit = "change";
+          // Add description attribute
+          const list: any[] = [];
+          const listItems = $(".ve-ui-diffElement-sidebar >")
+            .children()
+            .eq(changeid++)
+            .children()
+            .children();
+          listItems.each(function (i, elem) {
+            list.push($(elem).text());
+          });
+          // Delimiter <|> since it is unlikely to be present in any of the array elements
+          $wrapElement.attr("data-description", list.join("<|>"));
+
           // Remove the last element
           $nextElement.remove();
         }

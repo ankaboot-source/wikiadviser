@@ -92,7 +92,7 @@
   </q-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
 import AppHeader from 'src/layouts/AppHeader.vue';
 import { ref } from 'vue';
@@ -104,7 +104,7 @@ const form = ref({
   password: '',
 });
 
-const visibility = ref('password');
+const visibility = ref('password' as 'password' | 'text');
 function changeTypeEdit() {
   if (visibility.value == 'text') {
     visibility.value = 'password';
@@ -112,7 +112,7 @@ function changeTypeEdit() {
     visibility.value = 'text';
   }
 }
-function isValidEmail(val) {
+function isValidEmail(val: any) {
   const emailPattern =
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
   return emailPattern.test(val) || 'Invalid email format.';
@@ -128,7 +128,7 @@ const handleSignin = async () => {
     if (error) throw error;
     else console.log('SignedIn');
   } catch (error) {
-    alert(error.error_description || error.message);
+    console.error(error);
   }
 };
 
@@ -143,7 +143,7 @@ const handleSignup = async () => {
     if (error) throw error;
     else console.log('SignedUp');
   } catch (error) {
-    alert(error.error_description || error.message);
+    console.log(error);
   }
 };
 

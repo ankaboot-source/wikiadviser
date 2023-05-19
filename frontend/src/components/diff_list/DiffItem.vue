@@ -22,7 +22,7 @@
 
     <q-item-section>
       <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
-        Change
+        Content
       </q-item-label>
 
       <div class="q-pa-md">

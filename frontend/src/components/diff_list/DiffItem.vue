@@ -9,14 +9,26 @@
     class="q-mb-md q-mx-sm"
   >
     <template v-slot:header>
-      <div class="col">
-        <q-item-section class="text-body1">
-          @{{ props.item?.user }} edited at
-        </q-item-section>
-        <q-item-section caption side top>
-          {{ props.item?.date }}
-        </q-item-section>
-      </div>
+      <q-item-section class="text-body1">
+        <q-item-label
+          ><div
+            @click="preventLinkVisit($event)"
+            v-html="props.item?.content"
+          ></div>
+        </q-item-label>
+        <q-item-label caption lines="2">
+          <div
+            v-for="(description, index) in props.item?.description"
+            :key="index"
+          >
+            {{ description }}
+          </div>
+        </q-item-label>
+      </q-item-section>
+      <q-item-section caption top side>
+        {{ props.item?.date }}
+        @{{ props.item?.user }}
+      </q-item-section>
     </template>
     <q-separator />
 

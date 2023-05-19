@@ -74,8 +74,9 @@
                 icon="check"
                 color="primary"
                 @click="handleComment"
-              /> </template
-          ></q-input>
+              />
+            </template>
+          </q-input>
         </div>
       </div>
     </q-item-section>
@@ -97,9 +98,16 @@
       <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
         Comments
       </q-item-label>
-      <div class="q-pa-md row justify-center">
-        <div style="width: 100%; max-width: 400px">
-          <!-- Default Comments Examples.-->
+      <q-item-section class="q-pa-md row justify-center">
+        <!-- Default Comments Examples.-->
+        <q-scroll-area
+          style="
+            height: 150px;
+            background-color: rgb(246, 248, 250);
+            width: 100%;
+          "
+          class="q-pa-sm"
+        >
           <q-chat-message
             name="me"
             :text="['hey, how are you?']"
@@ -126,7 +134,7 @@
             text-color="white"
             bg-color="primary"
           />
-        </div>
+        </q-scroll-area>
 
         <q-input
           v-model="comment"
@@ -148,7 +156,7 @@
             />
           </template>
         </q-input>
-      </div>
+      </q-item-section>
     </q-item-section>
     <q-separator />
 

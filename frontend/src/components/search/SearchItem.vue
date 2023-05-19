@@ -47,16 +47,10 @@ async function itemOnClick() {
         response.data.query.pages[0].revisions[0].slots.main.content;
         console.log('article exists');
 
-        /* ARTICLE EDIT
-        // >EditorComponent.Vue
-          router.push({
-            name: 'edit',
-            params: { title: props.item.title },
-          });
-        */
-
+        // GOTO ARTICLE PAGE, EDIT TAB
         router.push({
-          name: 'demo',
+          name: 'article',
+          params: { title: props!.item!.title },
         });
       } catch (error) {
         // Article doesn't exist
@@ -67,7 +61,7 @@ async function itemOnClick() {
             const article_wikipedia = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title.value}&format=json`;
           // Insert it into our Mediawiki
             const article_mediawiki = `https://localhost/wiki/${title.value}?action=edit`;
-          // >EditorComponent.Vue
+          // GOTO ARTICLE PAGE, EDIT TAB
         */
       }
     })

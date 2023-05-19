@@ -3,12 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-
-const article = ref('Hedi_Slimane');
-const article_link = ref(
-  `https://localhost/wiki/${article.value}?veaction=edit`
-);
+const props = defineProps({
+  article: String,
+});
+const article_link = `https://localhost/wiki/${props.article}?veaction=edit`;
 </script>
 
 <style scoped></style>

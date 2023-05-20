@@ -1,5 +1,5 @@
 <template>
-  <q-scroll-area class="q-ma-md" style="max-width: 450px">
+  <q-scroll-area style="max-width: 450px; height: 85vh">
     <q-list
       bordered
       class="rounded-borders q-pa-md"

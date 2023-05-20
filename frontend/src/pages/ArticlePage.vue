@@ -1,21 +1,42 @@
 <template>
   <q-layout view="hHh lpR fFf" style="min-height: 100%">
-    <app-header> </app-header>
-    <q-page-container>
-      <div class="row text-center q-pb-md q-pt-md">
-        <div class="col text-h5">Edit</div>
-        <div class="col text-h5">Suggestions</div>
-        <div class="col text-h5">Suggestions List</div>
-      </div>
-      <div
-        class="row justify-around"
-        style="height: 80vh; border-top: 1px solid #ddd"
-      >
-        <editor-component class="col-4" :article="article" />
-        <diff-component class="col-4" style="border-right: 1px solid #ddd" />
+    <app-header></app-header>
+    <q-tabs
+      v-model="tab"
+      dense
+      class="text-grey q-pt-xl"
+      active-color="primary"
+      indicator-color="primary"
+      align="left"
+    >
+      <q-tab name="editor" label="editor" />
+      <q-tab name="view" label="view" />
+    </q-tabs>
+    <q-tab-panels v-model="tab">
+      <q-tab-panel name="editor" class="row justify-evenly">
+        <editor-component
+          :article="article"
+          style="
+            height: 85vh;
+            background-color: rgb(246, 248, 250);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+          "
+          class="col-10 rounded-borders q-pa-md"
+        />
+      </q-tab-panel>
+      <q-tab-panel name="view" class="row justify-evenly">
+        <diff-component
+          class="col-9 rounded-borders q-pa-md"
+          style="
+            height: 85vh;
+            background-color: rgb(246, 248, 250);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+          "
+          bordered
+        />
         <diff-list class="col-3" />
-      </div>
-    </q-page-container>
+      </q-tab-panel>
+    </q-tab-panels>
   </q-layout>
 </template>
 
@@ -26,10 +47,13 @@ import DiffList from 'src/components/diff_list/DiffList.vue';
 import AppHeader from 'src/layouts/AppHeader.vue';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-const article = ref('');
-// Access the title parameter from the route's params object
 const route = useRoute();
+const article = ref('');
+const tab = ref('');
+// Access the article title parameter from the route's params object
 article.value = route.params.title as string;
+// Access the selected tab else 'view' tab
+tab.value = route.params.tab ? (route.params.tab as string) : 'view';
 </script>
 
 <style scoped></style>

@@ -28,45 +28,45 @@
 
 <script setup lang="ts">
 import axios from 'axios';
-import { useRouter } from 'vue-router'; // <- import useRoute here
+import { useRouter } from 'vue-router';
 const router = useRouter();
 const props = defineProps({
   item: Object,
 });
 
 async function itemOnClick() {
-  // Fetch wikitext of local article to check if it exists
-  const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${
-    props.item!.title
-  }&format=json&origin=*`;
-  await axios
-    .get(url, { data: { https: false } }) // Disable HTTPS verification
-    .then((response) => {
-      try {
-        // Article already exists
-        response.data.query.pages[0].revisions[0].slots.main.content;
-        console.log('article exists');
-
-        // GOTO ARTICLE PAGE, EDIT TAB
-        router.push({
-          name: 'article',
-          params: { title: props!.item!.title },
-        });
-      } catch (error) {
-        // Article doesn't exist
-        console.log("err | article doesn't exist");
-
-        /* NEW ARTICLE
+  try {
+    // Fetch wikitext of local article to check if it exists
+    const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${
+      props.item!.title
+    }&format=json&origin=*`;
+    const response = await axios.get(url, { data: { https: false } }); // Disable HTTPS verification
+    const articleExists =
+      response.data?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content;
+    console.log(articleExists);
+    if (articleExists) {
+      console.log('article exists');
+      // GOTO ARTICLE PAGE
+      router.push({
+        name: 'article',
+        params: { title: props!.item!.title },
+      });
+    } else {
+      console.log("article doesn't exist");
+      /* NEW ARTICLE
           // Fetch the wikitext of a Wikipedia Article.
             const article_wikipedia = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title.value}&format=json`;
           // Insert it into our Mediawiki
             const article_mediawiki = `https://localhost/wiki/${title.value}?action=edit`;
           // GOTO ARTICLE PAGE, EDIT TAB
+            router.push({
+              name: 'article',
+              params: { title: props!.item!.title, tab:'editor' },
+            });
         */
-      }
-    })
-    .catch((error) => {
-      console.log(error.response.data.error);
-    });
+    }
+  } catch (error: any) {
+    console.error(error);
+  }
 }
 </script>

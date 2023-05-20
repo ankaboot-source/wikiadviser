@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ArticlesPage.vue'),
   },
   {
-    path: '/articles/:title',
+    path: '/articles/:title/:tab(view|editor)?',
     name: 'article',
     component: () => import('pages/ArticlePage.vue'),
   },

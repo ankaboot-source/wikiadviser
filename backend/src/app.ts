@@ -19,51 +19,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.get("/api/mediawiki_wikitext", (req, res) => {
-  // Fetch the local Mediawiki wikitext. (Example: wikitext of Main_Page)
-  const title = "Main_Page";
-  const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
-  axios
-    .get(
-      url,
-      // Ignore SSL/TLS certificate verification
-      {
-        httpsAgent: new https.Agent({
-          rejectUnauthorized: false,
-        }),
-      }
-    )
-    .then((response) => {
-      try {
-        const content =
-          response.data.query.pages[0].revisions[0].slots.main.content;
-        res.json(content);
-      } catch (error) {
-        console.error(error);
-        res.send(`${error}`);
-      }
-    })
-    .catch((error) => {
-      console.log(error.response.data.error);
-    });
-});
-
-app.get("/api/wikipedia_wikitext", (req, res) => {
-  // Fetch the wikitext of a Wikipedia Article.
-  const title = "Hedi_Slimane";
-  const url = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
-  axios
-    .get(url)
-    .then((response) => {
-      const content =
-        response.data.query.pages[0].revisions[0].slots.main.content;
-      res.json(content);
-    })
-    .catch((error) => {
-      console.log(error.response.data.error);
-    });
-});
-
 //POST and GET the html diff of the local mediawiki
 app.post("/api/html_diff", (req, res) => {
   const html = req.body.html;
@@ -144,6 +99,53 @@ app.post("/api/html_diff", (req, res) => {
 
 app.get("/api/html_diff", (req, res) => {
   res.send(data.html);
+});
+
+//New Article
+app.post("/api/new_article", (req, res) => {
+  const title = req.body.title;
+  console.log("New article title received:", title);
+
+  try {
+    const puppeteer = require("puppeteer");
+    const article_wikipedia = `https://fr.wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+    const article_mediawiki = `https://localhost/wiki/${title}?action=edit`;
+    // Fetch the wikitext of the Wikipedia Article.
+    axios
+      .get(article_wikipedia)
+      .then((response) => {
+        (async () => {
+          const article_wikitext =
+            response.data.query.pages[0].revisions[0].slots.main.content;
+          console.log("wikitext", article_wikitext.length);
+          // Automate setting up the new article using puppeteer
+          const browser = await puppeteer.launch({
+            headless: "new",
+            ignoreHTTPSErrors: true,
+          });
+          const page = await browser.newPage();
+          await page.goto(article_mediawiki, { waitUntil: "networkidle0" });
+          await page.click(
+            "body > div.oo-ui-windowManager.oo-ui-windowManager-modal.oo-ui-windowManager-floating > div > div.oo-ui-window-frame > div.oo-ui-window-content.oo-ui-dialog-content.oo-ui-messageDialog-content.oo-ui-window-content-setup.oo-ui-window-content-ready > div.oo-ui-window-foot > div > span.oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-labelElement.oo-ui-flaggedElement-progressive.oo-ui-flaggedElement-primary.oo-ui-buttonWidget.oo-ui-actionWidget.oo-ui-buttonElement-framed"
+          );
+          await page.$eval(
+            "#wpTextbox1",
+            (el: any, value: any) => (el.value = value),
+            article_wikitext
+          );
+          await page.waitForTimeout(500);
+          await page.click('input[name="wpSave"]');
+          await browser.close();
+          res.sendStatus(200);
+        })();
+      })
+      .catch((error) => {
+        console.log(error.response.data.error);
+      });
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
 });
 
 app.listen(port, () => {

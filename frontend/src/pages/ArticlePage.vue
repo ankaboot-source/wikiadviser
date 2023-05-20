@@ -41,9 +41,9 @@
 </template>
 
 <script setup lang="ts">
-import EditorComponent from 'src/components/Editor-component.vue';
-import DiffComponent from 'src/components/Diff-component.vue';
-import DiffList from 'src/components/diff_list/DiffList.vue';
+import EditorComponent from 'src/components/EditorComponent.vue';
+import DiffComponent from 'src/components/DiffComponent.vue';
+import DiffList from 'src/components/DiffList/DiffList.vue';
 import AppHeader from 'src/layouts/AppHeader.vue';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';

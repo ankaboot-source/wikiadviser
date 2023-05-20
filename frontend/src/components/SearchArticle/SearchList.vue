@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import SearchItem from 'src/components/search/SearchItem.vue';
+import SearchItem from './SearchItem.vue';
 
 const props = defineProps({
   results: Object,

@@ -31,7 +31,7 @@
 </template>
 <script setup lang="ts">
 import axios from 'axios';
-import SearchList from 'src/components/search/SearchList.vue';
+import SearchList from './SearchList.vue';
 import supabaseClient from 'src/api/supabase';
 import { ref, computed, watch } from 'vue';
 

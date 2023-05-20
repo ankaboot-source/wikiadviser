@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import AppHeader from 'src/layouts/AppHeader.vue';
-import SearchArticle from 'src/components/search/SearchArticle.vue';
+import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
 </script>
 
 <style lang="scss"></style>

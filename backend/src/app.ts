@@ -4,6 +4,7 @@ import axios from "axios";
 import cheerio, { load } from "cheerio";
 import cors from "cors";
 import bodyParser from "body-parser";
+import { setupNewArticle } from "./helpers/puppeteerHelper";
 const app = express();
 const port = 3000;
 const data = { html: "" };
@@ -102,46 +103,27 @@ app.get("/api/html_diff", (req, res) => {
 });
 
 //New Article
-app.post("/api/new_article", (req, res) => {
-  const title = req.body.title;
-  console.log("New article title received:", title);
-
+app.post("/api/new_article", async (req, res) => {
   try {
-    const puppeteer = require("puppeteer");
-    const article_wikipedia = `https://fr.wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
-    const article_mediawiki = `https://localhost/wiki/${title}?action=edit`;
+    const title = req.body.title;
+    console.log("New article title received:", title);
+
     // Fetch the wikitext of the Wikipedia Article.
-    axios
-      .get(article_wikipedia)
-      .then((response) => {
-        (async () => {
-          const article_wikitext =
-            response.data.query.pages[0].revisions[0].slots.main.content;
-          console.log("wikitext", article_wikitext.length);
-          // Automate setting up the new article using puppeteer
-          const browser = await puppeteer.launch({
-            headless: "new",
-            ignoreHTTPSErrors: true,
-          });
-          const page = await browser.newPage();
-          await page.goto(article_mediawiki, { waitUntil: "networkidle0" });
-          await page.click(
-            "body > div.oo-ui-windowManager.oo-ui-windowManager-modal.oo-ui-windowManager-floating > div > div.oo-ui-window-frame > div.oo-ui-window-content.oo-ui-dialog-content.oo-ui-messageDialog-content.oo-ui-window-content-setup.oo-ui-window-content-ready > div.oo-ui-window-foot > div > span.oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-labelElement.oo-ui-flaggedElement-progressive.oo-ui-flaggedElement-primary.oo-ui-buttonWidget.oo-ui-actionWidget.oo-ui-buttonElement-framed"
-          );
-          await page.$eval(
-            "#wpTextbox1",
-            (el: any, value: any) => (el.value = value),
-            article_wikitext
-          );
-          await page.waitForTimeout(500);
-          await page.click('input[name="wpSave"]');
-          await browser.close();
-          res.sendStatus(200);
-        })();
-      })
-      .catch((error) => {
-        console.log(error.response.data.error);
-      });
+    // The article in Wikipedia
+    const articleWikipedia = `https://fr.wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
+    const response = await axios.get(articleWikipedia);
+    // The article's wikitext of Wikipedia
+    const articleWikitext =
+      response.data.query.pages[0].revisions[0].slots.main.content;
+    console.log("wikitext", articleWikitext.length);
+
+    // The article in our Mediawiki
+    const articleMediawiki = `https://localhost/wiki/${title}?action=edit`;
+
+    // Automate setting up the new article using puppeteer
+    await setupNewArticle(articleMediawiki, articleWikitext);
+
+    res.sendStatus(200);
   } catch (error) {
     console.error(error);
     res.sendStatus(500);

@@ -53,20 +53,24 @@ async function itemOnClick() {
       });
     } else {
       console.log("article doesn't exist");
-      /* NEW ARTICLE
-          // Fetch the wikitext of a Wikipedia Article.
-            const article_wikipedia = `https://wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title.value}&format=json`;
-          // Insert it into our Mediawiki
-            const article_mediawiki = `https://localhost/wiki/${title.value}?action=edit`;
-          // GOTO ARTICLE PAGE, EDIT TAB
-            router.push({
-              name: 'article',
-              params: { title: props!.item!.title, tab:'editor' },
-            });
-        */
+
+      //NEW ARTICLE
+      const response = await axios.post(
+        'http://localhost:3000/api/new_article',
+        {
+          title: props!.item!.title,
+        }
+      );
+      console.log('Data sent.', response);
+
+      // GOTO ARTICLE PAGE, EDIT TAB
+      router.push({
+        name: 'article',
+        params: { title: props!.item!.title, tab: 'editor' },
+      });
     }
   } catch (error: any) {
-    console.error(error);
+    console.error('Error sending data:', error);
   }
 }
 </script>

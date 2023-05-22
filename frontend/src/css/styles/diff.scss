@@ -33,7 +33,7 @@
   position: relative;
 }
 .ve-ui-diffElement:after {
-  content: "";
+  content: '';
   clear: both;
   display: block;
 }
@@ -123,30 +123,30 @@
   ul {
   margin-left: 1.8em;
 }
-[data-diff-action="insert"],
-[data-diff-action="remove"],
-[data-diff-action="change-insert"],
-[data-diff-action="change-remove"] {
+[data-diff-action='insert'],
+[data-diff-action='remove'],
+[data-diff-action='change-insert'],
+[data-diff-action='change-remove'] {
   text-decoration: inherit;
 }
-ins[data-diff-action="insert"],
-del[data-diff-action="remove"] {
+ins[data-diff-action='insert'],
+del[data-diff-action='remove'] {
   white-space: pre-wrap;
 }
-[data-diff-action="insert"],
-[data-diff-action="insert"] > caption,
-[data-diff-action="insert"] > figcaption {
+[data-diff-action='insert'],
+[data-diff-action='insert'] > caption,
+[data-diff-action='insert'] > figcaption {
   background-color: rgba(0, 175, 137, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(0, 175, 137, 0.5);
 }
-[data-diff-action="remove"],
-[data-diff-action="remove"] > caption,
-[data-diff-action="remove"] > figcaption {
+[data-diff-action='remove'],
+[data-diff-action='remove'] > caption,
+[data-diff-action='remove'] > figcaption {
   background-color: rgba(209, 29, 19, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(209, 29, 19, 0.5);
 }
-[data-diff-action="change"],
-[data-diff-action="change-insert"] {
+[data-diff-action='change'],
+[data-diff-action='change-insert'] {
   background-color: rgba(109, 169, 247, 0.5) !important;
   box-shadow: 0 0 0 1px rgba(109, 169, 247, 0.5);
 }
@@ -156,38 +156,38 @@ del[data-diff-action="remove"] {
   background: rgba(213, 217, 225, 0.5);
   outline: 5px solid rgba(213, 217, 225, 0.5);
 }
-[data-diff-action="change-remove"] {
+[data-diff-action='change-remove'] {
   display: none;
 }
-[data-diff-action="remove"] {
+[data-diff-action='remove'] {
   text-decoration: line-through;
 }
-[data-diff-action="remove"]:hover {
+[data-diff-action='remove']:hover {
   text-decoration: none;
 }
-[data-diff-action="remove"] + [data-diff-action="insert"],
-[data-diff-action="insert"] + [data-diff-action="remove"],
-[data-diff-action="remove"] + [data-diff-action="change-insert"],
-[data-diff-action="insert"] + [data-diff-action="change-remove"] {
+[data-diff-action='remove'] + [data-diff-action='insert'],
+[data-diff-action='insert'] + [data-diff-action='remove'],
+[data-diff-action='remove'] + [data-diff-action='change-insert'],
+[data-diff-action='insert'] + [data-diff-action='change-remove'] {
   margin-left: 4px;
 }
-[data-diff-action="none"]:not([data-diff-move]) {
+[data-diff-action='none']:not([data-diff-move]) {
   opacity: 0.4;
 }
-[data-diff-action="insert"],
-[data-diff-action="remove"],
-[data-diff-action="change-insert"],
-[data-diff-action="change-remove"],
+[data-diff-action='insert'],
+[data-diff-action='remove'],
+[data-diff-action='change-insert'],
+[data-diff-action='change-remove'],
 [data-diff-move] {
   position: relative;
   z-index: 1;
 }
 @supports (mix-blend-mode: darken) {
-  [data-diff-action="insert"] > *,
-  [data-diff-action="remove"] > *,
-  [data-diff-action="change"] > *,
-  [data-diff-action="change-insert"] > *,
-  [data-diff-action="change-remove"] > *,
+  [data-diff-action='insert'] > *,
+  [data-diff-action='remove'] > *,
+  [data-diff-action='change'] > *,
+  [data-diff-action='change-insert'] > *,
+  [data-diff-action='change-remove'] > *,
   [data-diff-move] > * {
     mix-blend-mode: darken;
   }
@@ -204,16 +204,16 @@ del[data-diff-action="remove"] {
   line-height: 1;
 }
 .ve-ui-diffElement-moved-down:before {
-  content: "↓";
+  content: '↓';
 }
 .ve-ui-diffElement-moved-up:before {
-  content: "↑";
+  content: '↑';
 }
-[data-diff-action="insert"]:empty:before,
-[data-diff-action="remove"]:empty:before,
+[data-diff-action='insert']:empty:before,
+[data-diff-action='remove']:empty:before,
 [data-diff-move]:empty:before,
-[data-diff-action="insert"] *:empty:before,
-[data-diff-action="remove"] *:empty:before,
+[data-diff-action='insert'] *:empty:before,
+[data-diff-action='remove'] *:empty:before,
 [data-diff-move] *:empty:before {
   content: url(data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7);
 }

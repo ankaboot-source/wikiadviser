@@ -23,8 +23,10 @@
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import { onMounted, ref } from 'vue';
+import { useQuasar } from 'quasar';
 const session = ref();
 const username = ref('');
+const $q = useQuasar();
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -38,6 +40,7 @@ onMounted(async () => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
+    $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;
   } catch (error) {
     console.error(error);

@@ -24,7 +24,7 @@
 import supabase from 'src/api/supabase';
 import { onMounted, ref } from 'vue';
 const session = ref();
-const username = ref();
+const username = ref('');
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();

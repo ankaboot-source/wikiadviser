@@ -2,7 +2,7 @@
   <q-layout view="hHh lpR fFf">
     <app-header></app-header>
     <q-page-container>
-      <articles-page v-if="session" :session="session" />
+      <router-view v-if="session" :session="session" />
       <auth-login v-else />
     </q-page-container>
   </q-layout>
@@ -10,7 +10,6 @@
 
 <script setup>
 import { onMounted, ref } from 'vue';
-import ArticlesPage from 'src/pages/ArticlesPage.vue';
 import AuthLogin from 'src/pages/auth/AuthLogin.vue';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/layouts/AppHeader.vue';

@@ -106,7 +106,7 @@ app.get("/api/html_diff", (req, res) => {
 //New Article
 app.post("/api/new_article", async (req, res) => {
   try {
-    const title = req.body.title;
+    const { title } = req.body;
     console.log("New article title received:", title);
 
     // The wikitext of the Wikipedia article

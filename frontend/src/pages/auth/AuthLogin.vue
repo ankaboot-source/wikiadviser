@@ -13,6 +13,7 @@
           <div class="col-md-4 col-sm-6 col-xs-10 q-gutter-y-md">
             <q-input
               v-model="form.email"
+              autofocus
               bg-color="white"
               outlined
               bottom-slots

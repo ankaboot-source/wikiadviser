@@ -55,13 +55,12 @@ async function itemOnClick() {
       console.log("article doesn't exist");
 
       //NEW ARTICLE
-      const response = await fetch('http://localhost:3000/api/new_article', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title: props!.item!.title }),
-      });
+      const response = await axios.post(
+        'http://localhost:3000/api/new_article',
+        {
+          title: props!.item!.title,
+        }
+      );
       console.log('Data sent.', response);
 
       // GOTO ARTICLE PAGE, EDIT TAB

@@ -2,8 +2,9 @@
   <q-header class="text-black text-left" style="background-color: #f6f8fa">
     <q-toolbar>
       <q-toolbar-title style="font-family: serif">
-        <q-icon name="public" />
-        WikiAdviser
+        <router-link to="/" class="text-black" style="text-decoration: none">
+          <q-icon name="public" /> WikiAdviser</router-link
+        >
       </q-toolbar-title>
       <q-space />
       <template v-if="session">
@@ -35,7 +36,6 @@ onMounted(() => {
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
     username.value = session.value?.user.user_metadata.username;
-    console.log(username.value);
   });
 });
 

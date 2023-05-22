@@ -101,7 +101,7 @@ function isValidEmail(val: string) {
   return emailPattern.test(val) || 'Invalid email format.';
 }
 
-const handleSignup = async () => {
+async function handleSignup() {
   try {
     // Use the Supabase provided method to handle the signin
     const { error } = await supabaseClient.auth.signUp({
@@ -118,7 +118,7 @@ const handleSignup = async () => {
   } catch (error) {
     console.log(error);
   }
-};
+}
 </script>
 
 <style scoped lang="scss">

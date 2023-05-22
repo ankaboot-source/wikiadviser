@@ -81,13 +81,13 @@
         </q-card-section>
       </q-card>
     </q-form>
-    <q-dialog v-model="signUp"> <auth-signup /></q-dialog>
+    <q-dialog v-model="signUp"> <signup-page /></q-dialog>
   </q-page>
 </template>
 
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
-import AuthSignup from './AuthSignup.vue';
+import SignupPage from './SignupPage.vue';
 
 import { ref } from 'vue';
 
@@ -113,7 +113,7 @@ function isValidEmail(val: string) {
   return emailPattern.test(val) || 'Invalid email format.';
 }
 
-const handleSignin = async () => {
+async function handleSignin() {
   try {
     // Use the Supabase provided method to handle the signin
     const { error } = await supabaseClient.auth.signInWithPassword({
@@ -125,11 +125,11 @@ const handleSignin = async () => {
   } catch (error) {
     console.error(error);
   }
-};
+}
 
-const handleForgotPassword = async () => {
+async function handleForgotPassword() {
   return;
-};
+}
 </script>
 
 <style lang="scss"></style>

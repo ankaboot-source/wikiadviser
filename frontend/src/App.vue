@@ -3,14 +3,14 @@
     <app-header></app-header>
     <q-page-container>
       <router-view v-if="session" :session="session" />
-      <auth-login v-else />
+      <signin-page v-else />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import AuthLogin from 'src/pages/auth/AuthLogin.vue';
+import SigninPage from 'src/pages/auth/SigninPage.vue';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 

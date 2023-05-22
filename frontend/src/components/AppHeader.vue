@@ -13,7 +13,7 @@
             <q-item-section avatar>
               <q-icon name="logout" />
             </q-item-section>
-            <q-item-section>Log Out</q-item-section>
+            <q-item-section>Sign Out</q-item-section>
           </q-item>
         </q-menu>
       </q-btn>
@@ -37,7 +37,7 @@ onMounted(async () => {
 
 async function signOut() {
   try {
-    let { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
     if (error) throw error;
   } catch (error) {
     console.error(error);

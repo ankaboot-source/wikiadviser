@@ -1,6 +1,6 @@
 <template>
   <q-page class="row justify-center q-pt-xl">
-    <q-card class="q-pa-sm" style="background-color: #f6f8fa; height: 100%">
+    <q-card class="q-pa-sm bg-secondary" style="height: 100%">
       <search-article></search-article>
     </q-card>
   </q-page>

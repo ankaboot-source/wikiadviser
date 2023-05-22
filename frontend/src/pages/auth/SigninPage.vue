@@ -5,7 +5,7 @@
       class="square-card row justify-center q-pt-xl"
       @submit.prevent="handleSignin"
     >
-      <q-card class="q-pa-sm" style="background-color: #f6f8fa">
+      <q-card class="q-pa-sm bg-secondary">
         <q-card-section>
           <p class="col-12 text-h5 text-center">Sign in to WikiAdviser</p>
         </q-card-section>

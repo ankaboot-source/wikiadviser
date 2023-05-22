@@ -1,8 +1,5 @@
 <template>
-  <q-card
-    style="background-color: #f6f8fa; min-width: 25vw"
-    class="q-pa-md q-mb-xl"
-  >
+  <q-card style="min-width: 25vw" class="q-pa-md q-mb-xl bg-secondary">
     <q-card-section>
       <p class="text-h5 text-center">Create new account</p>
     </q-card-section>

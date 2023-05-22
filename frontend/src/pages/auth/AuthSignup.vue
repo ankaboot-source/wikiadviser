@@ -104,7 +104,7 @@ function isValidEmail(val: string) {
 const handleSignup = async () => {
   try {
     // Use the Supabase provided method to handle the signin
-    const { data, error } = await supabaseClient.auth.signUp({
+    const { error } = await supabaseClient.auth.signUp({
       email: form.value.email,
       password: form.value.password,
       options: {

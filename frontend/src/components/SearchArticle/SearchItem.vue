@@ -17,7 +17,7 @@
         </div>
         <div class="col">
           <div class="doc-token">{{ props.item!.title }}</div>
-          <div class="q-pl-sm" v-if="props.item!.description">
+          <div v-if="props.item!.description" class="q-pl-sm">
             {{ props.item!.description }}
           </div>
         </div>
@@ -31,7 +31,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 const router = useRouter();
 const props = defineProps({
-  item: Object,
+  item: { type: Object, required: true },
 });
 
 async function itemOnClick() {

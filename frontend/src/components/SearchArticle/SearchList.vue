@@ -10,7 +10,7 @@
 import SearchItem from './SearchItem.vue';
 
 const props = defineProps({
-  results: Object,
+  results: { type: Object, required: true },
 });
 </script>
 <style lang="css">

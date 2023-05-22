@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area>
-    <div v-html="data" @click="handleClick($event)" class="q-mr-md"></div>
+    <div class="q-mr-md" @click="handleClick($event)" v-html="data"></div>
   </q-scroll-area>
 </template>
 

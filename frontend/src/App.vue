@@ -8,11 +8,11 @@
   </q-layout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import AuthLogin from 'src/pages/auth/AuthLogin.vue';
 import supabase from 'src/api/supabase';
-import AppHeader from 'src/layouts/AppHeader.vue';
+import AppHeader from 'src/components/AppHeader.vue';
 
 const session = ref();
 

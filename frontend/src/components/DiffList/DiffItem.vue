@@ -8,7 +8,7 @@
     "
     class="q-mb-md q-mx-sm"
   >
-    <template v-slot:header>
+    <template #header>
       <q-item-section class="text-body1">
         <q-item-label
           ><div
@@ -66,7 +66,7 @@
             class="col"
           >
             <!-- User: Contributor  Only -->
-            <template v-slot:append>
+            <template #append>
               <q-btn
                 round
                 dense
@@ -145,7 +145,7 @@
           placeholder="Leave a comment"
           style="width: 100%"
         >
-          <template v-slot:append>
+          <template #append>
             <q-btn
               round
               dense
@@ -180,7 +180,7 @@
 import { ref } from 'vue';
 const expanded = ref(true);
 const props = defineProps({
-  item: Object,
+  item: { type: Object, required: true },
 });
 const description = ref(props.item?.description);
 const comment = ref('');

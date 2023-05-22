@@ -5,6 +5,7 @@ import cheerio, { load } from "cheerio";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { setupNewArticle } from "./helpers/puppeteerHelper";
+import { getArticleWikiText } from "./helpers/wikipediaApiHelper";
 const app = express();
 const port = 3000;
 const data = { html: "" };
@@ -108,25 +109,19 @@ app.post("/api/new_article", async (req, res) => {
     const title = req.body.title;
     console.log("New article title received:", title);
 
-    // Fetch the wikitext of the Wikipedia Article.
-    // The article in Wikipedia
-    const articleWikipedia = `https://fr.wikipedia.org/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${title}&format=json`;
-    const response = await axios.get(articleWikipedia);
-    // The article's wikitext of Wikipedia
-    const articleWikitext =
-      response.data.query.pages[0].revisions[0].slots.main.content;
-    console.log("wikitext", articleWikitext.length);
+    // The wikitext of the Wikipedia article
+    const wpArticleWikitext = await getArticleWikiText(title);
 
     // The article in our Mediawiki
-    const articleMediawiki = `https://localhost/wiki/${title}?action=edit`;
+    const mwArticleUrl = `https://localhost/wiki/${title}?action=edit`;
 
     // Automate setting up the new article using puppeteer
-    await setupNewArticle(articleMediawiki, articleWikitext);
+    await setupNewArticle(mwArticleUrl, wpArticleWikitext);
 
-    res.sendStatus(200);
+    res.status(201).json({ message: "Creating new article succeeded." });
   } catch (error) {
     console.error(error);
-    res.sendStatus(500);
+    res.sendStatus(500).json({ message: "Creating new article failed." });
   }
 });
 

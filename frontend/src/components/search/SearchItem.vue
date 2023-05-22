@@ -53,30 +53,25 @@ async function itemOnClick() {
       });
     } else {
       console.log("article doesn't exist");
+
       //NEW ARTICLE
-      fetch('http://localhost:3000/api/new_article', {
+      const response = await fetch('http://localhost:3000/api/new_article', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ title: props!.item!.title }),
-      })
-        .then((response) => {
-          console.log('Data sent.', response);
-        })
-        .catch((error) => {
-          console.error('Error sending data:', error);
-        })
-        .then(() => {
-          // GOTO ARTICLE PAGE, EDIT TAB
-          router.push({
-            name: 'article',
-            params: { title: props!.item!.title, tab: 'editor' },
-          });
-        });
+      });
+      console.log('Data sent.', response);
+
+      // GOTO ARTICLE PAGE, EDIT TAB
+      router.push({
+        name: 'article',
+        params: { title: props!.item!.title, tab: 'editor' },
+      });
     }
   } catch (error: any) {
-    console.error(error);
+    console.error('Error sending data:', error);
   }
 }
 </script>

@@ -6,8 +6,8 @@
   </q-card-section>
   <q-card-section class="q-pb-none">
     <q-input
-      bg-color="white"
       v-model="term"
+      bg-color="white"
       dense
       standout
       outlined
@@ -41,7 +41,7 @@ const isSearching = ref(false);
 const apiSearch = computed(
   () =>
     `
-    https://fr.wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
+    https://wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
 );
 const results = ref({});
 watch(apiSearch, async (apiSearch) => {

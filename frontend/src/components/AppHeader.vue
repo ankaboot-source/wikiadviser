@@ -7,18 +7,16 @@
         >
       </q-toolbar-title>
       <q-space />
-      <template v-if="session">
-        <q-btn icon="person" :label="username" no-caps flat>
-          <q-menu fit anchor="bottom right" self="top right">
-            <q-item clickable @click="signOut">
-              <q-item-section avatar>
-                <q-icon name="logout" />
-              </q-item-section>
-              <q-item-section>Log Out</q-item-section>
-            </q-item>
-          </q-menu>
-        </q-btn>
-      </template>
+      <q-btn v-if="session" icon="person" :label="username" no-caps flat>
+        <q-menu fit anchor="bottom right" self="top right">
+          <q-item clickable @click="signOut">
+            <q-item-section avatar>
+              <q-icon name="logout" />
+            </q-item-section>
+            <q-item-section>Log Out</q-item-section>
+          </q-item>
+        </q-menu>
+      </q-btn>
     </q-toolbar>
   </q-header>
 </template>

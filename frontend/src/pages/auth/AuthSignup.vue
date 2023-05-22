@@ -1,0 +1,128 @@
+<template>
+  <q-card
+    style="background-color: #f6f8fa; min-width: 25vw"
+    class="q-pa-md q-mb-xl"
+  >
+    <q-card-section>
+      <p class="text-h5 text-center">Create new account</p>
+    </q-card-section>
+    <q-card-section>
+      <q-form ref="myform" @submit.prevent="handleSignup">
+        <q-input
+          v-model="form.username"
+          bg-color="white"
+          outlined
+          bottom-slots
+          label="Username"
+          lazy-rules
+          :rules="[(val) => (val && val.length > 0) || 'Enter your username.']"
+        >
+          <template #prepend> <q-icon name="person" /> </template
+        ></q-input>
+        <q-input
+          v-model="form.email"
+          bg-color="white"
+          outlined
+          bottom-slots
+          label="Email"
+          type="email"
+          lazy-rules
+          :rules="[
+            (val) => (val && val.length > 0) || 'Enter your email.',
+            isValidEmail,
+          ]"
+        >
+          <template #prepend>
+            <q-icon name="email" />
+          </template>
+          <template v-if="!form.email" #hint> Enter your email. </template>
+        </q-input>
+        <q-input
+          v-model="form.password"
+          bg-color="white"
+          outlined
+          bottom-slots
+          label="Password"
+          counter
+          :type="visibility"
+          lazy-rules
+          :rules="[(val) => (val && val.length > 0) || 'Enter your password.']"
+        >
+          <template #prepend>
+            <q-icon name="lock" />
+          </template>
+
+          <template #append>
+            <q-icon
+              :name="visibility == 'text' ? 'visibility_off' : 'visibility'"
+              class="cursor-pointer"
+              @click="changeTypeEdit()"
+            ></q-icon>
+          </template>
+          <template v-if="!form.password" #hint>
+            Enter your password.
+          </template>
+        </q-input>
+        <q-btn
+          label="Sign Up"
+          color="green"
+          class="full-width q-mt-md"
+          type="submit"
+        >
+        </q-btn>
+      </q-form>
+    </q-card-section>
+  </q-card>
+</template>
+
+<script setup lang="ts">
+import supabaseClient from 'src/api/supabase';
+import { ref } from 'vue';
+
+supabaseClient;
+
+const form = ref({
+  email: '',
+  password: '',
+  username: '',
+});
+
+const visibility = ref('password' as 'password' | 'text');
+function changeTypeEdit() {
+  if (visibility.value == 'text') {
+    visibility.value = 'password';
+  } else {
+    visibility.value = 'text';
+  }
+}
+function isValidEmail(val: string) {
+  const emailPattern =
+    /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
+  return emailPattern.test(val) || 'Invalid email format.';
+}
+
+const handleSignup = async () => {
+  try {
+    // Use the Supabase provided method to handle the signin
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: form.value.email,
+      password: form.value.password,
+      options: {
+        data: {
+          username: form.value.username,
+        },
+      },
+    });
+    if (error) throw error;
+    else console.log('SignedUp');
+  } catch (error) {
+    console.log(error);
+  }
+};
+</script>
+
+<style scoped lang="scss">
+.q-input {
+  margin-bottom: 10px;
+}
+</style>

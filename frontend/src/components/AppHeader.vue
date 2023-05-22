@@ -28,11 +28,9 @@ import { onMounted, ref } from 'vue';
 const session = ref();
 const username = ref();
 
-onMounted(() => {
-  supabase.auth.getSession().then(({ data }) => {
-    session.value = data.session;
-  });
-
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
     username.value = session.value?.user.user_metadata.username;

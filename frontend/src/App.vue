@@ -16,11 +16,9 @@ import AppHeader from 'src/components/AppHeader.vue';
 
 const session = ref();
 
-onMounted(() => {
-  supabase.auth.getSession().then(({ data }) => {
-    session.value = data.session;
-  });
-
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
   });

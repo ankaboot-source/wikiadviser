@@ -14,7 +14,7 @@
     </q-tabs>
     <q-tab-panels v-model="tab">
       <q-tab-panel name="editor" class="row justify-evenly">
-        <editor-component
+        <mw-visual-editor
           :article="article"
           style="
             height: 85vh;
@@ -25,7 +25,7 @@
         />
       </q-tab-panel>
       <q-tab-panel name="view" class="row justify-evenly">
-        <diff-component
+        <diff-card
           class="col-9 rounded-borders q-pa-md"
           style="
             height: 85vh;
@@ -41,8 +41,8 @@
 </template>
 
 <script setup lang="ts">
-import EditorComponent from 'src/components/EditorComponent.vue';
-import DiffComponent from 'src/components/DiffComponent.vue';
+import MwVisualEditor from 'src/components/MwVisualEditor.vue';
+import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import AppHeader from 'src/layouts/AppHeader.vue';
 import { ref } from 'vue';

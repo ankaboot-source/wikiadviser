@@ -3,11 +3,7 @@
     <q-item-section>
       <div class="app-search__result-title row items-center q-gutter-sm">
         <div class="col-auto">
-          <q-avatar
-            rounded
-            size="4rem"
-            style="border: 1px solid rgba(0, 0, 0, 0.12)"
-          >
+          <q-avatar rounded size="4rem" class="borders">
             <img
               v-if="!!props.item?.thumbnail?.source"
               :src="props.item.thumbnail.source"

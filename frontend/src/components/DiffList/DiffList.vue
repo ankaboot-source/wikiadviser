@@ -1,10 +1,6 @@
 <template>
   <q-scroll-area style="max-width: 450px; height: 85vh">
-    <q-list
-      bordered
-      class="rounded-borders q-pa-md"
-      style="background-color: rgb(246, 248, 250)"
-    >
+    <q-list bordered class="rounded-borders q-pa-md bg-secondary">
       <diff-item
         v-for="item in diffItems"
         :key="item.id"

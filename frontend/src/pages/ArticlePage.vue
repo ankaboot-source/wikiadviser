@@ -14,22 +14,14 @@
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
         :article="article"
-        style="
-          height: 85vh;
-          background-color: rgb(246, 248, 250);
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        "
-        class="col-10 rounded-borders q-pa-md"
+        style="height: 85vh"
+        class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
     </q-tab-panel>
     <q-tab-panel name="view" class="row justify-evenly">
       <diff-card
-        class="col-9 rounded-borders q-pa-md"
-        style="
-          height: 85vh;
-          background-color: rgb(246, 248, 250);
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        "
+        class="col-9 rounded-borders q-pa-md bg-secondary borders"
+        style="height: 85vh"
         bordered
       />
       <diff-list class="col-3" />

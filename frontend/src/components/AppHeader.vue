@@ -1,5 +1,5 @@
 <template>
-  <q-header class="text-black text-left" style="background-color: #f6f8fa">
+  <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
       <q-toolbar-title style="font-family: serif">
         <router-link to="/" class="text-black" style="text-decoration: none">

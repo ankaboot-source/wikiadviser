@@ -1,12 +1,8 @@
 <template>
   <q-expansion-item
     v-model="expanded"
-    style="
-      border: 1px solid rgba(0, 0, 0, 0.12);
-      background-color: white;
-      border-radius: 4px;
-    "
-    class="q-mb-md q-mx-sm"
+    style="background-color: white; border-radius: 4px"
+    class="q-mb-md q-mx-sm borders"
   >
     <template #header>
       <q-item-section class="text-body1">
@@ -98,16 +94,9 @@
       <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
         Comments
       </q-item-label>
-      <q-item-section class="q-pa-md row justify-center">
+      <q-item-section class="q-pa-md row justify-center bg-secondary">
         <!-- Default Comments Examples.-->
-        <q-scroll-area
-          style="
-            height: 150px;
-            background-color: rgb(246, 248, 250);
-            width: 100%;
-          "
-          class="q-pa-sm"
-        >
+        <q-scroll-area style="height: 150px; width: 100%" class="q-pa-sm">
           <q-chat-message
             name="me"
             :text="['hey, how are you?']"
@@ -161,12 +150,12 @@
     <q-separator />
 
     <!-- User: Reviewer Only -->
-    <q-item-section style="background-color: rgb(231, 237, 243)">
+    <q-item-section class="bg-accent">
       <div class="row q-my-md justify-around">
         <q-btn
           outline
           color="red"
-          style="background-color: white !important"
+          class="bg-white"
           label="Reject"
           @click="handleReject"
         />

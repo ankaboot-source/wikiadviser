@@ -61,48 +61,48 @@ ol.references {
   margin-bottom: 0.5em;
 }
 
-span[rel="mw:referencedBy"] {
+span[rel='mw:referencedBy'] {
   counter-reset: mw-ref-linkback 0;
 }
 
-span[rel="mw:referencedBy"] > a::before {
+span[rel='mw:referencedBy'] > a::before {
   content: counter(mw-ref-linkback, lower-alpha);
   font-size: 80%;
   font-weight: bold;
   font-style: italic;
 }
 
-a[rel="mw:referencedBy"]::before {
+a[rel='mw:referencedBy']::before {
   font-weight: bold;
-  content: "^";
+  content: '^';
 }
 
-span[rel="mw:referencedBy"]::before {
-  content: "^ ";
+span[rel='mw:referencedBy']::before {
+  content: '^ ';
 }
 
-.mw-ref > a[data-mw-group="lower-alpha"]::after {
-  content: "[" counter(mw-Ref, lower-alpha) "]";
+.mw-ref > a[data-mw-group='lower-alpha']::after {
+  content: '[' counter(mw-Ref, lower-alpha) ']';
 }
 
-.mw-ref > a[data-mw-group="upper-alpha"]::after {
-  content: "[" counter(mw-Ref, upper-alpha) "]";
+.mw-ref > a[data-mw-group='upper-alpha']::after {
+  content: '[' counter(mw-Ref, upper-alpha) ']';
 }
 
-.mw-ref > a[data-mw-group="decimal"]::after {
-  content: "[" counter(mw-Ref, decimal) "]";
+.mw-ref > a[data-mw-group='decimal']::after {
+  content: '[' counter(mw-Ref, decimal) ']';
 }
 
-.mw-ref > a[data-mw-group="lower-roman"]::after {
-  content: "[" counter(mw-Ref, lower-roman) "]";
+.mw-ref > a[data-mw-group='lower-roman']::after {
+  content: '[' counter(mw-Ref, lower-roman) ']';
 }
 
-.mw-ref > a[data-mw-group="upper-roman"]::after {
-  content: "[" counter(mw-Ref, upper-roman) "]";
+.mw-ref > a[data-mw-group='upper-roman']::after {
+  content: '[' counter(mw-Ref, upper-roman) ']';
 }
 
-.mw-ref > a[data-mw-group="lower-greek"]::after {
-  content: "[" counter(mw-Ref, lower-greek) "]";
+.mw-ref > a[data-mw-group='lower-greek']::after {
+  content: '[' counter(mw-Ref, lower-greek) ']';
 }
 
 .mw-parser-output .mw-collapsible-toggle:not(.mw-ui-button) {
@@ -121,12 +121,12 @@ span[rel="mw:referencedBy"]::before {
   text-align: left;
 }
 
-.mw-parser-output a[href$=".pdf"].external,
-.mw-parser-output a[href*=".pdf?"].external,
-.mw-parser-output a[href*=".pdf#"].external,
-.mw-parser-output a[href$=".PDF"].external,
-.mw-parser-output a[href*=".PDF?"].external,
-.mw-parser-output a[href*=".PDF#"].external {
+.mw-parser-output a[href$='.pdf'].external,
+.mw-parser-output a[href*='.pdf?'].external,
+.mw-parser-output a[href*='.pdf#'].external,
+.mw-parser-output a[href$='.PDF'].external,
+.mw-parser-output a[href*='.PDF?'].external,
+.mw-parser-output a[href*='.PDF#'].external {
   background: url(//upload.wikimedia.org/wikipedia/commons/4/4d/Icon_pdf_file.png)
     no-repeat right;
   padding: 8px 18px 8px 0;
@@ -149,8 +149,8 @@ div#mw-protect-cascadeon {
   background-color: #fef6e7;
 }
 
-figure[typeof~="mw:File/Thumb"],
-figure[typeof~="mw:File/Frame"],
+figure[typeof~='mw:File/Thumb'],
+figure[typeof~='mw:File/Frame'],
 .thumbinner {
   min-width: 100px;
 }
@@ -300,8 +300,8 @@ span.mwe-math-mathml-inline {
   text-align: right;
 }
 
-.wikitable.plainrowheaders th[scope="row"],
-.wikitable.plainrowheaders th[scope="rowgroup"] {
+.wikitable.plainrowheaders th[scope='row'],
+.wikitable.plainrowheaders th[scope='rowgroup'] {
   font-weight: normal;
   text-align: left;
 }
@@ -323,12 +323,12 @@ span.mwe-math-mathml-inline {
 }
 
 span.texhtml {
-  font-family: "Nimbus Roman No9 L", "Times New Roman", Times, serif;
+  font-family: 'Nimbus Roman No9 L', 'Times New Roman', Times, serif;
   font-size: 118%;
   line-height: 1;
   white-space: nowrap;
-  -webkit-font-feature-settings: "lnum", "tnum", "kern" 0;
-  font-feature-settings: "lnum", "tnum", "kern" 0;
+  -webkit-font-feature-settings: 'lnum', 'tnum', 'kern' 0;
+  font-feature-settings: 'lnum', 'tnum', 'kern' 0;
   font-variant-numeric: lining-nums tabular-nums;
   font-kerning: none;
 }

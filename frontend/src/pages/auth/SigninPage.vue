@@ -20,6 +20,7 @@
               label="Email"
               type="email"
               lazy-rules
+              :error="!!signinError"
               :rules="[
                 (val) => (val && val.length > 0) || 'Enter your email.',
                 isValidEmail,
@@ -42,6 +43,8 @@
               :rules="[
                 (val) => (val && val.length > 0) || 'Enter your password.',
               ]"
+              :error="!!signinError"
+              :error-message="signinError"
             >
               <template #prepend>
                 <q-icon name="lock" />
@@ -98,6 +101,7 @@ const form = ref({
   password: '',
 });
 const signUp = ref(false);
+const signinError = ref('');
 
 const visibility = ref('password' as 'password' | 'text');
 function changeTypeEdit() {
@@ -122,8 +126,9 @@ async function handleSignin() {
     });
     if (error) throw error;
     else console.log('SignedIn');
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error(error.message);
+    signinError.value = error.message;
   }
 }
 

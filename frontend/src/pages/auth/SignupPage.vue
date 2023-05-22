@@ -13,6 +13,7 @@
           label="Username"
           lazy-rules
           :rules="[(val) => (val && val.length > 0) || 'Enter your username.']"
+          :error="!!signupError"
         >
           <template #prepend> <q-icon name="person" /> </template
         ></q-input>
@@ -28,6 +29,7 @@
             (val) => (val && val.length > 0) || 'Enter your email.',
             isValidEmail,
           ]"
+          :error="!!signupError"
         >
           <template #prepend>
             <q-icon name="email" />
@@ -44,6 +46,8 @@
           :type="visibility"
           lazy-rules
           :rules="[(val) => (val && val.length > 0) || 'Enter your password.']"
+          :error="!!signupError"
+          :error-message="signupError"
         >
           <template #prepend>
             <q-icon name="lock" />
@@ -83,6 +87,7 @@ const form = ref({
   password: '',
   username: '',
 });
+const signupError = ref('');
 
 const visibility = ref('password' as 'password' | 'text');
 function changeTypeEdit() {
@@ -112,8 +117,9 @@ async function handleSignup() {
     });
     if (error) throw error;
     else console.log('SignedUp');
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.error(error.message);
+    signupError.value = error.message;
   }
 }
 </script>

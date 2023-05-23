@@ -91,9 +91,10 @@
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
 import SignupCard from './SignupCard.vue';
-
+import { useQuasar } from 'quasar';
 import { ref } from 'vue';
 
+const $q = useQuasar();
 const form = ref({
   email: '',
   password: '',
@@ -122,6 +123,8 @@ async function handleSignin() {
       password: form.value.password,
     });
     if (error) throw error;
+    $q.notify({ message: 'Signed in', icon: 'login', color: 'primary' });
+
     console.log('SignedIn');
   } catch (error: any) {
     console.error(error.message);

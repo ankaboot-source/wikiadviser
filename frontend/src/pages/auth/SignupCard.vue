@@ -87,7 +87,9 @@
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
 import { ref } from 'vue';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
 const form = ref({
   email: '',
   password: '',
@@ -122,7 +124,8 @@ async function handleSignup() {
       },
     });
     if (error) throw error;
-    else console.log('SignedUp');
+    $q.notify({ message: 'Signed up', icon: 'login', color: 'primary' });
+    console.log('SignedUp');
   } catch (error: any) {
     console.error(error.message);
     signupError.value = error.message;

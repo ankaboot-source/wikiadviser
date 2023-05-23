@@ -124,8 +124,6 @@ async function handleSignin() {
     });
     if (error) throw error;
     $q.notify({ message: 'Signed in', icon: 'login', color: 'primary' });
-
-    console.log('SignedIn');
   } catch (error: any) {
     console.error(error.message);
     signinError.value = error.message;

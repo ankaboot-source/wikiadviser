@@ -104,6 +104,7 @@ app.post('/api/new_article', async (req, res) => {
     const { title, description, userid } = req.body;
     console.log('New article title received:', title, description, userid);
 
+    // Insert into supabase: Articles, Permissions.
     const { data: articlesData, error: articlesError } = await supabase
       .from('articles')
       .insert({ title, description })
@@ -128,11 +129,6 @@ app.post('/api/new_article', async (req, res) => {
 
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);
-
-    /* //Insert into supabase: Articles, Permissions.
-    const { data,error } = await supabase.from('articles').insert({ title: title, description: description }).select()
-    const { data,error } = await supabase.from('permissions').insert({ role: 0, userid, article_id })
-    */
 
     res.status(201).json({ message: 'Creating new article succeeded.' });
   } catch (error: any) {

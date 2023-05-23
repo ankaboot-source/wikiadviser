@@ -125,7 +125,6 @@ async function handleSignup() {
     });
     if (error) throw error;
     $q.notify({ message: 'Signed up', icon: 'login', color: 'primary' });
-    console.log('SignedUp');
   } catch (error: any) {
     console.error(error.message);
     signupError.value = error.message;

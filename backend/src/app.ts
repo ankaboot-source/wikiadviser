@@ -3,6 +3,7 @@ import { load } from 'cheerio';
 import cors from 'cors';
 import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
+import supabase from './api/supabase';
 
 const app = express();
 const port = 3000;
@@ -14,10 +15,6 @@ app.use(
     origin: '*'
   })
 );
-
-app.get('/', (_req, res) => {
-  res.send('Hello World!');
-});
 
 // POST and GET the html diff of the local mediawiki
 app.post('/api/html_diff', (req, res) => {
@@ -104,8 +101,24 @@ app.get('/api/html_diff', (_req, res) => {
 // New Article
 app.post('/api/new_article', async (req, res) => {
   try {
-    const { title } = req.body;
-    console.log('New article title received:', title);
+    const { title, description, userid } = req.body;
+    console.log('New article title received:', title, description, userid);
+
+    const { data: articlesData, error: articlesError } = await supabase
+      .from('articles')
+      .insert({ title, description })
+      .select();
+    if (articlesError) {
+      throw new Error(articlesError.message);
+    }
+    const articleid = articlesData[0].id;
+
+    const { error: permissionsError } = await supabase
+      .from('permissions')
+      .insert({ role: 0, user_id: userid, article_id: articleid });
+    if (permissionsError) {
+      throw new Error(permissionsError.message);
+    }
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);
@@ -116,9 +129,14 @@ app.post('/api/new_article', async (req, res) => {
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);
 
+    /* //Insert into supabase: Articles, Permissions.
+    const { data,error } = await supabase.from('articles').insert({ title: title, description: description }).select()
+    const { data,error } = await supabase.from('permissions').insert({ role: 0, userid, article_id })
+    */
+
     res.status(201).json({ message: 'Creating new article succeeded.' });
-  } catch (error) {
-    console.error(error);
+  } catch (error: any) {
+    console.error(error.message);
     res.sendStatus(500).json({ message: 'Creating new article failed.' });
   }
 });

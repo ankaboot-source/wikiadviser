@@ -24,7 +24,9 @@
 import supabase from 'src/api/supabase';
 import { onMounted, ref } from 'vue';
 import { useQuasar } from 'quasar';
-const session = ref();
+import { Session } from '@supabase/supabase-js';
+
+const session = ref<Session | null>();
 const username = ref('');
 const $q = useQuasar();
 

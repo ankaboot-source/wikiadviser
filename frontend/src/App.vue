@@ -13,8 +13,9 @@ import { onMounted, ref } from 'vue';
 import SigninPage from 'src/pages/auth/SigninPage.vue';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
+import { Session } from '@supabase/supabase-js';
 
-const session = ref();
+const session = ref<Session | null>();
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();

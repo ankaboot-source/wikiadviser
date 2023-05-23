@@ -2,7 +2,7 @@
   <q-tabs
     v-model="tab"
     dense
-    class="text-grey"
+    class="q-px-md"
     active-color="primary"
     indicator-color="primary"
     align="left"

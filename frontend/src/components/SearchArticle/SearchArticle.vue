@@ -32,10 +32,8 @@
 <script setup lang="ts">
 import axios from 'axios';
 import SearchList from './SearchList.vue';
-import supabaseClient from 'src/api/supabase';
 import { ref, computed, watch } from 'vue';
 
-supabaseClient;
 const term = ref('');
 const isSearching = ref(false);
 const apiSearch = computed(

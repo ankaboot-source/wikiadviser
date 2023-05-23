@@ -7,6 +7,7 @@
       <q-form ref="myform" @submit.prevent="handleSignup">
         <q-input
           v-model="form.username"
+          class="q-mb-md"
           bg-color="white"
           outlined
           bottom-slots
@@ -15,10 +16,16 @@
           :rules="[(val) => (val && val.length > 0) || 'Enter your username.']"
           :error="!!signupError"
         >
-          <template #prepend> <q-icon name="person" /> </template
-        ></q-input>
+          <template #prepend>
+            <q-icon name="person" />
+          </template>
+          <template v-if="!form.username" #hint>
+            Enter your username.
+          </template>
+        </q-input>
         <q-input
           v-model="form.email"
+          class="q-mb-md"
           bg-color="white"
           outlined
           bottom-slots
@@ -38,6 +45,7 @@
         </q-input>
         <q-input
           v-model="form.password"
+          class="q-mb-md"
           bg-color="white"
           outlined
           bottom-slots
@@ -79,8 +87,6 @@
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
 import { ref } from 'vue';
-
-supabaseClient;
 
 const form = ref({
   email: '',
@@ -124,8 +130,4 @@ async function handleSignup() {
 }
 </script>
 
-<style scoped lang="scss">
-.q-input {
-  margin-bottom: 10px;
-}
-</style>
+<style scoped lang="scss"></style>

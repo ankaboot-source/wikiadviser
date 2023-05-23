@@ -8,8 +8,6 @@
   "root": true,
   "rules": {
     "radix": 0,
-    "no-restricted-syntax": 0,
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
-    "import/no-unresolved": "off"
+    "no-restricted-syntax": 0
   }
 }

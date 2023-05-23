@@ -1,6 +1,7 @@
 import express from 'express';
 import { load } from 'cheerio';
 import cors from 'cors';
+import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
 import supabase from './api/supabase';

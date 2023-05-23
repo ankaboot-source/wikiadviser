@@ -6,7 +6,7 @@
     <q-card-section>
       <q-form ref="myform" @submit.prevent="handleSignup">
         <q-input
-          v-model="form.username"
+          v-model="username"
           class="q-mb-md"
           bg-color="white"
           outlined
@@ -19,12 +19,10 @@
           <template #prepend>
             <q-icon name="person" />
           </template>
-          <template v-if="!form.username" #hint>
-            Enter your username.
-          </template>
+          <template v-if="!username" #hint> Enter your username. </template>
         </q-input>
         <q-input
-          v-model="form.email"
+          v-model="email"
           class="q-mb-md"
           bg-color="white"
           outlined
@@ -41,10 +39,10 @@
           <template #prepend>
             <q-icon name="email" />
           </template>
-          <template v-if="!form.email" #hint> Enter your email. </template>
+          <template v-if="!email" #hint> Enter your email. </template>
         </q-input>
         <q-input
-          v-model="form.password"
+          v-model="password"
           class="q-mb-md"
           bg-color="white"
           outlined
@@ -68,9 +66,7 @@
               @click="changeTypeEdit()"
             ></q-icon>
           </template>
-          <template v-if="!form.password" #hint>
-            Enter your password.
-          </template>
+          <template v-if="!password" #hint> Enter your password. </template>
         </q-input>
         <q-btn
           label="Sign Up"
@@ -90,11 +86,10 @@ import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
-const form = ref({
-  email: '',
-  password: '',
-  username: '',
-});
+const email = ref('');
+const password = ref('');
+const username = ref('');
+
 const signupError = ref('');
 
 const visibility = ref('password' as 'password' | 'text');
@@ -115,11 +110,11 @@ async function handleSignup() {
   try {
     // Use the Supabase provided method to handle the signin
     const { error } = await supabaseClient.auth.signUp({
-      email: form.value.email,
-      password: form.value.password,
+      email: email.value,
+      password: password.value,
       options: {
         data: {
-          username: form.value.username,
+          username: username.value,
         },
       },
     });

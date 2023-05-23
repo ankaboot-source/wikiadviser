@@ -12,7 +12,7 @@
         <q-card-section>
           <div class="col-md-4 col-sm-6 col-xs-10 q-gutter-y-md">
             <q-input
-              v-model="form.email"
+              v-model="email"
               autofocus
               bg-color="white"
               outlined
@@ -29,10 +29,10 @@
               <template #prepend>
                 <q-icon name="email" />
               </template>
-              <template v-if="!form.email" #hint> Enter your email. </template>
+              <template v-if="!email" #hint> Enter your email. </template>
             </q-input>
             <q-input
-              v-model="form.password"
+              v-model="password"
               bg-color="white"
               outlined
               bottom-slots
@@ -57,9 +57,7 @@
                   @click="changeTypeEdit()"
                 ></q-icon>
               </template>
-              <template v-if="!form.password" #hint>
-                Enter your password.
-              </template>
+              <template v-if="!password" #hint> Enter your password. </template>
             </q-input>
             <q-btn
               label="Login"
@@ -95,10 +93,9 @@ import { useQuasar } from 'quasar';
 import { ref } from 'vue';
 
 const $q = useQuasar();
-const form = ref({
-  email: '',
-  password: '',
-});
+const email = ref('');
+const password = ref('');
+
 const signUp = ref(false);
 const signinError = ref('');
 
@@ -119,8 +116,8 @@ function isValidEmail(val: string) {
 async function handleSignin() {
   try {
     const { error } = await supabaseClient.auth.signInWithPassword({
-      email: form.value.email,
-      password: form.value.password,
+      email: email.value,
+      password: password.value,
     });
     if (error) throw error;
     $q.notify({ message: 'Signed in', icon: 'login', color: 'primary' });

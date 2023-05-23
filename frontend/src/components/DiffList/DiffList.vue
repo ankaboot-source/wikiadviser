@@ -46,7 +46,7 @@ const diffItems = computed<ChangesItem[]>(() => {
         status: element.getAttribute('data-status'),
         typeOfEdit: element.getAttribute('data-type-of-edit'),
         description: element.getAttribute('data-description')?.split('<|>'),
-        user: element.getAttribute('data-user'),
+        username: element.getAttribute('data-user'),
         date: element.getAttribute('data-date'),
       } as ChangesItem)
   );

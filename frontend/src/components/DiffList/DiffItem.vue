@@ -23,7 +23,7 @@
       </q-item-section>
       <q-item-section caption top side>
         {{ props.item?.date }}
-        @{{ props.item?.user }}
+        @{{ props.item?.username }}
       </q-item-section>
     </template>
     <q-separator />

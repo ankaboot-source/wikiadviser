@@ -33,6 +33,7 @@ const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
+
 async function itemOnClick() {
   try {
     // Fetch wikitext of local article to check if it exists
@@ -41,6 +42,7 @@ async function itemOnClick() {
     const articleExists =
       response.data?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content;
     console.log(articleExists);
+
     if (articleExists) {
       console.log('article exists');
       console.log(props.item);
@@ -51,6 +53,7 @@ async function itemOnClick() {
       });
     } else {
       console.log("article doesn't exist");
+
       const extractingNotif = $q.notify({
         message: 'Extracting article',
         caption:
@@ -58,6 +61,7 @@ async function itemOnClick() {
         spinner: QSpinnerGears,
         timeout: 10000,
       });
+
       //NEW ARTICLE
       const response = await axios.post(
         'http://localhost:3000/api/new_article',
@@ -66,12 +70,14 @@ async function itemOnClick() {
         }
       );
       console.log(response.data.message);
+
       extractingNotif();
       $q.notify({
         message: response.data.message,
         icon: 'check',
         color: 'positive',
       });
+
       // GOTO ARTICLE PAGE, EDIT TAB
       router.push({
         name: 'article',

@@ -25,7 +25,7 @@ app.post('/api/html_diff', (req, res) => {
   console.log('Data received:', Buffer.byteLength(html, 'utf8'), 'bytes');
 
   let id = 0;
-  let changeid = 0;
+  let changeid = -1;
   const userid = 'User1';
   const date = new Date().toLocaleString('fr');
 

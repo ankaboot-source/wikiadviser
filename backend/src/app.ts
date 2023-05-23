@@ -5,7 +5,7 @@ import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
-import supabase from './api/supabase';
+import insertArticle from './helpers/supabaseHelper';
 
 const app = express();
 const port = 3000;
@@ -113,22 +113,7 @@ app.post('/api/new_article', async (req, res) => {
       'New article title received'
     );
     // Insert into supabase: Articles, Permissions.
-    const { data: articlesData, error: articlesError } = await supabase
-      .from('articles')
-      .insert({ title, description })
-      .select();
-    if (articlesError) {
-      throw new Error(articlesError.message);
-    }
-    const articleid = articlesData[0].id;
-
-    const { error: permissionsError } = await supabase
-      .from('permissions')
-      .insert({ role: 0, user_id: userid, article_id: articleid });
-    if (permissionsError) {
-      throw new Error(permissionsError.message);
-    }
-    return;
+    await insertArticle(title, description, userid);
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);

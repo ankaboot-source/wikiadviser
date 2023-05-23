@@ -1,17 +1,22 @@
 <template>
   <div class="app-search relative-position">
     <q-list padding>
-      <search-item v-for="item in props.results" :key="item" :item="item" />
+      <search-item
+        v-for="item in props.results"
+        :key="item.index"
+        :item="item"
+      />
     </q-list>
   </div>
 </template>
 
 <script setup lang="ts">
 import SearchItem from './SearchItem.vue';
+import { SearchResult } from 'src/types/types';
 
-const props = defineProps({
-  results: { type: Object, required: true },
-});
+const props = defineProps<{
+  results: SearchResult[];
+}>();
 </script>
 <style lang="css">
 .doc-token {

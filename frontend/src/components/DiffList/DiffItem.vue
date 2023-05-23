@@ -167,11 +167,14 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { ChangesItem } from 'src/types/types';
+
 const expanded = ref(true);
-const props = defineProps({
-  item: { type: Object, required: true },
-});
-const description = ref(props.item?.description);
+const props = defineProps<{
+  item: ChangesItem;
+}>();
+
+const description = ref(props.item?.description?.join());
 const comment = ref('');
 const status: { [key: string]: string } = {
   'Awaiting Reviewer Approval': 'yellow-8',

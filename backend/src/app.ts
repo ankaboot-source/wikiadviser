@@ -1,6 +1,7 @@
 import express from 'express';
 import { load } from 'cheerio';
 import cors from 'cors';
+import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
@@ -20,7 +21,7 @@ app.use(
 // POST and GET the html diff of the local mediawiki
 app.post('/api/html_diff', (req, res) => {
   const { html } = req.body;
-  console.log('Data received:', Buffer.byteLength(html, 'utf8'), 'bytes');
+  logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
 
   let id = 0;
   let changeid = -1;
@@ -103,8 +104,14 @@ app.get('/api/html_diff', (_req, res) => {
 app.post('/api/new_article', async (req, res) => {
   try {
     const { title, description, userid } = req.body;
-    console.log('New article title received:', title, description, userid);
-
+    logger.info(
+      {
+        title,
+        description,
+        userid
+      },
+      'New article title received'
+    );
     // Insert into supabase: Articles, Permissions.
     const { data: articlesData, error: articlesError } = await supabase
       .from('articles')
@@ -121,6 +128,7 @@ app.post('/api/new_article', async (req, res) => {
     if (permissionsError) {
       throw new Error(permissionsError.message);
     }
+    return;
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);
@@ -133,11 +141,11 @@ app.post('/api/new_article', async (req, res) => {
 
     res.status(201).json({ message: 'Creating new article succeeded.' });
   } catch (error: any) {
-    console.error(error.message);
+    logger.error(error.message);
     res.sendStatus(500).json({ message: 'Creating new article failed.' });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server listening on port ${port}`);
+  logger.info(`Server listening on port ${port}`);
 });

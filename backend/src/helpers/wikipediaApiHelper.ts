@@ -1,4 +1,5 @@
 import axios from 'axios';
+import logger from '../logger';
 
 export default async function getArticleWikiText(title: string) {
   // Fetch the wikitext of the Wikipedia Article.
@@ -8,6 +9,6 @@ export default async function getArticleWikiText(title: string) {
   // The article's wikitext of Wikipedia
   const wpArticleWikitext: string =
     response.data.query.pages[0].revisions[0].slots.main.content;
-  console.log('wikitext', wpArticleWikitext.length);
+  logger.info('wikitext', { length: wpArticleWikitext.length });
   return wpArticleWikitext;
 }

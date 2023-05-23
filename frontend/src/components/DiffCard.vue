@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area>
-    <div v-html="data" @click="handleClick($event)" class="q-mr-md"></div>
+    <div class="q-mr-md" @click="handleClick($event)" v-html="data"></div>
   </q-scroll-area>
 </template>
 
@@ -28,7 +28,7 @@ const data = ref('');
 
 onMounted(fetchData);
 
-const handleClick = (event: MouseEvent) => {
+function handleClick(event: MouseEvent) {
   //Prevent visting links:
   event.preventDefault();
   let target = event.target as HTMLElement;
@@ -43,7 +43,7 @@ const handleClick = (event: MouseEvent) => {
   } else {
     console.log('Element clicked:', rest);
   }
-};
+}
 </script>
 
 <style>

@@ -4,7 +4,7 @@
 
 <script setup lang="ts">
 const props = defineProps({
-  article: String,
+  article: { type: String, required: true },
 });
 const article_link = `https://localhost/wiki/${props.article}?veaction=edit`;
 </script>

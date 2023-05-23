@@ -1,10 +1,6 @@
 <template>
   <q-scroll-area style="max-width: 450px; height: 85vh">
-    <q-list
-      bordered
-      class="rounded-borders q-pa-md"
-      style="background-color: rgb(246, 248, 250)"
-    >
+    <q-list bordered class="rounded-borders q-pa-md bg-secondary">
       <diff-item
         v-for="item in diffItems"
         :key="item.id"
@@ -18,6 +14,8 @@
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
 import DiffItem from './DiffItem.vue';
+import { ChangesItem } from 'src/types/types';
+
 const data = ref('');
 
 const fetchData = async () => {
@@ -33,22 +31,25 @@ const fetchData = async () => {
 };
 onMounted(fetchData);
 
-const diffItems = computed(() => {
+const diffItems = computed<ChangesItem[]>(() => {
   // Parse the HTML string to create a DOM element
   const parser = new DOMParser();
   const doc = parser.parseFromString(data.value, 'text/html');
   // Use the DOM API to get elements with the desired attribute
   const elements = doc.querySelectorAll('[data-status]');
   // Convert the NodeList to an array and map each element to an object with its data
-  const items = Array.from(elements).map((element, index) => ({
-    id: index,
-    content: element.outerHTML,
-    status: element.getAttribute('data-status'),
-    typeOfEdit: element.getAttribute('data-type-of-edit'),
-    description: element.getAttribute('data-description')?.split('<|>'),
-    user: element.getAttribute('data-user'),
-    date: element.getAttribute('data-date'),
-  }));
+  const items: ChangesItem[] = Array.from(elements).map(
+    (element, index) =>
+      ({
+        id: index,
+        content: element.outerHTML,
+        status: element.getAttribute('data-status'),
+        typeOfEdit: element.getAttribute('data-type-of-edit'),
+        description: element.getAttribute('data-description')?.split('<|>'),
+        user: element.getAttribute('data-user'),
+        date: element.getAttribute('data-date'),
+      } as ChangesItem)
+  );
   return items;
 });
 </script>

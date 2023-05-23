@@ -32,10 +32,9 @@
 <script setup lang="ts">
 import axios from 'axios';
 import SearchList from './SearchList.vue';
-import supabaseClient from 'src/api/supabase';
 import { ref, computed, watch } from 'vue';
+import { SearchResult } from 'src/types/types';
 
-supabaseClient;
 const term = ref('');
 const isSearching = ref(false);
 const apiSearch = computed(
@@ -43,7 +42,8 @@ const apiSearch = computed(
     `
     https://en.wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
 );
-const results = ref({});
+const results = ref<SearchResult[]>();
+
 watch(apiSearch, async (apiSearch) => {
   isSearching.value = true;
   try {

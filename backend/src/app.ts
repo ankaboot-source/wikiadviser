@@ -138,7 +138,7 @@ app.post('/api/new_article', async (req, res) => {
 });
 
 // Check Users with Permission of an ArticleID
-app.get('/api/users_with_permissions', async (req, res) => {
+app.get('/api/users', async (req, res) => {
   try {
     const articleid = req.query.articleid as string;
     const users = await fetchUsersWithPermissions(articleid);

@@ -26,14 +26,11 @@ const props = defineProps<{
 const users = ref<User[]>();
 
 onMounted(async () => {
-  const response = await axios.get(
-    'http://localhost:3000/api/users_with_permissions',
-    {
-      params: {
-        articleid: props.articleid,
-      },
-    }
-  );
+  const response = await axios.get('http://localhost:3000/api/users', {
+    params: {
+      articleid: props.articleid,
+    },
+  });
   users.value = response.data.users;
   users.value = [
     { username: 'Foona', email: 'foona@gmail.com', role: 0 },

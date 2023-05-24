@@ -29,41 +29,36 @@ export async function insertArticle(
 export async function getUsersWithPermissions(
   articleId: string
 ): Promise<User[]> {
-  // Fetch permissions
   const { data: permissionsData, error: permissionsError } = await supabase
+    // Fetch permissions of users of a specific article id
     .from('permissions')
-    .select('user_id, role')
+    .select(
+      `
+    article_id,
+    role,
+    users(
+      raw_user_meta_data,
+      email
+      )`
+    )
     .eq('article_id', articleId);
+
+  logger.info(
+    {
+      permissionsData
+    },
+    'check articles data'
+  );
 
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }
 
-  const userIds = permissionsData.map((permission) => permission.user_id);
-
-  // Fetch usernames
-  const { data: usersData, error: usersError } = await supabase
-    .from('users')
-    .select('id, raw_user_meta_data, email')
-    .in('id', userIds);
-
-  if (usersError) {
-    throw new Error(usersError.message);
-  }
-
-  const userMap = new Map(
-    usersData.map((user) => [
-      user.id,
-      { username: user.raw_user_meta_data.username, email: user.email }
-    ])
-  );
-
-  const users = permissionsData.map((permission) => ({
-    username: userMap.get(permission.user_id)!.username,
-    email: userMap.get(permission.user_id)!.email,
+  const users = permissionsData.map((permission: any) => ({
+    username: permission.users.raw_user_meta_data.username,
+    email: permission.users.email,
     role: permission.role
   }));
-
   return users;
 }
 
@@ -71,7 +66,7 @@ export async function checkArticleExistenceAndAccess(
   title: string,
   userId: string
 ): Promise<string | null> {
-  // check if it exists in Articles
+  // check if Article with that title exists
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')
     .select('id', { count: 'exact' })
@@ -94,7 +89,7 @@ export async function checkArticleExistenceAndAccess(
     return null;
   }
 
-  // check if user has permission
+  // check if user has permission on that Article
   const { data: permissionsData, error: permissionsError } = await supabase
     .from('permissions')
     .select('id')

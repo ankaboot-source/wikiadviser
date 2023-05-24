@@ -1,12 +1,16 @@
 import { api } from 'src/boot/axios';
 
 export async function getUsers(articleId: string) {
-  const response = await api.get('http://localhost:3000/api/users', {
-    params: {
-      articleId: articleId,
-    },
-  });
-  return response.data.users;
+  try {
+    const response = await api.get('http://localhost:3000/api/users', {
+      params: {
+        articleId: articleId,
+      },
+    });
+    return response.data.users;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function createNewArticle(
@@ -14,12 +18,16 @@ export async function createNewArticle(
   userId: string,
   description?: string
 ) {
-  const response = await api.post('http://localhost:3000/api/new_article', {
-    title,
-    userId,
-    description,
-  });
-  return response.data.articleId;
+  try {
+    const response = await api.post('http://localhost:3000/api/new_article', {
+      title,
+      userId,
+      description,
+    });
+    return response.data.articleId;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export async function checkArticleExistenceAndAccess(
@@ -27,11 +35,18 @@ export async function checkArticleExistenceAndAccess(
   userId: string
 ) {
   // Check articles existence by returning an articleId, ( returns null if it doesnt exist)
-  const response = await api.get('http://localhost:3000/api/check_article', {
-    params: {
-      title,
-      userId,
-    },
-  });
-  return response.data.articleId;
+  try {
+    const response = await api.get('http://localhost:3000/api/check_article', {
+      params: {
+        title,
+        userId,
+      },
+    });
+    if (response.status == 404) {
+      return null;
+    }
+    return response.data.articleId;
+  } catch (error) {
+    console.log(error);
+  }
 }

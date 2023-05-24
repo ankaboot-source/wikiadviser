@@ -5,7 +5,11 @@ import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
-import insertArticle from './helpers/supabaseHelper';
+import {
+  insertArticle,
+  fetchUsersWithPermissions,
+  checkArticleExistence
+} from './helpers/supabaseHelper';
 
 const app = express();
 const port = 3000;
@@ -113,7 +117,7 @@ app.post('/api/new_article', async (req, res) => {
       'New article title received'
     );
     // Insert into supabase: Articles, Permissions.
-    await insertArticle(title, description, userid);
+    const articleid = await insertArticle(title, description, userid);
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);
@@ -124,10 +128,58 @@ app.post('/api/new_article', async (req, res) => {
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);
 
-    res.status(201).json({ message: 'Creating new article succeeded.' });
+    res
+      .status(201)
+      .json({ message: 'Creating new article succeeded.', articleid });
   } catch (error: any) {
     logger.error(error.message);
-    res.sendStatus(500).json({ message: 'Creating new article failed.' });
+    res.status(500).json({ message: 'Creating new article failed.' });
+  }
+});
+
+// Check Users with Permission of an ArticleID
+app.get('/api/users_with_permissions', async (req, res) => {
+  try {
+    const articleid = req.query.articleid as string;
+    const users = await fetchUsersWithPermissions(articleid);
+    logger.info(
+      {
+        articleid,
+        users
+      },
+      'Users with permissions'
+    );
+    res
+      .status(200)
+      .json({ message: 'Fetching users with permissions succeeded.', users });
+  } catch (error: any) {
+    logger.error(error.message);
+    res
+      .status(500)
+      .json({ message: 'Fetching users with permissions failed.' });
+  }
+});
+
+// Check Article Existence
+app.get('/api/check_article', async (req, res) => {
+  try {
+    const title = req.query.title as string;
+    const userid = req.query.userid as string;
+    const articleid = await checkArticleExistence(title, userid);
+    logger.info(
+      {
+        userid,
+        title,
+        articleid
+      },
+      'Article Existence'
+    );
+    res
+      .status(200)
+      .json({ message: 'Checking article existence succeeded.', articleid });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Checking article existence failed.' });
   }
 });
 

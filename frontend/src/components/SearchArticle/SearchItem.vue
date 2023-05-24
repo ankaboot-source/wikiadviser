@@ -26,7 +26,7 @@
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useQuasar, QSpinnerGears } from 'quasar';
-import { SearchResult } from 'src/types/types';
+import { SearchResult } from 'src/types';
 import supabase from 'src/api/supabase';
 import { ref } from 'vue';
 

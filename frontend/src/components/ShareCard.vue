@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import axios from 'axios';
 import { onMounted, ref } from 'vue';
-import { User } from 'src/types/types';
+import { User } from 'src/types';
 import ShareUser from './ShareUser.vue';
 
 const props = defineProps<{

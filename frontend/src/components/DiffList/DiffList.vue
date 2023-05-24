@@ -14,7 +14,7 @@
 import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
 import DiffItem from './DiffItem.vue';
-import { ChangesItem } from 'src/types/types';
+import { ChangesItem } from 'src/types';
 
 const data = ref('');
 

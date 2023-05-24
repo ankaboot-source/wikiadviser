@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { User } from 'src/types/types';
+import { User } from 'src/types';
 import { ref } from 'vue';
 
 const props = defineProps<{

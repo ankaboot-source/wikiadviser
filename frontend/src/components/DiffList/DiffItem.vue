@@ -167,7 +167,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChangesItem } from 'src/types/types';
+import { ChangesItem } from 'src/types';
 
 const expanded = ref(true);
 const props = defineProps<{

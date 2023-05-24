@@ -14,10 +14,10 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { onMounted, ref } from 'vue';
 import { User } from 'src/types';
 import ShareUser from './ShareUser.vue';
+import { getUsers } from 'src/api/supabaseHelper';
 
 const props = defineProps<{
   articleid: string;
@@ -26,19 +26,7 @@ const props = defineProps<{
 const users = ref<User[]>();
 
 onMounted(async () => {
-  const response = await axios.get('http://localhost:3000/api/users', {
-    params: {
-      articleid: props.articleid,
-    },
-  });
-  users.value = response.data.users;
-  users.value = [
-    { username: 'Foona', email: 'foona@gmail.com', role: 0 },
-    { username: 'Moona', email: 'moona@gmail.com', role: 1 },
-    { username: 'Coona', email: 'coona@gmail.com', role: 2 },
-  ];
-
-  console.log(users.value);
+  users.value = await getUsers(props.articleid);
 });
 </script>
 

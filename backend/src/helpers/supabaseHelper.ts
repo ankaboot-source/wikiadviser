@@ -3,8 +3,8 @@ import logger from '../logger';
 
 export async function insertArticle(
   title: string,
-  description: string,
-  userid: string
+  userid: string,
+  description?: string
 ) {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
@@ -60,7 +60,10 @@ export async function fetchUsersWithPermissions(articleid: string) {
   return users;
 }
 
-export async function checkArticleExistence(title: string, userid: string) {
+export async function checkArticleExistenceAndAccess(
+  title: string,
+  userid: string
+) {
   // check if it exists in Articles
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')
@@ -78,20 +81,19 @@ export async function checkArticleExistence(title: string, userid: string) {
   if (articlesError) {
     throw new Error(articlesError.message);
   }
-  logger.info('skip err');
 
   if (!articlesData) {
     // Article with the given title does not exist
     return null;
   }
 
-  // get permission data of article
+  // check if user has permission
   const { data: permissionsData, error: permissionsError } = await supabase
     .from('permissions')
     .select('id')
     .eq('article_id', articlesData.id)
     .eq('user_id', userid)
-    .single();
+    .maybeSingle();
 
   logger.info(
     {

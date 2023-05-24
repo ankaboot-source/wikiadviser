@@ -8,7 +8,7 @@ import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
   fetchUsersWithPermissions,
-  checkArticleExistence
+  checkArticleExistenceAndAccess
 } from './helpers/supabaseHelper';
 
 const app = express();
@@ -107,17 +107,17 @@ app.get('/api/html_diff', (_req, res) => {
 // New Article
 app.post('/api/new_article', async (req, res) => {
   try {
-    const { title, description, userid } = req.body;
+    const { title, userid, description } = req.body;
     logger.info(
       {
         title,
-        description,
-        userid
+        userid,
+        description
       },
       'New article title received'
     );
     // Insert into supabase: Articles, Permissions.
-    const articleid = await insertArticle(title, description, userid);
+    const articleid = await insertArticle(title, userid, description);
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);
@@ -165,7 +165,7 @@ app.get('/api/check_article', async (req, res) => {
   try {
     const title = req.query.title as string;
     const userid = req.query.userid as string;
-    const articleid = await checkArticleExistence(title, userid);
+    const articleid = await checkArticleExistenceAndAccess(title, userid);
     logger.info(
       {
         userid,

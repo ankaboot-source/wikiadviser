@@ -23,12 +23,15 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { SearchResult } from 'src/types';
 import supabase from 'src/api/supabase';
 import { ref } from 'vue';
+import {
+  checkArticleExistenceAndAccess,
+  createNewArticle,
+} from 'src/api/supabaseHelper';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -42,18 +45,10 @@ async function itemOnClick() {
     const { data } = await supabase.auth.getSession();
 
     // Fetch Supabase Article to check if it exists
-    const response = await axios.get(
-      'http://localhost:3000/api/check_article',
-      {
-        params: {
-          title: props.item.title,
-          userid: data.session?.user.id,
-        },
-      }
+    articleid.value = await checkArticleExistenceAndAccess(
+      props.item.title,
+      data.session!.user.id
     );
-    console.log(response.data.message);
-    console.log(response.data);
-    articleid.value = response.data.articleid;
 
     /*// Fetch wikitext of local article to check if it exists in mediawiki, Currently limited to one team
     const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${props.item.title}&format=json&origin=*`;
@@ -82,20 +77,15 @@ async function itemOnClick() {
       });
 
       //NEW ARTICLE
-      const response = await axios.post(
-        'http://localhost:3000/api/new_article',
-        {
-          title: props.item.title,
-          description: props.item.description,
-          userid: data.session?.user.id,
-        }
+      articleid.value = await createNewArticle(
+        props.item.title,
+        data.session!.user.id,
+        props.item.description
       );
-      console.log(response.data.message);
-      articleid.value = response.data.articleid;
 
       extractingNotif();
       $q.notify({
-        message: response.data.message,
+        message: 'Article successfully created.',
         icon: 'check',
         color: 'positive',
       });
@@ -111,7 +101,6 @@ async function itemOnClick() {
       });
     }
   } catch (error: any) {
-    console.error('Error sending data:', error);
     $q.notify({
       message: error.message,
       color: 'negative',

@@ -23,7 +23,7 @@ const roles: { [key: number]: string } = {
   1: 'Contributor',
   2: 'Reviewer',
 };
-const roleModel = ref(roles[(props.user.role, 'remove')]);
+const roleModel = ref(roles[props.user.role]);
 const roleOptions = Object.values(roles);
 
 function handleRoleChange(user: User) {

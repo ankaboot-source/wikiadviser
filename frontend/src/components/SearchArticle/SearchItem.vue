@@ -27,6 +27,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useQuasar, QSpinnerGears } from 'quasar';
 import { SearchResult } from 'src/types/types';
+import supabase from 'src/api/supabase';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -61,12 +62,15 @@ async function itemOnClick() {
         spinner: QSpinnerGears,
         timeout: 10000,
       });
+      const { data } = await supabase.auth.getSession();
 
       //NEW ARTICLE
       const response = await axios.post(
         'http://localhost:3000/api/new_article',
         {
           title: props.item.title,
+          description: props.item.description,
+          userid: data.session?.user.id,
         }
       );
       console.log(response.data.message);

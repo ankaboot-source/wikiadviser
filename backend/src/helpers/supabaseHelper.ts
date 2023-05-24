@@ -4,7 +4,7 @@ import { User } from '../types';
 
 export async function insertArticle(
   title: string,
-  userid: string,
+  userId: string,
   description?: string
 ): Promise<string> {
   // Insert into supabase: Articles, Permissions.
@@ -15,25 +15,25 @@ export async function insertArticle(
   if (articlesError) {
     throw new Error(articlesError.message);
   }
-  const articleid = articlesData[0].id;
+  const articleId = articlesData[0].id;
 
   const { error: permissionsError } = await supabase
     .from('permissions')
-    .insert({ role: 0, user_id: userid, article_id: articleid });
+    .insert({ role: 0, user_id: userId, article_id: articleId });
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }
-  return articleid;
+  return articleId;
 }
 
-export async function fetchUsersWithPermissions(
-  articleid: string
+export async function getUsersWithPermissions(
+  articleId: string
 ): Promise<User[]> {
   // Fetch permissions
   const { data: permissionsData, error: permissionsError } = await supabase
     .from('permissions')
     .select('user_id, role')
-    .eq('article_id', articleid);
+    .eq('article_id', articleId);
 
   if (permissionsError) {
     throw new Error(permissionsError.message);
@@ -69,7 +69,7 @@ export async function fetchUsersWithPermissions(
 
 export async function checkArticleExistenceAndAccess(
   title: string,
-  userid: string
+  userId: string
 ): Promise<string | null> {
   // check if it exists in Articles
   const { data: articlesData, error: articlesError } = await supabase
@@ -99,7 +99,7 @@ export async function checkArticleExistenceAndAccess(
     .from('permissions')
     .select('id')
     .eq('article_id', articlesData.id)
-    .eq('user_id', userid)
+    .eq('user_id', userId)
     .maybeSingle();
 
   logger.info(

@@ -20,13 +20,13 @@ import ShareUser from './ShareUser.vue';
 import { getUsers } from 'src/api/supabaseHelper';
 
 const props = defineProps<{
-  articleid: string;
+  articleId: string;
 }>();
 
 const users = ref<User[]>();
 
 onMounted(async () => {
-  users.value = await getUsers(props.articleid);
+  users.value = await getUsers(props.articleId);
 });
 </script>
 

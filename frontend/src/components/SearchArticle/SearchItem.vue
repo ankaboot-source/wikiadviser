@@ -38,14 +38,14 @@ const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
-const articleid = ref('');
+const articleId = ref('');
 
 async function itemOnClick() {
   try {
     const { data } = await supabase.auth.getSession();
 
     // Fetch Supabase Article to check if it exists
-    articleid.value = await checkArticleExistenceAndAccess(
+    articleId.value = await checkArticleExistenceAndAccess(
       props.item.title,
       data.session!.user.id
     );
@@ -57,13 +57,13 @@ async function itemOnClick() {
       response.data?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content;
     console.log(articleExists);*/
 
-    if (articleid.value) {
+    if (articleId.value) {
       console.log('article exists');
       console.log(props.item);
       // GOTO ARTICLE PAGE
       router.push({
         name: 'article',
-        params: { title: props.item.title, articleid: articleid.value },
+        params: { title: props.item.title, articleId: articleId.value },
       });
     } else {
       console.log("article doesn't exist");
@@ -77,7 +77,7 @@ async function itemOnClick() {
       });
 
       //NEW ARTICLE
-      articleid.value = await createNewArticle(
+      articleId.value = await createNewArticle(
         props.item.title,
         data.session!.user.id,
         props.item.description
@@ -95,7 +95,7 @@ async function itemOnClick() {
         name: 'article',
         params: {
           title: props.item.title,
-          articleid: articleid.value,
+          articleId: articleId.value,
           tab: 'editor',
         },
       });

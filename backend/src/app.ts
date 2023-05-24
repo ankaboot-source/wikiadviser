@@ -7,7 +7,7 @@ import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
-  fetchUsersWithPermissions,
+  getUsersWithPermissions,
   checkArticleExistenceAndAccess
 } from './helpers/supabaseHelper';
 
@@ -29,7 +29,7 @@ app.post('/api/html_diff', (req, res) => {
 
   let id = 0;
   let changeid = -1;
-  const userid = 'User1';
+  const userId = 'User1';
   const date = new Date().toLocaleString('fr');
 
   const $ = load(html);
@@ -93,7 +93,7 @@ app.post('/api/html_diff', (req, res) => {
   $('[data-status]').each((index, element) => {
     const $element = $(element);
     $element.attr('data-id', `${(id += 1)}`);
-    $element.attr('data-user', userid);
+    $element.attr('data-user', userId);
     $element.attr('data-date', date);
   });
   data.html = $.html();
@@ -107,17 +107,17 @@ app.get('/api/html_diff', (_req, res) => {
 // New Article
 app.post('/api/new_article', async (req, res) => {
   try {
-    const { title, userid, description } = req.body;
+    const { title, userId, description } = req.body;
     logger.info(
       {
         title,
-        userid,
+        userId,
         description
       },
       'New article title received'
     );
     // Insert into supabase: Articles, Permissions.
-    const articleid = await insertArticle(title, userid, description);
+    const articleId = await insertArticle(title, userId, description);
 
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await getArticleWikiText(title);
@@ -130,21 +130,21 @@ app.post('/api/new_article', async (req, res) => {
 
     res
       .status(201)
-      .json({ message: 'Creating new article succeeded.', articleid });
+      .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
   }
 });
 
-// Check Users with Permission of an ArticleID
+// Check Users with Permission of an articleId
 app.get('/api/users', async (req, res) => {
   try {
-    const articleid = req.query.articleid as string;
-    const users = await fetchUsersWithPermissions(articleid);
+    const articleId = req.query.articleId as string;
+    const users = await getUsersWithPermissions(articleId);
     logger.info(
       {
-        articleid,
+        articleId,
         users
       },
       'Users with permissions'
@@ -164,19 +164,19 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/check_article', async (req, res) => {
   try {
     const title = req.query.title as string;
-    const userid = req.query.userid as string;
-    const articleid = await checkArticleExistenceAndAccess(title, userid);
+    const userId = req.query.userId as string;
+    const articleId = await checkArticleExistenceAndAccess(title, userId);
     logger.info(
       {
-        userid,
+        userId,
         title,
-        articleid
+        articleId
       },
       'Article Existence'
     );
     res
       .status(200)
-      .json({ message: 'Checking article existence succeeded.', articleid });
+      .json({ message: 'Checking article existence succeeded.', articleId });
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Checking article existence failed.' });

@@ -17,7 +17,7 @@
       label="share"
       @click="share = !share"
     ></q-btn>
-    <q-dialog v-model="share"> <share-card :articleid="articleid" /></q-dialog>
+    <q-dialog v-model="share"> <share-card :articleId="articleId" /></q-dialog>
   </q-tabs>
   <q-tab-panels v-model="tab">
     <q-tab-panel name="editor" class="row justify-evenly">
@@ -48,13 +48,13 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 const article = ref('');
 const tab = ref('');
-const articleid = ref('');
+const articleId = ref('');
 // Access the article title parameter from the route's params object
 article.value = route.params.title as string;
 // Access the selected tab else 'view' tab
 tab.value = route.params.tab ? (route.params.tab as string) : 'view';
 // Access the article title parameter from the route's params object
-articleid.value = route.params.articleid as string;
+articleId.value = route.params.articleId as string;
 
 const share = ref(false);
 </script>

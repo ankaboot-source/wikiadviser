@@ -6,7 +6,7 @@ export async function insertArticle(
   title: string,
   userid: string,
   description?: string
-) {
+): Promise<string> {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')
@@ -70,7 +70,7 @@ export async function fetchUsersWithPermissions(
 export async function checkArticleExistenceAndAccess(
   title: string,
   userid: string
-) {
+): Promise<string | null> {
   // check if it exists in Articles
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')

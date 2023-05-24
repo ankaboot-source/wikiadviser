@@ -160,15 +160,12 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Check Article Existence for a user
+// Check Article Existence
 app.get('/api/check_article', async (req, res) => {
   try {
     const title = req.query.title as string;
     const userId = req.query.userId as string;
     const articleId = await checkArticleExistenceAndAccess(title, userId);
-    if (articleId == null) {
-      res.status(404).json({ message: 'Article is not found.', articleId });
-    }
     logger.info(
       {
         userId,

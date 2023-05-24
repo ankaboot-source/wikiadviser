@@ -1,5 +1,6 @@
 import supabase from '../api/supabase';
 import logger from '../logger';
+import { User } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -25,7 +26,9 @@ export async function insertArticle(
   return articleid;
 }
 
-export async function fetchUsersWithPermissions(articleid: string) {
+export async function fetchUsersWithPermissions(
+  articleid: string
+): Promise<User[]> {
   // Fetch permissions
   const { data: permissionsData, error: permissionsError } = await supabase
     .from('permissions')
@@ -41,7 +44,7 @@ export async function fetchUsersWithPermissions(articleid: string) {
   // Fetch usernames
   const { data: usersData, error: usersError } = await supabase
     .from('users')
-    .select('id, raw_user_meta_data')
+    .select('id, raw_user_meta_data, email')
     .in('id', userIds);
 
   if (usersError) {
@@ -49,11 +52,15 @@ export async function fetchUsersWithPermissions(articleid: string) {
   }
 
   const userMap = new Map(
-    usersData.map((user) => [user.id, user.raw_user_meta_data.username])
+    usersData.map((user) => [
+      user.id,
+      { username: user.raw_user_meta_data.username, email: user.email }
+    ])
   );
 
   const users = permissionsData.map((permission) => ({
-    username: userMap.get(permission.user_id),
+    username: userMap.get(permission.user_id)!.username,
+    email: userMap.get(permission.user_id)!.email,
     role: permission.role
   }));
 

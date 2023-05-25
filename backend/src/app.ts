@@ -8,9 +8,7 @@ import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
   getUsersWithPermissions,
-  checkArticleExistenceAndAccess,
   getRole,
-  getArticleTitle,
   getArticles,
   createNewPermission,
   updatePermission
@@ -29,9 +27,9 @@ app.use(
 
 // POST and GET the html diff of the local mediawiki
 app.post('/api/html_diff', (req, res) => {
-  const { html } = req.body;
+  const { html, articleId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
-
+  logger.info(articleId);
   let id = 0;
   let changeid = -1;
   const userId = 'User1';
@@ -165,29 +163,6 @@ app.get('/api/users', async (req, res) => {
   }
 });
 
-// Check Article Existence
-app.get('/api/check_article', async (req, res) => {
-  try {
-    const title = req.query.title as string;
-    const userId = req.query.userId as string;
-    const articleId = await checkArticleExistenceAndAccess(title, userId);
-    logger.info(
-      {
-        userId,
-        title,
-        articleId
-      },
-      'Article Existence'
-    );
-    res
-      .status(200)
-      .json({ message: 'Checking article existence succeeded.', articleId });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Checking article existence failed.' });
-  }
-});
-
 // Check Role
 app.get('/api/role', async (req, res) => {
   try {
@@ -205,27 +180,6 @@ app.get('/api/role', async (req, res) => {
     res
       .status(200)
       .json({ message: 'Checking article existence succeeded.', role });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Checking article existence failed.' });
-  }
-});
-
-// Fetch Article Title
-app.get('/api/article/title', async (req, res) => {
-  try {
-    const articleId = req.query.articleId as string;
-    const title = await getArticleTitle(articleId);
-
-    logger.info(
-      {
-        articleId
-      },
-      'Fetch Article Title'
-    );
-    res
-      .status(200)
-      .json({ message: 'Checking article existence succeeded.', title });
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Checking article existence failed.' });
@@ -251,10 +205,6 @@ app.get('/api/articles', async (req, res) => {
     logger.error(error.message);
     res.status(500).json({ message: 'Checking article existence failed.' });
   }
-});
-
-app.listen(port, () => {
-  logger.info(`Server listening on port ${port}`);
 });
 
 // New permission
@@ -299,4 +249,8 @@ app.put('/api/permission', async (req, res) => {
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
   }
+});
+
+app.listen(port, () => {
+  logger.info(`Server listening on port ${port}`);
 });

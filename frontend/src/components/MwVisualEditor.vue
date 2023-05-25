@@ -5,8 +5,10 @@
 <script setup lang="ts">
 const props = defineProps({
   article: { type: String, required: true },
+  articleId: { type: String, required: true },
 });
-const article_link = `https://localhost/wiki/${props.article}?veaction=edit`;
+const article_link = `https://localhost/wiki/${props.article}?veaction=edit&articleid=${props.articleId}`;
+console.log(article_link);
 </script>
 
 <style scoped></style>

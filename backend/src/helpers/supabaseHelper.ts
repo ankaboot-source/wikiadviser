@@ -57,58 +57,6 @@ export async function getUsersWithPermissions(
   return users;
 }
 
-export async function checkArticleExistenceAndAccess(
-  title: string,
-  userId: string
-): Promise<string | null> {
-  // check if Article with that title exists
-  const { data: articlesData, error: articlesError } = await supabase
-    .from('articles')
-    .select('id', { count: 'exact' })
-    .eq('title', title)
-    .maybeSingle();
-
-  logger.info(
-    {
-      articlesData
-    },
-    'Check article existence'
-  );
-
-  if (articlesError) {
-    throw new Error(articlesError.message);
-  }
-
-  if (!articlesData) {
-    // Article with the given title does not exist
-    return null;
-  }
-
-  // check if user has permission on that Article
-  const { data: permissionsData, error: permissionsError } = await supabase
-    .from('permissions')
-    .select('id')
-    .eq('article_id', articlesData.id)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  logger.info(
-    {
-      permissionsData
-    },
-    'Check permission data'
-  );
-
-  if (permissionsError) {
-    throw new Error(permissionsError.message);
-  }
-
-  if (permissionsData) {
-    return articlesData.id;
-  }
-  return null;
-}
-
 export async function getRole(
   articleId: string,
   userId: string
@@ -133,32 +81,6 @@ export async function getRole(
   }
   if (permissionsData) {
     return permissionsData.role;
-  }
-  return null;
-}
-
-export async function getArticleTitle(
-  articleId: string
-): Promise<string | null> {
-  // check if user has permission on that Article
-  const { data: articleData, error: articleError } = await supabase
-    .from('articles')
-    .select('title')
-    .eq('id', articleId)
-    .maybeSingle();
-
-  logger.info(
-    {
-      articleData
-    },
-    'Get article title'
-  );
-
-  if (articleError) {
-    throw new Error(articleError.message);
-  }
-  if (articleData) {
-    return articleData.title;
   }
   return null;
 }

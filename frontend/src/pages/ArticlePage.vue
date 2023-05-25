@@ -24,7 +24,9 @@
   <q-tab-panels v-model="tab">
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
+        v-if="title && articleId"
         :article="title"
+        :article-id="articleId"
         style="height: 85vh"
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
@@ -48,7 +50,10 @@ import ShareCard from 'src/components/ShareCard.vue';
 import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
-import { createNewPermissionRequest } from 'src/api/supabaseHelper';
+import {
+  createNewPermissionRequest,
+  getArticles,
+} from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 
 const route = useRoute();
@@ -70,8 +75,8 @@ onBeforeMount(async () => {
   // Access the selected tab else 'view' tab
   tab.value = route.params.tab ? (route.params.tab as string) : 'view';
 
-  const articles = JSON.parse(localStorage.getItem('articles')!);
-
+  const articles = await getArticles(data.session!.user.id);
+  localStorage.setItem('articles', JSON.stringify(articles));
   if (articles) {
     const article = articles.find((article: any) => {
       return article.article_id === articleId.value;

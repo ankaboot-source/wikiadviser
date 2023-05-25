@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import SearchItem from './SearchItem.vue';
-import { SearchResult } from 'src/types/types';
+import { SearchResult } from 'src/types';
 
 const props = defineProps<{
   results: SearchResult[];

@@ -33,7 +33,7 @@
 import axios from 'axios';
 import SearchList from './SearchList.vue';
 import { ref, computed, watch } from 'vue';
-import { SearchResult } from 'src/types/types';
+import { SearchResult } from 'src/types';
 
 const term = ref('');
 const isSearching = ref(false);

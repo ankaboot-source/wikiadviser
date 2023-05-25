@@ -23,34 +23,47 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useQuasar, QSpinnerGears } from 'quasar';
-import { SearchResult } from 'src/types/types';
+import { SearchResult } from 'src/types';
 import supabase from 'src/api/supabase';
+import { ref } from 'vue';
+import {
+  checkArticleExistenceAndAccess,
+  createNewArticle,
+} from 'src/api/supabaseHelper';
 
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
+const articleId = ref('');
 
 async function itemOnClick() {
   try {
-    // Fetch wikitext of local article to check if it exists
+    const { data } = await supabase.auth.getSession();
+
+    // Fetch Supabase Article to check if it exists
+    articleId.value = await checkArticleExistenceAndAccess(
+      props.item.title,
+      data.session!.user.id
+    );
+
+    /*// Fetch wikitext of local article to check if it exists in mediawiki, Currently limited to one team
     const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${props.item.title}&format=json&origin=*`;
     const response = await axios.get(url, { data: { https: false } }); // Disable HTTPS verification
     const articleExists =
       response.data?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content;
-    console.log(articleExists);
+    console.log(articleExists);*/
 
-    if (articleExists) {
+    if (articleId.value) {
       console.log('article exists');
       console.log(props.item);
       // GOTO ARTICLE PAGE
       router.push({
         name: 'article',
-        params: { title: props.item.title },
+        params: { title: props.item.title, articleId: articleId.value },
       });
     } else {
       console.log("article doesn't exist");
@@ -62,22 +75,17 @@ async function itemOnClick() {
         spinner: QSpinnerGears,
         timeout: 10000,
       });
-      const { data } = await supabase.auth.getSession();
 
       //NEW ARTICLE
-      const response = await axios.post(
-        'http://localhost:3000/api/new_article',
-        {
-          title: props.item.title,
-          description: props.item.description,
-          userid: data.session?.user.id,
-        }
+      articleId.value = await createNewArticle(
+        props.item.title,
+        data.session!.user.id,
+        props.item.description
       );
-      console.log(response.data.message);
 
       extractingNotif();
       $q.notify({
-        message: response.data.message,
+        message: 'Article successfully created.',
         icon: 'check',
         color: 'positive',
       });
@@ -85,11 +93,14 @@ async function itemOnClick() {
       // GOTO ARTICLE PAGE, EDIT TAB
       router.push({
         name: 'article',
-        params: { title: props.item.title, tab: 'editor' },
+        params: {
+          title: props.item.title,
+          articleId: articleId.value,
+          tab: 'editor',
+        },
       });
     }
   } catch (error: any) {
-    console.error('Error sending data:', error);
     $q.notify({
       message: error.message,
       color: 'negative',

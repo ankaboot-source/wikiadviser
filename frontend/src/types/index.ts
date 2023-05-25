@@ -16,3 +16,9 @@ export type SearchResult = {
     source: string;
   };
 };
+
+export type User = {
+  username: string;
+  email: string;
+  role: number;
+};

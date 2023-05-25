@@ -14,7 +14,7 @@ export async function createNewArticle(
   userId: string,
   description?: string
 ) {
-  const response = await api.post('http://localhost:3000/api/new_article', {
+  const response = await api.post('http://localhost:3000/api/article', {
     title,
     userId,
     description,

@@ -107,7 +107,7 @@ app.get('/api/html_diff', (_req, res) => {
 });
 
 // New Article
-app.post('/api/new_article', async (req, res) => {
+app.post('/api/article', async (req, res) => {
   try {
     const { title, userId, description } = req.body;
     logger.info(

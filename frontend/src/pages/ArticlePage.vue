@@ -35,7 +35,7 @@
         style="height: 85vh"
         bordered
       />
-      <diff-list class="col-3" />
+      <diff-list :edit-permission="editPermission" class="col-3" />
     </q-tab-panel>
   </q-tab-panels>
 </template>

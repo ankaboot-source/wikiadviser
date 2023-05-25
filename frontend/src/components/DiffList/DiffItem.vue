@@ -60,9 +60,10 @@
             autogrow
             label="Description"
             class="col"
+            :readonly="!editPermission"
           >
             <!-- User: Contributor  Only -->
-            <template #append>
+            <template v-if="editPermission" #append>
               <q-btn
                 round
                 dense
@@ -150,7 +151,7 @@
     <q-separator />
 
     <!-- User: Reviewer Only -->
-    <q-item-section class="bg-accent">
+    <q-item-section v-if="!editPermission" class="bg-accent">
       <div class="row q-my-md justify-around">
         <q-btn
           outline
@@ -172,6 +173,7 @@ import { ChangesItem } from 'src/types';
 const expanded = ref(true);
 const props = defineProps<{
   item: ChangesItem;
+  editPermission: boolean;
 }>();
 
 const description = ref(props.item?.description?.join());

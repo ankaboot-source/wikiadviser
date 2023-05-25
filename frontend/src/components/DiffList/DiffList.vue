@@ -5,6 +5,7 @@
         v-for="item in diffItems"
         :key="item.id"
         :item="item"
+        :edit-permission="editPermission"
       ></diff-item>
     </q-list>
   </q-scroll-area>
@@ -15,7 +16,9 @@ import axios from 'axios';
 import { onMounted, ref, computed } from 'vue';
 import DiffItem from './DiffItem.vue';
 import { ChangesItem } from 'src/types';
-
+defineProps<{
+  editPermission: boolean;
+}>();
 const data = ref('');
 
 const fetchData = async () => {

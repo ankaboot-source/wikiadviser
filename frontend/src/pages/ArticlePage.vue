@@ -7,7 +7,7 @@
     indicator-color="primary"
     align="left"
   >
-    <q-tab name="editor" label="editor" />
+    <q-tab v-if="editPermission" name="editor" label="editor" />
     <q-tab name="view" label="view" />
     <q-space />
     <q-btn
@@ -17,12 +17,14 @@
       label="share"
       @click="share = !share"
     ></q-btn>
-    <q-dialog v-model="share"> <share-card :articleId="articleId" /></q-dialog>
+    <q-dialog v-model="share">
+      <share-card :article-id="articleId" :role="role"
+    /></q-dialog>
   </q-tabs>
   <q-tab-panels v-model="tab">
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
-        :article="article"
+        :article="title"
         style="height: 85vh"
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
@@ -43,20 +45,52 @@ import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import ShareCard from 'src/components/ShareCard.vue';
-import { ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
+import { createNewPermissionRequest } from 'src/api/supabaseHelper';
+import supabase from 'src/api/supabase';
+
 const route = useRoute();
-const article = ref('');
+
+const router = useRouter();
 const tab = ref('');
 const articleId = ref('');
-// Access the article title parameter from the route's params object
-article.value = route.params.title as string;
-// Access the selected tab else 'view' tab
-tab.value = route.params.tab ? (route.params.tab as string) : 'view';
-// Access the article title parameter from the route's params object
-articleId.value = route.params.articleId as string;
-
 const share = ref(false);
+
+const title = ref('');
+const role = ref(null);
+const editPermission = ref(false);
+
+onBeforeMount(async () => {
+  const { data } = await supabase.auth.getSession();
+
+  // Access the article title parameter from the route's params object
+  articleId.value = route.params.articleId as string;
+  // Access the selected tab else 'view' tab
+  tab.value = route.params.tab ? (route.params.tab as string) : 'view';
+
+  const articles = JSON.parse(localStorage.getItem('articles')!);
+
+  if (articles) {
+    const article = articles.find((article: any) => {
+      return article.article_id === articleId.value;
+    });
+    if (article) {
+      role.value = article.role;
+      title.value = article.title;
+      editPermission.value = role.value == 0 || role.value == 1;
+      console.log(role.value, title.value, editPermission.value);
+    }
+  }
+  if (role.value == null) {
+    //In case this article exists, a permission request will be sent to the Owner.
+    await createNewPermissionRequest(articleId.value, data.session!.user.id);
+    router.push({
+      name: 'ArticleNotFound',
+    });
+  }
+});
 </script>
 
 <style scoped></style>

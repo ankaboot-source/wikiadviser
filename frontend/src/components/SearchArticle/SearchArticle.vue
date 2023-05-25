@@ -1,7 +1,7 @@
 <template>
   <q-card-section>
     <div class="text-h5" style="font-family: serif">
-      Edit your first article
+      {{ title }}
     </div>
   </q-card-section>
   <q-card-section class="q-pb-none">
@@ -34,8 +34,10 @@ import axios from 'axios';
 import SearchList from './SearchList.vue';
 import { ref, computed, watch } from 'vue';
 import { SearchResult } from 'src/types';
+import { onBeforeMount } from 'vue';
 
 const term = ref('');
+const title = ref('');
 const isSearching = ref(false);
 const apiSearch = computed(
   () =>
@@ -56,5 +58,11 @@ watch(apiSearch, async (apiSearch) => {
     console.error(error);
   }
   isSearching.value = false;
+});
+
+onBeforeMount(() => {
+  title.value = localStorage.getItem('articles')
+    ? 'Edit a new article'
+    : 'Edit your first article';
 });
 </script>

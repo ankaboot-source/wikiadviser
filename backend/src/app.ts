@@ -8,7 +8,12 @@ import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
   getUsersWithPermissions,
-  checkArticleExistenceAndAccess
+  checkArticleExistenceAndAccess,
+  getRole,
+  getArticleTitle,
+  getArticles,
+  createNewPermission,
+  updatePermission
 } from './helpers/supabaseHelper';
 
 const app = express();
@@ -183,6 +188,115 @@ app.get('/api/check_article', async (req, res) => {
   }
 });
 
+// Check Role
+app.get('/api/role', async (req, res) => {
+  try {
+    const articleId = req.query.articleId as string;
+    const userId = req.query.userId as string;
+    const role = await getRole(articleId, userId);
+
+    logger.info(
+      {
+        userId,
+        articleId
+      },
+      'Role Check'
+    );
+    res
+      .status(200)
+      .json({ message: 'Checking article existence succeeded.', role });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Checking article existence failed.' });
+  }
+});
+
+// Fetch Article Title
+app.get('/api/article/title', async (req, res) => {
+  try {
+    const articleId = req.query.articleId as string;
+    const title = await getArticleTitle(articleId);
+
+    logger.info(
+      {
+        articleId
+      },
+      'Fetch Article Title'
+    );
+    res
+      .status(200)
+      .json({ message: 'Checking article existence succeeded.', title });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Checking article existence failed.' });
+  }
+});
+
+// Fetch Articles owned by a user
+app.get('/api/articles', async (req, res) => {
+  try {
+    const userId = req.query.userId as string;
+    const articles = await getArticles(userId);
+
+    logger.info(
+      {
+        articles
+      },
+      'Get articles'
+    );
+    res
+      .status(200)
+      .json({ message: 'Checking article existence succeeded.', articles });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Checking article existence failed.' });
+  }
+});
+
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);
+});
+
+// New permission
+app.post('/api/permission', async (req, res) => {
+  try {
+    const { articleId, userId } = req.body;
+    logger.info(
+      {
+        articleId,
+        userId
+      },
+      'New Permission request'
+    );
+    // Insert a new permission request.
+    await createNewPermission(articleId, userId);
+
+    res
+      .status(201)
+      .json({ message: 'Creating new article succeeded.', articleId });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Creating new article failed.' });
+  }
+});
+
+// Update permission
+app.put('/api/permission', async (req, res) => {
+  try {
+    const { permissionId, role } = req.body;
+    logger.info(
+      {
+        permissionId,
+        role
+      },
+      'New Permission request'
+    );
+    // Insert a new permission request.
+    await updatePermission(permissionId, role);
+
+    res.status(201).json({ message: 'Updating permission article succeeded.' });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Creating new article failed.' });
+  }
 });

@@ -31,6 +31,7 @@ import { ref } from 'vue';
 import {
   checkArticleExistenceAndAccess,
   createNewArticle,
+  getArticles,
 } from 'src/api/supabaseHelper';
 
 const $q = useQuasar();
@@ -63,7 +64,7 @@ async function itemOnClick() {
       // GOTO ARTICLE PAGE
       router.push({
         name: 'article',
-        params: { title: props.item.title, articleId: articleId.value },
+        params: { articleId: articleId.value },
       });
     } else {
       console.log("article doesn't exist");
@@ -89,12 +90,14 @@ async function itemOnClick() {
         icon: 'check',
         color: 'positive',
       });
-
+      localStorage.setItem(
+        'articles',
+        JSON.stringify(await getArticles(data.session!.user.id))
+      );
       // GOTO ARTICLE PAGE, EDIT TAB
       router.push({
         name: 'article',
         params: {
-          title: props.item.title,
           articleId: articleId.value,
           tab: 'editor',
         },

@@ -1,5 +1,4 @@
 import supabase from '../api/supabase';
-import logger from '../logger';
 import { User } from '../types';
 
 export async function insertArticle(
@@ -55,34 +54,6 @@ export async function getUsersWithPermissions(
     permissionId: permission.id
   }));
   return users;
-}
-
-export async function getRole(
-  articleId: string,
-  userId: string
-): Promise<number | null> {
-  // check if user has permission on that Article
-  const { data: permissionsData, error: permissionsError } = await supabase
-    .from('permissions')
-    .select('role')
-    .eq('article_id', articleId)
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  logger.info(
-    {
-      permissionsData
-    },
-    'Get role'
-  );
-
-  if (permissionsError) {
-    throw new Error(permissionsError.message);
-  }
-  if (permissionsData) {
-    return permissionsData.role;
-  }
-  return null;
 }
 
 export async function getArticles(userId: string): Promise<any> {
@@ -144,6 +115,5 @@ export async function updatePermission(
   permissionId: string,
   role: number
 ): Promise<any> {
-  // update Permission role
   await supabase.from('permissions').update({ role }).eq('id', permissionId);
 }

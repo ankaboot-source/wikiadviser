@@ -8,7 +8,6 @@ import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
   getUsersWithPermissions,
-  getRole,
   getArticles,
   createNewPermission,
   updatePermission
@@ -160,29 +159,6 @@ app.get('/api/users', async (req, res) => {
     res
       .status(500)
       .json({ message: 'Fetching users with permissions failed.' });
-  }
-});
-
-// Check Role
-app.get('/api/role', async (req, res) => {
-  try {
-    const articleId = req.query.articleId as string;
-    const userId = req.query.userId as string;
-    const role = await getRole(articleId, userId);
-
-    logger.info(
-      {
-        userId,
-        articleId
-      },
-      'Role Check'
-    );
-    res
-      .status(200)
-      .json({ message: 'Checking article existence succeeded.', role });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Checking article existence failed.' });
   }
 });
 

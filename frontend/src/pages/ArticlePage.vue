@@ -24,9 +24,9 @@
   <q-tab-panels v-model="tab">
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
-        v-if="title && articleId"
+        v-if="title && permissionId"
         :article="title"
-        :article-id="articleId"
+        :permission-id="permissionId"
         style="height: 85vh"
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
@@ -61,6 +61,7 @@ const route = useRoute();
 const router = useRouter();
 const tab = ref('');
 const articleId = ref('');
+const permissionId = ref('');
 const share = ref(false);
 
 const title = ref('');
@@ -85,7 +86,13 @@ onBeforeMount(async () => {
       role.value = article.role;
       title.value = article.title;
       editPermission.value = role.value == 0 || role.value == 1;
-      console.log(role.value, title.value, editPermission.value);
+      permissionId.value = article.permission_id;
+      console.log(
+        role.value,
+        title.value,
+        editPermission.value,
+        permissionId.value
+      );
     }
   }
   if (role.value == null) {
@@ -95,6 +102,7 @@ onBeforeMount(async () => {
       name: 'ArticleNotFound',
     });
   }
+  console.log(role.value);
 });
 </script>
 

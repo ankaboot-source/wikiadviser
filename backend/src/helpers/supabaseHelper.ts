@@ -62,6 +62,7 @@ export async function getArticles(userId: string): Promise<any> {
     .from('permissions')
     .select(
       `
+      id,
     article_id,
     role,
     articles(title,description)
@@ -82,6 +83,7 @@ export async function getArticles(userId: string): Promise<any> {
       article_id: article.article_id,
       title: article.articles.title,
       description: article.articles.description,
+      permission_id: article.id,
       role: article.role
     }));
 

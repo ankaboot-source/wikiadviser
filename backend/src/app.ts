@@ -26,10 +26,10 @@ app.use(
 
 // POST and GET the html diff of the local mediawiki
 app.post('/api/html_diff', (req, res) => {
-  const { html, articleId } = req.body;
+  const { html, permissionId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
-  // post permissionId not articleId
-  logger.info(articleId);
+  // post permissionId
+  logger.info(permissionId);
   let id = 0;
   let changeid = -1;
   const userId = 'User1';

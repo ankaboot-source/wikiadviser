@@ -41,9 +41,8 @@ const articles = JSON.parse(localStorage.getItem('articles')!);
 async function itemOnClick() {
   try {
     const { data } = await supabase.auth.getSession();
-
     // check access
-    const articleExists = articles.some(
+    const articleExists = articles?.some(
       (article: any) => article.title === props.item!.title
     );
 
@@ -79,6 +78,7 @@ async function itemOnClick() {
         message: 'Article successfully created.',
         icon: 'check',
         color: 'positive',
+        timeout: 20000,
       });
       localStorage.setItem(
         'articles',

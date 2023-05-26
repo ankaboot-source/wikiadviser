@@ -78,7 +78,6 @@ async function itemOnClick() {
         message: 'Article successfully created.',
         icon: 'check',
         color: 'positive',
-        timeout: 20000,
       });
       localStorage.setItem(
         'articles',

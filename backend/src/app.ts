@@ -28,6 +28,7 @@ app.use(
 app.post('/api/html_diff', (req, res) => {
   const { html, articleId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
+  // post permissionId not articleId
   logger.info(articleId);
   let id = 0;
   let changeid = -1;

@@ -61,3 +61,12 @@ export async function getArticleParsedContent(articleId: string) {
   );
   return response.data.content;
 }
+
+export async function getChanges(articleId: string) {
+  const response = await api.get('http://localhost:3000/api/article/changes', {
+    params: {
+      articleId,
+    },
+  });
+  return response.data.changes;
+}

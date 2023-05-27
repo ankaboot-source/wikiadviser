@@ -9,11 +9,13 @@ import {
   getUsersWithPermissions,
   getArticles,
   createNewPermission,
-  updatePermission
+  updatePermission,
+  removeChanges
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
-  getArticleParsedContent
+  getArticleParsedContent,
+  getChangesAndParsedContent
 } from './helpers/parsingHelper';
 
 const app = express();
@@ -33,8 +35,7 @@ app.post('/api/html_diff', async (req, res) => {
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
   // post permissionId
   logger.info(permissionId);
-  // get
-
+  await removeChanges(permissionId);
   data.html = await decomposeArticle(html, permissionId);
   res.status(201).json({ message: 'Diff HTML created.' });
 });
@@ -57,11 +58,12 @@ app.get('/api/article/parsedContent', async (req, res) => {
   }
 });
 
-/*
 app.get('/api/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const changes = await getChanges(articleId);
+    const changes = await getChangesAndParsedContent(articleId);
+    logger.info('Parsed Changes recieved:', changes);
+    console.log(changes);
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
@@ -71,6 +73,7 @@ app.get('/api/article/changes', async (req, res) => {
   }
 });
 
+/*
 app.put('/api/article/change', async (req, res) => {
   try {
     const { changeId, description, status } = req.body;

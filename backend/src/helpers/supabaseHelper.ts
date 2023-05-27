@@ -235,10 +235,43 @@ export async function getArticle(articleId: string) {
 export async function getChanges(articleId: string) {
   const { data: changesData, error: changesError } = await supabase
     .from('changes')
-    .select('*')
+    .select(
+      `
+      id,
+      content,
+    created_at,
+    description,
+    status,
+    type_of_edit,
+    users(
+      raw_user_meta_data)`
+    )
+    .order('created_at')
     .eq('article_id', articleId);
+
   if (changesError) {
     throw new Error(changesError.message);
   }
   return changesData;
+}
+
+export async function removeChanges(permissionId: string) {
+  const { data: articleData, error: articleError } = await supabase
+    .from('permissions')
+    .select('article_id')
+    .eq('id', permissionId)
+    .single();
+
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+
+  const { error } = await supabase
+    .from('changes')
+    .delete()
+    .eq('article_id', articleData.article_id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

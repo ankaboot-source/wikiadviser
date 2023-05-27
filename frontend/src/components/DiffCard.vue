@@ -18,7 +18,6 @@ const props = defineProps<{
 const fetchData = async () => {
   console.log('fetching');
   data.value = await getArticleParsedContent(props.articleId);
-  console.log(data.value);
 };
 
 const data = ref('');

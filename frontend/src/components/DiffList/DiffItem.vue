@@ -22,8 +22,8 @@
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side>
-        {{ props.item?.date }}
-        @{{ props.item?.username }}
+        {{ props.item?.created_at }}
+        @{{ props.item?.users.raw_user_meta_data.username }}
       </q-item-section>
     </template>
     <q-separator />
@@ -51,7 +51,7 @@
       <div class="q-pa-md">
         <div class="row">
           <div class="text-capitalize col-4 q-pt-sm text-body1">
-            {{ props.item?.typeOfEdit }}
+            {{ typeOfEditMessageDictionary[props.item?.type_of_edit] }}
           </div>
           <q-input
             v-model="description"
@@ -85,8 +85,10 @@
       </q-item-label>
 
       <div class="q-pa-md">
-        <q-badge rounded :color="status[props.item?.status]" />
-        <span class="text-body1 q-pl-sm">{{ props.item?.status }}</span>
+        <q-badge rounded :color="statusColorDictionary[props.item?.status]" />
+        <span class="text-body1 q-pl-sm">{{
+          statusMessageDictionary[props.item?.status]
+        }}</span>
       </div>
     </q-item-section>
     <q-separator />
@@ -176,13 +178,26 @@ const props = defineProps<{
   editPermission: boolean;
 }>();
 
-const description = ref(props.item?.description?.join());
+const description = ref(props.item?.description);
 const comment = ref('');
-const status: { [key: string]: string } = {
-  '0': 'yellow-8',
-  '1': 'green',
-  '2': 'red',
+const statusColorDictionary: { [key: number]: string } = {
+  0: 'yellow-8',
+  1: 'green',
+  2: 'red',
 };
+
+const statusMessageDictionary: { [key: number]: string } = {
+  0: 'Awaiting Reviewer Approval',
+  1: 'Edit Approved',
+  2: 'Edit Rejected',
+};
+
+const typeOfEditMessageDictionary: { [key: number]: string } = {
+  0: 'Change',
+  1: 'Insert',
+  2: 'Remove',
+};
+
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
   event.preventDefault();

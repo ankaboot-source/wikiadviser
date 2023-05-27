@@ -1,11 +1,11 @@
 export type ChangesItem = {
-  id: number;
+  id: string;
   content: string;
-  status: '0' | '1' | '2';
-  typeOfEdit: 'remove' | 'insert' | 'change';
-  description?: string[];
-  username: string;
-  date: string;
+  status: 0 | 1 | 2;
+  type_of_edit: 0 | 1 | 2;
+  description: string;
+  users: { raw_user_meta_data: { username: string } };
+  created_at: string;
 };
 
 export type SearchResult = {

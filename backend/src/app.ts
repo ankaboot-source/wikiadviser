@@ -10,7 +10,8 @@ import {
   getArticles,
   createNewPermission,
   updatePermission,
-  removeChanges
+  removeChanges,
+  updateChange
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
@@ -63,7 +64,6 @@ app.get('/api/article/changes', async (req, res) => {
     const articleId = req.query.articleId as string;
     const changes = await getChangesAndParsedContent(articleId);
     logger.info('Parsed Changes recieved:', changes);
-    console.log(changes);
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
@@ -73,18 +73,19 @@ app.get('/api/article/changes', async (req, res) => {
   }
 });
 
-/*
 app.put('/api/article/change', async (req, res) => {
   try {
-    const { changeId, description, status } = req.body;
-    await updateChange(changeId, description, status);
+    const { changeId, status, description } = req.body;
+    console.log(req.body);
+    await updateChange(changeId, undefined, status, description);
+
     res.status(201).json({ message: 'Updating change succeeded.' });
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Updating change failed.' });
   }
 });
-*/
+
 // New Article
 app.post('/api/article', async (req, res) => {
   try {

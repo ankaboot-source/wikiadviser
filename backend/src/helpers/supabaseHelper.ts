@@ -171,22 +171,28 @@ export async function createNewChange(permissionId: string): Promise<string> {
 
 export async function updateChange(
   changeId: string,
-  content: string,
-  status: number,
+  content?: string,
+  status?: number,
   description?: string,
   typeOfEdit?: number
 ): Promise<void> {
   // Update
-  const updateData: any = {
-    status,
-    content
-  };
+  const updateData: any = {};
 
+  if (status !== undefined) {
+    updateData.status = status;
+  }
+  if (content !== undefined) {
+    updateData.content = content;
+  }
   if (typeOfEdit !== undefined) {
     updateData.type_of_edit = typeOfEdit;
   }
   if (description !== undefined) {
     updateData.description = description;
+  }
+  if (status !== undefined) {
+    updateData.status = status;
   }
   const { error: changeError } = await supabase
     .from('changes')

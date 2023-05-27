@@ -12,14 +12,6 @@
             v-html="props.item?.content"
           ></div>
         </q-item-label>
-        <q-item-label caption lines="2">
-          <div
-            v-for="(description, index) in props.item?.description"
-            :key="index"
-          >
-            {{ description }}
-          </div>
-        </q-item-label>
       </q-item-section>
       <q-item-section caption top side>
         {{ props.item?.created_at }}
@@ -70,7 +62,7 @@
                 flat
                 icon="check"
                 color="primary"
-                @click="handleComment"
+                @click="handleDescription()"
               />
             </template>
           </q-input>
@@ -153,7 +145,10 @@
     <q-separator />
 
     <!-- User: Reviewer Only -->
-    <q-item-section v-if="!editPermission" class="bg-accent">
+    <q-item-section
+      v-if="!editPermission && !props.item.status"
+      class="bg-accent"
+    >
       <div class="row q-my-md justify-around">
         <q-btn
           outline
@@ -171,8 +166,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ChangesItem } from 'src/types';
+import { updateChange } from 'src/api/supabaseHelper';
 
-const expanded = ref(true);
+const expanded = ref(false);
 const props = defineProps<{
   item: ChangesItem;
   editPermission: boolean;
@@ -207,11 +203,19 @@ function handleComment() {
   console.log('commented: ', comment.value);
   comment.value = '';
 }
-function handleApprove() {
+async function handleApprove() {
+  await updateChange(props.item.id, 1);
   console.log('Edit Approved');
 }
-function handleReject() {
+async function handleReject() {
+  await updateChange(props.item.id, 2);
   console.log('Edit Rejected');
+}
+console.log(props.item.status);
+
+async function handleDescription() {
+  await updateChange(props.item.id, undefined, description.value);
+  console.log('Description', description.value);
 }
 </script>
 <style scoped>

@@ -70,3 +70,17 @@ export async function getChanges(articleId: string) {
   });
   return response.data.changes;
 }
+
+export async function updateChange(
+  changeId: string,
+  status?: number,
+  description?: string
+) {
+  const response = await api.put('http://localhost:3000/api/article/change', {
+    changeId,
+    status,
+    description,
+  });
+  console.log(changeId, status, description);
+  return response.status;
+}

@@ -26,7 +26,6 @@ const data = ref<ChangesItem[]>([]);
 const fetchData = async () => {
   try {
     data.value = (await getChanges(props.articleId)) as ChangesItem[];
-    console.log(data.value);
   } catch (error) {
     console.error(error);
   } finally {

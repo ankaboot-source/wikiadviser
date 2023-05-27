@@ -219,8 +219,6 @@ async function handleReject() {
   await updateChange(props.item.id, 2);
   console.log('Edit Rejected');
 }
-console.log(props.item.status);
-
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
   console.log('Description', description.value);

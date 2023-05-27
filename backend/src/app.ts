@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import axios from 'axios';
 import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
@@ -12,12 +13,14 @@ import {
   updatePermission,
   removeChanges,
   updateChange,
-  insertComment
+  insertComment,
+  getArticle
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
   getArticleParsedContent,
-  getChangesAndParsedContent
+  getChangesAndParsedContent,
+  getInnerText
 } from './helpers/parsingHelper';
 
 const app = express();
@@ -221,4 +224,31 @@ app.post('/api/change/comment', async (req, res) => {
 });
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);
+});
+
+// Get sentiments
+app.get('/api/article/sentiment_analysis', async (req, res) => {
+  try {
+    const articleId = req.query.articleId as string;
+    const article = await getArticle(articleId);
+    const innerText = await getInnerText(article.current_html_content);
+    const response = await axios.get(
+      'http://localhost:8000/sentiment_analysis',
+      {
+        params: {
+          text: innerText.toString()
+        }
+      }
+    );
+    const { scores } = response.data;
+    logger.info({ scores }, 'Get sentiment scores.');
+    res
+      .status(200)
+      .json({ message: 'Getting article sentiment scores succeeded.', scores });
+  } catch (error: any) {
+    logger.error(error.message);
+    res
+      .status(500)
+      .json({ message: 'Getting article sentiment scores failed.' });
+  }
 });

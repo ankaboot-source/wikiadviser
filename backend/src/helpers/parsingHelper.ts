@@ -122,9 +122,13 @@ export async function getChangesAndParsedContent(articleId: string) {
       $element.attr('data-type-of-edit', change.type_of_edit);
       $element.attr('data-status', change.status);
     });
-
     change.content = $.html();
   }
 
   return changes;
+}
+
+export async function getInnerText(html: string) {
+  const $ = load(html);
+  return $.text();
 }

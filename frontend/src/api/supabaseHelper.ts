@@ -97,3 +97,15 @@ export async function insertComment(
   });
   return response.status;
 }
+
+export async function getArticleContent(articleId: string) {
+  const response = await api.get(
+    'http://localhost:3000/api/article/sentiment_analysis',
+    {
+      params: {
+        articleId,
+      },
+    }
+  );
+  return response;
+}

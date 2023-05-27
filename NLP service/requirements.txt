@@ -1,0 +1,4 @@
+fastapi[all]
+python-multipart
+uvicorn[standard]
+textblob

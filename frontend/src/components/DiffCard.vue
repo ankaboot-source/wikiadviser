@@ -17,7 +17,6 @@ const props = defineProps<{
 
 const fetchData = async () => {
   try {
-    console.log('fetching');
     data.value = await getArticleParsedContent(props.articleId);
   } catch (error) {
     console.error(error);

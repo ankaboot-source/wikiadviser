@@ -1,7 +1,7 @@
 export type ChangesItem = {
   id: number;
   content: string;
-  status: 'Awaiting Reviewer Approval' | 'Edit Approved' | 'Edit Rejected';
+  status: '0' | '1' | '2';
   typeOfEdit: 'remove' | 'insert' | 'change';
   description?: string[];
   username: string;

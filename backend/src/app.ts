@@ -11,7 +11,10 @@ import {
   createNewPermission,
   updatePermission
 } from './helpers/supabaseHelper';
-import { decomposeArticle } from './helpers/parsingHelper';
+import {
+  decomposeArticle,
+  getArticleParsedContent
+} from './helpers/parsingHelper';
 
 const app = express();
 const port = 3000;
@@ -40,11 +43,11 @@ app.get('/api/html_diff', (_req, res) => {
   res.send(data.html);
 });
 
-/*
-app.get('/api/article/content',async (req, res) => {
+app.get('/api/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const content = await renderArticle(articleId);
+    const content = await getArticleParsedContent(articleId);
+    logger.info('Get Parsed Article');
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', content });
@@ -52,8 +55,9 @@ app.get('/api/article/content',async (req, res) => {
     logger.error(error.message);
     res.status(500).json({ message: 'Getting article changes failed.' });
   }
-};
+});
 
+/*
 app.get('/api/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
@@ -140,12 +144,7 @@ app.get('/api/articles', async (req, res) => {
     const userId = req.query.userId as string;
     const articles = await getArticles(userId);
 
-    logger.info(
-      {
-        articles
-      },
-      'Get articles'
-    );
+    logger.info('Get articles');
     res
       .status(200)
       .json({ message: 'Checking article existence succeeded.', articles });

@@ -1,5 +1,11 @@
 import { load } from 'cheerio';
-import { createNewChange, updateArticle, updateChange } from './supabaseHelper';
+import {
+  createNewChange,
+  getArticle,
+  getChanges,
+  updateArticle,
+  updateChange
+} from './supabaseHelper';
 
 export async function decomposeArticle(html: string, permissionId: string) {
   const $ = load(html);
@@ -76,8 +82,6 @@ export async function decomposeArticle(html: string, permissionId: string) {
       insert: 1,
       remove: 2
     };
-
-    // ! STORE the whole $.html($element) Content
     // eslint-disable-next-line no-await-in-loop
     await updateChange(
       changeId,
@@ -90,28 +94,31 @@ export async function decomposeArticle(html: string, permissionId: string) {
     // Remove description and type of edit attr
     $element.removeAttr('data-description');
     $element.removeAttr('data-type-of-edit');
-
-    console.log(
-      changeId,
-      $.html($element).toString(),
-      0,
-      description,
-      typeOfEdit,
-      typeOfEditDictionary[typeOfEdit]
-    );
   }
   await updateArticle(permissionId, $.html());
-  return $.html(); //! insert this content into Articles.
+  return $.html();
 }
 
-export function renderArticle() {}
+export async function getArticleParsedContent(articleId: string) {
+  console.log('started function');
+  const article = await getArticle(articleId);
+  const changes = await getChanges(articleId);
+  const content = article.current_html_content as string;
+  const $ = load(content);
+  // Add more data
+  $('[data-id]').each((index, element) => {
+    const $element = $(element);
+    $element.attr('data-type-of-edit', changes[index].type_of_edit);
+    $element.attr('data-status', changes[index].status);
+  });
+  return $.html();
+}
 
 export function ref(html: string, permissionId: string) {
   let id = 0;
   let changeid = -1; // post change > return change Id, add it as an attr
   const userId = 'User1'; // find username using permissiodId
   const date = new Date().toLocaleString('fr'); // useless
-  console.log(permissionId);
   const $ = load(html);
 
   // Go through elements that have the attribute data-diff-action

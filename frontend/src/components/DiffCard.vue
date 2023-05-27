@@ -5,23 +5,20 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios';
 import { onMounted, ref } from 'vue';
 
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
 import 'src/css/styles/diff.scss';
+import { getArticleParsedContent } from 'src/api/supabaseHelper';
+const props = defineProps<{
+  articleId: string;
+}>();
 
 const fetchData = async () => {
-  try {
-    const response = await axios.get('http://localhost:3000/api/html_diff');
-    data.value = response.data;
-  } catch (error) {
-    console.error(error);
-  } finally {
-    // Call fetchData again after the request completes to implement long polling
-    setTimeout(() => fetchData(), 1000);
-  }
+  console.log('fetching');
+  data.value = await getArticleParsedContent(props.articleId);
+  console.log(data.value);
 };
 
 const data = ref('');
@@ -109,24 +106,24 @@ b {
 [data-status] {
   cursor: pointer;
 }
-[data-status='Awaiting Reviewer Approval'] {
+[data-status='0'] {
   background-color: rgba(255, 211, 67, 0.2) !important;
 }
-[data-status='Awaiting Reviewer Approval']:hover {
+[data-status='0']:hover {
   background-color: rgba(255, 211, 67, 0.3) !important;
 }
 
-[data-status='Edit Rejected'] {
+[data-status='2'] {
   background-color: rgba(255, 112, 112, 0.2) !important;
 }
-[data-status='Edit Rejected']:hover {
+[data-status='2']:hover {
   background-color: rgba(255, 112, 112, 0.3) !important;
 }
 
-[data-status='Edit Approved'] {
+[data-status='1'] {
   background-color: rgba(16, 146, 0, 0.2) !important;
 }
-[data-status='Edit Approved']:hover {
+[data-status='1']:hover {
   background-color: rgba(16, 146, 0, 0.3) !important;
 }
 </style>

@@ -36,8 +36,13 @@
         class="col-9 rounded-borders q-pa-md bg-secondary borders"
         style="height: 85vh"
         bordered
+        :article-id="articleId"
       />
-      <diff-list :edit-permission="editPermission" class="col-3" />
+      <diff-list
+        :edit-permission="editPermission"
+        :article-id="articleId"
+        class="col-3"
+      />
     </q-tab-panel>
   </q-tab-panels>
 </template>

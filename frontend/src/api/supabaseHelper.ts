@@ -49,3 +49,15 @@ export async function updatePermission(permissionId: string, role: number) {
   });
   return response.status;
 }
+
+export async function getArticleParsedContent(articleId: string) {
+  const response = await api.get(
+    'http://localhost:3000/api/article/parsedContent',
+    {
+      params: {
+        articleId,
+      },
+    }
+  );
+  return response.data.content;
+}

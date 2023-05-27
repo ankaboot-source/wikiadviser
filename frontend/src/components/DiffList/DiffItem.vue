@@ -179,9 +179,9 @@ const props = defineProps<{
 const description = ref(props.item?.description?.join());
 const comment = ref('');
 const status: { [key: string]: string } = {
-  'Awaiting Reviewer Approval': 'yellow-8',
-  'Edit Approved': 'green',
-  'Edit Rejected': 'red',
+  '0': 'yellow-8',
+  '1': 'green',
+  '2': 'red',
 };
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:

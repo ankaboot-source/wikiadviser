@@ -219,3 +219,26 @@ export async function updateArticle(
     throw new Error(articleError.message);
   }
 }
+
+export async function getArticle(articleId: string) {
+  const { data: articleData, error: articleError } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('id', articleId)
+    .single();
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+  return articleData;
+}
+
+export async function getChanges(articleId: string) {
+  const { data: changesData, error: changesError } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('article_id', articleId);
+  if (changesError) {
+    throw new Error(changesError.message);
+  }
+  return changesData;
+}

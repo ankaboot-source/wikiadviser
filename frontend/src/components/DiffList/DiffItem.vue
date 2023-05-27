@@ -92,36 +92,18 @@
       <q-item-section class="q-pa-md row justify-center bg-secondary">
         <!-- Default Comments Examples.-->
         <q-scroll-area style="height: 150px; width: 100%" class="q-pa-sm">
-          <q-chat-message
-            name="me"
-            :text="['hey, how are you?']"
-            stamp="7 minutes ago"
-            sent
-            bg-color="amber-7"
-          />
-          <q-chat-message
-            name="Jane"
-            :text="[
-              'doing fine, how r you?',
-              'I just feel like typing a really, really, REALLY long message to annoy you...',
-            ]"
-            size="6"
-            stamp="4 minutes ago"
-            text-color="white"
-            bg-color="primary"
-          />
-          <q-chat-message
-            name="Jane"
-            :text="['Did it work?']"
-            stamp="1 minutes ago"
-            size="8"
-            text-color="white"
-            bg-color="primary"
-          />
+          <template v-for="comment in item.comments" :key="comment.id">
+            <q-chat-message
+              :name="comment.users.raw_user_meta_data.username"
+              :text="[comment.content]"
+              :stamp="comment.created_at"
+              :sent="comment.users.raw_user_meta_data.username == username"
+            />
+          </template>
         </q-scroll-area>
 
         <q-input
-          v-model="comment"
+          v-model="toSendComment"
           autogrow
           filled
           dense
@@ -164,9 +146,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { ChangesItem } from 'src/types';
-import { updateChange } from 'src/api/supabaseHelper';
+import { insertComment, updateChange } from 'src/api/supabaseHelper';
+import { Session } from '@supabase/supabase-js';
+import supabase from 'src/api/supabase';
 
 const expanded = ref(false);
 const props = defineProps<{
@@ -174,8 +158,30 @@ const props = defineProps<{
   editPermission: boolean;
 }>();
 
+const session = ref<Session | null>();
+const username = ref('');
+const userId = ref<string>('');
+const toSendComment = ref('');
+
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  session.value = data.session;
+  supabase.auth.onAuthStateChange((_, _session) => {
+    session.value = _session;
+    username.value = session.value?.user.user_metadata.username;
+    userId.value = session.value?.user.id as string;
+  });
+});
+
+async function handleComment() {
+  console.log('commented: ', toSendComment.value);
+  if (toSendComment.value.length > 0) {
+    await insertComment(props.item.id, userId.value, toSendComment.value);
+    toSendComment.value = '';
+  }
+}
+
 const description = ref(props.item?.description);
-const comment = ref('');
 const statusColorDictionary: { [key: number]: string } = {
   0: 'yellow-8',
   1: 'green',
@@ -199,10 +205,6 @@ const preventLinkVisit = (event: MouseEvent) => {
   event.preventDefault();
 };
 
-function handleComment() {
-  console.log('commented: ', comment.value);
-  comment.value = '';
-}
 async function handleApprove() {
   await updateChange(props.item.id, 1);
   console.log('Edit Approved');

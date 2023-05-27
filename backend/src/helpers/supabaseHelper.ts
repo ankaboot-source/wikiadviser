@@ -250,7 +250,7 @@ export async function getChanges(articleId: string) {
     status,
     type_of_edit,
     users(
-      raw_user_meta_data)`
+      raw_user_meta_data), comments(content,created_at, users(raw_user_meta_data))`
     )
     .order('created_at')
     .eq('article_id', articleId);
@@ -279,5 +279,19 @@ export async function removeChanges(permissionId: string) {
 
   if (error) {
     throw new Error(error.message);
+  }
+}
+
+export async function insertComment(
+  changeId: string,
+  commenterId: string,
+  content: string
+) {
+  const { error: changeError } = await supabase
+    .from('comments')
+    .insert({ change_id: changeId, commenter_id: commenterId, content });
+
+  if (changeError) {
+    throw new Error(changeError.message);
   }
 }

@@ -6,6 +6,7 @@ export type ChangesItem = {
   description: string;
   users: { raw_user_meta_data: { username: string } };
   created_at: string;
+  comments: any;
 };
 
 export type SearchResult = {

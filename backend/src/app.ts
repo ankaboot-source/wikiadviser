@@ -11,7 +11,8 @@ import {
   createNewPermission,
   updatePermission,
   removeChanges,
-  updateChange
+  updateChange,
+  insertComment
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
@@ -198,6 +199,26 @@ app.put('/api/permission', async (req, res) => {
   }
 });
 
+app.post('/api/change/comment', async (req, res) => {
+  try {
+    const { changeId, commenterId, content } = req.body;
+    logger.info(
+      {
+        changeId,
+        commenterId,
+        content
+      },
+      'New Permission request'
+    );
+    // Insert a new comment.
+    await insertComment(changeId, commenterId, content);
+
+    res.status(201).json({ message: 'Inserting comment succeeded.' });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Inserting comment failed.' });
+  }
+});
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);
 });

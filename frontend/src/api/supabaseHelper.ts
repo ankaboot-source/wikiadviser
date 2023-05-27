@@ -84,3 +84,16 @@ export async function updateChange(
   console.log(changeId, status, description);
   return response.status;
 }
+
+export async function insertComment(
+  changeId: string,
+  commenterId: string,
+  content: string
+) {
+  const response = await api.post('http://localhost:3000/api/change/comment', {
+    changeId,
+    commenterId,
+    content,
+  });
+  return response.status;
+}

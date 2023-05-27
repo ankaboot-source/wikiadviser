@@ -16,8 +16,15 @@ const props = defineProps<{
 }>();
 
 const fetchData = async () => {
-  console.log('fetching');
-  data.value = await getArticleParsedContent(props.articleId);
+  try {
+    console.log('fetching');
+    data.value = await getArticleParsedContent(props.articleId);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    // Call fetchData again after the request completes to implement long polling
+    setTimeout(() => fetchData(), 1000);
+  }
 };
 
 const data = ref('');

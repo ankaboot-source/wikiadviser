@@ -22,9 +22,17 @@ const props = defineProps<{
   articleId: string;
 }>();
 const data = ref<ChangesItem[]>([]);
+
 const fetchData = async () => {
-  data.value = (await getChanges(props.articleId)) as ChangesItem[];
-  console.log(data.value);
+  try {
+    data.value = (await getChanges(props.articleId)) as ChangesItem[];
+    console.log(data.value);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    // Call fetchData again after the request completes to implement long polling
+    setTimeout(() => fetchData(), 2000);
+  }
 };
 onMounted(fetchData);
 </script>

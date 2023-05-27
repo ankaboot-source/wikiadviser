@@ -31,7 +31,7 @@ app.use(
 );
 
 // POST and GET the html diff of the local mediawiki
-app.post('/api/html_diff', async (req, res) => {
+app.post('/api/rawArticle', async (req, res) => {
   const { html, permissionId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
   // post permissionId
@@ -39,10 +39,6 @@ app.post('/api/html_diff', async (req, res) => {
   await removeChanges(permissionId);
   data.html = await decomposeArticle(html, permissionId);
   res.status(201).json({ message: 'Diff HTML created.' });
-});
-
-app.get('/api/html_diff', (_req, res) => {
-  res.send(data.html);
 });
 
 app.get('/api/article/parsedContent', async (req, res) => {

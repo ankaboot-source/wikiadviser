@@ -69,7 +69,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
   const permissionId = urlParams.get("permissionid");
 
   // Post data to the backend
-  fetch("http://localhost:3000/api/html_diff", {
+  fetch("http://localhost:3000/api/rawArticle", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,5 +1,4 @@
 import express from 'express';
-import { load } from 'cheerio';
 import cors from 'cors';
 import logger from './logger';
 import 'dotenv/config';
@@ -12,6 +11,7 @@ import {
   createNewPermission,
   updatePermission
 } from './helpers/supabaseHelper';
+import { decomposeArticle } from './helpers/parsingHelper';
 
 const app = express();
 const port = 3000;
@@ -25,81 +25,14 @@ app.use(
 );
 
 // POST and GET the html diff of the local mediawiki
-app.post('/api/html_diff', (req, res) => {
+app.post('/api/html_diff', async (req, res) => {
   const { html, permissionId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
   // post permissionId
   logger.info(permissionId);
-  let id = 0;
-  let changeid = -1;
-  const userId = 'User1';
-  const date = new Date().toLocaleString('fr');
+  // get
 
-  const $ = load(html);
-
-  // Go through elements that have the attribute data-diff-action
-  $("[data-diff-action]:not([data-diff-action='none'])").each(
-    (index, element) => {
-      const $element = $(element);
-      const diffAction = $element.data('diff-action');
-
-      // Create the wrap element with the wanted metadata
-      const $wrapElement = $('<span>');
-      $wrapElement.attr('data-status', 'Awaiting Reviewer Approval');
-      $wrapElement.attr('data-description', '');
-
-      // Append a clone of the element to the wrap element
-      $wrapElement.append($element.clone());
-
-      let typeOfEdit: any = diffAction;
-
-      // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "change-remove" diff
-      const node: any = $element[0].next;
-      if (!node?.data?.trim() && diffAction === 'change-remove') {
-        const $nextElement = $element.next();
-        // Check if the next element has "change-insert" diff action
-        if ($nextElement.data('diff-action') === 'change-insert') {
-          // Append the next element to the wrap element
-          $wrapElement.append($nextElement.clone());
-
-          // change-remove is always succeeded by a change-insert
-          typeOfEdit = 'change';
-          // Add description attribute
-          const list: any[] = [];
-          const listItems = $('.ve-ui-diffElement-sidebar >')
-            .children()
-            .eq((changeid += 1))
-            .children()
-            .children();
-          listItems.each((i, elem) => {
-            list.push($(elem).text());
-          });
-          // Delimiter <|> since it is unlikely to be present in any of the array elements
-          $wrapElement.attr('data-description', list.join('<|>'));
-
-          // Remove the last element
-          $nextElement.remove();
-        }
-      }
-      $wrapElement.attr('data-type-of-edit', typeOfEdit);
-      $element.replaceWith($wrapElement);
-    }
-  );
-
-  // Remove sidebar
-  $('.ve-ui-diffElement-sidebar').remove();
-  $('.ve-ui-diffElement-hasDescriptions').removeClass(
-    've-ui-diffElement-hasDescriptions'
-  );
-
-  // Add more data
-  $('[data-status]').each((index, element) => {
-    const $element = $(element);
-    $element.attr('data-id', `${(id += 1)}`);
-    $element.attr('data-user', userId);
-    $element.attr('data-date', date);
-  });
-  data.html = $.html();
+  data.html = await decomposeArticle(html, permissionId);
   res.status(201).json({ message: 'Diff HTML created.' });
 });
 
@@ -107,6 +40,44 @@ app.get('/api/html_diff', (_req, res) => {
   res.send(data.html);
 });
 
+/*
+app.get('/api/article/content',async (req, res) => {
+  try {
+    const articleId = req.query.articleId as string;
+    const content = await renderArticle(articleId);
+    res
+      .status(200)
+      .json({ message: 'Getting article changes succeeded.', content });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Getting article changes failed.' });
+  }
+};
+
+app.get('/api/article/changes', async (req, res) => {
+  try {
+    const articleId = req.query.articleId as string;
+    const changes = await getChanges(articleId);
+    res
+      .status(200)
+      .json({ message: 'Getting article changes succeeded.', changes });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Getting article changes failed.' });
+  }
+});
+
+app.put('/api/article/change', async (req, res) => {
+  try {
+    const { changeId, description, status } = req.body;
+    await updateChange(changeId, description, status);
+    res.status(201).json({ message: 'Updating change succeeded.' });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Updating change failed.' });
+  }
+});
+*/
 // New Article
 app.post('/api/article', async (req, res) => {
   try {
@@ -224,7 +195,7 @@ app.put('/api/permission', async (req, res) => {
     res.status(201).json({ message: 'Updating permission article succeeded.' });
   } catch (error: any) {
     logger.error(error.message);
-    res.status(500).json({ message: 'Creating new article failed.' });
+    res.status(500).json({ message: 'Updating permission article failed.' });
   }
 });
 

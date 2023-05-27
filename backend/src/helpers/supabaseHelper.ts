@@ -119,3 +119,103 @@ export async function updatePermission(
 ): Promise<any> {
   await supabase.from('permissions').update({ role }).eq('id', permissionId);
 }
+
+export async function getUsername(permissionId: string): Promise<string> {
+  const { data: permissionsData, error: permissionsError } = await supabase
+    // Fetch permissions of users of a specific article id
+    .from('permissions')
+    .select(
+      `*,
+    users(
+      raw_user_meta_data)`
+    )
+    .eq('id', permissionId)
+    .maybeSingle();
+
+  if (permissionsError) {
+    throw new Error(permissionsError.message);
+  }
+
+  const username = permissionsData?.users.raw_user_meta_data.username;
+  return username;
+}
+
+export async function createNewChange(permissionId: string): Promise<string> {
+  const { data: permissionData, error: permissionError } = await supabase
+    .from('permissions')
+    .select('article_id, user_id')
+    .eq('id', permissionId)
+    .single();
+
+  if (permissionError) {
+    throw new Error(permissionError.message);
+  }
+
+  // Insert
+  const { data: changeData, error: changeError } = await supabase
+    .from('changes')
+    .insert({
+      article_id: permissionData.article_id,
+      contributor_id: permissionData.user_id
+    })
+    .select();
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+
+  const username = changeData[0].id;
+
+  return username;
+}
+
+export async function updateChange(
+  changeId: string,
+  content: string,
+  status: number,
+  description?: string,
+  typeOfEdit?: number
+): Promise<void> {
+  // Update
+  const updateData: any = {
+    status,
+    content
+  };
+
+  if (typeOfEdit !== undefined) {
+    updateData.type_of_edit = typeOfEdit;
+  }
+  if (description !== undefined) {
+    updateData.description = description;
+  }
+  const { error: changeError } = await supabase
+    .from('changes')
+    .update(updateData)
+    .eq('id', changeId);
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+}
+
+export async function updateArticle(
+  permissionId: string,
+  current_html_content: string
+) {
+  const { data: articleIddata, error: articleIdError } = await supabase
+    .from('permissions')
+    .select(`article_id`)
+    .eq('id', permissionId)
+    .single();
+  if (articleIdError) {
+    throw new Error(articleIdError.message);
+  }
+
+  const { error: articleError } = await supabase
+    .from('articles')
+    .update({ current_html_content })
+    .eq('id', articleIddata.article_id);
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+}

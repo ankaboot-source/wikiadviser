@@ -6,16 +6,23 @@
   >
     <template #header>
       <q-item-section class="text-body1">
-        <q-item-label
-          ><div
+        <q-item-label>
+          <div
             @click="preventLinkVisit($event)"
             v-html="props.item?.content"
           ></div>
         </q-item-label>
+        <q-item-label caption lines="2">
+          <div>
+            {{ description }}
+          </div>
+        </q-item-label>
       </q-item-section>
-      <q-item-section caption top side>
-        {{ props.item?.created_at }}
-        @{{ props.item?.users.raw_user_meta_data.username }}
+      <q-item-section caption top side lines="2">
+        <span style="size: 0.5rem"
+          >{{ new Date(props.item?.created_at).toLocaleString() }}
+        </span>
+        <span>@{{ props.item?.users.raw_user_meta_data.username }}</span>
       </q-item-section>
     </template>
     <q-separator />
@@ -96,7 +103,7 @@
             <q-chat-message
               :name="comment.users.raw_user_meta_data.username"
               :text="[comment.content]"
-              :stamp="comment.created_at"
+              :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.users.raw_user_meta_data.username == username"
             />
           </template>
@@ -152,17 +159,16 @@ import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 
-const expanded = ref(false);
 const props = defineProps<{
   item: ChangesItem;
   editPermission: boolean;
 }>();
+const expanded = ref(props.item?.status == 0);
 
 const session = ref<Session | null>();
 const username = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
-
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
   session.value = data.session;

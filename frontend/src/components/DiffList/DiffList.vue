@@ -3,7 +3,7 @@
     <q-list bordered class="rounded-borders q-pa-md bg-secondary">
       <diff-item
         v-for="item in data"
-        :key="item.created_at"
+        :key="item.id"
         :item="item"
         :edit-permission="props.editPermission"
       ></diff-item>

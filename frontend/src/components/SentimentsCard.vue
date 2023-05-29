@@ -2,7 +2,7 @@
   <q-scroll-area>
     <q-form class="q-gutter-md" @submit="getTextSentimentAnalysis">
       <q-input v-model="text" filled type="textarea" />
-      <q-btn label="Submit" type="submit" color="primary" />
+      <q-btn label="Submit" type="submit" class="q-mb-md" color="primary" />
     </q-form>
     <div style="display: grid; grid-template-columns: 50% 50%">
       <div>

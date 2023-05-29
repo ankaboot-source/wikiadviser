@@ -98,7 +98,10 @@
       </q-item-label>
       <q-item-section class="q-pa-md row justify-center bg-secondary">
         <!-- Default Comments Examples.-->
-        <q-scroll-area style="height: 150px; width: 100%" class="q-pa-sm">
+        <q-scroll-area
+          style="height: 9.5rem; width: 100%"
+          class="q-px-sm q-pb-sm"
+        >
           <template v-for="comment in item.comments" :key="comment.id">
             <q-chat-message
               :name="comment.users.raw_user_meta_data.username"
@@ -213,15 +216,12 @@ const preventLinkVisit = (event: MouseEvent) => {
 
 async function handleApprove() {
   await updateChange(props.item.id, 1);
-  console.log('Edit Approved');
 }
 async function handleReject() {
   await updateChange(props.item.id, 2);
-  console.log('Edit Rejected');
 }
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
-  console.log('Description', description.value);
 }
 </script>
 <style scoped>

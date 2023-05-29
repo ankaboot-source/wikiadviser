@@ -1,5 +1,9 @@
 <template>
   <q-scroll-area>
+    <q-form class="q-gutter-md" @submit="getTextSentimentAnalysis">
+      <q-input v-model="text" filled type="textarea" />
+      <q-btn label="Submit" type="submit" color="primary" />
+    </q-form>
     <div style="display: grid; grid-template-columns: 50% 50%">
       <div>
         <strong>Subjectivity:</strong>
@@ -35,15 +39,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import getSentimentAnalysis from 'src/api/nlpHelper';
 
-const props = defineProps<{
-  articleId: string;
-}>();
+const text = ref<string>('');
 const data = ref();
-onMounted(async () => {
-  data.value = await getSentimentAnalysis(props.articleId);
-  console.log(data.value);
-});
+async function getTextSentimentAnalysis() {
+  data.value = await getSentimentAnalysis(text.value);
+}
 </script>

@@ -1,11 +1,11 @@
 import { api } from 'src/boot/axios';
 
-export default async function getSentimentAnalysis(articleId: string) {
+export default async function getSentimentAnalysis(text: string) {
   const response = await api.get(
-    'http://localhost:3000/api/article/sentiment_analysis',
+    'http://localhost:3000/api/sentiment_analysis',
     {
       params: {
-        articleId: articleId,
+        text: text,
       },
     }
   );

@@ -38,17 +38,16 @@ app.use(
 app.post('/api/rawArticle', async (req, res) => {
   const { html, permissionId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
-  // post permissionId
-  logger.info(permissionId);
   await removeChanges(permissionId);
   data.html = await decomposeArticle(html, permissionId);
   res.status(201).json({ message: 'Diff HTML created.' });
 });
 
+// Get the Article current content HTML Parsed
 app.get('/api/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const content = await getArticleParsedContent(articleId);
+    const content = await getArticleParsedContent(articleId); // parsingHelper.ts
     logger.info('Get Parsed Article');
     res
       .status(200)
@@ -59,10 +58,11 @@ app.get('/api/article/parsedContent', async (req, res) => {
   }
 });
 
+// Get Article Changes
 app.get('/api/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const changes = await getChangesAndParsedContent(articleId);
+    const changes = await getChangesAndParsedContent(articleId); // parsingHelper.ts
     logger.info('Parsed Changes recieved:', changes);
     res
       .status(200)
@@ -73,12 +73,13 @@ app.get('/api/article/changes', async (req, res) => {
   }
 });
 
+// Update a Change
 app.put('/api/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
-    console.log(req.body);
     await updateChange(changeId, undefined, status, description);
 
+    logger.info('Updated Changes of the article:', changeId);
     res.status(201).json({ message: 'Updating change succeeded.' });
   } catch (error: any) {
     logger.error(error.message);
@@ -222,11 +223,8 @@ app.post('/api/change/comment', async (req, res) => {
     res.status(500).json({ message: 'Inserting comment failed.' });
   }
 });
-app.listen(port, () => {
-  logger.info(`Server listening on port ${port}`);
-});
 
-// Get sentiments
+/* // Get Article sentiments
 app.get('/api/article/sentiment_analysis', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
@@ -251,4 +249,33 @@ app.get('/api/article/sentiment_analysis', async (req, res) => {
       .status(500)
       .json({ message: 'Getting article sentiment scores failed.' });
   }
+}); */
+
+// Get sentiments
+app.get('/api/sentiment_analysis', async (req, res) => {
+  try {
+    const text = req.query.text as string;
+    const response = await axios.get(
+      'http://localhost:8000/sentiment_analysis',
+      {
+        params: {
+          text
+        }
+      }
+    );
+    const { scores } = response.data;
+    logger.info({ scores }, 'Get sentiment scores.');
+    res
+      .status(200)
+      .json({ message: 'Getting article sentiment scores succeeded.', scores });
+  } catch (error: any) {
+    logger.error(error.message);
+    res
+      .status(500)
+      .json({ message: 'Getting article sentiment scores failed.' });
+  }
+});
+
+app.listen(port, () => {
+  logger.info(`Server listening on port ${port}`);
 });

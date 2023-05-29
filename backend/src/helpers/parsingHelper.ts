@@ -11,14 +11,13 @@ export async function decomposeArticle(html: string, permissionId: string) {
   const $ = load(html);
   let changeid = -1;
   // Go through elements that have the attribute data-diff-action
-
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
       const diffAction = $element.data('diff-action');
       const list: any[] = [];
 
-      // Create the wrap element with the wanted metadatawrapElement
+      // Create the wrap element with the wanted metadata wrapElement
       const $wrapElement = $('<span>');
 
       // Append a clone of the element to the wrap element
@@ -26,7 +25,8 @@ export async function decomposeArticle(html: string, permissionId: string) {
 
       let typeOfEdit: any = diffAction;
 
-      // Wrapping related changes: Check if next node is an element (Not a text node) AND if the current element has "change-remove" diff
+      // Wrapping related changes: Check if next node is an element (Not a text node)
+      // AND if the current element has "change-remove" diff
       const node: any = $element[0].next;
       if (!node?.data?.trim() && diffAction === 'change-remove') {
         const $nextElement = $element.next();
@@ -37,8 +37,6 @@ export async function decomposeArticle(html: string, permissionId: string) {
 
           // change-remove is always succeeded by a change-insert
           typeOfEdit = 'change';
-          // Add description attribute
-
           const listItems = $('.ve-ui-diffElement-sidebar >')
             .children()
             .eq((changeid += 1))
@@ -52,6 +50,7 @@ export async function decomposeArticle(html: string, permissionId: string) {
           $nextElement.remove();
         }
       }
+      // Add the description and the type of edit and update the element.
       $wrapElement.attr('data-description', list.join(' '));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
       $element.replaceWith($wrapElement);
@@ -98,34 +97,36 @@ export async function decomposeArticle(html: string, permissionId: string) {
 }
 
 export async function getArticleParsedContent(articleId: string) {
-  const article = await getArticle(articleId);
-  const changes = await getChanges(articleId);
+  const article = await getArticle(articleId); // supabaseHelper.ts
+  const changes = await getChanges(articleId); // supabaseHelper.ts
   const content = article.current_html_content as string;
-  const $ = load(content);
-  // Add more data
-  $('[data-id]').each((index, element) => {
-    const $element = $(element);
-    $element.attr('data-type-of-edit', changes[index].type_of_edit);
-    $element.attr('data-status', changes[index].status);
-  });
-  return $.html();
-}
-
-export async function getChangesAndParsedContent(articleId: string) {
-  const changes = (await getChanges(articleId)) as any;
-
-  for (const change of changes) {
-    const $ = load(change.content);
-
+  if (content !== undefined && content !== null) {
+    const $ = load(content);
+    // Add more data
     $('[data-id]').each((index, element) => {
       const $element = $(element);
-      $element.attr('data-type-of-edit', change.type_of_edit);
-      $element.attr('data-status', change.status);
+      $element.attr('data-type-of-edit', changes[index].type_of_edit);
+      $element.attr('data-status', changes[index].status);
     });
-    change.content = $.html();
+    return $.html();
   }
-
-  return changes;
+  return null;
+}
+export async function getChangesAndParsedContent(articleId: string) {
+  const changes = (await getChanges(articleId)) as any; // supabaseHelper.ts
+  if (changes !== undefined && changes !== null) {
+    for (const change of changes) {
+      const $ = load(change.content);
+      $('[data-id]').each((index, element) => {
+        const $element = $(element);
+        $element.attr('data-type-of-edit', change.type_of_edit);
+        $element.attr('data-status', change.status);
+      });
+      change.content = $.html();
+    }
+    return changes;
+  }
+  return null;
 }
 
 export async function getInnerText(html: string) {

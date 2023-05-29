@@ -128,8 +128,3 @@ export async function getChangesAndParsedContent(articleId: string) {
   }
   return null;
 }
-
-export async function getInnerText(html: string) {
-  const $ = load(html);
-  return $.text();
-}

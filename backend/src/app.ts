@@ -13,14 +13,12 @@ import {
   updatePermission,
   removeChanges,
   updateChange,
-  insertComment,
-  getArticle
+  insertComment
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
   getArticleParsedContent,
-  getChangesAndParsedContent,
-  getInnerText
+  getChangesAndParsedContent
 } from './helpers/parsingHelper';
 
 const app = express();
@@ -223,33 +221,6 @@ app.post('/api/change/comment', async (req, res) => {
     res.status(500).json({ message: 'Inserting comment failed.' });
   }
 });
-
-/* // Get Article sentiments
-app.get('/api/article/sentiment_analysis', async (req, res) => {
-  try {
-    const articleId = req.query.articleId as string;
-    const article = await getArticle(articleId);
-    const innerText = await getInnerText(article.current_html_content);
-    const response = await axios.get(
-      'http://localhost:8000/sentiment_analysis',
-      {
-        params: {
-          text: innerText.toString()
-        }
-      }
-    );
-    const { scores } = response.data;
-    logger.info({ scores }, 'Get sentiment scores.');
-    res
-      .status(200)
-      .json({ message: 'Getting article sentiment scores succeeded.', scores });
-  } catch (error: any) {
-    logger.error(error.message);
-    res
-      .status(500)
-      .json({ message: 'Getting article sentiment scores failed.' });
-  }
-}); */
 
 // Get sentiments
 app.get('/api/sentiment_analysis', async (req, res) => {

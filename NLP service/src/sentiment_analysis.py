@@ -10,6 +10,7 @@ def get_textblob_sentiment_scores(text):
         sentiment_subjectivity = sentence.sentiment.subjectivity
         
         sentences_sentiment_scores.append(
-            {'sentence': str(sentence), 'sentiment_polarity': sentiment_polarity, 'sentiment_subjectivity': sentiment_subjectivity})
+            {'sentence': str(sentence), 'sentiment_polarity': sentiment_polarity,
+             'sentiment_subjectivity': sentiment_subjectivity})
         
     return sentences_sentiment_scores

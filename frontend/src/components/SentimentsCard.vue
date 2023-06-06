@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-v-html -->
 <template>
   <q-scroll-area>
     <q-form class="q-gutter-md" @submit="getTextSentimentAnalysis">

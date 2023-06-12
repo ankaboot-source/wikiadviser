@@ -9,7 +9,6 @@
   >
     <q-tab v-if="editPermission" name="editor" label="editor" />
     <q-tab name="view" label="view" />
-    <q-tab name="sentiments" label="Sentiment Analysis" />
     <q-space />
     <q-btn
       icon="link"
@@ -45,13 +44,6 @@
         class="col-3"
       />
     </q-tab-panel>
-    <q-tab-panel name="sentiments" class="row justify-evenly">
-      <sentiments-card
-        :article-id="articleId"
-        style="height: 85vh"
-        class="col-10 rounded-borders q-pa-md bg-secondary borders"
-      />
-    </q-tab-panel>
   </q-tab-panels>
 </template>
 
@@ -60,7 +52,6 @@ import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import ShareCard from 'src/components/ShareCard.vue';
-import SentimentsCard from 'src/components/SentimentsCard.vue';
 import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';

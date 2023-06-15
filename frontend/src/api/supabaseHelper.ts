@@ -1,7 +1,7 @@
 import { api } from 'src/boot/axios';
 
 export async function getUsers(articleId: string) {
-  const response = await api.get('http://localhost:3000/api/users', {
+  const response = await api.get('users', {
     params: {
       articleId: articleId,
     },
@@ -14,7 +14,7 @@ export async function createNewArticle(
   userId: string,
   description?: string
 ) {
-  const response = await api.post('http://localhost:3000/api/article', {
+  const response = await api.post('article', {
     title,
     userId,
     description,
@@ -26,7 +26,7 @@ export async function createNewPermissionRequest(
   articleId: string,
   userId: string
 ) {
-  const response = await api.post('http://localhost:3000/api/permission', {
+  const response = await api.post('permission', {
     articleId,
     userId,
   });
@@ -34,7 +34,7 @@ export async function createNewPermissionRequest(
 }
 
 export async function getArticles(userId: string) {
-  const response = await api.get('http://localhost:3000/api/articles', {
+  const response = await api.get('articles', {
     params: {
       userId,
     },
@@ -43,7 +43,7 @@ export async function getArticles(userId: string) {
 }
 
 export async function updatePermission(permissionId: string, role: number) {
-  const response = await api.put('http://localhost:3000/api/permission', {
+  const response = await api.put('permission', {
     permissionId,
     role,
   });
@@ -51,19 +51,16 @@ export async function updatePermission(permissionId: string, role: number) {
 }
 
 export async function getArticleParsedContent(articleId: string) {
-  const response = await api.get(
-    'http://localhost:3000/api/article/parsedContent',
-    {
-      params: {
-        articleId,
-      },
-    }
-  );
+  const response = await api.get('article/parsedContent', {
+    params: {
+      articleId,
+    },
+  });
   return response.data.content;
 }
 
 export async function getChanges(articleId: string) {
-  const response = await api.get('http://localhost:3000/api/article/changes', {
+  const response = await api.get('article/changes', {
     params: {
       articleId,
     },
@@ -76,7 +73,7 @@ export async function updateChange(
   status?: number,
   description?: string
 ) {
-  const response = await api.put('http://localhost:3000/api/article/change', {
+  const response = await api.put('article/change', {
     changeId,
     status,
     description,
@@ -90,22 +87,10 @@ export async function insertComment(
   commenterId: string,
   content: string
 ) {
-  const response = await api.post('http://localhost:3000/api/change/comment', {
+  const response = await api.post('change/comment', {
     changeId,
     commenterId,
     content,
   });
   return response.status;
-}
-
-export async function getArticleContent(articleId: string) {
-  const response = await api.get(
-    'http://localhost:3000/api/article/sentiment_analysis',
-    {
-      params: {
-        articleId,
-      },
-    }
-  );
-  return response;
 }

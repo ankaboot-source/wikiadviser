@@ -14,8 +14,8 @@ export async function decomposeArticle(html: string, permissionId: string) {
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
-      const diffAction = $element.data('diff-action');
-      const list: any[] = [];
+      const diffAction: string = $element.data('diff-action') as string;
+      const list: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
       const $wrapElement = $('<span>');
@@ -23,7 +23,7 @@ export async function decomposeArticle(html: string, permissionId: string) {
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
 
-      let typeOfEdit: any = diffAction;
+      let typeOfEdit: string = diffAction;
 
       // Wrapping related changes: Check if next node is an element (Not a text node)
       // AND if the current element has "change-remove" diff
@@ -64,8 +64,7 @@ export async function decomposeArticle(html: string, permissionId: string) {
   );
 
   const elements = $('[data-description]');
-  for (let index = 0; index < elements.length; index += 1) {
-    const element = elements[index];
+  for (const element of elements) {
     const $element = $(element);
     // eslint-disable-next-line no-await-in-loop
     const changeId = await createNewChange(permissionId);
@@ -99,7 +98,7 @@ export async function decomposeArticle(html: string, permissionId: string) {
 export async function getArticleParsedContent(articleId: string) {
   const article = await getArticle(articleId); // supabaseHelper.ts
   const changes = await getChanges(articleId); // supabaseHelper.ts
-  const content = article.current_html_content as string;
+  const content: string = article.current_html_content;
   if (content !== undefined && content !== null) {
     const $ = load(content);
     // Add more data
@@ -112,8 +111,9 @@ export async function getArticleParsedContent(articleId: string) {
   }
   return null;
 }
+
 export async function getChangesAndParsedContent(articleId: string) {
-  const changes = (await getChanges(articleId)) as any; // supabaseHelper.ts
+  const changes = await getChanges(articleId); // supabaseHelper.ts
   if (changes !== undefined && changes !== null) {
     for (const change of changes) {
       const $ = load(change.content);

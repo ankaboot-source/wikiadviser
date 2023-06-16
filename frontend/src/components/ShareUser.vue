@@ -19,7 +19,7 @@ import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: string | null;
+  role?: string;
 }>();
 const roles: { [key: number]: string } = {
   0: 'Owner',
@@ -38,7 +38,5 @@ async function handleRoleChange() {
   //Set permission
   console.log(roleModel.value);
   await updatePermission(props.user.permissionId, rolesBack[roleModel.value]);
-
-  return;
 }
 </script>

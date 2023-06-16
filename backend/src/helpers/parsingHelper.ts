@@ -77,18 +77,18 @@ export async function decomposeArticle(html: string, permissionId: string) {
     // Remove description and type of edit attr
     $element.removeAttr('data-description');
     $element.removeAttr('data-type-of-edit');
-    const typeOfEditDictionary = {
-      change: 0,
-      insert: 1,
-      remove: 2
-    };
+    enum TypeOfEditDictionary {
+      change = 0,
+      insert = 1,
+      remove = 2
+    }
     // eslint-disable-next-line no-await-in-loop
     await updateChange({
       changeId,
       content: $.html($element),
       status: 0,
       description,
-      type_of_edit: typeOfEditDictionary[typeOfEdit]
+      type_of_edit: TypeOfEditDictionary[typeOfEdit]
     });
   }
   await updateArticle(permissionId, $.html());

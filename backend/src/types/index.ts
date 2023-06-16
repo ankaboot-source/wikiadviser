@@ -1,14 +1,22 @@
 export type User = {
   username: string;
   email: string;
-  role: number;
+  role: 0 | 1 | 2;
   permissionId: string;
 };
 
 export type Change = {
   changeId: string;
   content?: string;
-  status?: number;
+  status?: 0 | 1 | 2;
   description?: string;
-  type_of_edit?: number;
+  type_of_edit?: 0 | 1 | 2;
+};
+
+export type Article = {
+  article_id: string;
+  title: string;
+  description: string;
+  permission_id: string;
+  role: 0 | 1 | 2 | null;
 };

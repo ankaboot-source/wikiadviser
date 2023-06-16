@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { User, Change } from '../types';
+import { User, Change, Article } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -56,7 +56,7 @@ export async function getUsersWithPermissions(
   return users;
 }
 
-export async function getArticles(userId: string): Promise<any> {
+export async function getArticles(userId: string): Promise<Article[] | null> {
   // check if user has permission on that Article
   const { data: articleData, error: articleError } = await supabase
     .from('permissions')
@@ -77,8 +77,8 @@ export async function getArticles(userId: string): Promise<any> {
     return null;
   }
 
-  const articles = articleData
-    .filter((article: any) => article.role !== null)
+  const articles: Article[] = articleData
+    .filter((article) => article.role !== null)
     .map((article: any) => ({
       article_id: article.article_id,
       title: article.articles.title,
@@ -93,7 +93,7 @@ export async function getArticles(userId: string): Promise<any> {
 export async function createNewPermission(
   articleId: string,
   userId: string
-): Promise<any> {
+): Promise<void> {
   // check if user has permission on that Article
   const existingPermission = await supabase
     .from('permissions')
@@ -116,8 +116,14 @@ export async function createNewPermission(
 export async function updatePermission(
   permissionId: string,
   role: number
-): Promise<any> {
-  await supabase.from('permissions').update({ role }).eq('id', permissionId);
+): Promise<void> {
+  const { error: changeError } = await supabase
+    .from('permissions')
+    .update({ role })
+    .eq('id', permissionId);
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
 }
 
 export async function getUsername(permissionId: string): Promise<string> {

@@ -50,7 +50,7 @@
       <div class="q-pa-md">
         <div class="row">
           <div class="text-capitalize col-4 q-pt-sm text-body1">
-            {{ typeOfEditMessageDictionary[props.item?.type_of_edit] }}
+            {{ typeOfEditDictionary[props.item?.type_of_edit] }}
           </div>
           <q-input
             v-model="description"
@@ -84,9 +84,9 @@
       </q-item-label>
 
       <div class="q-pa-md">
-        <q-badge rounded :color="statusColorDictionary[props.item?.status]" />
+        <q-badge rounded :color="statusDictionary[props.item?.status].color" />
         <span class="text-body1 q-pl-sm">{{
-          statusMessageDictionary[props.item?.status]
+          statusDictionary[props.item?.status].message
         }}</span>
       </div>
     </q-item-section>
@@ -191,22 +191,37 @@ async function handleComment() {
 }
 
 const description = ref(props.item?.description);
-const statusColorDictionary: { [key: number]: string } = {
-  0: 'yellow-8',
-  1: 'green',
-  2: 'red',
+
+enum Status {
+  AwaitingReviewerApproval = 0,
+  EditApproved = 1,
+  EditRejected = 2,
+}
+
+type StatusInfo = {
+  message: string;
+  color: string;
 };
 
-const statusMessageDictionary: { [key: number]: string } = {
-  0: 'Awaiting Reviewer Approval',
-  1: 'Edit Approved',
-  2: 'Edit Rejected',
+const statusDictionary: Record<Status, StatusInfo> = {
+  [Status.AwaitingReviewerApproval]: {
+    message: 'Awaiting Reviewer Approval',
+    color: 'yellow-8',
+  },
+  [Status.EditApproved]: { message: 'Edit Approved', color: 'green' },
+  [Status.EditRejected]: { message: 'Edit Rejected', color: 'red' },
 };
 
-const typeOfEditMessageDictionary: { [key: number]: string } = {
-  0: 'Change',
-  1: 'Insert',
-  2: 'Remove',
+enum TypeOfEdit {
+  Change = 0,
+  Insert = 1,
+  Remove = 2,
+}
+
+const typeOfEditDictionary: Record<TypeOfEdit, string> = {
+  [TypeOfEdit.Change]: 'Change',
+  [TypeOfEdit.Insert]: 'Insert',
+  [TypeOfEdit.Remove]: 'Remove',
 };
 
 const preventLinkVisit = (event: MouseEvent) => {
@@ -215,10 +230,10 @@ const preventLinkVisit = (event: MouseEvent) => {
 };
 
 async function handleApprove() {
-  await updateChange(props.item.id, 1);
+  await updateChange(props.item.id, Status.EditApproved);
 }
 async function handleReject() {
-  await updateChange(props.item.id, 2);
+  await updateChange(props.item.id, Status.EditRejected);
 }
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);

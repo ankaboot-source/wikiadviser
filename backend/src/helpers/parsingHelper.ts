@@ -83,13 +83,13 @@ export async function decomposeArticle(html: string, permissionId: string) {
       remove: 2
     };
     // eslint-disable-next-line no-await-in-loop
-    await updateChange(
+    await updateChange({
       changeId,
-      $.html($element),
-      0,
+      content: $.html($element),
+      status: 0,
       description,
-      typeOfEditDictionary[typeOfEdit]
-    );
+      type_of_edit: typeOfEditDictionary[typeOfEdit]
+    });
   }
   await updateArticle(permissionId, $.html());
   return $.html();

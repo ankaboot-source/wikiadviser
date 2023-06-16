@@ -4,3 +4,11 @@ export type User = {
   role: number;
   permissionId: string;
 };
+
+export type Change = {
+  changeId: string;
+  content?: string;
+  status?: number;
+  description?: string;
+  type_of_edit?: number;
+};

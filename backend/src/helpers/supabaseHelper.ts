@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { User } from '../types';
+import { User, Change } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -169,31 +169,9 @@ export async function createNewChange(permissionId: string): Promise<string> {
   return username;
 }
 
-export async function updateChange(
-  changeId: string,
-  content?: string,
-  status?: number,
-  description?: string,
-  typeOfEdit?: number
-): Promise<void> {
-  // Update
-  const updateData: any = {};
+export async function updateChange(toChange: Change): Promise<void> {
+  const { changeId, ...updateData } = toChange;
 
-  if (status !== undefined) {
-    updateData.status = status;
-  }
-  if (content !== undefined) {
-    updateData.content = content;
-  }
-  if (typeOfEdit !== undefined) {
-    updateData.type_of_edit = typeOfEdit;
-  }
-  if (description !== undefined) {
-    updateData.description = description;
-  }
-  if (status !== undefined) {
-    updateData.status = status;
-  }
   const { error: changeError } = await supabase
     .from('changes')
     .update(updateData)

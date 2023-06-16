@@ -42,7 +42,7 @@ onMounted(async () => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    localStorage.clear();
+    $q.localStorage.clear();
 
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

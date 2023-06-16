@@ -35,7 +35,9 @@ import SearchList from './SearchList.vue';
 import { ref, computed, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { onBeforeMount } from 'vue';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
 const term = ref('');
 const title = ref('');
 const isSearching = ref(false);
@@ -61,7 +63,7 @@ watch(apiSearch, async (apiSearch) => {
 });
 
 onBeforeMount(() => {
-  title.value = localStorage.getItem('articles')
+  title.value = $q.localStorage.getItem('articles')
     ? 'Edit a new article'
     : 'Edit your first article';
 });

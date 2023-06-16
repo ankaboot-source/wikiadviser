@@ -36,7 +36,7 @@ const props = defineProps<{
   item: SearchResult;
 }>();
 const articleId = ref('');
-const articles = JSON.parse(localStorage.getItem('articles')!);
+const articles = JSON.parse($q.localStorage.getItem('articles')!);
 
 async function itemOnClick() {
   try {
@@ -79,7 +79,7 @@ async function itemOnClick() {
         icon: 'check',
         color: 'positive',
       });
-      localStorage.setItem(
+      $q.localStorage.set(
         'articles',
         JSON.stringify(await getArticles(data.session!.user.id))
       );

@@ -60,7 +60,9 @@ import {
   getArticles,
 } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
 const route = useRoute();
 
 const router = useRouter();
@@ -82,7 +84,7 @@ onBeforeMount(async () => {
   tab.value = route.params.tab ? (route.params.tab as string) : 'view';
 
   const articles = await getArticles(data.session!.user.id);
-  localStorage.setItem('articles', JSON.stringify(articles));
+  $q.localStorage.set('articles', JSON.stringify(articles));
   if (articles) {
     const article = articles.find((article: any) => {
       return article.article_id === articleId.value;

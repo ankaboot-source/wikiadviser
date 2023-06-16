@@ -33,13 +33,16 @@ import { ref } from 'vue';
 import supabase from 'src/api/supabase';
 import { getArticles } from 'src/api/supabaseHelper';
 import { onBeforeMount } from 'vue';
-const tab = ref('');
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
+const tab = ref('');
 const articles = ref();
+
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
   articles.value = await getArticles(data.session!.user.id);
-  localStorage.setItem('articles', JSON.stringify(articles.value));
+  $q.localStorage.set('articles', JSON.stringify(articles.value));
   tab.value = articles.value ? 'ownedArticles' : 'wikipediaArticles';
 });
 </script>

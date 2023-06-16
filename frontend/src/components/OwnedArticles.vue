@@ -55,8 +55,11 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
+
+const $q = useQuasar();
 const router = useRouter();
-const articles = JSON.parse(localStorage.getItem('articles')!);
+const articles = JSON.parse($q.localStorage.getItem('articles')!);
 const term = ref('');
 const roles: { [key: number]: string } = {
   0: 'Owner',

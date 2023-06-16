@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
 import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
@@ -219,31 +218,6 @@ app.post('/api/change/comment', async (req, res) => {
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Inserting comment failed.' });
-  }
-});
-
-// Get sentiments
-app.get('/api/sentiment_analysis', async (req, res) => {
-  try {
-    const text = req.query.text as string;
-    const response = await axios.get(
-      'http://localhost:8000/sentiment_analysis',
-      {
-        params: {
-          text
-        }
-      }
-    );
-    const { scores } = response.data;
-    logger.info({ scores }, 'Get sentiment scores.');
-    res
-      .status(200)
-      .json({ message: 'Getting article sentiment scores succeeded.', scores });
-  } catch (error: any) {
-    logger.error(error.message);
-    res
-      .status(500)
-      .json({ message: 'Getting article sentiment scores failed.' });
   }
 });
 

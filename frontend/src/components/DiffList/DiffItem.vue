@@ -6,24 +6,23 @@
   >
     <template #header>
       <q-item-section class="text-body1">
-        <q-item-label
-          ><div
+        <q-item-label>
+          <div
             @click="preventLinkVisit($event)"
             v-html="props.item?.content"
           ></div>
         </q-item-label>
         <q-item-label caption lines="2">
-          <div
-            v-for="(description, index) in props.item?.description"
-            :key="index"
-          >
+          <div>
             {{ description }}
           </div>
         </q-item-label>
       </q-item-section>
-      <q-item-section caption top side>
-        {{ props.item?.date }}
-        @{{ props.item?.username }}
+      <q-item-section caption top side lines="2">
+        <span style="size: 0.5rem"
+          >{{ new Date(props.item?.created_at).toLocaleString() }}
+        </span>
+        <span>@{{ props.item?.users.raw_user_meta_data.username }}</span>
       </q-item-section>
     </template>
     <q-separator />
@@ -51,7 +50,7 @@
       <div class="q-pa-md">
         <div class="row">
           <div class="text-capitalize col-4 q-pt-sm text-body1">
-            {{ props.item?.typeOfEdit }}
+            {{ typeOfEditDictionary[props.item?.type_of_edit] }}
           </div>
           <q-input
             v-model="description"
@@ -60,16 +59,17 @@
             autogrow
             label="Description"
             class="col"
+            :readonly="!editPermission"
           >
             <!-- User: Contributor  Only -->
-            <template #append>
+            <template v-if="editPermission" #append>
               <q-btn
                 round
                 dense
                 flat
                 icon="check"
                 color="primary"
-                @click="handleComment"
+                @click="handleDescription()"
               />
             </template>
           </q-input>
@@ -84,8 +84,10 @@
       </q-item-label>
 
       <div class="q-pa-md">
-        <q-badge rounded :color="status[props.item?.status]" />
-        <span class="text-body1 q-pl-sm">{{ props.item?.status }}</span>
+        <q-badge rounded :color="statusDictionary[props.item?.status].color" />
+        <span class="text-body1 q-pl-sm">{{
+          statusDictionary[props.item?.status].message
+        }}</span>
       </div>
     </q-item-section>
     <q-separator />
@@ -96,37 +98,22 @@
       </q-item-label>
       <q-item-section class="q-pa-md row justify-center bg-secondary">
         <!-- Default Comments Examples.-->
-        <q-scroll-area style="height: 150px; width: 100%" class="q-pa-sm">
-          <q-chat-message
-            name="me"
-            :text="['hey, how are you?']"
-            stamp="7 minutes ago"
-            sent
-            bg-color="amber-7"
-          />
-          <q-chat-message
-            name="Jane"
-            :text="[
-              'doing fine, how r you?',
-              'I just feel like typing a really, really, REALLY long message to annoy you...',
-            ]"
-            size="6"
-            stamp="4 minutes ago"
-            text-color="white"
-            bg-color="primary"
-          />
-          <q-chat-message
-            name="Jane"
-            :text="['Did it work?']"
-            stamp="1 minutes ago"
-            size="8"
-            text-color="white"
-            bg-color="primary"
-          />
+        <q-scroll-area
+          style="height: 9.5rem; width: 100%"
+          class="q-px-sm q-pb-sm"
+        >
+          <template v-for="comment in item.comments" :key="comment.id">
+            <q-chat-message
+              :name="comment.users.raw_user_meta_data.username"
+              :text="[comment.content]"
+              :stamp="new Date(comment.created_at).toLocaleString()"
+              :sent="comment.users.raw_user_meta_data.username == username"
+            />
+          </template>
         </q-scroll-area>
 
         <q-input
-          v-model="comment"
+          v-model="toSendComment"
           autogrow
           filled
           dense
@@ -150,7 +137,10 @@
     <q-separator />
 
     <!-- User: Reviewer Only -->
-    <q-item-section class="bg-accent">
+    <q-item-section
+      v-if="!editPermission && !props.item.status"
+      class="bg-accent"
+    >
       <div class="row q-my-md justify-around">
         <q-btn
           outline
@@ -166,35 +156,88 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { ChangesItem } from 'src/types';
+import { insertComment, updateChange } from 'src/api/supabaseHelper';
+import { Session } from '@supabase/supabase-js';
+import supabase from 'src/api/supabase';
 
-const expanded = ref(true);
 const props = defineProps<{
   item: ChangesItem;
+  editPermission: boolean;
 }>();
+const expanded = ref(props.item?.status == 0);
 
-const description = ref(props.item?.description?.join());
-const comment = ref('');
-const status: { [key: string]: string } = {
-  'Awaiting Reviewer Approval': 'yellow-8',
-  'Edit Approved': 'green',
-  'Edit Rejected': 'red',
+const session = ref<Session | null>();
+const username = ref('');
+const userId = ref<string>('');
+const toSendComment = ref('');
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  session.value = data.session;
+  supabase.auth.onAuthStateChange((_, _session) => {
+    session.value = _session;
+    username.value = session.value?.user.user_metadata.username;
+    userId.value = session.value?.user.id as string;
+    console.log(props.item.comments, typeof props.item.comments);
+  });
+});
+
+async function handleComment() {
+  console.log('commented: ', toSendComment.value);
+  if (toSendComment.value.length > 0) {
+    await insertComment(props.item.id, userId.value, toSendComment.value);
+    toSendComment.value = '';
+  }
+}
+
+const description = ref(props.item?.description);
+
+enum Status {
+  AwaitingReviewerApproval = 0,
+  EditApproved = 1,
+  EditRejected = 2,
+}
+
+type StatusInfo = {
+  message: string;
+  color: string;
 };
+
+const statusDictionary: Record<Status, StatusInfo> = {
+  [Status.AwaitingReviewerApproval]: {
+    message: 'Awaiting Reviewer Approval',
+    color: 'yellow-8',
+  },
+  [Status.EditApproved]: { message: 'Edit Approved', color: 'green' },
+  [Status.EditRejected]: { message: 'Edit Rejected', color: 'red' },
+};
+
+enum TypeOfEdit {
+  Change = 0,
+  Insert = 1,
+  Remove = 2,
+}
+
+const typeOfEditDictionary: Record<TypeOfEdit, string> = {
+  [TypeOfEdit.Change]: 'Change',
+  [TypeOfEdit.Insert]: 'Insert',
+  [TypeOfEdit.Remove]: 'Remove',
+};
+
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
   event.preventDefault();
 };
 
-function handleComment() {
-  console.log('commented: ', comment.value);
-  comment.value = '';
+async function handleApprove() {
+  await updateChange(props.item.id, Status.EditApproved);
 }
-function handleApprove() {
-  console.log('Edit Approved');
+async function handleReject() {
+  await updateChange(props.item.id, Status.EditRejected);
 }
-function handleReject() {
-  console.log('Edit Rejected');
+async function handleDescription() {
+  await updateChange(props.item.id, undefined, description.value);
 }
 </script>
 <style scoped>

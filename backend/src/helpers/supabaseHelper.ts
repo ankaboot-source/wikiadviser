@@ -1,6 +1,5 @@
 import supabase from '../api/supabase';
-import logger from '../logger';
-import { User } from '../types';
+import { User, Change, Article } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -34,6 +33,7 @@ export async function getUsersWithPermissions(
     .from('permissions')
     .select(
       `
+      id,
     article_id,
     role,
     users(
@@ -43,13 +43,6 @@ export async function getUsersWithPermissions(
     )
     .eq('article_id', articleId);
 
-  logger.info(
-    {
-      permissionsData
-    },
-    'check articles data'
-  );
-
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }
@@ -57,59 +50,232 @@ export async function getUsersWithPermissions(
   const users = permissionsData.map((permission: any) => ({
     username: permission.users.raw_user_meta_data.username,
     email: permission.users.email,
-    role: permission.role
+    role: permission.role,
+    permissionId: permission.id
   }));
   return users;
 }
 
-export async function checkArticleExistenceAndAccess(
-  title: string,
-  userId: string
-): Promise<string | null> {
-  // check if Article with that title exists
-  const { data: articlesData, error: articlesError } = await supabase
-    .from('articles')
-    .select('id', { count: 'exact' })
-    .eq('title', title)
-    .maybeSingle();
+export async function getArticles(userId: string): Promise<Article[] | null> {
+  // check if user has permission on that Article
+  const { data: articleData, error: articleError } = await supabase
+    .from('permissions')
+    .select(
+      `
+      id,
+    article_id,
+    role,
+    articles(title,description)
+    `
+    )
+    .eq('user_id', userId);
 
-  logger.info(
-    {
-      articlesData
-    },
-    'check articles data'
-  );
-
-  if (articlesError) {
-    throw new Error(articlesError.message);
+  if (articleError) {
+    throw new Error(articleError.message);
   }
-
-  if (!articlesData) {
-    // Article with the given title does not exist
+  if (articleData.length === 0) {
     return null;
   }
 
+  const articles: Article[] = articleData
+    .filter((article) => article.role !== null)
+    .map((article: any) => ({
+      article_id: article.article_id,
+      title: article.articles.title,
+      description: article.articles.description,
+      permission_id: article.id,
+      role: article.role
+    }));
+
+  return articles;
+}
+
+export async function createNewPermission(
+  articleId: string,
+  userId: string
+): Promise<void> {
   // check if user has permission on that Article
-  const { data: permissionsData, error: permissionsError } = await supabase
+  const existingPermission = await supabase
     .from('permissions')
-    .select('id')
-    .eq('article_id', articlesData.id)
+    .select('*')
     .eq('user_id', userId)
+    .eq('article_id', articleId)
     .maybeSingle();
 
-  logger.info(
-    {
-      permissionsData
-    },
-    'check permissions data'
-  );
+  // if not, add a permission request.
+  if (!existingPermission.data) {
+    const { error: permissionError } = await supabase
+      .from('permissions')
+      .insert({ user_id: userId, article_id: articleId });
+    if (permissionError) {
+      throw new Error(permissionError.message);
+    }
+  }
+}
+
+export async function updatePermission(
+  permissionId: string,
+  role: number
+): Promise<void> {
+  const { error: changeError } = await supabase
+    .from('permissions')
+    .update({ role })
+    .eq('id', permissionId);
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+}
+
+export async function getUsername(permissionId: string): Promise<string> {
+  const { data: permissionsData, error: permissionsError } = await supabase
+    // Fetch permissions of users of a specific article id
+    .from('permissions')
+    .select(
+      `*,
+    users(
+      raw_user_meta_data)`
+    )
+    .eq('id', permissionId)
+    .maybeSingle();
 
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }
 
-  if (permissionsData) {
-    return articlesData.id;
+  const username = permissionsData?.users.raw_user_meta_data.username;
+  return username;
+}
+
+export async function createNewChange(permissionId: string): Promise<string> {
+  const { data: permissionData, error: permissionError } = await supabase
+    .from('permissions')
+    .select('article_id, user_id')
+    .eq('id', permissionId)
+    .single();
+
+  if (permissionError) {
+    throw new Error(permissionError.message);
   }
-  return null;
+
+  // Insert
+  const { data: changeData, error: changeError } = await supabase
+    .from('changes')
+    .insert({
+      article_id: permissionData.article_id,
+      contributor_id: permissionData.user_id
+    })
+    .select();
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+
+  const username = changeData[0].id;
+
+  return username;
+}
+
+export async function updateChange(toChange: Change): Promise<void> {
+  const { changeId, ...updateData } = toChange;
+
+  const { error: changeError } = await supabase
+    .from('changes')
+    .update(updateData)
+    .eq('id', changeId);
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+}
+
+export async function updateArticle(
+  permissionId: string,
+  current_html_content: string
+) {
+  const { data: articleIddata, error: articleIdError } = await supabase
+    .from('permissions')
+    .select(`article_id`)
+    .eq('id', permissionId)
+    .single();
+  if (articleIdError) {
+    throw new Error(articleIdError.message);
+  }
+
+  const { error: articleError } = await supabase
+    .from('articles')
+    .update({ current_html_content })
+    .eq('id', articleIddata.article_id);
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+}
+
+export async function getArticle(articleId: string) {
+  const { data: articleData, error: articleError } = await supabase
+    .from('articles')
+    .select('*')
+    .eq('id', articleId)
+    .single();
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+  return articleData;
+}
+
+export async function getChanges(articleId: string) {
+  const { data: changesData, error: changesError } = await supabase
+    .from('changes')
+    .select(
+      `
+      id,
+      content,
+    created_at,
+    description,
+    status,
+    type_of_edit,
+    users(
+      raw_user_meta_data), comments(content,created_at, users(raw_user_meta_data))`
+    )
+    .order('created_at')
+    .eq('article_id', articleId);
+
+  if (changesError) {
+    throw new Error(changesError.message);
+  }
+  return changesData;
+}
+
+export async function removeChanges(permissionId: string) {
+  const { data: articleData, error: articleError } = await supabase
+    .from('permissions')
+    .select('article_id')
+    .eq('id', permissionId)
+    .single();
+
+  if (articleError) {
+    throw new Error(articleError.message);
+  }
+
+  const { error } = await supabase
+    .from('changes')
+    .delete()
+    .eq('article_id', articleData.article_id);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function insertComment(
+  changeId: string,
+  commenterId: string,
+  content: string
+) {
+  const { error: changeError } = await supabase
+    .from('comments')
+    .insert({ change_id: changeId, commenter_id: commenterId, content });
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
 }

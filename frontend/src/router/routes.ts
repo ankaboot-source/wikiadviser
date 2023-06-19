@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ArticlesPage.vue'),
   },
   {
-    path: '/articles/:title/:tab(view|editor)?/:articleId',
+    path: '/articles/:articleId/:tab(view|editor)?',
     name: 'article',
     component: () => import('pages/ArticlePage.vue'),
   },
@@ -16,10 +16,16 @@ const routes: RouteRecordRaw[] = [
     path: '/auth',
     component: () => import('pages/auth/SigninPage.vue'),
   },
+  {
+    path: '/ArticleNotFound',
+    name: 'ArticleNotFound',
+    component: () => import('pages/ErrorNotFoundArticle.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it
   {
+    name: '404',
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
   },

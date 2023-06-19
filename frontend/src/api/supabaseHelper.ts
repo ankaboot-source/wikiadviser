@@ -1,7 +1,7 @@
 import { api } from 'src/boot/axios';
 
 export async function getUsers(articleId: string) {
-  const response = await api.get('http://localhost:3000/api/users', {
+  const response = await api.get('users', {
     params: {
       articleId: articleId,
     },
@@ -14,7 +14,7 @@ export async function createNewArticle(
   userId: string,
   description?: string
 ) {
-  const response = await api.post('http://localhost:3000/api/new_article', {
+  const response = await api.post('article', {
     title,
     userId,
     description,
@@ -22,16 +22,75 @@ export async function createNewArticle(
   return response.data.articleId;
 }
 
-export async function checkArticleExistenceAndAccess(
-  title: string,
+export async function createNewPermissionRequest(
+  articleId: string,
   userId: string
 ) {
-  // Check articles existence by returning an articleId, ( returns null if it doesnt exist)
-  const response = await api.get('http://localhost:3000/api/check_article', {
+  const response = await api.post('permission', {
+    articleId,
+    userId,
+  });
+  return response.status;
+}
+
+export async function getArticles(userId: string) {
+  const response = await api.get('articles', {
     params: {
-      title,
       userId,
     },
   });
-  return response.data.articleId;
+  return response.data.articles;
+}
+
+export async function updatePermission(permissionId: string, role: number) {
+  const response = await api.put('permission', {
+    permissionId,
+    role,
+  });
+  return response.status;
+}
+
+export async function getArticleParsedContent(articleId: string) {
+  const response = await api.get('article/parsedContent', {
+    params: {
+      articleId,
+    },
+  });
+  return response.data.content;
+}
+
+export async function getChanges(articleId: string) {
+  const response = await api.get('article/changes', {
+    params: {
+      articleId,
+    },
+  });
+  return response.data.changes;
+}
+
+export async function updateChange(
+  changeId: string,
+  status?: number,
+  description?: string
+) {
+  const response = await api.put('article/change', {
+    changeId,
+    status,
+    description,
+  });
+  console.log(changeId, status, description);
+  return response.status;
+}
+
+export async function insertComment(
+  changeId: string,
+  commenterId: string,
+  content: string
+) {
+  const response = await api.post('change/comment', {
+    changeId,
+    commenterId,
+    content,
+  });
+  return response.status;
 }

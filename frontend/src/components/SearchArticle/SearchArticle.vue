@@ -1,7 +1,7 @@
 <template>
   <q-card-section>
     <div class="text-h5" style="font-family: serif">
-      Edit your first article
+      {{ title }}
     </div>
   </q-card-section>
   <q-card-section class="q-pb-none">
@@ -32,10 +32,13 @@
 <script setup lang="ts">
 import axios from 'axios';
 import SearchList from './SearchList.vue';
-import { ref, computed, watch } from 'vue';
+import { onBeforeMount, ref, computed, watch } from 'vue';
 import { SearchResult } from 'src/types';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
 const term = ref('');
+const title = ref('');
 const isSearching = ref(false);
 const apiSearch = computed(
   () =>
@@ -56,5 +59,11 @@ watch(apiSearch, async (apiSearch) => {
     console.error(error);
   }
   isSearching.value = false;
+});
+
+onBeforeMount(() => {
+  title.value = $q.localStorage.getItem('articles')
+    ? 'Edit a new article'
+    : 'Edit your first article';
 });
 </script>

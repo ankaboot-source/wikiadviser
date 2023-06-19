@@ -16,7 +16,7 @@ export default async function setupNewArticle(
   await page.$eval(
     '#wpTextbox1',
     // eslint-disable-next-line no-return-assign, no-param-reassign
-    (el: any, value: any) => (el.value = value),
+    (el: any, value: string) => (el.value = value),
     wpArticleWikitext
   );
   await page.waitForTimeout(500);

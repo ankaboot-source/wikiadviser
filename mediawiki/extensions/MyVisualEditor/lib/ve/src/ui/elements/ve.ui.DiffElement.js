@@ -62,17 +62,19 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
       this.$sidebar.append(this.descriptions.$element)
     )
     .addClass("ve-ui-diffElement");
-      
+
   //debugger;
   console.log("this.$element[0]", this.$element[0].outerHTML);
+  const urlParams = new URLSearchParams(window.location.search);
+  const permissionId = urlParams.get("permissionid");
 
   // Post data to the backend
-  fetch("http://localhost:3000/api/html_diff", {
+  fetch("http://localhost:3000/api/rawArticle", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ html: this.$element[0].outerHTML }),
+    body: JSON.stringify({ html: this.$element[0].outerHTML, permissionId }),
   })
     .then((response) => {
       console.log("Data sent.");

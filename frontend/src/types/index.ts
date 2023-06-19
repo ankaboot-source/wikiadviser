@@ -1,11 +1,12 @@
 export type ChangesItem = {
-  id: number;
+  id: string;
   content: string;
-  status: 'Awaiting Reviewer Approval' | 'Edit Approved' | 'Edit Rejected';
-  typeOfEdit: 'remove' | 'insert' | 'change';
-  description?: string[];
-  username: string;
-  date: string;
+  status: 0 | 1 | 2;
+  type_of_edit: 0 | 1 | 2;
+  description: string;
+  users: { raw_user_meta_data: { username: string } };
+  created_at: string;
+  comments: Comment[];
 };
 
 export type SearchResult = {
@@ -21,4 +22,19 @@ export type User = {
   username: string;
   email: string;
   role: number;
+  permissionId: string;
+};
+
+export type Article = {
+  article_id: string;
+  description: string;
+  permission_id: string;
+  role: null | 0 | 1 | 2;
+  title: string;
+};
+
+export type Comment = {
+  content: string;
+  created_at: Date;
+  users: { raw_user_meta_data: { username: string } };
 };

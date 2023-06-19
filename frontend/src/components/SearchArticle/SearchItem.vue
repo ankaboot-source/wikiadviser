@@ -28,42 +28,31 @@ import { useQuasar, QSpinnerGears } from 'quasar';
 import { SearchResult } from 'src/types';
 import supabase from 'src/api/supabase';
 import { ref } from 'vue';
-import {
-  checkArticleExistenceAndAccess,
-  createNewArticle,
-} from 'src/api/supabaseHelper';
-
+import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
+import { Article } from 'src/types';
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
 const articleId = ref('');
+const articles = JSON.parse($q.localStorage.getItem('articles')!);
 
 async function itemOnClick() {
   try {
     const { data } = await supabase.auth.getSession();
-
-    // Fetch Supabase Article to check if it exists
-    articleId.value = await checkArticleExistenceAndAccess(
-      props.item.title,
-      data.session!.user.id
+    // check access
+    const articleExists = articles?.some(
+      (article: Article) => article.title === props.item!.title
     );
 
-    /*// Fetch wikitext of local article to check if it exists in mediawiki, Currently limited to one team
-    const url = `https://localhost/w/api.php?action=query&formatversion=2&prop=revisions&rvprop=content&rvslots=%2A&titles=${props.item.title}&format=json&origin=*`;
-    const response = await axios.get(url, { data: { https: false } }); // Disable HTTPS verification
-    const articleExists =
-      response.data?.query?.pages?.[0]?.revisions?.[0]?.slots?.main?.content;
-    console.log(articleExists);*/
-
-    if (articleId.value) {
+    if (articleExists) {
       console.log('article exists');
       console.log(props.item);
       // GOTO ARTICLE PAGE
       router.push({
         name: 'article',
-        params: { title: props.item.title, articleId: articleId.value },
+        params: { articleId: articleId.value },
       });
     } else {
       console.log("article doesn't exist");
@@ -82,6 +71,7 @@ async function itemOnClick() {
         data.session!.user.id,
         props.item.description
       );
+      console.log('new articleid', articleId.value);
 
       extractingNotif();
       $q.notify({
@@ -89,12 +79,14 @@ async function itemOnClick() {
         icon: 'check',
         color: 'positive',
       });
-
+      $q.localStorage.set(
+        'articles',
+        JSON.stringify(await getArticles(data.session!.user.id))
+      );
       // GOTO ARTICLE PAGE, EDIT TAB
       router.push({
         name: 'article',
         params: {
-          title: props.item.title,
           articleId: articleId.value,
           tab: 'editor',
         },

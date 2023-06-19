@@ -49,5 +49,3 @@ async function copyValueToClipboard() {
   });
 }
 </script>
-
-<style scoped lang="scss"></style>

@@ -10,5 +10,3 @@ const props = defineProps({
 const article_link = `https://localhost/wiki/${props.article}?veaction=edit&permissionid=${props.permissionId}`;
 console.log(article_link);
 </script>
-
-<style scoped></style>

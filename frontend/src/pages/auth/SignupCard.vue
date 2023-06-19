@@ -126,5 +126,3 @@ async function handleSignup() {
   }
 }
 </script>
-
-<style scoped lang="scss"></style>

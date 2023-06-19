@@ -112,5 +112,3 @@ onBeforeMount(async () => {
   }
 });
 </script>
-
-<style scoped></style>

@@ -6,7 +6,7 @@ export type ChangesItem = {
   description: string;
   users: { raw_user_meta_data: { username: string } };
   created_at: string;
-  comments: any;
+  comments: Comment[];
 };
 
 export type SearchResult = {
@@ -31,4 +31,10 @@ export type Article = {
   permission_id: string;
   role: null | 0 | 1 | 2;
   title: string;
+};
+
+export type Comment = {
+  content: string;
+  created_at: Date;
+  users: { raw_user_meta_data: { username: string } };
 };

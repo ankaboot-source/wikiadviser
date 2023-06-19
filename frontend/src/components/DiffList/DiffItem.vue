@@ -179,6 +179,7 @@ onMounted(async () => {
     session.value = _session;
     username.value = session.value?.user.user_metadata.username;
     userId.value = session.value?.user.id as string;
+    console.log(props.item.comments, typeof props.item.comments);
   });
 });
 

@@ -24,3 +24,11 @@ export type User = {
   role: number;
   permissionId: string;
 };
+
+export type Article = {
+  article_id: string;
+  description: string;
+  permission_id: string;
+  role: null | 0 | 1 | 2;
+  title: string;
+};

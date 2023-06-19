@@ -61,6 +61,7 @@ import {
 } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useQuasar } from 'quasar';
+import { Article } from 'src/types';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -86,7 +87,7 @@ onBeforeMount(async () => {
   const articles = await getArticles(data.session!.user.id);
   $q.localStorage.set('articles', JSON.stringify(articles));
   if (articles) {
-    const article = articles.find((article: any) => {
+    const article = articles.find((article: Article) => {
       return article.article_id === articleId.value;
     });
     if (article) {

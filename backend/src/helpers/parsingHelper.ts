@@ -6,6 +6,7 @@ import {
   updateArticle,
   updateChange
 } from './supabaseHelper';
+import { ChildNodeData } from '../types';
 
 export async function decomposeArticle(html: string, permissionId: string) {
   const $ = load(html);
@@ -27,7 +28,7 @@ export async function decomposeArticle(html: string, permissionId: string) {
 
       // Wrapping related changes: Check if next node is an element (Not a text node)
       // AND if the current element has "change-remove" diff
-      const node: any = $element[0].next;
+      const node = $element[0].next as ChildNodeData | null;
       if (!node?.data?.trim() && diffAction === 'change-remove') {
         const $nextElement = $element.next();
         // Check if the next element has "change-insert" diff action

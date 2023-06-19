@@ -20,3 +20,7 @@ export type Article = {
   permission_id: string;
   role: 0 | 1 | 2 | null;
 };
+
+export interface ChildNodeData extends ChildNode {
+  data?: string;
+}

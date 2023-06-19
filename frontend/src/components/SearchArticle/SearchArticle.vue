@@ -32,9 +32,8 @@
 <script setup lang="ts">
 import axios from 'axios';
 import SearchList from './SearchList.vue';
-import { ref, computed, watch } from 'vue';
+import { onBeforeMount, ref, computed, watch } from 'vue';
 import { SearchResult } from 'src/types';
-import { onBeforeMount } from 'vue';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();

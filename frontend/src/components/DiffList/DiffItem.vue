@@ -147,9 +147,13 @@
           color="red"
           class="bg-white"
           label="Reject"
-          @click="handleReject"
+          @click="handleReview(Status.EditRejected)"
         />
-        <q-btn color="green" label="Approve" @click="handleApprove" />
+        <q-btn
+          color="green"
+          label="Approve"
+          @click="handleReview(Status.EditApproved)"
+        />
       </div>
     </q-item-section>
   </q-expansion-item>
@@ -167,7 +171,6 @@ const props = defineProps<{
   editPermission: boolean;
 }>();
 const expanded = ref(props.item?.status == 0);
-
 const session = ref<Session | null>();
 const username = ref('');
 const userId = ref<string>('');
@@ -230,12 +233,11 @@ const preventLinkVisit = (event: MouseEvent) => {
   event.preventDefault();
 };
 
-async function handleApprove() {
-  await updateChange(props.item.id, Status.EditApproved);
+async function handleReview(Status: Status) {
+  await updateChange(props.item.id, Status);
+  expanded.value = false;
 }
-async function handleReject() {
-  await updateChange(props.item.id, Status.EditRejected);
-}
+
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
 }

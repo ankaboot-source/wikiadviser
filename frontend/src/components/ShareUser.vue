@@ -19,7 +19,7 @@ import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: string | null;
+  role: 0 | 1 | 2 | null;
 }>();
 const roles: { [key: number]: string } = {
   0: 'Owner',

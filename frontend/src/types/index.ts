@@ -27,10 +27,10 @@ export type User = {
 
 export type Article = {
   article_id: string;
+  title: string;
   description: string;
   permission_id: string;
-  role: null | 0 | 1 | 2;
-  title: string;
+  role: 0 | 1 | 2 | null;
 };
 
 export type Comment = {

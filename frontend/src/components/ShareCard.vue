@@ -32,7 +32,7 @@ import { copyToClipboard, useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: string | null;
+  role: 0 | 1 | 2 | null;
 }>();
 const users = ref<User[]>();
 

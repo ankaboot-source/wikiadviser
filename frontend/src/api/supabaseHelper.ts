@@ -16,6 +16,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       email
       )`
     )
+    .order('created_at')
     .eq('article_id', articleId);
 
   if (permissionsError) {

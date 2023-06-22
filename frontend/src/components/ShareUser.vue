@@ -19,24 +19,29 @@ import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: 0 | 1 | 2 | null;
+  role: Role | null;
 }>();
-const roles: { [key: number]: string } = {
-  0: 'Owner',
-  1: 'Contributor',
-  2: 'Reviewer',
+
+enum Role {
+  Owner = 0,
+  Contributor = 1,
+  Reviewer = 2,
+}
+
+const roleDictionary: Record<Role, string> = {
+  [Role.Owner]: 'Owner',
+  [Role.Contributor]: 'Contributor',
+  [Role.Reviewer]: 'Reviewer',
 };
-const rolesBack: { [key: string]: number } = {
-  Owner: 0,
-  Contributor: 1,
-  Reviewer: 2,
-};
-const roleModel = ref(roles[props.user.role]);
+const roleModel = ref<string>(roleDictionary[props.user.role as Role]);
 const roleOptions = ['Contributor', 'Reviewer'];
 
 async function handleRoleChange() {
   //Set permission
   console.log(roleModel.value);
-  await updatePermission(props.user.permissionId, rolesBack[roleModel.value]);
+  await updatePermission(
+    props.user.permissionId,
+    Role[roleModel.value as keyof typeof Role]
+  );
 }
 </script>

@@ -32,9 +32,14 @@ import { copyToClipboard, useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: 0 | 1 | 2 | null;
+  role: Role | null;
 }>();
 const users = ref<User[]>();
+enum Role {
+  Owner = 0,
+  Contributor = 1,
+  Reviewer = 2,
+}
 
 onMounted(async () => {
   users.value = await getUsers(props.articleId);

@@ -6,13 +6,8 @@ import setupNewArticle from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
-  getUsersWithPermissions,
-  getArticles,
-  createNewPermission,
-  updatePermission,
   removeChanges,
-  updateChange,
-  insertComment
+  updateChange
 } from './helpers/supabaseHelper';
 import {
   decomposeArticle,
@@ -114,110 +109,6 @@ app.post('/api/article', async (req, res) => {
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
-  }
-});
-
-// Check Users with Permission of an articleId
-app.get('/api/users', async (req, res) => {
-  try {
-    const articleId = req.query.articleId as string;
-    const users = await getUsersWithPermissions(articleId);
-    logger.info(
-      {
-        articleId,
-        users
-      },
-      'Users with permissions'
-    );
-    res
-      .status(200)
-      .json({ message: 'Fetching users with permissions succeeded.', users });
-  } catch (error: any) {
-    logger.error(error.message);
-    res
-      .status(500)
-      .json({ message: 'Fetching users with permissions failed.' });
-  }
-});
-
-// Fetch Articles owned by a user
-app.get('/api/articles', async (req, res) => {
-  try {
-    const userId = req.query.userId as string;
-    const articles = await getArticles(userId);
-
-    logger.info('Get articles');
-    res
-      .status(200)
-      .json({ message: 'Checking article existence succeeded.', articles });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Checking article existence failed.' });
-  }
-});
-
-// New permission
-app.post('/api/permission', async (req, res) => {
-  try {
-    const { articleId, userId } = req.body;
-    logger.info(
-      {
-        articleId,
-        userId
-      },
-      'New Permission request'
-    );
-    // Insert a new permission request.
-    await createNewPermission(articleId, userId);
-
-    res
-      .status(201)
-      .json({ message: 'Creating new article succeeded.', articleId });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Creating new article failed.' });
-  }
-});
-
-// Update permission
-app.put('/api/permission', async (req, res) => {
-  try {
-    const { permissionId, role } = req.body;
-    logger.info(
-      {
-        permissionId,
-        role
-      },
-      'New Permission request'
-    );
-    // Insert a new permission request.
-    await updatePermission(permissionId, role);
-
-    res.status(201).json({ message: 'Updating permission article succeeded.' });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Updating permission article failed.' });
-  }
-});
-
-app.post('/api/change/comment', async (req, res) => {
-  try {
-    const { changeId, commenterId, content } = req.body;
-    logger.info(
-      {
-        changeId,
-        commenterId,
-        content
-      },
-      'New Permission request'
-    );
-    // Insert a new comment.
-    await insertComment(changeId, commenterId, content);
-
-    res.status(201).json({ message: 'Inserting comment succeeded.' });
-  } catch (error: any) {
-    logger.error(error.message);
-    res.status(500).json({ message: 'Inserting comment failed.' });
   }
 });
 

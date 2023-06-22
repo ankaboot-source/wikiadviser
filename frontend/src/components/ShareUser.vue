@@ -14,29 +14,27 @@
 
 <script setup lang="ts">
 import { updatePermission } from 'src/api/supabaseHelper';
-import { User } from 'src/types';
+import { User, UserRole } from 'src/types';
 import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: string | null;
+  role: UserRole | null;
 }>();
-const roles: { [key: number]: string } = {
-  0: 'Owner',
-  1: 'Contributor',
-  2: 'Reviewer',
+const roleDictionary: Record<UserRole, string> = {
+  [UserRole.Owner]: 'Owner',
+  [UserRole.Contributor]: 'Contributor',
+  [UserRole.Reviewer]: 'Reviewer',
 };
-const rolesBack: { [key: string]: number } = {
-  Owner: 0,
-  Contributor: 1,
-  Reviewer: 2,
-};
-const roleModel = ref(roles[props.user.role]);
+const roleModel = ref<string>(roleDictionary[props.user.role as UserRole]);
 const roleOptions = ['Contributor', 'Reviewer'];
 
 async function handleRoleChange() {
   //Set permission
   console.log(roleModel.value);
-  await updatePermission(props.user.permissionId, rolesBack[roleModel.value]);
+  await updatePermission(
+    props.user.permissionId,
+    UserRole[roleModel.value as keyof typeof UserRole]
+  );
 }
 </script>

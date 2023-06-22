@@ -27,10 +27,10 @@ export type User = {
 
 export type Article = {
   article_id: string;
+  title: string;
   description: string;
   permission_id: string;
-  role: null | 0 | 1 | 2;
-  title: string;
+  role: UserRole | null;
 };
 
 export type Comment = {
@@ -38,3 +38,9 @@ export type Comment = {
   created_at: Date;
   users: { raw_user_meta_data: { username: string } };
 };
+
+export enum UserRole {
+  Owner = 0,
+  Contributor = 1,
+  Reviewer = 2,
+}

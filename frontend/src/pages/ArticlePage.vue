@@ -55,13 +55,10 @@ import ShareCard from 'src/components/ShareCard.vue';
 import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
-import {
-  createNewPermissionRequest,
-  getArticles,
-} from 'src/api/supabaseHelper';
+import { createNewPermission, getArticles } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useQuasar } from 'quasar';
-import { Article } from 'src/types';
+import { Article, UserRole } from 'src/types';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -73,7 +70,7 @@ const permissionId = ref('');
 const share = ref(false);
 
 const title = ref('');
-const role = ref(null);
+const role = ref<UserRole | null>(null);
 const editPermission = ref(false);
 
 onBeforeMount(async () => {
@@ -105,7 +102,7 @@ onBeforeMount(async () => {
   }
   if (role.value == null) {
     //In case this article exists, a permission request will be sent to the Owner.
-    await createNewPermissionRequest(articleId.value, data.session!.user.id);
+    await createNewPermission(articleId.value, data.session!.user.id);
     router.push({
       name: 'ArticleNotFound',
     });

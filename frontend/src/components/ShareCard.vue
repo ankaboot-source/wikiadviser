@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User } from 'src/types';
+import { User, UserRole } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import { getUsers } from 'src/api/supabaseHelper';
 import { useRoute } from 'vue-router';
@@ -32,7 +32,7 @@ import { copyToClipboard, useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: string | null;
+  role: UserRole | null;
 }>();
 const users = ref<User[]>();
 

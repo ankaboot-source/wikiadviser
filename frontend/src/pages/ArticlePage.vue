@@ -58,7 +58,7 @@ import { useRouter } from 'vue-router';
 import { createNewPermission, getArticles } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useQuasar } from 'quasar';
-import { Article } from 'src/types';
+import { Article, UserRole } from 'src/types';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -70,7 +70,7 @@ const permissionId = ref('');
 const share = ref(false);
 
 const title = ref('');
-const role = ref<0 | 1 | 2 | null>(null);
+const role = ref<UserRole | null>(null);
 const editPermission = ref(false);
 
 onBeforeMount(async () => {

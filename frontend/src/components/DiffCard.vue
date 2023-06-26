@@ -11,6 +11,9 @@ import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
 import 'src/css/styles/diff.scss';
 import { getArticleParsedContent } from 'src/api/supabaseHelper';
+import { useSelectedChangeStore } from '../stores/selectedChange';
+
+const store = useSelectedChangeStore();
 const props = defineProps<{
   articleId: string;
 }>();
@@ -36,12 +39,13 @@ function handleClick(event: MouseEvent) {
   let target = event.target as HTMLElement;
   const rest = target;
   let ancestry = 0;
-  while (target && !target.getAttribute('data-status')) {
+  while (target && !target.getAttribute('data-id')) {
     target = target.parentElement!;
     ancestry++;
   }
   if (target) {
     console.log(`Element clicked of ancestry ${ancestry}:`, target);
+    store.selectedChangeId = target.getAttribute('data-id') as string;
   } else {
     console.log('Element clicked:', rest);
   }

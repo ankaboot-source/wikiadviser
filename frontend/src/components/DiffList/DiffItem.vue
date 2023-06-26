@@ -1,8 +1,11 @@
 <template>
   <q-expansion-item
+    ref="expansionItem"
     v-model="expanded"
+    :class="{ highlighted: highlighted }"
     style="background-color: white; border-radius: 4px"
     class="q-mb-md q-mx-sm borders"
+    @after-show="scrollToItem(!store.selectedChangeId)"
   >
     <template #header>
       <q-item-section class="text-body1">
@@ -160,21 +163,24 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { ChangesItem } from 'src/types';
 import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
+import { useSelectedChangeStore } from '../../stores/selectedChange';
 
+const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
   editPermission: boolean;
 }>();
-const expanded = ref(props.item?.status == 0);
+const expanded = ref(false);
 const session = ref<Session | null>();
 const username = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
+
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
   session.value = data.session;
@@ -241,9 +247,46 @@ async function handleReview(Status: Status) {
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
 }
+
+const highlighted = ref(false);
+watch(
+  () => store.selectedChangeId,
+  (selectedChangeId) => {
+    if (selectedChangeId == '') {
+      return;
+    }
+    expanded.value = selectedChangeId == props.item.id;
+    if (expanded.value) {
+      scrollToItem(false);
+      highlighted.value = true;
+      setTimeout(() => {
+        highlighted.value = false;
+      }, 400);
+      store.selectedChangeId = '';
+    }
+  }
+);
+
+const expansionItem = ref();
+function scrollToItem(smooth: boolean) {
+  const behavior = smooth ? 'smooth' : 'auto';
+  expansionItem.value.$el.scrollIntoView({ behavior });
+}
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {
   margin-left: 0px;
+}
+
+.highlighted {
+  animation: fadeEffect 0.4s;
+}
+@keyframes fadeEffect {
+  0% {
+    background-color: lightgrey;
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 </style>

@@ -180,6 +180,8 @@ const session = ref<Session | null>();
 const username = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
+const highlighted = ref(false);
+const expansionItem = ref();
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -248,7 +250,6 @@ async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
 }
 
-const highlighted = ref(false);
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -267,7 +268,6 @@ watch(
   }
 );
 
-const expansionItem = ref();
 function scrollToItem(smooth: boolean) {
   const behavior = smooth ? 'smooth' : 'auto';
   expansionItem.value.$el.scrollIntoView({ behavior });

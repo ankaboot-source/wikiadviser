@@ -8,7 +8,7 @@
     align="left"
   >
     <q-tab v-if="editPermission" name="editor" label="editor" />
-    <q-tab name="view" label="view" />
+    <q-tab name="changes" label="changes" />
     <q-space />
     <q-btn
       icon="link"
@@ -31,7 +31,7 @@
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
     </q-tab-panel>
-    <q-tab-panel name="view" class="row justify-evenly">
+    <q-tab-panel name="changes" class="row justify-evenly">
       <diff-card
         class="col-9 rounded-borders q-pa-md bg-secondary borders"
         style="height: 85vh"
@@ -78,8 +78,8 @@ onBeforeMount(async () => {
 
   // Access the article title parameter from the route's params object
   articleId.value = route.params.articleId as string;
-  // Access the selected tab else 'view' tab
-  tab.value = route.params.tab ? (route.params.tab as string) : 'view';
+  // Access the selected tab else 'changes' tab
+  tab.value = route.params.tab ? (route.params.tab as string) : 'changes';
 
   const articles = await getArticles(data.session!.user.id);
   $q.localStorage.set('articles', JSON.stringify(articles));

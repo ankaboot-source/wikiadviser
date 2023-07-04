@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
@@ -50,6 +50,33 @@ function handleClick(event: MouseEvent) {
     console.log('Element clicked:', rest);
   }
 }
+
+watch(
+  () => store.hoveredChangeId,
+  (hoveredChangeId: string) => {
+    if (hoveredChangeId) {
+      const element = document
+        .querySelector('.ve-ui-diffElement-document')!
+        .querySelector('[data-id="' + hoveredChangeId + '"]');
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+
+        element.classList.add('preHovered');
+        setTimeout(() => {
+          element.classList.add('hovered');
+        }, 10);
+      }
+    } else {
+      const elements = document.querySelectorAll('.hovered');
+      elements.forEach((element) => {
+        element.classList.remove('hovered');
+      });
+    }
+  }
+);
 </script>
 
 <style>
@@ -134,5 +161,24 @@ b {
 }
 [data-status='1']:hover {
   background-color: rgba(16, 146, 0, 0.3) !important;
+}
+
+/* Hover Effect */
+.preHovered {
+  background: linear-gradient(
+      0deg,
+      rgb(184, 212, 248, 0.9),
+      rgb(184, 212, 248, 0.9)
+    )
+    no-repeat right bottom / 0 var(--bg-h);
+  transition: background-size 350ms;
+  --bg-h: 100%;
+}
+.hovered {
+  background-size: 100% var(--bg-h);
+  background-position-x: left;
+
+  border-bottom: 6px solid rgb(184, 212, 248, 0.9);
+  border-top: 6px solid rgb(184, 212, 248, 0.9);
 }
 </style>

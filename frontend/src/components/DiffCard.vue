@@ -58,13 +58,12 @@ watch(
       const element = document
         .querySelector('.ve-ui-diffElement-document')!
         .querySelector('[data-id="' + hoveredChangeId + '"]');
-
-      element!.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
-
       if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+
         element.classList.add('preHovered');
         setTimeout(() => {
           element.classList.add('hovered');

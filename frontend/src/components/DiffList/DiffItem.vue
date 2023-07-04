@@ -6,6 +6,8 @@
     style="background-color: white; border-radius: 4px"
     class="q-mb-md q-mx-sm borders"
     @after-show="scrollToItem(!store.selectedChangeId)"
+    @mouseenter="setHovered(props.item.id)"
+    @mouseleave="setHovered('')"
   >
     <template #header>
       <q-item-section class="text-body1">
@@ -271,6 +273,10 @@ watch(
 function scrollToItem(smooth: boolean) {
   const behavior = smooth ? 'smooth' : 'auto';
   expansionItem.value.$el.scrollIntoView({ behavior });
+}
+
+function setHovered(value: string) {
+  store.hoveredChangeId = value;
 }
 </script>
 <style scoped>

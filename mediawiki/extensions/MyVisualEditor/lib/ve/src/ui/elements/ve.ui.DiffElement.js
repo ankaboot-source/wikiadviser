@@ -282,37 +282,37 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
   }
 
   for (var k = 0, klen = queue.length; k < klen; k++) {
-    if (
+    /*if (
       !isUnchanged(queue[k - 1]) ||
       !isUnchanged(queue[k]) ||
       !isUnchanged(queue[k + 1])
-    ) {
-      hasChanges = true;
-      if (headingContext) {
-        // Don't render headingContext if current or next node is a heading
-        if (!isHeading(queue[k]) && !isHeading(queue[k + 1])) {
-          if (headingContextSpacer) {
-            addSpacer();
-          }
-          addItem(headingContext);
-        } else if (isHeading(queue[k + 1])) {
-          // Skipping the context header becuase the next node is a heading
-          // so reinstate the spacer.
-          needsSpacer = true;
+    ) {*/
+    hasChanges = true;
+    if (headingContext) {
+      // Don't render headingContext if current or next node is a heading
+      if (!isHeading(queue[k]) && !isHeading(queue[k + 1])) {
+        if (headingContextSpacer) {
+          addSpacer();
         }
-        headingContext = null;
+        addItem(headingContext);
+      } else if (isHeading(queue[k + 1])) {
+        // Skipping the context header becuase the next node is a heading
+        // so reinstate the spacer.
+        needsSpacer = true;
       }
-      if (needsSpacer && !lastItemSpacer) {
-        addSpacer();
-        needsSpacer = false;
-      }
-      addItem(queue[k]);
+      headingContext = null;
+    }
+    if (needsSpacer && !lastItemSpacer) {
+      addSpacer();
+      needsSpacer = false;
+    }
+    addItem(queue[k]);
 
-      if (isHeading(queue[k])) {
-        // Heading was rendered, no need to show it as context
-        headingContext = null;
-      }
-    } else {
+    if (isHeading(queue[k])) {
+      // Heading was rendered, no need to show it as context
+      headingContext = null;
+    }
+    /*} else {
       // Heading skipped, maybe show as context later
       if (isHeading(queue[k])) {
         headingContext = isUnchanged(queue[k]) ? queue[k] : null;
@@ -321,7 +321,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
       } else {
         needsSpacer = true;
       }
-    }
+    }*/
   }
 
   // Trailing spacer

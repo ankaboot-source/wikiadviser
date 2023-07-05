@@ -11,7 +11,7 @@
   >
     <template #header>
       <q-item-section class="text-body1">
-        <q-item-label>
+        <q-item-label class="q-pa-xs" lines="3">
           <div
             @click="preventLinkVisit($event)"
             v-html="props.item?.content"

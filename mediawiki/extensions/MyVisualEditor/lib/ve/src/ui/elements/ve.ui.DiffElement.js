@@ -282,6 +282,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
   }
 
   for (var k = 0, klen = queue.length; k < klen; k++) {
+    // COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
     /*if (
       !isUnchanged(queue[k - 1]) ||
       !isUnchanged(queue[k]) ||
@@ -312,6 +313,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
       // Heading was rendered, no need to show it as context
       headingContext = null;
     }
+    // COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
     /*} else {
       // Heading skipped, maybe show as context later
       if (isHeading(queue[k])) {

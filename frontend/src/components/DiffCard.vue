@@ -120,6 +120,9 @@ b {
   border-bottom: 3px solid rgba(109, 18, 41, 0.5);
   border-top: 3px solid rgba(109, 18, 41, 0.5);
 }
+[data-id] > p {
+  display: inherit;
+}
 
 /* Insert */
 [data-diff-action='insert'],

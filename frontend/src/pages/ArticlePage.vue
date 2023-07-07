@@ -35,7 +35,7 @@
       <diff-list
         :edit-permission="editPermission"
         :article-id="articleId"
-        class="col-3"
+        class="col-3 rounded-borders q-pa-md bg-secondary borders"
       />
       <diff-card
         class="col-9 rounded-borders q-pa-md bg-secondary borders"

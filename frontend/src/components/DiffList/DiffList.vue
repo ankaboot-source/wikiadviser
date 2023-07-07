@@ -1,6 +1,6 @@
 <template>
   <q-scroll-area style="max-width: 450px; height: 85vh">
-    <q-list bordered class="rounded-borders q-pa-md bg-secondary">
+    <q-list>
       <diff-item
         v-for="item in data"
         :key="item.id"

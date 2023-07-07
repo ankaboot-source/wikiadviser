@@ -1,7 +1,7 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title style="font-family: serif">
+      <q-toolbar-title class="merriweather">
         <router-link to="/" class="text-black" style="text-decoration: none">
           <q-icon name="public" /> WikiAdviser</router-link
         >

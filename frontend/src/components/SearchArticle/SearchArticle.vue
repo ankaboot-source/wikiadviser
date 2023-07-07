@@ -1,6 +1,6 @@
 <template>
   <q-card-section>
-    <div class="text-h5" style="font-family: serif">
+    <div class="text-h5 merriweather">
       {{ title }}
     </div>
   </q-card-section>

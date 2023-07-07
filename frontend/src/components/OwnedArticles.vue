@@ -1,6 +1,6 @@
 <template>
   <q-card-section>
-    <div class="text-h5" style="font-family: serif">Articles</div>
+    <div class="text-h5 merriweather">Articles</div>
   </q-card-section>
   <q-card-section class="q-pb-none">
     <q-input

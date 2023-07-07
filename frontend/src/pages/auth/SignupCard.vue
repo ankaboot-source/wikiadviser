@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 25vw" class="q-pa-md q-mb-xl bg-secondary">
     <q-card-section>
-      <p class="text-h5 text-center">Create new account</p>
+      <p class="text-h5 text-center merriweather">Create new account</p>
     </q-card-section>
     <q-card-section>
       <q-form ref="myform" @submit.prevent="handleSignup">

@@ -7,7 +7,9 @@
     >
       <q-card class="q-pa-sm bg-secondary">
         <q-card-section>
-          <p class="col-12 text-h5 text-center">Sign in to WikiAdviser</p>
+          <p class="col-12 text-h5 text-center merriweather">
+            Sign in to WikiAdviser
+          </p>
         </q-card-section>
         <q-card-section>
           <div class="col-md-4 col-sm-6 col-xs-10 q-gutter-y-md">

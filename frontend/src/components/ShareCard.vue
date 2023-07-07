@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 25vw" class="q-px-lg q-mb-xl bg-secondary">
     <q-card-section>
-      <p class="text-h5 text-center">Share</p>
+      <p class="text-h5 text-center merriweather">Share</p>
     </q-card-section>
     <q-card-section class="q-pb-xl">
       <q-list bordered separator>

@@ -3,8 +3,10 @@
     <app-header></app-header>
     <q-page-container>
       <q-page class="flex">
-        <router-view v-if="session" :session="session" />
-        <signin-page v-else />
+        <div class="column col">
+          <router-view v-if="session" :session="session" />
+          <signin-page v-else />
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>

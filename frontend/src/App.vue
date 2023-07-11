@@ -2,8 +2,10 @@
   <q-layout view="hHh lpR fFf">
     <app-header></app-header>
     <q-page-container>
-      <router-view v-if="session" :session="session" />
-      <signin-page v-else />
+      <q-page class="flex">
+        <router-view v-if="session" :session="session" />
+        <signin-page v-else />
+      </q-page>
     </q-page-container>
   </q-layout>
 </template>

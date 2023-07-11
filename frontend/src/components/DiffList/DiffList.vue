@@ -1,14 +1,17 @@
 <template>
-  <q-scroll-area style="max-width: 450px; height: 85vh">
-    <q-list>
-      <diff-item
-        v-for="item in data"
-        :key="item.id"
-        :item="item"
-        :edit-permission="props.editPermission"
-      ></diff-item>
-    </q-list>
-  </q-scroll-area>
+  <div class="column">
+    <div class="text-h6 q-pb-sm">Validate Changes</div>
+    <q-scroll-area class="col-grow">
+      <q-list>
+        <diff-item
+          v-for="item in data"
+          :key="item.id"
+          :item="item"
+          :edit-permission="props.editPermission"
+        ></diff-item>
+      </q-list>
+    </q-scroll-area>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -34,11 +34,12 @@
     <q-tab-panel name="changes" class="row justify-evenly">
       <diff-list
         :edit-permission="editPermission"
+        style="max-width: 450px; height: 85vh"
         :article-id="articleId"
         class="col-3 rounded-borders q-pa-md bg-secondary borders"
       />
       <diff-card
-        class="col-9 rounded-borders q-pa-md bg-secondary borders"
+        class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
         style="height: 85vh"
         bordered
         :article-id="articleId"

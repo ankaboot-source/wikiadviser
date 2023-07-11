@@ -21,26 +21,23 @@
       <share-card :article-id="articleId" :role="role"
     /></q-dialog>
   </q-tabs>
-  <q-tab-panels v-model="tab">
+  <q-tab-panels v-model="tab" style="height: 87vh">
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
         v-if="title && permissionId"
         :article="title"
         :permission-id="permissionId"
-        style="height: 85vh"
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
     </q-tab-panel>
     <q-tab-panel name="changes" class="row justify-evenly">
       <diff-list
         :edit-permission="editPermission"
-        style="height: 85vh"
         :article-id="articleId"
         class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
       />
       <diff-card
         class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
-        style="height: 85vh"
         bordered
         :article-id="articleId"
       />

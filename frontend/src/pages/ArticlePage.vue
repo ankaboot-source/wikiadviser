@@ -1,50 +1,49 @@
 <template>
-  <q-tabs
-    v-model="tab"
-    dense
-    class="q-px-md"
-    active-color="primary"
-    indicator-color="primary"
-    align="left"
-  >
-    <q-tab v-if="editPermission" name="editor" label="editor" />
-    <q-tab name="changes" label="changes" />
-    <q-space />
-    <q-btn
-      icon="link"
-      color="primary"
-      outline
-      label="share"
-      @click="share = !share"
-    ></q-btn>
-    <q-dialog v-model="share">
-      <share-card :article-id="articleId" :role="role"
-    /></q-dialog>
-  </q-tabs>
-  <q-tab-panels v-model="tab">
-    <q-tab-panel name="editor" class="row justify-evenly">
-      <mw-visual-editor
-        v-if="title && permissionId"
-        :article="title"
-        :permission-id="permissionId"
-        style="height: 85vh"
-        class="col-10 rounded-borders q-pa-md bg-secondary borders"
-      />
-    </q-tab-panel>
-    <q-tab-panel name="changes" class="row justify-evenly">
-      <diff-list
-        :edit-permission="editPermission"
-        :article-id="articleId"
-        class="col-3 rounded-borders q-pa-md bg-secondary borders"
-      />
-      <diff-card
-        class="col-9 rounded-borders q-pa-md bg-secondary borders"
-        style="height: 85vh"
-        bordered
-        :article-id="articleId"
-      />
-    </q-tab-panel>
-  </q-tab-panels>
+  <div class="column col">
+    <q-tabs
+      v-model="tab"
+      dense
+      class="q-px-md"
+      active-color="primary"
+      indicator-color="primary"
+      align="left"
+    >
+      <q-tab v-if="editPermission" name="editor" label="editor" />
+      <q-tab name="changes" label="changes" />
+      <q-space />
+      <q-btn
+        icon="link"
+        color="primary"
+        outline
+        label="share"
+        @click="share = !share"
+      ></q-btn>
+      <q-dialog v-model="share">
+        <share-card :article-id="articleId" :role="role"
+      /></q-dialog>
+    </q-tabs>
+    <q-tab-panels v-model="tab" class="col">
+      <q-tab-panel name="editor" class="row justify-evenly">
+        <mw-visual-editor
+          v-if="title && permissionId"
+          :article="title"
+          :permission-id="permissionId"
+          class="col-10 rounded-borders q-pa-md bg-secondary borders"
+        />
+      </q-tab-panel>
+      <q-tab-panel name="changes" class="row justify-evenly">
+        <diff-list
+          :edit-permission="editPermission"
+          :article-id="articleId"
+          class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
+        />
+        <diff-card
+          :article-id="articleId"
+          class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders col-grow"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
+  </div>
 </template>
 
 <script setup lang="ts">

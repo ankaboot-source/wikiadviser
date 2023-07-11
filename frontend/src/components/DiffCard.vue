@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-pa-sm">View Changes</div>
+    <div class="text-h6 q-pb-sm">View Changes</div>
     <q-scroll-area class="col-grow">
       <div class="q-mr-md" @click="handleClick($event)" v-html="data"></div>
     </q-scroll-area>

@@ -37,9 +37,8 @@
         class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
       />
       <diff-card
-        class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
-        bordered
         :article-id="articleId"
+        class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
       />
     </q-tab-panel>
   </q-tab-panels>

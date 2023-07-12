@@ -187,4 +187,13 @@ b {
   border-bottom: 6px solid rgb(184, 212, 248, 0.9);
   border-top: 6px solid rgb(184, 212, 248, 0.9);
 }
+
+.ve-ui-diffElement,
+[data-id] {
+  font-family: merriweahter;
+}
+
+.q-list [data-id] {
+  background-color: transparent !important;
+}
 </style>

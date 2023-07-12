@@ -69,6 +69,7 @@
           <template v-if="!password" #hint> Enter your password. </template>
         </q-input>
         <q-btn
+          unelevated
           label="Sign Up"
           color="green"
           class="full-width q-mt-md"

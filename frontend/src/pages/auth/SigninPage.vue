@@ -62,18 +62,21 @@
               <template v-if="!password" #hint> Enter your password. </template>
             </q-input>
             <q-btn
+              unelevated
               label="Login"
               color="primary"
               class="full-width"
               type="submit"
             ></q-btn>
             <q-btn
+              unelevated
               label="Create new account"
               color="green"
               class="full-width"
               @click="signUp = !signUp"
             ></q-btn>
             <q-btn
+              unelevated
               label="Forgot password?"
               color="primary"
               class="full-width"

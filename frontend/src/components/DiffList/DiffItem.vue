@@ -11,35 +11,48 @@
   >
     <template #header>
       <q-item-section class="text-body1">
-        <q-item-label class="q-pa-xs" lines="3">
+        <q-item-label>
+          <q-avatar
+            :color="statusDictionary.get(props.item?.status)!.color"
+            text-color="white"
+            :icon="statusDictionary.get(props.item?.status)!.icon"
+            size="24px"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              {{ statusDictionary.get(props.item?.status)!.message }}
+            </q-tooltip>
+          </q-avatar>
+        </q-item-label>
+
+        <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
           <div
             @click="preventLinkVisit($event)"
             v-html="props.item?.content"
           ></div>
         </q-item-label>
-        <q-item-label caption lines="2">
+        <q-item-label v-if="!expanded" caption lines="2">
           <div>
             {{ description }}
           </div>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">
-        <span style="size: 0.5rem"
-          >{{ new Date(props.item?.created_at).toLocaleString() }}
+        <span class="text-black">
+          <q-avatar size="24px" icon="person" color="accent" />
+          {{ props.item?.users.raw_user_meta_data.username }}</span
+        >
+        <span style="size: 0.5rem">
+          {{ new Date(props.item?.created_at).toLocaleTimeString() }} <br />
+          {{ new Date(props.item?.created_at).toLocaleDateString() }}
         </span>
-        <span>@{{ props.item?.users.raw_user_meta_data.username }}</span>
       </q-item-section>
     </template>
     <q-separator />
 
     <q-item-section>
-      <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
-        Content
-      </q-item-label>
-
       <div class="q-pa-md">
         <div
-          class="text-center"
+          class="text-left text-body1"
           @click="preventLinkVisit($event)"
           v-html="props.item?.content"
         ></div>
@@ -48,21 +61,14 @@
     <q-separator />
 
     <q-item-section>
-      <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
-        Type
-      </q-item-label>
-
       <div class="q-pa-md">
         <div class="row">
-          <div class="text-capitalize col-4 q-pt-sm text-body1">
-            {{ typeOfEditDictionary[props.item?.type_of_edit] }}
-          </div>
           <q-input
             v-model="description"
-            filled
             dense
+            outlined
             autogrow
-            label="Description"
+            label="What's this change about?"
             class="col"
             :readonly="!editPermission"
           >
@@ -82,27 +88,8 @@
       </div>
     </q-item-section>
     <q-separator />
-
     <q-item-section>
-      <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
-        Status
-      </q-item-label>
-
-      <div class="q-pa-md">
-        <q-badge rounded :color="statusDictionary[props.item?.status].color" />
-        <span class="text-body1 q-pl-sm">{{
-          statusDictionary[props.item?.status].message
-        }}</span>
-      </div>
-    </q-item-section>
-    <q-separator />
-
-    <q-item-section>
-      <q-item-label class="q-mt-sm text-bold text-body1 q-ml-sm">
-        Comments
-      </q-item-label>
       <q-item-section class="q-pa-md row justify-center bg-secondary">
-        <!-- Default Comments Examples.-->
         <q-scroll-area
           style="height: 9.5rem; width: 100%"
           class="q-px-sm q-pb-sm"
@@ -113,6 +100,16 @@
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.users.raw_user_meta_data.username == username"
+              :avatar="
+                comment.users.raw_user_meta_data.username == username
+                  ? 'https://cdn.quasar.dev/img/avatar2.jpg'
+                  : 'https://cdn.quasar.dev/img/avatar1.jpg'
+              "
+              :bg-color="
+                comment.users.raw_user_meta_data.username == username
+                  ? 'green'
+                  : 'accent'
+              "
             />
           </template>
         </q-scroll-area>
@@ -120,7 +117,7 @@
         <q-input
           v-model="toSendComment"
           autogrow
-          filled
+          outlined
           dense
           class="row"
           placeholder="Leave a comment"
@@ -148,15 +145,20 @@
     >
       <div class="row q-my-md justify-around">
         <q-btn
+          no-caps
           outline
+          icon="thumb_down"
           color="red"
           class="bg-white"
           label="Reject"
           @click="handleReview(Status.EditRejected)"
         />
         <q-btn
+          no-caps
+          icon="thumb_up"
           color="green"
           label="Approve"
+          unelevated
           @click="handleReview(Status.EditApproved)"
         />
       </div>
@@ -215,28 +217,35 @@ enum Status {
 type StatusInfo = {
   message: string;
   color: string;
+  icon: string;
 };
 
-const statusDictionary: Record<Status, StatusInfo> = {
-  [Status.AwaitingReviewerApproval]: {
-    message: 'Awaiting Reviewer Approval',
-    color: 'yellow-8',
-  },
-  [Status.EditApproved]: { message: 'Edit Approved', color: 'green' },
-  [Status.EditRejected]: { message: 'Edit Rejected', color: 'red' },
-};
-
-enum TypeOfEdit {
-  Change = 0,
-  Insert = 1,
-  Remove = 2,
-}
-
-const typeOfEditDictionary: Record<TypeOfEdit, string> = {
-  [TypeOfEdit.Change]: 'Change',
-  [TypeOfEdit.Insert]: 'Insert',
-  [TypeOfEdit.Remove]: 'Remove',
-};
+const statusDictionary: Map<Status, StatusInfo> = new Map([
+  [
+    Status.AwaitingReviewerApproval,
+    {
+      message: 'Awaiting Reviewer Approval',
+      color: 'yellow-8',
+      icon: 'priority_high',
+    },
+  ],
+  [
+    Status.EditApproved,
+    {
+      message: 'Edit Approved',
+      color: 'green',
+      icon: 'thumb_up',
+    },
+  ],
+  [
+    Status.EditRejected,
+    {
+      message: 'Edit Rejected',
+      color: 'red',
+      icon: 'thumb_down',
+    },
+  ],
+]);
 
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:

@@ -13,13 +13,13 @@
       <q-item-section class="text-body1">
         <q-item-label>
           <q-avatar
-            :color="statusDictionary[props.item?.status].color"
+            :color="statusDictionary.get(props.item?.status)!.color"
             text-color="white"
-            :icon="statusDictionary[props.item?.status].icon"
+            :icon="statusDictionary.get(props.item?.status)!.icon"
             size="24px"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
-              {{ statusDictionary[props.item?.status].message }}
+              {{ statusDictionary.get(props.item?.status)!.message }}
             </q-tooltip>
           </q-avatar>
         </q-item-label>
@@ -220,23 +220,32 @@ type StatusInfo = {
   icon: string;
 };
 
-const statusDictionary: Record<Status, StatusInfo> = {
-  [Status.AwaitingReviewerApproval]: {
-    message: 'Awaiting Reviewer Approval',
-    color: 'yellow-8',
-    icon: 'priority_high',
-  },
-  [Status.EditApproved]: {
-    message: 'Edit Approved',
-    color: 'green',
-    icon: 'thumb_up',
-  },
-  [Status.EditRejected]: {
-    message: 'Edit Rejected',
-    color: 'red',
-    icon: 'thumb_down',
-  },
-};
+const statusDictionary: Map<Status, StatusInfo> = new Map([
+  [
+    Status.AwaitingReviewerApproval,
+    {
+      message: 'Awaiting Reviewer Approval',
+      color: 'yellow-8',
+      icon: 'priority_high',
+    },
+  ],
+  [
+    Status.EditApproved,
+    {
+      message: 'Edit Approved',
+      color: 'green',
+      icon: 'thumb_up',
+    },
+  ],
+  [
+    Status.EditRejected,
+    {
+      message: 'Edit Rejected',
+      color: 'red',
+      icon: 'thumb_down',
+    },
+  ],
+]);
 
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:

@@ -22,6 +22,11 @@
  * @singleton
  */
 ( function () {
+	const urlParams = new URLSearchParams(window.location.search);
+	const expectedTitle = urlParams.get('expectedTitle');
+	if ( expectedTitle ) {
+		$('.mw-page-title-main').text(expectedTitle);
+	}
 	var conf, tabMessages, uri, pageExists, viewUri, veEditUri, veEditSourceUri,
 		init, targetPromise,
 		tabPreference, initialWikitext, oldId,

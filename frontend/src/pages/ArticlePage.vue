@@ -25,8 +25,9 @@
     <q-tab-panel name="editor" class="row justify-evenly">
       <mw-visual-editor
         v-if="title && permissionId"
-        :article="title"
+        :article-id="articleId"
         :permission-id="permissionId"
+        :title="title"
         class="col-10 rounded-borders q-pa-md bg-secondary borders"
       />
     </q-tab-panel>

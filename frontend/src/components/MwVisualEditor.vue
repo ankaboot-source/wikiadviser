@@ -1,12 +1,13 @@
 <template>
-  <iframe :src="article_link" frameBorder="0"></iframe>
+  <iframe :src="articleLink" frameBorder="0"></iframe>
 </template>
 
 <script setup lang="ts">
+import { Article } from 'src/types';
+
 const props = defineProps({
-  article: { type: String, required: true },
-  permissionId: { type: String, required: true },
+  article: { type: Object as () => Article, required: true },
 });
-const article_link = `https://localhost/wiki/${props.article}?veaction=edit&permissionid=${props.permissionId}`;
-console.log(article_link);
+
+const articleLink = `https://localhost/wiki/${props.article.article_id}?veaction=edit&permissionid=${props.article.permission_id}&expectedTitle=${props.article.title}`;
 </script>

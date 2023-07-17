@@ -98,7 +98,7 @@ app.post('/api/article', async (req, res) => {
     const wpArticleWikitext = await getArticleWikiText(title);
 
     // The article in our Mediawiki
-    const mwArticleUrl = `https://localhost/wiki/${title}?action=edit`;
+    const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
 
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);

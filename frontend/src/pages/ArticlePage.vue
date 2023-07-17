@@ -1,47 +1,48 @@
 <template>
-  <q-tabs
-    v-model="tab"
-    dense
-    class="q-px-md"
-    active-color="primary"
-    indicator-color="primary"
-    align="left"
-  >
-    <q-tab v-if="editPermission" name="editor" label="editor" />
-    <q-tab name="changes" label="changes" />
-    <q-space />
-    <q-btn
-      icon="link"
-      color="primary"
-      outline
-      label="share"
-      @click="share = !share"
-    ></q-btn>
-    <q-dialog v-model="share">
-      <share-card :article-id="articleId" :role="role"
-    /></q-dialog>
-  </q-tabs>
-  <q-tab-panels v-model="tab" class="col">
-    <q-tab-panel name="editor" class="row justify-evenly">
-      <mw-visual-editor
-        v-if="title && permissionId"
-        :article="title"
-        :permission-id="permissionId"
-        class="col-10 rounded-borders q-pa-md bg-secondary borders"
-      />
-    </q-tab-panel>
-    <q-tab-panel name="changes" class="row justify-evenly">
-      <diff-list
-        :edit-permission="editPermission"
-        :article-id="articleId"
-        class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
-      />
-      <diff-card
-        :article-id="articleId"
-        class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders col-grow"
-      />
-    </q-tab-panel>
-  </q-tab-panels>
+  <template v-if="article">
+    <q-tabs
+      v-model="tab"
+      dense
+      class="q-px-md"
+      active-color="primary"
+      indicator-color="primary"
+      align="left"
+    >
+      <q-tab v-if="editPermission" name="editor" label="editor" />
+      <q-tab name="changes" label="changes" />
+      <q-space />
+      <q-btn
+        icon="link"
+        color="primary"
+        outline
+        label="share"
+        @click="share = !share"
+      ></q-btn>
+      <q-dialog v-model="share">
+        <share-card :article-id="articleId" :role="article.role"
+      /></q-dialog>
+    </q-tabs>
+    <q-tab-panels v-model="tab" class="col">
+      <q-tab-panel name="editor" class="row justify-evenly">
+        <mw-visual-editor
+          v-if="article.title && article.permission_id"
+          :article="article"
+          class="col-10 rounded-borders q-pa-md bg-secondary borders"
+        />
+      </q-tab-panel>
+      <q-tab-panel name="changes" class="row justify-evenly">
+        <diff-list
+          :edit-permission="editPermission"
+          :article-id="articleId"
+          class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
+        />
+        <diff-card
+          :article-id="articleId"
+          class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders col-grow"
+        />
+      </q-tab-panel>
+    </q-tab-panels>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -55,7 +56,7 @@ import { useRouter } from 'vue-router';
 import { createNewPermission, getArticles } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useQuasar } from 'quasar';
-import { Article, UserRole } from 'src/types';
+import { Article } from 'src/types';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -63,13 +64,9 @@ const route = useRoute();
 const router = useRouter();
 const tab = ref('');
 const articleId = ref('');
-const permissionId = ref('');
 const share = ref(false);
-
-const title = ref('');
-const role = ref<UserRole | null>(null);
 const editPermission = ref(false);
-
+const article = ref();
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
 
@@ -81,23 +78,14 @@ onBeforeMount(async () => {
   const articles = await getArticles(data.session!.user.id);
   $q.localStorage.set('articles', JSON.stringify(articles));
   if (articles) {
-    const article = articles.find((article: Article) => {
+    article.value = articles.find((article: Article) => {
       return article.article_id === articleId.value;
     });
-    if (article) {
-      role.value = article.role;
-      title.value = article.title;
-      editPermission.value = role.value == 0 || role.value == 1;
-      permissionId.value = article.permission_id;
-      console.log(
-        role.value,
-        title.value,
-        editPermission.value,
-        permissionId.value
-      );
+    if (article.value) {
+      editPermission.value = article.value.role == 0 || article.value.role == 1;
     }
   }
-  if (role.value == null) {
+  if (!article.value) {
     //In case this article exists, a permission request will be sent to the Owner.
     await createNewPermission(articleId.value, data.session!.user.id);
     router.push({

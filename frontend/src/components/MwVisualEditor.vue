@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
+import { Article } from 'src/types';
+
 const props = defineProps({
-  articleId: { type: String, required: true },
-  permissionId: { type: String, required: true },
-  title: { type: String, required: true },
+  article: { type: Object as () => Article, required: true },
 });
 
-const articleLink = `https://localhost/wiki/${props.articleId}?veaction=edit&permissionid=${props.permissionId}&expectedTitle=${props.title}`;
+const articleLink = `https://localhost/wiki/${props.article.article_id}?veaction=edit&permissionid=${props.article.permission_id}&expectedTitle=${props.article.title}`;
 </script>

@@ -17,10 +17,11 @@
         outline
         label="share"
         @click="share = !share"
-      ></q-btn>
+      >
+      </q-btn>
       <q-dialog v-model="share">
-        <share-card :article-id="articleId" :role="article.role"
-      /></q-dialog>
+        <share-card :article-id="articleId" :role="article.role" />
+      </q-dialog>
     </q-tabs>
     <q-tab-panels v-model="tab" class="col">
       <q-tab-panel name="editor" class="row justify-evenly">
@@ -38,7 +39,7 @@
         />
         <diff-card
           :article-id="articleId"
-          class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders col-grow"
+          class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
         />
       </q-tab-panel>
     </q-tab-panels>

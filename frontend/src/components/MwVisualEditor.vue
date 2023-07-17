@@ -1,5 +1,5 @@
 <template>
-  <iframe :src="article_link" frameBorder="0"></iframe>
+  <iframe :src="articleLink" frameBorder="0"></iframe>
 </template>
 
 <script setup lang="ts">
@@ -9,5 +9,5 @@ const props = defineProps({
   title: { type: String, required: true },
 });
 
-const article_link = `https://localhost/wiki/${props.articleId}?veaction=edit&permissionid=${props.permissionId}&expectedTitle=${props.title}`;
+const articleLink = `https://localhost/wiki/${props.articleId}?veaction=edit&permissionid=${props.permissionId}&expectedTitle=${props.title}`;
 </script>

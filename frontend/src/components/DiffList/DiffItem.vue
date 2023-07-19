@@ -147,6 +147,13 @@
         <q-btn
           no-caps
           outline
+          color="primary"
+          class="bg-white"
+          label="Close"
+          @click="handleReview(Status.EditRejected)"
+        />
+        <q-btn
+          no-caps
           icon="thumb_down"
           color="red"
           class="bg-white"
@@ -226,7 +233,7 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     {
       message: 'Awaiting Reviewer Approval',
       color: 'yellow-8',
-      icon: 'priority_high',
+      icon: 'lightbulb',
     },
   ],
   [

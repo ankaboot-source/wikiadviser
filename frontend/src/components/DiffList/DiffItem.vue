@@ -143,21 +143,23 @@
       v-if="!editPermission && !props.item.status"
       class="bg-accent"
     >
-      <div class="row q-my-md justify-around">
+      <div class="row q-ma-md">
         <q-btn
           no-caps
           outline
           color="primary"
           class="bg-white"
           label="Close"
-          @click="handleReview(Status.EditRejected)"
+          @click="expanded = false"
         />
+        <q-space />
         <q-btn
+          class="q-mr-sm"
           no-caps
           icon="thumb_down"
           color="red"
-          class="bg-white"
           label="Reject"
+          unelevated
           @click="handleReview(Status.EditRejected)"
         />
         <q-btn

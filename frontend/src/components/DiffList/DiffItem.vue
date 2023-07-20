@@ -60,7 +60,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section>
+    <q-item-section v-if="description || editPermission">
       <div class="q-pa-md">
         <div class="row">
           <q-input

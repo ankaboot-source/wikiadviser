@@ -60,7 +60,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section>
+    <q-item-section v-if="description || editPermission">
       <div class="q-pa-md">
         <div class="row">
           <q-input
@@ -143,14 +143,23 @@
       v-if="!editPermission && !props.item.status"
       class="bg-accent"
     >
-      <div class="row q-my-md justify-around">
+      <div class="row q-ma-md">
         <q-btn
           no-caps
           outline
+          color="primary"
+          class="bg-white"
+          label="Close"
+          @click="expanded = false"
+        />
+        <q-space />
+        <q-btn
+          class="q-mr-sm"
+          no-caps
           icon="thumb_down"
           color="red"
-          class="bg-white"
           label="Reject"
+          unelevated
           @click="handleReview(Status.EditRejected)"
         />
         <q-btn
@@ -226,7 +235,7 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     {
       message: 'Awaiting Reviewer Approval',
       color: 'yellow-8',
-      icon: 'priority_high',
+      icon: 'lightbulb',
     },
   ],
   [

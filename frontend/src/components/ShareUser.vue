@@ -30,6 +30,7 @@
         label="Role"
         :disable="!!role"
         type="checkbox"
+        @update:model-value="emitPermissionEmitEvent"
       />
     </q-item-section>
   </q-expansion-item>
@@ -43,13 +44,33 @@ const props = defineProps<{
   user: User;
   role: UserRole | null;
 }>();
+
+const emit = defineEmits(['permissionEmit']);
+
+const emitPermissionEmitEvent = () => {
+  const permissionId = props.user.permissionId;
+  const roles = roleModel.value.map(
+    (role) => UserRole[role as keyof typeof UserRole]
+  );
+
+  //permission emit if old permission !== new permission, if emitted before remove it?
+  //remove the permission undefined when another permission is added
+  if (JSON.stringify(roles) !== JSON.stringify(props.user.role as UserRole)) {
+    console.log('Not the same'); // props.user.role as UserRole should be an Array
+  }
+
+  emit('permissionEmit', {
+    permissionId,
+    roles,
+  });
+};
+
 const roleDictionary: Record<UserRole, string> = {
   [UserRole.Owner]: 'Owner',
   [UserRole.Contributor]: 'Contributor',
   [UserRole.Reviewer]: 'Reviewer',
 };
 const roleModel = ref<string[]>([roleDictionary[props.user.role as UserRole]]);
-console.log(roleModel.value);
 const roleOptions = [
   {
     value: 'Contributor',

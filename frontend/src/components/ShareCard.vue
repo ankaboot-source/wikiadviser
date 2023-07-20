@@ -14,6 +14,7 @@
             :key="user.username"
             :user="user"
             :role="role"
+            @permission-emit="handlePermissionEmit"
           ></share-user>
         </q-list>
       </q-scroll-area>
@@ -34,7 +35,7 @@
           unelevated
           no-caps
           label="Apply"
-          @click="handleRoleChange()"
+          @click="handlePermissionChange()"
         />
       </q-card-actions>
     </q-card-section>
@@ -55,7 +56,6 @@ const props = defineProps<{
   role: UserRole | null;
 }>();
 const users = ref<User[]>();
-
 onMounted(async () => {
   users.value = await getUsers(props.articleId);
 });
@@ -63,13 +63,38 @@ onMounted(async () => {
 async function copyValueToClipboard() {
   await copyToClipboard(route.path);
   $q.notify({
-    message: 'share link copied to clipboard',
+    message: 'Share link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',
   });
 }
 
-async function handleRoleChange() {
+type EmittedPermission = {
+  permissionId: string;
+  roles: string[];
+};
+const permissionsToUpdate = ref<EmittedPermission[]>([]);
+
+const handlePermissionEmit = (permission: EmittedPermission) => {
+  const { permissionId, roles } = permission;
+
+  const existingPermissionIndex = permissionsToUpdate.value!.findIndex(
+    (perm) => perm.permissionId === permissionId
+  );
+
+  if (existingPermissionIndex !== -1) {
+    // If the permission already exists, replace it with the new one
+    permissionsToUpdate.value![existingPermissionIndex] = permission;
+  } else {
+    // If the permission doesn't exist, add the new permission to permissionsToUpdate
+    permissionsToUpdate.value!.push(permission);
+  }
+
+  console.log(permissionsToUpdate.value);
+};
+
+async function handlePermissionChange() {
+  console.log(permissionsToUpdate.value);
   return;
   //Set permission: parse through roles
   await updatePermission(

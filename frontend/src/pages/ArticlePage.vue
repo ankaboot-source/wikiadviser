@@ -12,7 +12,7 @@
       <q-tab name="changes" label="changes" />
       <q-space />
       <q-btn
-        icon="link"
+        icon="o_group"
         color="primary"
         outline
         label="share"

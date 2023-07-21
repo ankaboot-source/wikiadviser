@@ -29,14 +29,15 @@
           @click="copyValueToClipboard()"
         />
         <q-space />
-        <q-btn v-close-popup color="primary" outline no-caps label="Cancel" />
-        <q-btn
-          color="primary"
-          unelevated
-          no-caps
-          label="Apply"
-          @click="handlePermissionChange()"
-        />
+        <template v-if="ownerPermission">
+          <q-btn v-close-popup color="primary" outline no-caps label="Cancel" />
+          <q-btn
+            color="primary"
+            unelevated
+            no-caps
+            label="Apply"
+            @click="handlePermissionChange()"
+        /></template>
       </q-card-actions>
     </q-card-section>
   </q-card>
@@ -56,6 +57,9 @@ const props = defineProps<{
   role: UserRole[] | null;
 }>();
 const users = ref<User[]>();
+
+const ownerPermission = props.role?.includes(UserRole.Owner);
+
 onMounted(async () => {
   users.value = await getUsers(props.articleId);
 });

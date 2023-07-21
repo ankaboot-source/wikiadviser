@@ -70,7 +70,7 @@
             autogrow
             label="What's this change about?"
             class="col"
-            :readonly="reviewerPermission"
+            :readonly="!contributorPermission"
           >
             <!-- User: Contributor  Only -->
             <template v-if="contributorPermission" #append>

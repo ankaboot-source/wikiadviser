@@ -103,9 +103,23 @@ const handlePermissionEmit = (permission: EmittedPermission) => {
 };
 
 async function handlePermissionChange() {
-  if (permissionsToUpdate.value) {
-    await updatePermission(permissionsToUpdate.value);
-    users.value = await getUsers(props.articleId);
+  console.log(permissionsToUpdate.value);
+  if (permissionsToUpdate.value.length) {
+    try {
+      await updatePermission(permissionsToUpdate.value);
+      $q.notify({
+        message: 'Permission updated.',
+        icon: 'check',
+        color: 'positive',
+      });
+      users.value = await getUsers(props.articleId);
+      permissionsToUpdate.value = [];
+    } catch (error: any) {
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    }
   }
 }
 </script>

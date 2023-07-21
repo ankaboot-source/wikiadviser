@@ -19,6 +19,13 @@
             User needs attention.
           </q-tooltip>
         </q-avatar>
+        <q-badge
+          v-for="role in props.user.role"
+          :key="role"
+          text-color="light-blue-10"
+          color="light-blue-1"
+          :label="UserRole[role]"
+        />
       </q-item-section>
     </template>
     <q-item-section>

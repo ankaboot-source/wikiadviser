@@ -1,5 +1,5 @@
 <template>
-  <q-expansion-item>
+  <q-expansion-item :disable="!ownerPermission">
     <template #header>
       <q-item-section avatar>
         <q-avatar size="md" icon="person" color="accent" />

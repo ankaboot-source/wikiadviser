@@ -7,7 +7,7 @@
           v-for="item in data"
           :key="item.id"
           :item="item"
-          :edit-permission="props.editPermission"
+          :roles="roles"
         ></diff-item>
       </q-list>
     </q-scroll-area>
@@ -18,10 +18,10 @@
 import { onMounted, ref } from 'vue';
 import DiffItem from './DiffItem.vue';
 import { getChanges } from 'src/api/supabaseHelper';
-import { ChangesItem } from 'src/types';
+import { ChangesItem, UserRole } from 'src/types';
 
 const props = defineProps<{
-  editPermission: boolean;
+  roles: UserRole[];
   articleId: string;
 }>();
 const data = ref<ChangesItem[]>([]);

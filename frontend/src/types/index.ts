@@ -44,3 +44,8 @@ export enum UserRole {
   Contributor = 1,
   Reviewer = 2,
 }
+
+export type Permission = {
+  permissionId: string;
+  roles: UserRole[] | null;
+};

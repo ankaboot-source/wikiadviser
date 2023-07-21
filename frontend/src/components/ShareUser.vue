@@ -28,7 +28,7 @@
         :options="roleOptions"
         dense
         label="Role"
-        :disable="!!role"
+        :disable="!ownerPermission"
         type="checkbox"
         @update:model-value="emitPermissionEmitEvent"
       />
@@ -42,27 +42,39 @@ import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: UserRole | null;
+  role: UserRole[] | null;
 }>();
-
 const emit = defineEmits(['permissionEmit']);
-
+const ownerPermission = props.role?.includes(UserRole.Owner);
 const emitPermissionEmitEvent = () => {
   const permissionId = props.user.permissionId;
-  const roles = roleModel.value.map(
-    (role) => UserRole[role as keyof typeof UserRole]
-  );
 
-  //permission emit if old permission !== new permission, if emitted before remove it?
-  //remove the permission undefined when another permission is added
+  const roles = (() => {
+    const roles = roleModel.value
+      // Map each role to the corresponding UserRole enum value
+      .map((role) => UserRole[role as keyof typeof UserRole])
+      // Filter out roles that are not valid UserRole enum values (like undefined)
+      .filter((role) => role in UserRole)
+      // Sort that it wouldnt matter in what order boxes were checked.
+      .sort();
+    // If empty make it null
+    return roles.length > 0 ? roles : null;
+  })();
+
   if (JSON.stringify(roles) !== JSON.stringify(props.user.role as UserRole)) {
-    console.log('Not the same'); // props.user.role as UserRole should be an Array
+    // Different new role: Add it
+    emit('permissionEmit', {
+      permissionId,
+      roles,
+    });
+  } else {
+    // Back to the same original role: Remove it
+    emit('permissionEmit', {
+      permissionId,
+      roles,
+      remove: true,
+    });
   }
-
-  emit('permissionEmit', {
-    permissionId,
-    roles,
-  });
 };
 
 const roleDictionary: Record<UserRole, string> = {
@@ -70,7 +82,13 @@ const roleDictionary: Record<UserRole, string> = {
   [UserRole.Contributor]: 'Contributor',
   [UserRole.Reviewer]: 'Reviewer',
 };
-const roleModel = ref<string[]>([roleDictionary[props.user.role as UserRole]]);
+
+// Original roles: Convert an array of numbers to an array of corresponding strings
+const roleModel = ref<string[]>(
+  ([] as UserRole[])
+    .concat(props.user.role)
+    .map((role: UserRole) => roleDictionary[role])
+);
 const roleOptions = [
   {
     value: 'Contributor',

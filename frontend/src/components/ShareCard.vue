@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User, UserRole } from 'src/types';
+import { User, UserRole, Permission } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import { getUsers, updatePermission } from 'src/api/supabaseHelper';
 import { useRoute } from 'vue-router';
@@ -53,7 +53,7 @@ import { copyToClipboard, useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: UserRole | null;
+  role: UserRole[] | null;
 }>();
 const users = ref<User[]>();
 onMounted(async () => {
@@ -71,35 +71,36 @@ async function copyValueToClipboard() {
 
 type EmittedPermission = {
   permissionId: string;
-  roles: string[];
+  roles: UserRole[] | null;
+  remove?: boolean;
 };
-const permissionsToUpdate = ref<EmittedPermission[]>([]);
+const permissionsToUpdate = ref<Permission[]>([]);
 
 const handlePermissionEmit = (permission: EmittedPermission) => {
-  const { permissionId, roles } = permission;
+  const { permissionId, roles, remove } = permission;
 
-  const existingPermissionIndex = permissionsToUpdate.value!.findIndex(
+  const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
     (perm) => perm.permissionId === permissionId
   );
 
   if (existingPermissionIndex !== -1) {
-    // If the permission already exists, replace it with the new one
-    permissionsToUpdate.value![existingPermissionIndex] = permission;
+    // If the permission already exists
+    if (remove) {
+      // Remove it
+      permissionsToUpdate.value?.splice(existingPermissionIndex, 1);
+    } else {
+      // Change it
+      permissionsToUpdate.value![existingPermissionIndex] = permission;
+    }
   } else {
-    // If the permission doesn't exist, add the new permission to permissionsToUpdate
-    permissionsToUpdate.value!.push(permission);
+    // If the permission doesn't exist, Add it
+    permissionsToUpdate.value?.push(permission);
   }
-
-  console.log(permissionsToUpdate.value);
 };
 
 async function handlePermissionChange() {
-  console.log(permissionsToUpdate.value);
-  return;
-  //Set permission: parse through roles
-  await updatePermission(
-    props.user.permissionId,
-    UserRole[roleModel.value as keyof typeof UserRole]
-  );
+  if (permissionsToUpdate.value) {
+    await updatePermission(permissionsToUpdate.value);
+  }
 }
 </script>

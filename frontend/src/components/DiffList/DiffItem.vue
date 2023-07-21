@@ -60,7 +60,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section v-if="description || editPermission">
+    <q-item-section v-if="description || contributorPermission">
       <div class="q-pa-md">
         <div class="row">
           <q-input
@@ -70,10 +70,10 @@
             autogrow
             label="What's this change about?"
             class="col"
-            :readonly="!editPermission"
+            :readonly="reviewerPermission"
           >
             <!-- User: Contributor  Only -->
-            <template v-if="editPermission" #append>
+            <template v-if="contributorPermission" #append>
               <q-btn
                 round
                 dense
@@ -140,7 +140,7 @@
 
     <!-- User: Reviewer Only -->
     <q-item-section
-      v-if="!editPermission && !props.item.status"
+      v-if="reviewerPermission && !props.item.status"
       class="bg-accent"
     >
       <div class="row q-ma-md">
@@ -177,7 +177,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
-import { ChangesItem } from 'src/types';
+import { ChangesItem, UserRole } from 'src/types';
 import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
@@ -186,7 +186,7 @@ import { useSelectedChangeStore } from '../../stores/selectedChange';
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
-  editPermission: boolean;
+  roles: UserRole[];
 }>();
 const expanded = ref(false);
 const session = ref<Session | null>();
@@ -195,6 +195,8 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
+const contributorPermission = ref(false);
+const reviewerPermission = ref(false);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -204,6 +206,8 @@ onMounted(async () => {
     username.value = session.value?.user.user_metadata.username;
     userId.value = session.value?.user.id as string;
     console.log(props.item.comments, typeof props.item.comments);
+    contributorPermission.value = props.roles?.includes(UserRole.Contributor);
+    reviewerPermission.value = props.roles?.includes(UserRole.Reviewer);
   });
 });
 

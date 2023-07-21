@@ -101,6 +101,7 @@ const handlePermissionEmit = (permission: EmittedPermission) => {
 async function handlePermissionChange() {
   if (permissionsToUpdate.value) {
     await updatePermission(permissionsToUpdate.value);
+    users.value = await getUsers(props.articleId);
   }
 }
 </script>

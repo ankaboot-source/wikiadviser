@@ -10,7 +10,7 @@
       </q-item-section>
       <q-item-section side>
         <q-avatar
-          v-if="!roleModel[0]"
+          v-if="!roleModel.length"
           color="yellow-8"
           icon="priority_high"
           size="24px"
@@ -48,20 +48,15 @@ const emit = defineEmits(['permissionEmit']);
 const ownerPermission = props.role?.includes(UserRole.Owner);
 const emitPermissionEmitEvent = () => {
   const permissionId = props.user.permissionId;
-
   const roles = (() => {
     const roles = roleModel.value
-      // Map each role to the corresponding UserRole enum value
-      .map((role) => UserRole[role as keyof typeof UserRole])
-      // Filter out roles that are not valid UserRole enum values (like undefined)
-      .filter((role) => role in UserRole)
       // Sort that it wouldnt matter in what order boxes were checked.
       .sort();
     // If empty make it null
     return roles.length > 0 ? roles : null;
   })();
 
-  if (JSON.stringify(roles) !== JSON.stringify(props.user.role as UserRole)) {
+  if (JSON.stringify(roles) !== JSON.stringify(props.user.role)) {
     // Different new role: Add it
     emit('permissionEmit', {
       permissionId,
@@ -77,33 +72,24 @@ const emitPermissionEmitEvent = () => {
   }
 };
 
-const roleDictionary: Record<UserRole, string> = {
-  [UserRole.Owner]: 'Owner',
-  [UserRole.Contributor]: 'Contributor',
-  [UserRole.Reviewer]: 'Reviewer',
-};
-
 // Original roles: Convert an array of numbers to an array of corresponding strings
-const roleModel = ref<string[]>(
-  ([] as UserRole[])
-    .concat(props.user.role)
-    .map((role: UserRole) => roleDictionary[role])
-);
+const roleModel = ref<UserRole[]>(props.user.role || []);
+
 const roleOptions = [
   {
-    value: 'Contributor',
+    value: UserRole.Contributor,
     label: 'Contributor',
     disable: false,
   },
   {
-    value: 'Reviewer',
+    value: UserRole.Reviewer,
     label: 'Reviewer',
     disable: false,
   },
 ];
-if (roleModel.value.includes('Owner')) {
+if (roleModel.value.includes(UserRole.Owner)) {
   roleOptions.unshift({
-    value: 'Owner',
+    value: UserRole.Owner,
     label: 'Owner',
     disable: true,
   });

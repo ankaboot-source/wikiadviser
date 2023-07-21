@@ -21,7 +21,7 @@ export type SearchResult = {
 export type User = {
   username: string;
   email: string;
-  role: number;
+  role: UserRole[];
   permissionId: string;
 };
 

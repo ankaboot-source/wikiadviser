@@ -16,8 +16,18 @@
         color="primary"
         outline
         label="share"
+        class="q-pr-lg"
         @click="share = !share"
       >
+        <q-badge
+          rounded
+          floating
+          class="q-ma-xs"
+          text-color="black"
+          color="yellow-8"
+          >{{ numberOfPermissionRequests }}
+          <q-tooltip> Permission requests. </q-tooltip>
+        </q-badge>
       </q-btn>
       <q-dialog v-model="share">
         <share-card :article-id="articleId" :role="article.role" />
@@ -54,10 +64,15 @@ import ShareCard from 'src/components/ShareCard.vue';
 import { onBeforeMount, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
-import { createNewPermission, getArticles } from 'src/api/supabaseHelper';
+import {
+  createNewPermission,
+  getArticles,
+  getUsers,
+} from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
+import { User } from '@supabase/supabase-js';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -69,6 +84,8 @@ const share = ref(false);
 const contributorPermission = ref(false);
 const roles = ref<UserRole[]>([]);
 const article = ref();
+const numberOfPermissionRequests = ref();
+const users = ref();
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -84,6 +101,10 @@ onBeforeMount(async () => {
     });
     if (article.value) {
       roles.value = article.value.role;
+      users.value = await getUsers(articleId.value);
+      numberOfPermissionRequests.value = users.value.filter(
+        (user: User) => !user.role
+      ).length;
       contributorPermission.value = article.value.role?.includes(
         UserRole.Contributor
       );

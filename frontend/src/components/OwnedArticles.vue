@@ -42,9 +42,14 @@
               <div v-if="article.description" class="q-pl-sm">
                 {{ article.description }}
               </div>
-              <div v-if="article.description" class="text-black q-pl-sm">
-                {{ roles[article.role] }}
-              </div>
+              <q-badge
+                v-for="userRole in article.role"
+                :key="userRole"
+                text-color="light-blue-10"
+                color="light-blue-1"
+                class="q-ml-sm q-mt-sm"
+                :label="UserRole[userRole]"
+              />
             </div>
           </div>
         </q-item-section>
@@ -56,14 +61,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
+import { UserRole } from 'src/types';
 
 const $q = useQuasar();
 const router = useRouter();
 const articles = JSON.parse($q.localStorage.getItem('articles')!);
 const term = ref('');
-const roles: { [key: number]: string } = {
-  0: 'Owner',
-  1: 'Contributor',
-  2: 'Reviewer',
-};
 </script>

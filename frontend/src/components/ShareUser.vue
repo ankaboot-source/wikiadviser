@@ -13,7 +13,7 @@
           v-if="!roleModel.length"
           color="yellow-8"
           icon="priority_high"
-          size="24px"
+          size="sm"
         >
           <q-tooltip anchor="top middle" self="bottom middle">
             User needs attention.

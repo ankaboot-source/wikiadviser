@@ -16,7 +16,7 @@
             :color="statusDictionary.get(props.item?.status)!.color"
             text-color="white"
             :icon="statusDictionary.get(props.item?.status)!.icon"
-            size="24px"
+            size="sm"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusDictionary.get(props.item?.status)!.message }}
@@ -38,7 +38,7 @@
       </q-item-section>
       <q-item-section caption top side lines="2">
         <span class="text-black">
-          <q-avatar size="24px" icon="person" color="accent" />
+          <q-avatar size="sm" icon="person" color="accent" />
           {{ props.item?.users.raw_user_meta_data.username }}</span
         >
         <span style="size: 0.5rem">

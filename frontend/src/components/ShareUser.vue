@@ -20,11 +20,11 @@
           </q-tooltip>
         </q-avatar>
         <q-badge
-          v-for="role in props.user.role"
-          :key="role"
+          v-for="userRole in props.user.role"
+          :key="userRole"
           text-color="light-blue-10"
           color="light-blue-1"
-          :label="UserRole[role]"
+          :label="UserRole[userRole]"
         />
       </q-item-section>
     </template>
@@ -51,8 +51,29 @@ const props = defineProps<{
   user: User;
   role: UserRole[] | null;
 }>();
-const emit = defineEmits(['permissionEmit']);
 const ownerPermission = props.role?.includes(UserRole.Owner);
+const roleModel = ref<UserRole[]>(props.user.role || []);
+const roleOptions = [
+  {
+    value: UserRole.Contributor,
+    label: 'Contributor',
+    disable: false,
+  },
+  {
+    value: UserRole.Reviewer,
+    label: 'Reviewer',
+    disable: false,
+  },
+];
+if (roleModel.value.includes(UserRole.Owner)) {
+  roleOptions.unshift({
+    value: UserRole.Owner,
+    label: 'Owner',
+    disable: true,
+  });
+}
+
+const emit = defineEmits(['permissionEmit']);
 const emitPermissionEmitEvent = () => {
   const permissionId = props.user.permissionId;
   const roles = (() => {
@@ -78,27 +99,4 @@ const emitPermissionEmitEvent = () => {
     });
   }
 };
-
-// Original roles: Convert an array of numbers to an array of corresponding strings
-const roleModel = ref<UserRole[]>(props.user.role || []);
-
-const roleOptions = [
-  {
-    value: UserRole.Contributor,
-    label: 'Contributor',
-    disable: false,
-  },
-  {
-    value: UserRole.Reviewer,
-    label: 'Reviewer',
-    disable: false,
-  },
-];
-if (roleModel.value.includes(UserRole.Owner)) {
-  roleOptions.unshift({
-    value: UserRole.Owner,
-    label: 'Owner',
-    disable: true,
-  });
-}
 </script>

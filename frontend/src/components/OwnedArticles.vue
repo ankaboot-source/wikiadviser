@@ -67,9 +67,4 @@ const $q = useQuasar();
 const router = useRouter();
 const articles = JSON.parse($q.localStorage.getItem('articles')!);
 const term = ref('');
-const roles: { [key: number]: string } = {
-  0: 'Owner',
-  1: 'Contributor',
-  2: 'Reviewer',
-};
 </script>

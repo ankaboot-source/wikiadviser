@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
-import { Article, User } from 'src/types';
+import { Article, User, Permission } from 'src/types';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -103,13 +103,17 @@ export async function getArticles(userId: string): Promise<Article[] | null> {
 }
 
 export async function updatePermission(
-  permissionId: string,
-  role: number
+  permission: Permission[]
 ): Promise<void> {
+  const mappedPermissions = permission.map(({ permissionId, roles }) => ({
+    id: permissionId,
+    role: roles,
+  }));
+
   const { error: changeError } = await supabase
     .from('permissions')
-    .update({ role })
-    .eq('id', permissionId);
+    .upsert(mappedPermissions);
+
   if (changeError) {
     throw new Error(changeError.message);
   }

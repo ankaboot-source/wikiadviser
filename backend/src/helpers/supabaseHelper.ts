@@ -18,7 +18,7 @@ export async function insertArticle(
 
   const { error: permissionsError } = await supabase
     .from('permissions')
-    .insert({ role: 0, user_id: userId, article_id: articleId });
+    .insert({ role: [0, 1], user_id: userId, article_id: articleId });
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }

@@ -21,7 +21,7 @@ export type SearchResult = {
 export type User = {
   username: string;
   email: string;
-  role: number;
+  role: UserRole[];
   permissionId: string;
 };
 
@@ -44,3 +44,8 @@ export enum UserRole {
   Contributor = 1,
   Reviewer = 2,
 }
+
+export type Permission = {
+  permissionId: string;
+  roles: UserRole[] | null;
+};

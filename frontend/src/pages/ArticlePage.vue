@@ -12,6 +12,14 @@
       <q-tab name="changes" label="changes" />
       <q-space />
       <q-btn
+        icon="link"
+        color="primary"
+        outline
+        class="q-mr-xs"
+        label="share link"
+        @click="copyValueToClipboard()"
+      />
+      <q-btn
         icon="o_group"
         color="primary"
         outline
@@ -70,7 +78,7 @@ import {
   getUsers,
 } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
-import { useQuasar } from 'quasar';
+import { useQuasar, copyToClipboard } from 'quasar';
 import { Article, UserRole } from 'src/types';
 import { User } from '@supabase/supabase-js';
 
@@ -118,4 +126,13 @@ onBeforeMount(async () => {
     });
   }
 });
+
+async function copyValueToClipboard() {
+  await copyToClipboard(route.path);
+  $q.notify({
+    message: 'Share link copied to clipboard',
+    color: 'positive',
+    icon: 'content_copy',
+  });
+}
 </script>

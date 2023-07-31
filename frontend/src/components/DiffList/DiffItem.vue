@@ -196,9 +196,13 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
-const editorPermission = ref(false);
-const reviewerPermission = ref(false);
-const viewerPermission = ref(false);
+const editorPermission =
+  props.role === UserRole.Editor || props.role === UserRole.Owner;
+const reviewerPermission =
+  props.role === UserRole.Reviewer ||
+  UserRole.Editor ||
+  props.role === UserRole.Owner;
+const viewerPermission = props.role === UserRole.Viewer;
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -207,9 +211,6 @@ onMounted(async () => {
     session.value = _session;
     username.value = session.value?.user.user_metadata.username;
     userId.value = session.value?.user.id as string;
-    editorPermission.value = props.role == UserRole.Editor;
-    reviewerPermission.value = props.role == UserRole.Reviewer;
-    viewerPermission.value = props.role == UserRole.Viewer;
   });
 });
 

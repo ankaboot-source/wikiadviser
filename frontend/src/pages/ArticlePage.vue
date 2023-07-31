@@ -103,7 +103,9 @@ onBeforeMount(async () => {
     if (article.value) {
       role.value = article.value.role;
       users.value = await getUsers(articleId.value);
-      editorPermission.value = article.value.role == UserRole.Editor;
+      editorPermission.value =
+        article.value.role === UserRole.Editor ||
+        article.value.role == UserRole.Owner;
     }
   }
 });

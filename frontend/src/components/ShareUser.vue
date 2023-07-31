@@ -15,7 +15,7 @@
       :disable="!ownerPermission || props.user.role === UserRole.Owner"
       label="Role"
       map-options
-      @update:model-value="emitPermissionEmitEvent()"
+      @update:model-value="emitPermission()"
     />
     <q-btn
       v-if="ownerPermission && props.user.role !== UserRole.Owner"
@@ -75,8 +75,7 @@ const removed = ref(false);
 const ownerPermission = props.role === UserRole.Owner;
 
 const emit = defineEmits(['permissionEmit']);
-function emitPermissionEmitEvent() {
-  console.log(roleModel.value);
+function emitPermission() {
   const permissionId = props.user.permissionId;
   const role = roleModel.value.value;
   if (role !== props.user.role) {

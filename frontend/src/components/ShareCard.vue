@@ -12,7 +12,7 @@
           :key="user.username"
           :user="user"
           :role="role"
-          @permission-emit="handlePermissionEmit"
+          @permission-emit="onPermissionChange"
         ></share-user>
       </q-list>
     </q-card-section>
@@ -70,7 +70,7 @@ type EmittedPermission = {
 const permissionsToUpdate = ref<Permission[]>([]);
 const permissionsToDelete = ref<string[]>([]);
 
-const handlePermissionEmit = (permission: EmittedPermission) => {
+const onPermissionChange = (permission: EmittedPermission) => {
   const { permissionId, role, duplicate, remove } = permission;
 
   if (remove) {

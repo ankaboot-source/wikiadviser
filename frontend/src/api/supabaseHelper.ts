@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
-import { Article, User, Permission } from 'src/types';
+import { Article, User, Permission, UserRole } from 'src/types';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -61,7 +61,11 @@ export async function createNewPermission(
   if (!existingPermission.data) {
     const { error: permissionError } = await supabase
       .from('permissions')
-      .insert({ user_id: userId, article_id: articleId });
+      .insert({
+        user_id: userId,
+        article_id: articleId,
+        role: UserRole.Viewer,
+      });
     if (permissionError) {
       throw new Error(permissionError.message);
     }
@@ -105,9 +109,9 @@ export async function getArticles(userId: string): Promise<Article[] | null> {
 export async function updatePermission(
   permission: Permission[]
 ): Promise<void> {
-  const mappedPermissions = permission.map(({ permissionId, roles }) => ({
+  const mappedPermissions = permission.map(({ permissionId, role }) => ({
     id: permissionId,
-    role: roles,
+    role,
   }));
 
   const { error: changeError } = await supabase
@@ -160,6 +164,17 @@ export async function insertComment(
   const { error: changeError } = await supabase
     .from('comments')
     .insert({ change_id: changeId, commenter_id: commenterId, content });
+
+  if (changeError) {
+    throw new Error(changeError.message);
+  }
+}
+
+export async function deletePermission(permissionId: string) {
+  const { error: changeError } = await supabase
+    .from('permissions')
+    .delete()
+    .eq('id', permissionId);
 
   if (changeError) {
     throw new Error(changeError.message);

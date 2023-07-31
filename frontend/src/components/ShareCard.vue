@@ -1,45 +1,40 @@
 <template>
-  <q-card
-    style="min-width: 30vw"
-    class="q-px-lg q-mb-xl bg-secondary full-height row"
-  >
-    <q-card-section class="q-pb-xl column col">
-      <q-card-section>
-        <p class="text-h5 text-center merriweather">Share</p>
-      </q-card-section>
-      <q-scroll-area class="col-grow">
-        <q-list bordered separator>
-          <share-user
-            v-for="user in users"
-            :key="user.username"
-            :user="user"
-            :role="role"
-            @permission-emit="handlePermissionEmit"
-          ></share-user>
-        </q-list>
-      </q-scroll-area>
+  <q-card style="min-width: 30vw">
+    <q-toolbar class="bg-white borders">
+      <q-toolbar-title class="merriweather">Share this article</q-toolbar-title>
+      <q-btn v-close-popup flat round dense icon="close" size="sm" />
+    </q-toolbar>
 
-      <q-card-actions class="q-mt-md">
-        <q-btn
-          icon="link"
-          color="primary"
-          outline
-          no-caps
-          label="Copy link"
-          @click="copyValueToClipboard()"
-        />
-        <q-space />
-        <template v-if="ownerPermission">
-          <q-btn v-close-popup color="primary" outline no-caps label="Cancel" />
-          <q-btn
-            color="primary"
-            unelevated
-            no-caps
-            label="Apply"
-            @click="handlePermissionChange()"
-        /></template>
-      </q-card-actions>
+    <q-card-section>
+      <q-list bordered separator>
+        <share-user
+          v-for="user in users"
+          :key="user.username"
+          :user="user"
+          :role="role"
+          @permission-emit="onPermissionChange"
+        ></share-user>
+      </q-list>
     </q-card-section>
+
+    <q-card-actions v-if="ownerPermission" class="borders">
+      <q-space />
+      <q-btn
+        v-close-popup
+        class="q-mr-xs"
+        color="primary"
+        outline
+        no-caps
+        label="Cancel"
+      />
+      <q-btn
+        color="primary"
+        unelevated
+        no-caps
+        label="Apply"
+        @click="handlePermissionChange()"
+      />
+    </q-card-actions>
   </q-card>
 </template>
 
@@ -47,49 +42,48 @@
 import { onMounted, ref } from 'vue';
 import { User, UserRole, Permission } from 'src/types';
 import ShareUser from './ShareUser.vue';
-import { getUsers, updatePermission } from 'src/api/supabaseHelper';
-import { useRoute } from 'vue-router';
-const route = useRoute();
-import { copyToClipboard, useQuasar } from 'quasar';
+import {
+  deletePermission,
+  getUsers,
+  updatePermission,
+} from 'src/api/supabaseHelper';
+import { useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: UserRole[] | null;
+  role: UserRole;
 }>();
 const users = ref<User[]>();
 
-const ownerPermission = props.role?.includes(UserRole.Owner);
+const ownerPermission = props.role == UserRole.Owner;
 
 onMounted(async () => {
   users.value = await getUsers(props.articleId);
 });
 
-async function copyValueToClipboard() {
-  await copyToClipboard(route.path);
-  $q.notify({
-    message: 'Share link copied to clipboard',
-    color: 'positive',
-    icon: 'content_copy',
-  });
-}
-
 type EmittedPermission = {
   permissionId: string;
-  roles: UserRole[] | null;
+  role: UserRole;
+  duplicate?: boolean;
   remove?: boolean;
 };
 const permissionsToUpdate = ref<Permission[]>([]);
+const permissionsToDelete = ref<string[]>([]);
 
-const handlePermissionEmit = (permission: EmittedPermission) => {
-  const { permissionId, roles, remove } = permission;
+const onPermissionChange = (permission: EmittedPermission) => {
+  const { permissionId, role, duplicate, remove } = permission;
 
+  if (remove) {
+    permissionsToDelete.value?.push(permissionId);
+    return;
+  }
   const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
     (perm) => perm.permissionId === permissionId
   );
 
   if (existingPermissionIndex !== -1) {
     // If the permission already exists
-    if (remove) {
+    if (duplicate) {
       // Remove it
       permissionsToUpdate.value?.splice(existingPermissionIndex, 1);
     } else {
@@ -103,7 +97,24 @@ const handlePermissionEmit = (permission: EmittedPermission) => {
 };
 
 async function handlePermissionChange() {
-  console.log(permissionsToUpdate.value);
+  if (permissionsToDelete.value.length) {
+    try {
+      for (const permission of permissionsToDelete.value) {
+        await deletePermission(permission);
+      }
+      $q.notify({
+        message: 'Permission updated.',
+        icon: 'check',
+        color: 'positive',
+      });
+      permissionsToDelete.value = [];
+    } catch (error: any) {
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    }
+  }
   if (permissionsToUpdate.value.length) {
     try {
       await updatePermission(permissionsToUpdate.value);

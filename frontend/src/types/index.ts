@@ -21,7 +21,7 @@ export type SearchResult = {
 export type User = {
   username: string;
   email: string;
-  role: UserRole[];
+  role: UserRole;
   permissionId: string;
 };
 
@@ -41,11 +41,12 @@ export type Comment = {
 
 export enum UserRole {
   Owner = 0,
-  Contributor = 1,
+  Editor = 1,
   Reviewer = 2,
+  Viewer = 3,
 }
 
 export type Permission = {
   permissionId: string;
-  roles: UserRole[] | null;
+  role: UserRole;
 };

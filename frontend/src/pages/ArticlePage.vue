@@ -8,27 +8,27 @@
       indicator-color="primary"
       align="left"
     >
-      <q-tab v-if="contributorPermission" name="editor" label="editor" />
+      <q-tab v-if="editorPermission" name="editor" label="editor" />
       <q-tab name="changes" label="changes" />
       <q-space />
       <q-btn
+        v-if="role != UserRole.Viewer"
+        icon="link"
+        color="primary"
+        outline
+        class="q-mr-xs"
+        label="share link"
+        @click="copyValueToClipboard()"
+      />
+      <q-btn
+        v-if="role != UserRole.Viewer"
         icon="o_group"
         color="primary"
         outline
         label="share"
         class="q-pr-lg"
         @click="share = !share"
-      >
-        <q-badge
-          rounded
-          floating
-          class="q-ma-xs"
-          text-color="black"
-          color="yellow-8"
-          >{{ numberOfPermissionRequests }}
-          <q-tooltip> Permission requests. </q-tooltip>
-        </q-badge>
-      </q-btn>
+      />
       <q-dialog v-model="share">
         <share-card :article-id="articleId" :role="article.role" />
       </q-dialog>
@@ -43,7 +43,7 @@
       </q-tab-panel>
       <q-tab-panel name="changes" class="row justify-evenly">
         <diff-list
-          :roles="roles"
+          :role="role"
           :article-id="articleId"
           class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
         />
@@ -70,21 +70,18 @@ import {
   getUsers,
 } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
-import { useQuasar } from 'quasar';
+import { useQuasar, copyToClipboard } from 'quasar';
 import { Article, UserRole } from 'src/types';
-import { User } from '@supabase/supabase-js';
 
 const $q = useQuasar();
 const route = useRoute();
 
-const router = useRouter();
 const tab = ref('');
 const articleId = ref('');
 const share = ref(false);
-const contributorPermission = ref(false);
-const roles = ref<UserRole[]>([]);
+const editorPermission = ref(false);
+const role = ref<UserRole>(UserRole.Viewer);
 const article = ref();
-const numberOfPermissionRequests = ref();
 const users = ref();
 
 onBeforeMount(async () => {
@@ -93,6 +90,10 @@ onBeforeMount(async () => {
   articleId.value = route.params.articleId as string;
   // Access the selected tab else 'changes' tab
   tab.value = route.params.tab ? (route.params.tab as string) : 'changes';
+  if (!article.value) {
+    //In case this article exists, a permission request will be sent to the Owner.
+    await createNewPermission(articleId.value, data.session!.user.id);
+  }
   const articles = await getArticles(data.session!.user.id);
   $q.localStorage.set('articles', JSON.stringify(articles));
   if (articles) {
@@ -100,22 +101,21 @@ onBeforeMount(async () => {
       return article.article_id === articleId.value;
     });
     if (article.value) {
-      roles.value = article.value.role;
+      role.value = article.value.role;
       users.value = await getUsers(articleId.value);
-      numberOfPermissionRequests.value = users.value.filter(
-        (user: User) => !user.role
-      ).length;
-      contributorPermission.value = article.value.role?.includes(
-        UserRole.Contributor
-      );
+      editorPermission.value =
+        article.value.role === UserRole.Editor ||
+        article.value.role == UserRole.Owner;
     }
   }
-  if (!article.value) {
-    //In case this article exists, a permission request will be sent to the Owner.
-    await createNewPermission(articleId.value, data.session!.user.id);
-    router.push({
-      name: 'ArticleNotFound',
-    });
-  }
 });
+
+async function copyValueToClipboard() {
+  await copyToClipboard(route.path);
+  $q.notify({
+    message: 'Share link copied to clipboard',
+    color: 'positive',
+    icon: 'content_copy',
+  });
+}
 </script>

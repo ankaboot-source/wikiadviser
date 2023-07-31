@@ -40,17 +40,13 @@ function handleClick(event: MouseEvent) {
   //Prevent visting links:
   event.preventDefault();
   let target = event.target as HTMLElement;
-  const rest = target;
   let ancestry = 0;
   while (target && !target.getAttribute('data-id')) {
     target = target.parentElement!;
     ancestry++;
   }
   if (target) {
-    console.log(`Element clicked of ancestry ${ancestry}:`, target);
     store.selectedChangeId = target.getAttribute('data-id') as string;
-  } else {
-    console.log('Element clicked:', rest);
   }
 }
 

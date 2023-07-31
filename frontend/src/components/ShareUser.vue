@@ -12,13 +12,13 @@
       class="q-ma-sm"
       :options="roleOptions"
       dense
-      :disable="!ownerPermission || props.user.role == UserRole.Owner"
+      :disable="!ownerPermission || props.user.role === UserRole.Owner"
       label="Role"
       map-options
       @update:model-value="emitPermissionEmitEvent()"
     />
     <q-btn
-      v-if="ownerPermission && props.user.role != UserRole.Owner"
+      v-if="ownerPermission && props.user.role !== UserRole.Owner"
       color="negative"
       unelevated
       no-caps
@@ -43,7 +43,10 @@ const props = defineProps<{
   role: UserRole;
 }>();
 
-const roleModel = ref<UserRole>(props.user.role);
+const roleModel = ref({
+  label: UserRole[props.user.role],
+  value: props.user.role,
+});
 const roleOptions = [
   {
     label: 'Editor',
@@ -61,7 +64,7 @@ const roleOptions = [
     disable: false,
   },
 ];
-if (roleModel.value == UserRole.Owner) {
+if (roleModel.value.value === UserRole.Owner) {
   roleOptions.unshift({
     label: 'Owner',
     value: UserRole.Owner,
@@ -69,13 +72,14 @@ if (roleModel.value == UserRole.Owner) {
   });
 }
 const removed = ref(false);
-const ownerPermission = props.role == UserRole.Owner;
+const ownerPermission = props.role === UserRole.Owner;
 
 const emit = defineEmits(['permissionEmit']);
 function emitPermissionEmitEvent() {
+  console.log(roleModel.value);
   const permissionId = props.user.permissionId;
   const role = roleModel.value.value;
-  if (JSON.stringify(role) !== JSON.stringify(props.user.role)) {
+  if (role !== props.user.role) {
     // Different new role: Add it
     emit('permissionEmit', {
       permissionId,

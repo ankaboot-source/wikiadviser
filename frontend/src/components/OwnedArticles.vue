@@ -36,19 +36,16 @@
       >
         <q-item-section>
           <div class="app-search__result-title row items-center q-gutter-sm">
-            <div class="col-auto"></div>
             <div class="col">
               <div class="doc-token">{{ article.title }}</div>
               <div v-if="article.description" class="q-pl-sm">
                 {{ article.description }}
               </div>
               <q-badge
-                v-for="userRole in article.role"
-                :key="userRole"
                 text-color="light-blue-10"
                 color="light-blue-1"
                 class="q-ml-sm q-mt-sm"
-                :label="UserRole[userRole]"
+                :label="UserRole[article.role]"
               />
             </div>
           </div>

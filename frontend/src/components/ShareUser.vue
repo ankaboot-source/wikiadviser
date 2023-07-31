@@ -1,46 +1,37 @@
 <template>
-  <q-expansion-item :disable="!ownerPermission">
-    <template #header>
-      <q-item-section avatar>
-        <q-avatar size="md" icon="person" color="accent" />
-      </q-item-section>
-      <q-item-section>
-        <q-item-label>{{ props.user.username }}</q-item-label>
-        <q-item-label caption>{{ props.user.email }}</q-item-label>
-      </q-item-section>
-      <q-item-section side>
-        <q-avatar
-          v-if="!roleModel.length"
-          color="yellow-8"
-          icon="priority_high"
-          size="sm"
-        >
-          <q-tooltip anchor="top middle" self="bottom middle">
-            User needs attention.
-          </q-tooltip>
-        </q-avatar>
-        <q-badge
-          v-for="userRole in props.user.role"
-          :key="userRole"
-          text-color="light-blue-10"
-          color="light-blue-1"
-          :label="UserRole[userRole]"
-        />
-      </q-item-section>
-    </template>
-    <q-item-section>
-      <q-option-group
-        v-model="roleModel"
-        class="q-ml-sm q-my-sm"
-        :options="roleOptions"
-        dense
-        label="Role"
-        :disable="!ownerPermission"
-        type="checkbox"
-        @update:model-value="emitPermissionEmitEvent"
-      />
+  <q-item v-show="!removed" bordered>
+    <q-item-section avatar>
+      <q-avatar size="md" icon="person" color="accent" />
     </q-item-section>
-  </q-expansion-item>
+    <q-item-section>
+      <q-item-label>{{ props.user.username }}</q-item-label>
+      <q-item-label caption>{{ props.user.email }}</q-item-label>
+    </q-item-section>
+    <q-select
+      v-model="roleModel"
+      class="q-ma-sm"
+      :options="roleOptions"
+      dense
+      :disable="!ownerPermission || props.user.role == UserRole.Owner"
+      label="Role"
+      map-options
+      @update:model-value="emitPermissionEmitEvent()"
+    />
+    <q-btn
+      v-if="ownerPermission && props.user.role != UserRole.Owner"
+      color="negative"
+      unelevated
+      no-caps
+      outline
+      dense
+      flat
+      size="sm"
+      icon="delete"
+      @click="removePermission()"
+    >
+      <q-tooltip>Remove user</q-tooltip></q-btn
+    >
+  </q-item>
 </template>
 
 <script setup lang="ts">
@@ -49,54 +40,63 @@ import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: UserRole[] | null;
+  role: UserRole;
 }>();
-const ownerPermission = props.role?.includes(UserRole.Owner);
-const roleModel = ref<UserRole[]>(props.user.role || []);
+
+const roleModel = ref<UserRole>(props.user.role);
 const roleOptions = [
   {
-    value: UserRole.Contributor,
-    label: 'Contributor',
+    label: 'Editor',
+    value: UserRole.Editor,
     disable: false,
   },
   {
-    value: UserRole.Reviewer,
     label: 'Reviewer',
+    value: UserRole.Reviewer,
+    disable: false,
+  },
+  {
+    label: 'Viewer',
+    value: UserRole.Viewer,
     disable: false,
   },
 ];
-if (roleModel.value.includes(UserRole.Owner)) {
+if (roleModel.value == UserRole.Owner) {
   roleOptions.unshift({
-    value: UserRole.Owner,
     label: 'Owner',
+    value: UserRole.Owner,
     disable: true,
   });
 }
+const removed = ref(false);
+const ownerPermission = props.role == UserRole.Owner;
 
 const emit = defineEmits(['permissionEmit']);
-const emitPermissionEmitEvent = () => {
+function emitPermissionEmitEvent() {
   const permissionId = props.user.permissionId;
-  const roles = (() => {
-    const roles = roleModel.value
-      // Sort that it wouldnt matter in what order boxes were checked.
-      .sort();
-    // If empty make it null
-    return roles.length > 0 ? roles : null;
-  })();
-
-  if (JSON.stringify(roles) !== JSON.stringify(props.user.role)) {
+  const role = roleModel.value.value;
+  if (JSON.stringify(role) !== JSON.stringify(props.user.role)) {
     // Different new role: Add it
     emit('permissionEmit', {
       permissionId,
-      roles,
+      role,
     });
   } else {
-    // Back to the same original role: Remove it
+    // Duplicate: Remove it
     emit('permissionEmit', {
       permissionId,
-      roles,
-      remove: true,
+      role,
+      duplicate: true,
     });
   }
-};
+}
+
+function removePermission() {
+  removed.value = true;
+  const permissionId = props.user.permissionId;
+  emit('permissionEmit', {
+    permissionId,
+    remove: true,
+  });
+}
 </script>

@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 30vw">
     <q-toolbar class="bg-white borders">
-      <q-toolbar-title class="merriweather">Share</q-toolbar-title>
+      <q-toolbar-title class="merriweather">Share this article</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
@@ -17,23 +17,23 @@
       </q-list>
     </q-card-section>
 
-    <q-card-actions class="borders">
+    <q-card-actions v-if="ownerPermission" class="borders">
       <q-space />
-      <template v-if="ownerPermission">
-        <q-btn
-          v-close-popup
-          class="q-mr-xs"
-          color="primary"
-          outline
-          no-caps
-          label="Cancel" />
-        <q-btn
-          color="primary"
-          unelevated
-          no-caps
-          label="Apply"
-          @click="handlePermissionChange()"
-      /></template>
+      <q-btn
+        v-close-popup
+        class="q-mr-xs"
+        color="primary"
+        outline
+        no-caps
+        label="Cancel"
+      />
+      <q-btn
+        color="primary"
+        unelevated
+        no-caps
+        label="Apply"
+        @click="handlePermissionChange()"
+      />
     </q-card-actions>
   </q-card>
 </template>
@@ -42,16 +42,20 @@
 import { onMounted, ref } from 'vue';
 import { User, UserRole, Permission } from 'src/types';
 import ShareUser from './ShareUser.vue';
-import { getUsers, updatePermission } from 'src/api/supabaseHelper';
+import {
+  deletePermission,
+  getUsers,
+  updatePermission,
+} from 'src/api/supabaseHelper';
 import { useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
   articleId: string;
-  role: UserRole[] | null;
+  role: UserRole;
 }>();
 const users = ref<User[]>();
 
-const ownerPermission = props.role?.includes(UserRole.Owner);
+const ownerPermission = props.role == UserRole.Owner;
 
 onMounted(async () => {
   users.value = await getUsers(props.articleId);
@@ -59,15 +63,20 @@ onMounted(async () => {
 
 type EmittedPermission = {
   permissionId: string;
-  roles: UserRole[] | null;
+  role: UserRole;
   duplicate?: boolean;
   remove?: boolean;
 };
 const permissionsToUpdate = ref<Permission[]>([]);
+const permissionsToDelete = ref<string[]>([]);
 
 const handlePermissionEmit = (permission: EmittedPermission) => {
-  const { permissionId, roles, duplicate, remove } = permission;
+  const { permissionId, role, duplicate, remove } = permission;
 
+  if (remove) {
+    permissionsToDelete.value?.push(permissionId);
+    return;
+  }
   const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
     (perm) => perm.permissionId === permissionId
   );
@@ -85,9 +94,32 @@ const handlePermissionEmit = (permission: EmittedPermission) => {
     // If the permission doesn't exist, Add it
     permissionsToUpdate.value?.push(permission);
   }
+  console.log(JSON.stringify(permissionsToUpdate.value));
 };
 
 async function handlePermissionChange() {
+  console.log(
+    JSON.stringify(permissionsToUpdate.value),
+    JSON.stringify(permissionsToDelete.value)
+  );
+  if (permissionsToDelete.value.length) {
+    try {
+      for (const permission of permissionsToDelete.value) {
+        await deletePermission(permission);
+      }
+      $q.notify({
+        message: 'Permission updated.',
+        icon: 'check',
+        color: 'positive',
+      });
+      permissionsToDelete.value = [];
+    } catch (error: any) {
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    }
+  }
   if (permissionsToUpdate.value.length) {
     try {
       await updatePermission(permissionsToUpdate.value);

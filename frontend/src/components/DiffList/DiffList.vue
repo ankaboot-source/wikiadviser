@@ -7,7 +7,7 @@
           v-for="item in data"
           :key="item.id"
           :item="item"
-          :roles="roles"
+          :role="role"
         ></diff-item>
       </q-list>
     </q-scroll-area>
@@ -21,7 +21,7 @@ import { getChanges } from 'src/api/supabaseHelper';
 import { ChangesItem, UserRole } from 'src/types';
 
 const props = defineProps<{
-  roles: UserRole[];
+  role: UserRole;
   articleId: string;
 }>();
 const data = ref<ChangesItem[]>([]);

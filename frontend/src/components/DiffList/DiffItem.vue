@@ -60,7 +60,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section v-if="description || contributorPermission">
+    <q-item-section v-if="description || EditorPermission">
       <div class="q-pa-md">
         <div class="row">
           <q-input
@@ -70,10 +70,10 @@
             autogrow
             label="What's this change about?"
             class="col"
-            :readonly="!contributorPermission"
+            :readonly="!EditorPermission"
           >
-            <!-- User: Contributor  Only -->
-            <template v-if="contributorPermission" #append>
+            <!-- User: Editor  Only -->
+            <template v-if="EditorPermission" #append>
               <q-btn
                 round
                 dense
@@ -122,6 +122,7 @@
           class="row"
           placeholder="Leave a comment"
           style="width: 100%"
+          :disable="viewerPermission"
         >
           <template #append>
             <q-btn
@@ -186,7 +187,7 @@ import { useSelectedChangeStore } from '../../stores/selectedChange';
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
-  roles: UserRole[];
+  role: UserRole;
 }>();
 const expanded = ref(false);
 const session = ref<Session | null>();
@@ -195,8 +196,9 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
-const contributorPermission = ref(false);
+const EditorPermission = ref(false);
 const reviewerPermission = ref(false);
+const viewerPermission = ref(false);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -206,8 +208,9 @@ onMounted(async () => {
     username.value = session.value?.user.user_metadata.username;
     userId.value = session.value?.user.id as string;
     console.log(props.item.comments, typeof props.item.comments);
-    contributorPermission.value = props.roles?.includes(UserRole.Contributor);
-    reviewerPermission.value = props.roles?.includes(UserRole.Reviewer);
+    EditorPermission.value = props.role == UserRole.Editor;
+    reviewerPermission.value = props.role == UserRole.Reviewer;
+    viewerPermission.value = props.role == UserRole.Viewer;
   });
 });
 

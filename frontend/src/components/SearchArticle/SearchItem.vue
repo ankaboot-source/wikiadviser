@@ -47,16 +47,12 @@ async function itemOnClick() {
     );
 
     if (articleExists) {
-      console.log('article exists');
-      console.log(props.item);
       // GOTO ARTICLE PAGE
       router.push({
         name: 'article',
         params: { articleId: articleId.value },
       });
     } else {
-      console.log("article doesn't exist");
-
       const extractingNotif = $q.notify({
         message: 'Extracting article',
         caption:
@@ -71,7 +67,6 @@ async function itemOnClick() {
         data.session!.user.id,
         props.item.description
       );
-      console.log('new articleid', articleId.value);
 
       extractingNotif();
       $q.notify({

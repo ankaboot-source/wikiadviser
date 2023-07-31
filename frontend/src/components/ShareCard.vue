@@ -94,14 +94,9 @@ const handlePermissionEmit = (permission: EmittedPermission) => {
     // If the permission doesn't exist, Add it
     permissionsToUpdate.value?.push(permission);
   }
-  console.log(JSON.stringify(permissionsToUpdate.value));
 };
 
 async function handlePermissionChange() {
-  console.log(
-    JSON.stringify(permissionsToUpdate.value),
-    JSON.stringify(permissionsToDelete.value)
-  );
   if (permissionsToDelete.value.length) {
     try {
       for (const permission of permissionsToDelete.value) {

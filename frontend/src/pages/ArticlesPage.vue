@@ -9,7 +9,6 @@
   >
     <q-tab v-if="articles" name="ownedArticles" label="View Articles" />
     <q-tab name="wikipediaArticles" label="Create new article" />
-    <q-tab name="" label="" />
   </q-tabs>
   <q-tab-panels v-model="tab">
     <q-tab-panel name="wikipediaArticles" class="row justify-center">

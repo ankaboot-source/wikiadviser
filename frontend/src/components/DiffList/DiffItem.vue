@@ -60,7 +60,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section v-if="description || EditorPermission">
+    <q-item-section v-if="description || editorPermission">
       <div class="q-pa-md">
         <div class="row">
           <q-input
@@ -70,10 +70,10 @@
             autogrow
             label="What's this change about?"
             class="col"
-            :readonly="!EditorPermission"
+            :readonly="!editorPermission"
           >
             <!-- User: Editor  Only -->
-            <template v-if="EditorPermission" #append>
+            <template v-if="editorPermission" #append>
               <q-btn
                 round
                 dense
@@ -196,7 +196,7 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
-const EditorPermission = ref(false);
+const editorPermission = ref(false);
 const reviewerPermission = ref(false);
 const viewerPermission = ref(false);
 
@@ -207,7 +207,7 @@ onMounted(async () => {
     session.value = _session;
     username.value = session.value?.user.user_metadata.username;
     userId.value = session.value?.user.id as string;
-    EditorPermission.value = props.role == UserRole.Editor;
+    editorPermission.value = props.role == UserRole.Editor;
     reviewerPermission.value = props.role == UserRole.Reviewer;
     viewerPermission.value = props.role == UserRole.Viewer;
   });

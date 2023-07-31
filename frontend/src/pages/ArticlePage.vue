@@ -8,7 +8,7 @@
       indicator-color="primary"
       align="left"
     >
-      <q-tab v-if="EditorPermission" name="editor" label="editor" />
+      <q-tab v-if="editorPermission" name="editor" label="editor" />
       <q-tab name="changes" label="changes" />
       <q-space />
       <q-btn
@@ -79,7 +79,7 @@ const route = useRoute();
 const tab = ref('');
 const articleId = ref('');
 const share = ref(false);
-const EditorPermission = ref(false);
+const editorPermission = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
 const article = ref();
 const users = ref();
@@ -103,7 +103,7 @@ onBeforeMount(async () => {
     if (article.value) {
       role.value = article.value.role;
       users.value = await getUsers(articleId.value);
-      EditorPermission.value = article.value.role == UserRole.Editor;
+      editorPermission.value = article.value.role == UserRole.Editor;
     }
   }
 });

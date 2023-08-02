@@ -11,9 +11,9 @@ services:
     ports:
       - ${WIKIADVISER_API_PORT}:${WIKIADVISER_API_PORT}
 
-  wikiadviser-application:
-    image: wikiadviser-application:git
-    container_name: wikiadviser-application
+  wikiadviser-frontend:
+    image: wikiadviser-frontend:git
+    container_name: wikiadviser-frontend
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     build:
@@ -22,6 +22,7 @@ services:
         WIKIADVISER_API_HOST: ${WIKIADVISER_API_HOST}
         SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
         SUPABASE_SECRET_PROJECT_TOKEN: ${SUPABASE_SECRET_PROJECT_TOKEN}
+        MW_SITE_SERVER: ${MW_SITE_SERVER}
     ports:
       - 8020:80
     depends_on:
@@ -45,11 +46,13 @@ services:
   mw-web:
     image: ghcr.io/canastawiki/canasta:latest
     restart: unless-stopped
-    extra_hosts:
-      - "gateway.docker.internal:host-gateway"
+    # extra_hosts:
+    #   - "gateway.docker.internal:host-gateway"
+    ports:
+      - 8090:80
     depends_on:
       - mw-db
-      - mw-elasticsearch
+      # - mw-elasticsearch
     environment:
       # Sourced from .env
       - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
@@ -65,40 +68,40 @@ services:
       - ./mediawiki/images:/mediawiki/images
       - mw-sitemap:/mediawiki/sitemap
 
-  mw-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
-    restart: unless-stopped
-    environment:
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-    volumes:
-      - mw-elasticsearch:/usr/share/elasticsearch/data
+  # mw-elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+  #   restart: unless-stopped
+  #   environment:
+  #     - discovery.type=single-node
+  #     - bootstrap.memory_lock=true
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   volumes:
+  #     - mw-elasticsearch:/usr/share/elasticsearch/data
 
-  mw-caddy:
-    image: docker.io/library/caddy:2.4.6-alpine
-    restart: unless-stopped
-    entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
-    environment:
-      - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
-    ports:
-      - "${PORT:-80}:80"
-      - "${HTTPS_PORT:-443}:443"
-    volumes:
-      - mw-caddy-data:/data
-      - ./mediawiki/config/Caddyfile:/etc/caddy/Caddyfile
+  # mw-caddy:
+  #   image: docker.io/library/caddy:2.4.6-alpine
+  #   restart: unless-stopped
+  #   entrypoint: caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+  #   environment:
+  #     - MW_SITE_FQDN=${MW_SITE_FQDN:-localhost}
+  #   ports:
+  #     - "${PORT:-80}:80"
+  #     - "${HTTPS_PORT:-443}:443"
+  #   volumes:
+  #     - mw-caddy-data:/data
+  #     - ./mediawiki/config/Caddyfile:/etc/caddy/Caddyfile
 
-  mw-varnish:
-    image: docker.io/library/varnish:7.0.2-alpine
-    restart: unless-stopped
-    volumes:
-      - ./mediawiki/config/default.vcl:/etc/varnish/default.vcl:ro
-    tmpfs:
-      - /var/lib/varnish:exec
+  # mw-varnish:
+  #   image: docker.io/library/varnish:7.0.2-alpine
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./mediawiki/config/default.vcl:/etc/varnish/default.vcl:ro
+  #   tmpfs:
+  #     - /var/lib/varnish:exec
 
 volumes:
   mw-mysql-data-volume:

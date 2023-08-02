@@ -16,8 +16,9 @@ import {
 } from './helpers/parsingHelper';
 
 const app = express();
-const port = 3000;
+const port = process.env.WIKIADVISER_API_PORT || 3000;
 const data = { html: '' };
+const MW_SITE_SERVER = process.env.MW_SITE_SERVER;
 
 app.use(express.json({ limit: '300kb' }));
 app.use(
@@ -98,7 +99,7 @@ app.post('/api/article', async (req, res) => {
     const wpArticleWikitext = await getArticleWikiText(title);
 
     // The article in our Mediawiki
-    const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
+    const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
 
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);

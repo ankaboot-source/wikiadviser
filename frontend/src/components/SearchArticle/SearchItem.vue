@@ -58,7 +58,7 @@ async function itemOnClick() {
         caption:
           'Extracting article out of Wikipedia and importing into our Mediawiki.',
         spinner: QSpinnerGears,
-        timeout: 10000,
+        timeout: 50000,
       });
 
       //NEW ARTICLE

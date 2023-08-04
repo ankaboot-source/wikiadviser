@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import logger from './logger';
 import 'dotenv/config';
-import { setupNewArticle, deleteArticle } from './helpers/puppeteerHelper';
+import { setupNewArticle, deleteArticle } from './helpers/playwrightHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,

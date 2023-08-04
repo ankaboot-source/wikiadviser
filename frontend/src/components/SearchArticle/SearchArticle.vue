@@ -41,7 +41,7 @@ const term = ref('');
 const title = ref('');
 const isSearching = ref(false);
 // Original: https://en.wikipedia.org // It will give a CORS error if you use https://wikipedia.org
-const wpProxy = 'https://wiki.adminforge.de';
+const wpProxy = process.env.WIKIPEDIA_PROXY;
 const wpLang = 'en';
 const apiSearch = computed(
   () =>

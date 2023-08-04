@@ -77,6 +77,7 @@ module.exports = configure(function (/* ctx */) {
         SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
         SUPABASE_SECRET_PROJECT_TOKEN:
           process.env.SUPABASE_SECRET_PROJECT_TOKEN,
+        WIKIPEDIA_PROXY: process.env.WIKIPEDIA_PROXY,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

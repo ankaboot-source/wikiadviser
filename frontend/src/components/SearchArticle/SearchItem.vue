@@ -36,7 +36,7 @@ const articleId = ref('');
 const articles = JSON.parse($q.localStorage.getItem('articles')!);
 
 //Some times the proxy doesnt return the thumbnail's host
-const wpProxy = 'https://wiki.adminforge.de';
+const wpProxy = process.env.WIKIPEDIA_PROXY;
 
 const thumbnailSrc = props.item?.thumbnail?.source.startsWith('/media')
   ? `${wpProxy}${props.item?.thumbnail?.source}`

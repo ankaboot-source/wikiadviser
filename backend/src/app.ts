@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import logger from './logger';
 import 'dotenv/config';
-import setupNewArticle from './helpers/puppeteerHelper';
+import { setupNewArticle, deleteArticle } from './helpers/puppeteerHelper';
 import getArticleWikiText from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
@@ -109,6 +109,20 @@ app.post('/api/article', async (req, res) => {
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
+  }
+});
+
+// Delete article
+app.delete('/api/article', async (req, res) => {
+  try {
+    const { articleId } = req.body;
+
+    await deleteArticle(articleId);
+
+    res.status(200).json({ message: 'Deleting article succeeded.', articleId });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Deleting article failed.' });
   }
 });
 

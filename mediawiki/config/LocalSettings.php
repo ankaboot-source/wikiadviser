@@ -29,7 +29,7 @@ $wgSitename = "WikiAdviser";
 $wgScriptPath = "/w";
 
 ## The protocol and server name to use in fully-qualified URLs
-$wgServer = "https://localhost";
+$wgServer = "http://localhost";
 
 ## The URL path to static resources (images, scripts, etc.)
 $wgResourceBasePath = $wgScriptPath;

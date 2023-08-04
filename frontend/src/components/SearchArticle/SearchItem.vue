@@ -38,11 +38,9 @@ const articles = JSON.parse($q.localStorage.getItem('articles')!);
 //Some times the proxy doesnt return the thumbnail's host
 const wpProxy = process.env.WIKIPEDIA_PROXY;
 
-const thumbnailSrc = ref(
-  props.item?.thumbnail?.source.startsWith('/media')
-    ? `${wpProxy}${props.item?.thumbnail?.source}`
-    : props.item?.thumbnail?.source
-);
+const thumbnailSrc = props.item?.thumbnail?.source.startsWith('/media')
+  ? `${wpProxy}${props.item?.thumbnail?.source}`
+  : props.item?.thumbnail?.source;
 
 async function itemOnClick() {
   try {

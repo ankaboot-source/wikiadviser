@@ -40,10 +40,13 @@ const $q = useQuasar();
 const term = ref('');
 const title = ref('');
 const isSearching = ref(false);
+// Original: https://en.wikipedia.org // It will give a CORS error if you use https://wikipedia.org
+const wpProxy = 'https://wiki.adminforge.de';
+const wpLang = 'en';
 const apiSearch = computed(
   () =>
     `
-    https://en.wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
+    ${wpProxy}/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*&lang=${wpLang}`
 );
 const results = ref<SearchResult[]>();
 

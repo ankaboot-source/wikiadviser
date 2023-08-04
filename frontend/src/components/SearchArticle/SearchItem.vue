@@ -4,10 +4,7 @@
       <div class="app-search__result-title row items-center q-gutter-sm">
         <div class="col-auto">
           <q-avatar rounded size="4rem" class="borders">
-            <img
-              v-if="!!props.item?.thumbnail?.source"
-              :src="props.item.thumbnail.source"
-            />
+            <img v-if="!!props.item?.thumbnail?.source" :src="thumbnailSrc" />
             <q-icon name="description" size="4rem" color="grey" />
           </q-avatar>
         </div>
@@ -37,6 +34,13 @@ const props = defineProps<{
 }>();
 const articleId = ref('');
 const articles = JSON.parse($q.localStorage.getItem('articles')!);
+
+//Some times the proxy doesnt return the thumbnail's host
+const wpProxy = 'https://wiki.adminforge.de';
+
+const thumbnailSrc = props.item?.thumbnail?.source.startsWith('/media')
+  ? `${wpProxy}${props.item?.thumbnail?.source}`
+  : props.item?.thumbnail?.source;
 
 async function itemOnClick() {
   try {

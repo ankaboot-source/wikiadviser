@@ -120,12 +120,10 @@ app.get('/api/wikipedia/articles', async (req, res) => {
     const term = req.query.term as string;
     const response = await getWikipediaArticles(term);
     logger.info('Getting Wikipedia articles succeeded.', response);
-    res
-      .status(200)
-      .json({
-        message: 'Getting Wikipedia articles succeeded.',
-        results: response
-      });
+    res.status(200).json({
+      message: 'Getting Wikipedia articles succeeded.',
+      results: response
+    });
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Getting Wikipedia articles failed.' });

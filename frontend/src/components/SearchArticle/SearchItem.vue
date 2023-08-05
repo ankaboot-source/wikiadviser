@@ -6,7 +6,7 @@
           <q-avatar rounded size="4rem" class="borders">
             <img
               v-if="!!props.item?.thumbnail?.source"
-              :src="props.item?.thumbnail?.source"
+              :src="props.item.thumbnail.source"
             />
             <q-icon name="description" size="4rem" color="grey" />
           </q-avatar>

@@ -3,7 +3,10 @@ import cors from 'cors';
 import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
-import getArticleWikiText from './helpers/wikipediaApiHelper';
+import {
+  getWikipediaArticleWikitext,
+  getWikipediaArticles
+} from './helpers/wikipediaApiHelper';
 import {
   insertArticle,
   removeChanges,
@@ -95,7 +98,7 @@ app.post('/api/article', async (req, res) => {
     const articleId = await insertArticle(title, userId, description);
 
     // The wikitext of the Wikipedia article
-    const wpArticleWikitext = await getArticleWikiText(title);
+    const wpArticleWikitext = await getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
     const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
@@ -109,6 +112,23 @@ app.post('/api/article', async (req, res) => {
   } catch (error: any) {
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
+  }
+});
+
+app.get('/api/wikipedia/articles', async (req, res) => {
+  try {
+    const term = req.query.term as string;
+    const response = await getWikipediaArticles(term);
+    logger.info('Getting Wikipedia articles succeeded.', response);
+    res
+      .status(200)
+      .json({
+        message: 'Getting Wikipedia articles succeeded.',
+        results: response
+      });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Getting Wikipedia articles failed.' });
   }
 });
 

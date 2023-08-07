@@ -36,13 +36,11 @@ jobs:
 
             cd $wikiadviser_path; docker compose -f docker-compose.prod.yml down; git pull
 
-            export WIKIADVISER_API_HOST
-            export SUPABASE_SECRET_PROJECT_TOKEN
-            export SUPABASE_PROJECT_URL
-            export MEDIAWIKI_HOST
-            export WIKIADVISER_API_PORT
-
-            envsubst > $wikiadviser_path/.env
+            echo WIKIADVISER_API_HOST=$(WIKIADVISER_API_HOST) > $wikiadviser_path/.env
+            echo SUPABASE_SECRET_PROJECT_TOKEN=$(SUPABASE_SECRET_PROJECT_TOKEN) >> $wikiadviser_path/.env
+            echo SUPABASE_PROJECT_URL=$(SUPABASE_PROJECT_URL) >> $wikiadviser_path/.env
+            echo MEDIAWIKI_HOST=$(MEDIAWIKI_HOST) >> $wikiadviser_path/.env
+            echo WIKIADVISER_API_PORT=$(WIKIADVISER_API_PORT) >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \

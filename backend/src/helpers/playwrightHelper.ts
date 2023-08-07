@@ -6,6 +6,8 @@ export async function setupNewArticle(
 ) {
   const startEditingButton =
     'span.oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-labelElement.oo-ui-flaggedElement-progressive.oo-ui-flaggedElement-primary.oo-ui-buttonWidget.oo-ui-actionWidget.oo-ui-buttonElement-framed';
+  const textBoxField = '#wpTextbox1';
+  const saveButton = '#wpSave';
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -16,14 +18,17 @@ export async function setupNewArticle(
   await page.goto(mwArticleUrl, { waitUntil: 'networkidle' });
   await page.click(startEditingButton);
   await page.waitForTimeout(500);
-  await page.fill('#wpTextbox1', wpArticleWikitext);
-  await page.click('#wpSave');
+  await page.fill(textBoxField, wpArticleWikitext);
+  await page.click(saveButton);
   await browser.close();
 }
 
 export async function deleteArticle(articleId: string) {
-  const username = 'Topadmin';
-  const password = 'Topadmin2001';
+  const { MW_SITE_SERVER, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
+  const usernameField = '#wpName1';
+  const passwordField = '#wpPassword1';
+  const loginButton = '#wpLoginAttempt';
+  const confirmButton = '#wpConfirmB';
 
   const browser = await chromium.launch();
   const context = await browser.newContext({
@@ -32,12 +37,12 @@ export async function deleteArticle(articleId: string) {
   const page = await context.newPage();
 
   await page.goto(
-    `https://localhost/w/index.php?title=Special:UserLogin&returnto=${articleId}&returntoquery=action=delete`,
+    `${MW_SITE_SERVER}/w/index.php?title=Special:UserLogin&returnto=${articleId}&returntoquery=action=delete`,
     { waitUntil: 'networkidle' }
   );
-  await page.fill('#wpName1', username);
-  await page.fill('#wpPassword1', password);
-  await page.click('#wpLoginAttempt');
-  await page.click('#wpConfirmB');
+  await page.fill(usernameField, MW_ADMIN_USERNAME);
+  await page.fill(passwordField, MW_ADMIN_PASSWORD);
+  await page.click(loginButton);
+  await page.click(confirmButton);
   await browser.close();
 }

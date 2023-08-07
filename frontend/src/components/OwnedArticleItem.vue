@@ -2,14 +2,7 @@
   <q-item
     class="app-search__result"
     clickable
-    @click="
-      router.push({
-        name: 'article',
-        params: {
-          articleId: article.article_id,
-        },
-      })
-    "
+    @click="gotoArticle(article.article_id)"
   >
     <q-item-section>
       <div class="app-search__result-title row items-center q-gutter-sm">
@@ -77,19 +70,28 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { QSpinnerGears, useQuasar } from 'quasar';
-import { UserRole } from 'src/types';
+import { Article, UserRole } from 'src/types';
 import { deleteArticle, getArticles } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 
 defineProps<{
-  article: any;
+  article: Article;
 }>();
+
 const emit = defineEmits(['updateArticlesEmit']);
 
 const $q = useQuasar();
 const router = useRouter();
 const deleteArticleDialog = ref(false);
 
+function gotoArticle(articleId: string) {
+  router.push({
+    name: 'article',
+    params: {
+      articleId,
+    },
+  });
+}
 async function removeArticle(articleId: string) {
   const deletingNotif = $q.notify({
     message: 'Deleting article.',
@@ -105,10 +107,8 @@ async function removeArticle(articleId: string) {
       color: 'positive',
     });
     const { data } = await supabase.auth.getSession();
-    $q.localStorage.set(
-      'articles',
-      JSON.stringify(await getArticles(data.session!.user.id))
-    );
+    const articles = await getArticles(data.session!.user.id);
+    $q.localStorage.set('articles', JSON.stringify(articles));
     emit('updateArticlesEmit');
   } catch (error: any) {
     deletingNotif();

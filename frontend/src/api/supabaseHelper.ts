@@ -187,15 +187,6 @@ export async function deleteArticle(articleId: string) {
       articleId,
     },
   });
-
-  const { error: supabaseDeleteError } = await supabase
-    .from('articles')
-    .delete()
-    .eq('id', articleId);
-
-  if (supabaseDeleteError) {
-    throw new Error(supabaseDeleteError.message);
-  }
   if (apiResponse.status !== 200) {
     throw new Error('Failed to delete article from API.');
   }

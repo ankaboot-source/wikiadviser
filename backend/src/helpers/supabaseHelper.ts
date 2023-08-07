@@ -144,3 +144,14 @@ export async function removeChanges(permissionId: string) {
     throw new Error(error.message);
   }
 }
+
+export async function deleteArticle(articleId: string) {
+  const { error: supabaseDeleteError } = await supabase
+    .from('articles')
+    .delete()
+    .eq('id', articleId);
+
+  if (supabaseDeleteError) {
+    throw new Error(supabaseDeleteError.message);
+  }
+}

@@ -23,7 +23,7 @@ export async function setupNewArticle(
   await browser.close();
 }
 
-export async function deleteArticle(articleId: string) {
+export async function deleteArticleMW(articleId: string) {
   const { MW_SITE_SERVER, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
   const usernameField = '#wpName1';
   const passwordField = '#wpPassword1';

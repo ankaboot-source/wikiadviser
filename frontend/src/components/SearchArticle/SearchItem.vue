@@ -74,10 +74,9 @@ async function itemOnClick() {
           icon: 'check',
           color: 'positive',
         });
-        $q.localStorage.set(
-          'articles',
-          JSON.stringify(await getArticles(data.session!.user.id))
-        );
+        const articles = await getArticles(data.session!.user.id);
+        $q.localStorage.set('articles', JSON.stringify(articles));
+
         // GOTO ARTICLE PAGE, EDIT TAB
         router.push({
           name: 'article',

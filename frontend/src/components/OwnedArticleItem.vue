@@ -91,15 +91,13 @@ const router = useRouter();
 const deleteArticleDialog = ref(false);
 
 async function removeArticle(articleId: string) {
+  const deletingNotif = $q.notify({
+    message: 'Deleting article.',
+    spinner: QSpinnerGears,
+    timeout: 0,
+  });
   try {
-    const deletingNotif = $q.notify({
-      message: 'Deleting article.',
-      spinner: QSpinnerGears,
-      timeout: 50000,
-    });
-
     await deleteArticle(articleId);
-
     deletingNotif();
     $q.notify({
       message: 'Article deleted.',
@@ -113,6 +111,7 @@ async function removeArticle(articleId: string) {
     );
     emit('updateArticlesEmit');
   } catch (error: any) {
+    deletingNotif();
     $q.notify({
       message: error.message,
       color: 'negative',

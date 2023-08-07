@@ -58,34 +58,41 @@ async function itemOnClick() {
         caption:
           'Extracting article out of Wikipedia and importing into our Mediawiki.',
         spinner: QSpinnerGears,
-        timeout: 50000,
+        timeout: 0,
       });
+      try {
+        //NEW ARTICLE
+        articleId.value = await createNewArticle(
+          props.item.title,
+          data.session!.user.id,
+          props.item.description
+        );
 
-      //NEW ARTICLE
-      articleId.value = await createNewArticle(
-        props.item.title,
-        data.session!.user.id,
-        props.item.description
-      );
-
-      extractingNotif();
-      $q.notify({
-        message: 'Article successfully created.',
-        icon: 'check',
-        color: 'positive',
-      });
-      $q.localStorage.set(
-        'articles',
-        JSON.stringify(await getArticles(data.session!.user.id))
-      );
-      // GOTO ARTICLE PAGE, EDIT TAB
-      router.push({
-        name: 'article',
-        params: {
-          articleId: articleId.value,
-          tab: 'editor',
-        },
-      });
+        extractingNotif();
+        $q.notify({
+          message: 'Article successfully created.',
+          icon: 'check',
+          color: 'positive',
+        });
+        $q.localStorage.set(
+          'articles',
+          JSON.stringify(await getArticles(data.session!.user.id))
+        );
+        // GOTO ARTICLE PAGE, EDIT TAB
+        router.push({
+          name: 'article',
+          params: {
+            articleId: articleId.value,
+            tab: 'editor',
+          },
+        });
+      } catch (error: any) {
+        extractingNotif();
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      }
     }
   } catch (error: any) {
     $q.notify({

@@ -17,10 +17,10 @@ jobs:
           MEDIAWIKI_HOST: ${{ secrets.MEDIAWIKI_HOST }}
           WIKIADVISER_API_PORT: ${{ secrets.WIKIADVISER_API_PORT }}
         with:
-          host: ${{ secrets.WIKIADVISER_HOST }}
+          host: ${{ vars.WIKIADVISER_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          #   envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,WIKIADVISER_API_PORT
+          envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,WIKIADVISER_API_PORT
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
 
@@ -57,7 +57,7 @@ jobs:
       - name: Deploy VisualEditor
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.MEDIAWIKI_HOST }}
+          host: ${{ vars.MEDIAWIKI_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKI_USERNAME }}
           script: |

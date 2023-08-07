@@ -38,7 +38,7 @@ jobs:
 
             export WIKIADVISER_API_HOST
             export SUPABASE_SECRET_PROJECT_TOKEN
-            export WIKIADVISER_API_HOST
+            export SUPABASE_PROJECT_URL
             export MEDIAWIKI_HOST
             export WIKIADVISER_API_PORT
 

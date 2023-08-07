@@ -14,6 +14,6 @@ ENV MW_SITE_SERVER ${MEDIAWIKI_HOST}
 
 RUN npm install && npm run build
 
-FROM caddy:2-7-2-alpine as production-stage
+FROM caddy:2.7.2-alpine as production-stage
 COPY --from=build-stage /wikiadviser-frontend/dist/spa /usr/share/caddy/html
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]

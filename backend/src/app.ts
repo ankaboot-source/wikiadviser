@@ -1,22 +1,23 @@
-import express from 'express';
 import cors from 'cors';
-import logger from './logger';
 import 'dotenv/config';
-import setupNewArticle from './helpers/puppeteerHelper';
-import getArticleWikiText from './helpers/wikipediaApiHelper';
-import {
-  insertArticle,
-  removeChanges,
-  updateChange
-} from './helpers/supabaseHelper';
+import express from 'express';
 import {
   decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
+import setupNewArticle from './helpers/puppeteerHelper';
+import {
+  insertArticle,
+  removeChanges,
+  updateChange
+} from './helpers/supabaseHelper';
+import getArticleWikiText from './helpers/wikipediaApiHelper';
+import logger from './logger';
 
 const app = express();
-const port = 3000;
+const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
+const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 
 app.use(express.json({ limit: '300kb' }));
@@ -98,7 +99,7 @@ app.post('/api/article', async (req, res) => {
     const wpArticleWikitext = await getArticleWikiText(title);
 
     // The article in our Mediawiki
-    const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
+    const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
 
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);

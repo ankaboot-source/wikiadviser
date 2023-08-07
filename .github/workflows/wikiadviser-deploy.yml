@@ -22,7 +22,7 @@ jobs:
           username: ${{ secrets.WIKIADVISER_USERNAME }}
           #   envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,WIKIADVISER_API_PORT
           script: |
-            wikiadviser_path="/home/wikiadviser/wikiadviser"
+            wikiadviser_path="/home/wikiadviser-user/wikiadviser"
 
             # Check if the folder exists
             if [ -d "$folder_path" ]; then
@@ -44,7 +44,7 @@ jobs:
 
             envsubst > $wikiadviser_path/.env
 
-            docker compose --env-file .env up -d \
+            docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \
               --force-recreate
 
@@ -61,8 +61,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKI_USERNAME }}
           script: |
-            folder_path="/home/wiki/wikiadviser"
-            canasta_path="/home/wiki/canasta"
+            folder_path="/home/wiki-user/wikiadviser"
+            canasta_path="/home/wiki-user/canasta"
             visual_editor_folder_name="MyVisualEditor"
 
             # Check if the folder exists

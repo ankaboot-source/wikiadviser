@@ -16,7 +16,7 @@ import {
 } from './helpers/parsingHelper';
 
 const app = express();
-const port = process.env.WIKIADVISER_API_PORT || 3000;
+const port = process.env.WIKIADVISER_API_PORT ?? 3000;
 const data = { html: '' };
 const MW_SITE_SERVER = process.env.MW_SITE_SERVER;
 

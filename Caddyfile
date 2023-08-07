@@ -1,10 +1,14 @@
+wikiadviser.io {
+	redir https://app.wikiadviser.io
+}
+
 app.wikiadviser.io {
 	root * /usr/share/caddy/html
 	file_server
 
-	rewrite * /usr/share/caddy/html/index.html
+	# rewrite * /usr/share/caddy/html/index.html
 }
 
 api.wikiadviser.io {
-	reverse_proxy localhost:{$WIKIADVISER_API_PORT}
+	reverse_proxy 127.0.0.1:{$WIKIADVISER_API_PORT}
 }

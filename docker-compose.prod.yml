@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     ports:
-      - 8021:${WIKIADVISER_API_PORT}
+      - 127.0.0.1:${WIKIADVISER_API_PORT}:${WIKIADVISER_API_PORT}
 
   wikiadviser-caddy:
     image: wikiadviser-caddy:git

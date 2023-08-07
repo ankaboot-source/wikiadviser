@@ -1,10 +1,12 @@
 import axios from 'axios';
 import logger from '../logger';
 
+const wpProxy = process.env.WIKIPEDIA_PROXY;
+const wpProxyApi = axios.create({ baseURL: `${wpProxy}/w/api.php` });
+
 export async function getWikipediaArticleWikitext(title: string) {
-  const wpProxy = process.env.WIKIPEDIA_PROXY;
   const wpLang = 'en';
-  const response = await axios.get(`${wpProxy}/w/api.php`, {
+  const response = await wpProxyApi.get('', {
     params: {
       action: 'query',
       format: 'json',
@@ -26,9 +28,8 @@ export async function getWikipediaArticleWikitext(title: string) {
 }
 
 export async function getWikipediaArticles(term: string) {
-  const wpProxy = process.env.WIKIPEDIA_PROXY;
   const wpLang = 'en';
-  const response = await axios.get(`${wpProxy}/w/api.php`, {
+  const response = await wpProxyApi.get('', {
     params: {
       action: 'query',
       format: 'json',

@@ -1,24 +1,24 @@
-import express from 'express';
 import cors from 'cors';
-import logger from './logger';
 import 'dotenv/config';
-import setupNewArticle from './helpers/puppeteerHelper';
-import getArticleWikiText from './helpers/wikipediaApiHelper';
-import {
-  insertArticle,
-  removeChanges,
-  updateChange
-} from './helpers/supabaseHelper';
+import express from 'express';
 import {
   decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
+import setupNewArticle from './helpers/puppeteerHelper';
+import {
+  insertArticle,
+  removeChanges,
+  updateChange
+} from './helpers/supabaseHelper';
+import getArticleWikiText from './helpers/wikipediaApiHelper';
+import logger from './logger';
 
 const app = express();
-const port = process.env.WIKIADVISER_API_PORT ?? 3000;
+const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
+const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
-const MW_SITE_SERVER = process.env.MW_SITE_SERVER;
 
 app.use(express.json({ limit: '300kb' }));
 app.use(

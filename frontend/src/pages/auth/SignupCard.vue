@@ -82,9 +82,9 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import { ref } from 'vue';
-import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
 const email = ref('');
@@ -114,13 +114,18 @@ async function handleSignup() {
       email: email.value,
       password: password.value,
       options: {
+        emailRedirectTo: `${window.location.origin}`,
         data: {
           username: username.value,
         },
       },
     });
     if (error) throw error;
-    $q.notify({ message: 'Signed up', icon: 'login', color: 'primary' });
+    $q.notify({
+      message: 'We have sent a verification to your email',
+      icon: 'login',
+      color: 'primary',
+    });
   } catch (error: any) {
     console.error(error.message);
     signupError.value = error.message;

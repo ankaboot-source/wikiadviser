@@ -1,6 +1,7 @@
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
+import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   decomposeArticle,
   getArticleParsedContent,
@@ -12,12 +13,6 @@ import {
   removeChanges,
   updateChange
 } from './helpers/supabaseHelper';
-import {
-  decomposeArticle,
-  getArticleParsedContent,
-  getChangesAndParsedContent
-} from './helpers/parsingHelper';
-import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import logger from './logger';
 
 const app = express();

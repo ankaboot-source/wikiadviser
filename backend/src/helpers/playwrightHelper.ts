@@ -1,4 +1,4 @@
-const { chromium } = require('playwright'); // Or 'firefox' or 'webkit'.
+import { chromium } from 'playwright';
 
 export async function setupNewArticle(
   mwArticleUrl: string,
@@ -40,8 +40,8 @@ export async function deleteArticleMW(articleId: string) {
     `${MW_SITE_SERVER}/w/index.php?title=Special:UserLogin&returnto=${articleId}&returntoquery=action=delete`,
     { waitUntil: 'networkidle' }
   );
-  await page.fill(usernameField, MW_ADMIN_USERNAME);
-  await page.fill(passwordField, MW_ADMIN_PASSWORD);
+  await page.fill(usernameField, MW_ADMIN_USERNAME!);
+  await page.fill(passwordField, MW_ADMIN_PASSWORD!);
   await page.click(loginButton);
   await page.click(confirmButton);
   await browser.close();

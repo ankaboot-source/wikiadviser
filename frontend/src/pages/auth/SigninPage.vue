@@ -92,10 +92,10 @@
 </template>
 
 <script setup lang="ts">
-import supabaseClient from 'src/api/supabase';
-import SignupCard from './SignupCard.vue';
 import { useQuasar } from 'quasar';
+import supabaseClient from 'src/api/supabase';
 import { ref } from 'vue';
+import SignupCard from './SignupCard.vue';
 
 const $q = useQuasar();
 const email = ref('');
@@ -127,9 +127,13 @@ async function handleSignin() {
     });
     if (error) throw error;
     $q.notify({ message: 'Signed in', icon: 'login', color: 'primary' });
-  } catch (error: any) {
-    console.error(error.message);
-    signinError.value = error.message;
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      signinError.value = error.message;
+    } else {
+      signinError.value = 'Oops, something went wrong';
+    }
   }
 }
 

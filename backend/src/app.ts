@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import {
@@ -13,13 +12,13 @@ import {
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
-
-import WikipediaApiClass from './helpers/wikipediaApiClass';
+import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
+import logger from './logger';
 
 const app = express();
 const port = 3000;
 const data = { html: '' };
-const wikiApi = new WikipediaApiClass();
+const wikiApi = new WikipediaApiInteractor();
 
 app.use(express.json({ limit: '300kb' }));
 app.use(

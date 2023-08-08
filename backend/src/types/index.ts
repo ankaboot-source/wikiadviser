@@ -10,7 +10,7 @@ export interface ChildNodeData extends ChildNode {
   data?: string;
 }
 
-export type SearchResult = {
+export type WikipediaSearchResult = {
   title: string;
   description?: string;
   thumbnail?: string;

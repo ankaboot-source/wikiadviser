@@ -1,16 +1,22 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import logger from '../logger';
-import { SearchResult } from '../types';
-import WikipediaApiInterface from './wikipediaApiInterface';
+import { WikipediaSearchResult } from '../types';
+import WikipediaInteractor from './WikipediaInteractor';
 
-export default class WikipediaApiClass implements WikipediaApiInterface {
-  wpProxy = process.env.WIKIPEDIA_PROXY;
+export default class WikipediaApiInteractor implements WikipediaInteractor {
+  private wpProxy: string;
 
-  wpProxyApi = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
+  private api: AxiosInstance;
+
+  constructor() {
+    this.wpProxy = process.env.WIKIPEDIA_PROXY!;
+    this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
+  }
+
+  private static wpLang: string = 'en';
 
   async getWikipediaArticleWikitext(title: string) {
-    const wpLang = 'en';
-    const response = await this.wpProxyApi.get('', {
+    const response = await this.api.get('', {
       params: {
         action: 'query',
         format: 'json',
@@ -19,11 +25,10 @@ export default class WikipediaApiClass implements WikipediaApiInterface {
         rvprop: 'content',
         rvslots: '*',
         titles: title,
-        lang: wpLang
+        lang: WikipediaApiInteractor.wpLang
       }
     });
 
-    // The article's wikitext of Wikipedia
     const wpArticleWikitext =
       response.data.query.pages[0].revisions[0].slots.main.content;
 
@@ -32,8 +37,7 @@ export default class WikipediaApiClass implements WikipediaApiInterface {
   }
 
   async getWikipediaArticles(term: string) {
-    const wpLang = 'en';
-    const response = await this.wpProxyApi.get('', {
+    const response = await this.api.get('', {
       params: {
         action: 'query',
         format: 'json',
@@ -47,12 +51,12 @@ export default class WikipediaApiClass implements WikipediaApiInterface {
         gpsnamespace: 0,
         gpslimit: 6,
         origin: '*',
-        lang: wpLang
+        lang: WikipediaApiInteractor.wpLang
       }
     });
 
     const wpSearchedArticles = response.data?.query?.pages;
-    const results: SearchResult[] = [];
+    const results: WikipediaSearchResult[] = [];
 
     // Handling missing thumbnail's host condition
     if (wpSearchedArticles) {
@@ -70,7 +74,7 @@ export default class WikipediaApiClass implements WikipediaApiInterface {
           thumbnail: wpSearchedArticles[article].thumbnail?.source
         });
       });
-    } else return null;
+    }
     return results;
   }
 }

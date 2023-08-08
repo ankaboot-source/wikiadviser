@@ -25,11 +25,10 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import { useQuasar, QSpinnerGears } from 'quasar';
-import { SearchResult } from 'src/types';
 import supabase from 'src/api/supabase';
 import { ref } from 'vue';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
-import { Article } from 'src/types';
+import { Article, SearchResult } from 'src/types';
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
@@ -43,7 +42,7 @@ async function itemOnClick() {
     const { data } = await supabase.auth.getSession();
     // check access
     const articleExists = articles?.some(
-      (article: Article) => article.title === props.item!.title
+      (article: Article) => article.title === props.item.title
     );
 
     if (articleExists) {

@@ -9,5 +9,5 @@ const props = defineProps({
   article: { type: Object as () => Article, required: true },
 });
 
-const articleLink = `https://localhost/wiki/${props.article.article_id}?veaction=edit&permissionid=${props.article.permission_id}&expectedTitle=${props.article.title}`;
+const articleLink = `${process.env.MW_SITE_SERVER}/wiki/${props.article.article_id}?veaction=edit&permissionid=${props.article.permission_id}&expectedTitle=${props.article.title}`;
 </script>

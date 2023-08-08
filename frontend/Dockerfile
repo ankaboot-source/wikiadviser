@@ -2,17 +2,18 @@ FROM node:lts-alpine as build-stage
 WORKDIR /wikiadviser-frontend
 COPY . .
 
-ARG SERVER_ENDPOINT
 ARG SUPABASE_PROJECT_URL
 ARG SUPABASE_SECRET_PROJECT_TOKEN
+ARG WIKIADVISER_API_HOST
+ARG MEDIAWIKI_HOST
 
-ENV SERVER_ENDPOINT
 ENV SUPABASE_PROJECT_URL ${SUPABASE_PROJECT_URL}
 ENV SUPABASE_SECRET_PROJECT_TOKEN ${SUPABASE_SECRET_PROJECT_TOKEN}
+ENV WIKIADVISER_API_HOST ${WIKIADVISER_API_HOST}
+ENV MW_SITE_SERVER ${MEDIAWIKI_HOST}
 
 RUN npm install && npm run build
 
-FROM nginx:stable-alpine as production-stage
-COPY --from=build-stage /frontend/dist/spa /usr/share/nginx/html
-
-CMD ["nginx", "-g", "daemon off;"]
+FROM caddy:2.7.2-alpine as production-stage
+COPY --from=build-stage /wikiadviser-frontend/dist/spa /usr/share/caddy/html
+CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]

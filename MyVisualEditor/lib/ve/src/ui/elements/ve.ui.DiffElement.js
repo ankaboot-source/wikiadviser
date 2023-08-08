@@ -17,6 +17,7 @@
  */
 /* eslint-disable */
 ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
+  const wikiadviserApiHost = "https://api.wikiadviser.io";
   var diff = visualDiff.diff;
 
   // Parent constructor
@@ -69,7 +70,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
   const permissionId = urlParams.get("permissionid");
 
   // Post data to the backend
-  fetch("http://localhost:3000/api/rawArticle", {
+  fetch(`${wikiadviserApiHost}/api/rawArticle`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -1,0 +1,9 @@
+version: "3.1"
+
+services:
+  wikiadviser-caddy:
+    ports:
+      - 8081:8081
+      - 8082:8082
+    volumes:
+      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro

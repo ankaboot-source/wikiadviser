@@ -1,6 +1,0 @@
-# Contains private data
-#/.env
-#/docker-compose.override.yml
-#/config/*
-#/extensions/*
-#/skins/*

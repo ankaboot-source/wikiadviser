@@ -30,7 +30,7 @@ export type Article = {
   title: string;
   description: string;
   permission_id: string;
-  role: UserRole | null;
+  role: UserRole;
 };
 
 export type Comment = {

@@ -180,3 +180,14 @@ export async function deletePermission(permissionId: string) {
     throw new Error(changeError.message);
   }
 }
+
+export async function deleteArticle(articleId: string) {
+  const apiResponse = await api.delete('article', {
+    data: {
+      articleId,
+    },
+  });
+  if (apiResponse.status !== 200) {
+    throw new Error('Failed to delete article from API.');
+  }
+}

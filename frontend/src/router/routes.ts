@@ -12,10 +12,6 @@ const routes: RouteRecordRaw[] = [
     name: 'article',
     component: () => import('pages/ArticlePage.vue'),
   },
-  {
-    path: '/auth',
-    component: () => import('pages/auth/SigninPage.vue'),
-  },
 
   // Always leave this as last one,
   // but you can also remove it

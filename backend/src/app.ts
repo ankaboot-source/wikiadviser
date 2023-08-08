@@ -1,25 +1,26 @@
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
-import logger from './logger';
-import { setupNewArticle, deleteArticleMW } from './helpers/playwrightHelper';
-import getArticleWikiText from './helpers/wikipediaApiHelper';
-import {
-  insertArticle,
-  removeChanges,
-  updateChange,
-  deleteArticle
-} from './helpers/supabaseHelper';
+import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
+import { deleteArticleMW, setupNewArticle } from './helpers/playwrightHelper';
+import {
+  deleteArticle,
+  insertArticle,
+  removeChanges,
+  updateChange
+} from './helpers/supabaseHelper';
+import logger from './logger';
 
 const app = express();
 const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
+const wikiApi = new WikipediaApiInteractor();
 
 app.use(express.json({ limit: '300kb' }));
 app.use(
@@ -97,7 +98,7 @@ app.post('/api/article', async (req, res) => {
   const articleId = await insertArticle(title, userId, description);
   try {
     // The wikitext of the Wikipedia article
-    const wpArticleWikitext = await getArticleWikiText(title);
+    const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
     const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
@@ -112,6 +113,25 @@ app.post('/api/article', async (req, res) => {
     await deleteArticle(articleId);
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
+  }
+});
+
+app.get('/api/wikipedia/articles', async (req, res) => {
+  try {
+    const term = req.query.term as string;
+    const response = await wikiApi.getWikipediaArticles(term);
+    logger.info('Getting Wikipedia articles succeeded.', response);
+    res.status(200).json({
+      message: 'Getting Wikipedia articles succeeded.',
+      results: response
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
+    res.status(500).json({ message: 'Getting Wikipedia articles failed.' });
   }
 });
 

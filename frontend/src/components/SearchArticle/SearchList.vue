@@ -3,7 +3,7 @@
     <q-list padding>
       <search-item
         v-for="item in props.results"
-        :key="item.index"
+        :key="item.title"
         :item="item"
       />
     </q-list>

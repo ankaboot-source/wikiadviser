@@ -30,31 +30,30 @@
   </q-card-section>
 </template>
 <script setup lang="ts">
-import axios from 'axios';
 import SearchList from './SearchList.vue';
-import { onBeforeMount, ref, computed, watch } from 'vue';
+import { onBeforeMount, ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
+import { api } from 'src/boot/axios';
 
 const $q = useQuasar();
 const term = ref('');
 const title = ref('');
 const isSearching = ref(false);
-const apiSearch = computed(
-  () =>
-    `
-    https://en.wikipedia.org/w/api.php?action=query&format=json&generator=prefixsearch&prop=pageimages|description&ppprop=displaytitle&piprop=thumbnail&pithumbsize=60&pilimit=6&gpssearch=${term.value}&gpsnamespace=0&gpslimit=6&origin=*`
-);
 const results = ref<SearchResult[]>();
 
-watch(apiSearch, async (apiSearch) => {
+watch(term, async (term) => {
   isSearching.value = true;
   try {
-    const response = await axios.get(apiSearch);
-    results.value = response.data?.query?.pages;
-    if (results.value) {
-      results.value = Object.values(results.value);
-    }
+    const response = await api.get<{
+      message: string;
+      results: SearchResult[];
+    }>('wikipedia/articles', {
+      params: {
+        term,
+      },
+    });
+    results.value = response.data.results;
   } catch (error) {
     console.error(error);
   }

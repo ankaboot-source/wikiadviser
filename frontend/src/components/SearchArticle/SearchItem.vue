@@ -4,11 +4,8 @@
       <div class="app-search__result-title row items-center q-gutter-sm">
         <div class="col-auto">
           <q-avatar rounded size="4rem" class="borders">
-            <img
-              v-if="!!props.item?.thumbnail?.source"
-              :src="props.item.thumbnail.source"
-            />
-            <q-icon name="description" size="4rem" color="grey" />
+            <img v-if="!!props.item?.thumbnail" :src="props.item.thumbnail" />
+            <q-icon v-else name="description" size="4rem" color="grey" />
           </q-avatar>
         </div>
         <div class="col">
@@ -23,19 +20,20 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useQuasar, QSpinnerGears } from 'quasar';
+import { QSpinnerGears, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
-import { ref } from 'vue';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
 import { Article, SearchResult } from 'src/types';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
+
 const articleId = ref('');
-const articles = JSON.parse($q.localStorage.getItem('articles')!);
+const articles = $q.localStorage.getItem<Article[]>('articles');
 
 async function itemOnClick() {
   try {
@@ -84,17 +82,23 @@ async function itemOnClick() {
             tab: 'editor',
           },
         });
-      } catch (error: any) {
+      } catch (error) {
         extractingNotif();
-        $q.notify({
-          message: error.message,
-          color: 'negative',
-        });
+        if (error instanceof Error) {
+          $q.notify({
+            message: error.message,
+            color: 'negative',
+          });
+        }
       }
     }
-  } catch (error: any) {
+  } catch (error) {
+    let message = 'Failed importing or creating article';
+    if (error instanceof Error) {
+      message = error.message;
+    }
     $q.notify({
-      message: error.message,
+      message,
       color: 'negative',
     });
   }

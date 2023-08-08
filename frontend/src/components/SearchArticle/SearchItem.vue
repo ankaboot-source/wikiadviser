@@ -5,7 +5,7 @@
         <div class="col-auto">
           <q-avatar rounded size="4rem" class="borders">
             <img v-if="!!props.item?.thumbnail" :src="props.item.thumbnail" />
-            <q-icon name="description" size="4rem" color="grey" />
+            <q-icon v-else name="description" size="4rem" color="grey" />
           </q-avatar>
         </div>
         <div class="col">

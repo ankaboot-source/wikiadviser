@@ -123,8 +123,12 @@ app.get('/api/wikipedia/articles', async (req, res) => {
       message: 'Getting Wikipedia articles succeeded.',
       results: response
     });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Getting Wikipedia articles failed.' });
   }
 });

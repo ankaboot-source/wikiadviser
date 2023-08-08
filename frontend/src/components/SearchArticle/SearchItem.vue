@@ -20,13 +20,12 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useQuasar, QSpinnerGears } from 'quasar';
-import { SearchResult } from 'src/types';
+import { QSpinnerGears, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
-import { ref } from 'vue';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
-import { Article } from 'src/types';
+import { Article, SearchResult } from 'src/types';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
@@ -84,9 +83,13 @@ async function itemOnClick() {
         },
       });
     }
-  } catch (error: any) {
+  } catch (error) {
+    let message = 'Failed importing or creating article';
+    if (error instanceof Error) {
+      message = error.message;
+    }
     $q.notify({
-      message: error.message,
+      message,
       color: 'negative',
     });
   }

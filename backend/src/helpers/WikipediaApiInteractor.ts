@@ -60,20 +60,22 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
 
     // Handling missing thumbnail's host condition
     if (wpSearchedArticles) {
-      Object.keys(wpSearchedArticles).forEach((article) => {
-        if (
-          wpSearchedArticles[article]?.thumbnail?.source?.startsWith('/media')
-        ) {
-          wpSearchedArticles[
-            article
-          ].thumbnail.source = `${this.wpProxy}${wpSearchedArticles[article]?.thumbnail?.source}`;
+      for (const article in wpSearchedArticles) {
+        if (Object.prototype.hasOwnProperty.call(wpSearchedArticles, article)) {
+          if (
+            wpSearchedArticles[article]?.thumbnail?.source?.startsWith('/media')
+          ) {
+            wpSearchedArticles[
+              article
+            ].thumbnail.source = `${this.wpProxy}${wpSearchedArticles[article]?.thumbnail?.source}`;
+          }
+          results.push({
+            title: wpSearchedArticles[article].title,
+            description: wpSearchedArticles[article].description,
+            thumbnail: wpSearchedArticles[article].thumbnail?.source
+          });
         }
-        results.push({
-          title: wpSearchedArticles[article].title,
-          description: wpSearchedArticles[article].description,
-          thumbnail: wpSearchedArticles[article].thumbnail?.source
-        });
-      });
+      }
     }
     return results;
   }

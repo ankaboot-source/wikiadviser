@@ -62,11 +62,11 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     if (wpSearchedArticles) {
       for (const article in wpSearchedArticles) {
         if (Object.prototype.hasOwnProperty.call(wpSearchedArticles, article)) {
-          const currentArticle = wpSearchedArticles[article]; // Assign to variable
+          const currentArticle = wpSearchedArticles[article];
           const {
             title,
             description,
-            thumbnail: { source = '' } = {} // Destructure and provide default value
+            thumbnail: { source = '' } = {}
           } = currentArticle;
 
           let thumbnailSource = source;

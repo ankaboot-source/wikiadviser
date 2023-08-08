@@ -4,10 +4,6 @@ import logger from './logger';
 import 'dotenv/config';
 import setupNewArticle from './helpers/puppeteerHelper';
 import {
-  getWikipediaArticleWikitext,
-  getWikipediaArticles
-} from './helpers/wikipediaApiHelper';
-import {
   insertArticle,
   removeChanges,
   updateChange
@@ -18,9 +14,12 @@ import {
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
 
+import WikipediaApiClass from './helpers/wikipediaApiClass';
+
 const app = express();
 const port = 3000;
 const data = { html: '' };
+const wikiApi = new WikipediaApiClass();
 
 app.use(express.json({ limit: '300kb' }));
 app.use(
@@ -98,7 +97,7 @@ app.post('/api/article', async (req, res) => {
     const articleId = await insertArticle(title, userId, description);
 
     // The wikitext of the Wikipedia article
-    const wpArticleWikitext = await getWikipediaArticleWikitext(title);
+    const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
     const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
@@ -118,7 +117,7 @@ app.post('/api/article', async (req, res) => {
 app.get('/api/wikipedia/articles', async (req, res) => {
   try {
     const term = req.query.term as string;
-    const response = await getWikipediaArticles(term);
+    const response = await wikiApi.getWikipediaArticles(term);
     logger.info('Getting Wikipedia articles succeeded.', response);
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',

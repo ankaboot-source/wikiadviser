@@ -31,8 +31,9 @@ const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
 }>();
+
 const articleId = ref('');
-const articles = JSON.parse($q.localStorage.getItem('articles')!);
+const articles = $q.localStorage.getItem<Article[]>('articles');
 
 async function itemOnClick() {
   try {
@@ -81,12 +82,14 @@ async function itemOnClick() {
             tab: 'editor',
           },
         });
-      } catch (error: any) {
+      } catch (error) {
         extractingNotif();
-        $q.notify({
-          message: error.message,
-          color: 'negative',
-        });
+        if (error instanceof Error) {
+          $q.notify({
+            message: error.message,
+            color: 'negative',
+          });
+        }
       }
     }
   } catch (error) {

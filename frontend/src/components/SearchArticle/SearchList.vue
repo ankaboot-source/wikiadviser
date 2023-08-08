@@ -2,8 +2,8 @@
   <div class="app-search relative-position">
     <q-list padding>
       <search-item
-        v-for="item in props.results"
-        :key="item.index"
+        v-for="(item, index) in props.results"
+        :key="index"
         :item="item"
       />
     </q-list>

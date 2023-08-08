@@ -4,10 +4,7 @@
       <div class="app-search__result-title row items-center q-gutter-sm">
         <div class="col-auto">
           <q-avatar rounded size="4rem" class="borders">
-            <img
-              v-if="!!props.item?.thumbnail?.source"
-              :src="props.item.thumbnail.source"
-            />
+            <img v-if="!!props.item?.thumbnail" :src="props.item.thumbnail" />
             <q-icon name="description" size="4rem" color="grey" />
           </q-avatar>
         </div>

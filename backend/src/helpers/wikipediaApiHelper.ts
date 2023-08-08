@@ -1,5 +1,6 @@
 import axios from 'axios';
 import logger from '../logger';
+import { SearchResult } from '../types';
 
 const wpProxy = process.env.WIKIPEDIA_PROXY;
 const wpProxyApi = axios.create({ baseURL: `${wpProxy}/w/api.php` });
@@ -48,15 +49,24 @@ export async function getWikipediaArticles(term: string) {
   });
 
   const wpSearchedArticles = response.data?.query?.pages;
+  const results: SearchResult[] = [];
 
   // Handling missing thumbnail's host condition
-  Object.keys(wpSearchedArticles).forEach((article) => {
-    if (wpSearchedArticles[article]?.thumbnail?.source?.startsWith('/media')) {
-      wpSearchedArticles[
-        article
-      ].thumbnail.source = `${wpProxy}${wpSearchedArticles[article]?.thumbnail?.source}`;
-    }
-  });
-
-  return wpSearchedArticles;
+  if (wpSearchedArticles) {
+    Object.keys(wpSearchedArticles).forEach((article) => {
+      if (
+        wpSearchedArticles[article]?.thumbnail?.source?.startsWith('/media')
+      ) {
+        wpSearchedArticles[
+          article
+        ].thumbnail.source = `${wpProxy}${wpSearchedArticles[article]?.thumbnail?.source}`;
+      }
+      results.push({
+        title: wpSearchedArticles[article].title,
+        description: wpSearchedArticles[article].description,
+        thumbnail: wpSearchedArticles[article].thumbnail?.source
+      });
+    });
+  } else return null;
+  return results;
 }

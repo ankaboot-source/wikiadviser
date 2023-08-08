@@ -9,3 +9,9 @@ export type Change = {
 export interface ChildNodeData extends ChildNode {
   data?: string;
 }
+
+export type SearchResult = {
+  title: string;
+  description?: string;
+  thumbnail?: string;
+};

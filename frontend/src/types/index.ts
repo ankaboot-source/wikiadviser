@@ -10,12 +10,9 @@ export type ChangesItem = {
 };
 
 export type SearchResult = {
-  index: number;
   title: string;
   description?: string;
-  thumbnail?: {
-    source: string;
-  };
+  thumbnail?: string;
 };
 
 export type User = {

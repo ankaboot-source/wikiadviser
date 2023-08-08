@@ -45,15 +45,15 @@ const results = ref<SearchResult[]>();
 watch(term, async (term) => {
   isSearching.value = true;
   try {
-    const response = await api.get('wikipedia/articles', {
+    const response = await api.get<{
+      message: string;
+      results: SearchResult[];
+    }>('wikipedia/articles', {
       params: {
         term,
       },
     });
     results.value = response.data.results;
-    if (results.value) {
-      results.value = Object.values(results.value);
-    }
   } catch (error) {
     console.error(error);
   }

@@ -2,11 +2,22 @@ version = 1
 
 exclude_patterns = [
   "mediawiki/**",
-  "frontend/public/**"
+  "MyVisualEditor/**",
+  "frontend/public/**",
+  "node_modules/"
 ]
 
 [[analyzers]]
 name = "secrets"
+
+[[analyzers]]
+name = "docker"
+
+  [analyzers.meta]
+  dockerfile_paths = [
+    "backend/Dockerfile",
+    "frontend/Dockerfile"
+  ]
 
 [[analyzers]]
 name = "javascript"

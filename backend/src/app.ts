@@ -1,6 +1,11 @@
-import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
+import express from 'express';
+import {
+  decomposeArticle,
+  getArticleParsedContent,
+  getChangesAndParsedContent
+} from './helpers/parsingHelper';
 import setupNewArticle from './helpers/puppeteerHelper';
 import {
   insertArticle,
@@ -16,7 +21,8 @@ import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import logger from './logger';
 
 const app = express();
-const port = 3000;
+const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
+const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
@@ -99,7 +105,7 @@ app.post('/api/article', async (req, res) => {
     const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
-    const mwArticleUrl = `https://localhost/wiki/${articleId}?action=edit`;
+    const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
 
     // Automate setting up the new article using puppeteer
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);

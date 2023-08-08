@@ -7,8 +7,9 @@ import {
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
-import setupNewArticle from './helpers/puppeteerHelper';
+import { deleteArticleMW, setupNewArticle } from './helpers/playwrightHelper';
 import {
+  deleteArticle,
   insertArticle,
   removeChanges,
   updateChange
@@ -83,32 +84,33 @@ app.put('/api/article/change', async (req, res) => {
 
 // New Article
 app.post('/api/article', async (req, res) => {
-  try {
-    const { title, userId, description } = req.body;
-    logger.info(
-      {
-        title,
-        userId,
-        description
-      },
-      'New article title received'
-    );
-    // Insert into supabase: Articles, Permissions.
-    const articleId = await insertArticle(title, userId, description);
+  const { title, userId, description } = req.body;
+  logger.info(
+    {
+      title,
+      userId,
+      description
+    },
+    'New article title received'
+  );
 
+  // Insert into supabase: Articles, Permissions.
+  const articleId = await insertArticle(title, userId, description);
+  try {
     // The wikitext of the Wikipedia article
     const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
     const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
 
-    // Automate setting up the new article using puppeteer
+    // Automate setting up the new article
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);
 
     res
       .status(201)
       .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error: any) {
+    await deleteArticle(articleId);
     logger.error(error.message);
     res.status(500).json({ message: 'Creating new article failed.' });
   }
@@ -130,6 +132,20 @@ app.get('/api/wikipedia/articles', async (req, res) => {
       logger.error(error);
     }
     res.status(500).json({ message: 'Getting Wikipedia articles failed.' });
+  }
+});
+
+app.delete('/api/article', async (req, res) => {
+  try {
+    const { articleId } = req.body;
+
+    await deleteArticleMW(articleId);
+    await deleteArticle(articleId);
+
+    res.status(200).json({ message: 'Deleting article succeeded.', articleId });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Deleting article failed.' });
   }
 });
 

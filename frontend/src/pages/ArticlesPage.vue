@@ -9,7 +9,6 @@
   >
     <q-tab v-if="articles" name="ownedArticles" label="View Articles" />
     <q-tab name="wikipediaArticles" label="Create new article" />
-    <q-tab name="" label="" />
   </q-tabs>
   <q-tab-panels v-model="tab">
     <q-tab-panel name="wikipediaArticles" class="row justify-center">
@@ -29,10 +28,9 @@
 import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
 import OwnedArticles from 'src/components/OwnedArticles.vue';
 
-import { ref } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import supabase from 'src/api/supabase';
 import { getArticles } from 'src/api/supabaseHelper';
-import { onBeforeMount } from 'vue';
 import { useQuasar } from 'quasar';
 
 const $q = useQuasar();
@@ -46,5 +44,3 @@ onBeforeMount(async () => {
   tab.value = articles.value ? 'ownedArticles' : 'wikipediaArticles';
 });
 </script>
-
-<style lang="scss"></style>

@@ -7,7 +7,7 @@ COPY src .
 RUN npm install && npm run build
 
 # Run
-FROM node:lts-buster as app-stage
+FROM mcr.microsoft.com/playwright:v1.36.0-jammy as app-stage
 WORKDIR /app
 COPY package*.json .
 RUN npm install --omit=dev

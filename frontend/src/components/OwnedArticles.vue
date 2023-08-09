@@ -45,7 +45,7 @@ function updateArticles() {
   articlesFiltered.value = articles.value;
 }
 updateArticles();
-watch(term, async (term) => {
+watch(term, (term) => {
   articlesFiltered.value = articles.value?.filter((article: Article) =>
     article.title.toLowerCase().includes(term)
   );

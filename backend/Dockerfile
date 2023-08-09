@@ -7,7 +7,7 @@ COPY src .
 RUN npm install && npm run build
 
 # Run
-FROM node:lts-alpine as app-stage
+FROM node:lts-buster as app-stage
 WORKDIR /app
 COPY package*.json .
 RUN npm install --omit=dev

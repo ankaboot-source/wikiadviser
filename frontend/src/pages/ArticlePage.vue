@@ -57,21 +57,20 @@
 </template>
 
 <script setup lang="ts">
-import MwVisualEditor from 'src/components/MwVisualEditor.vue';
-import DiffCard from 'src/components/DiffCard.vue';
-import DiffList from 'src/components/DiffList/DiffList.vue';
-import ShareCard from 'src/components/ShareCard.vue';
-import { onBeforeMount, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { useRouter } from 'vue-router';
+import { copyToClipboard, useQuasar } from 'quasar';
+import supabase from 'src/api/supabase';
 import {
   createNewPermission,
   getArticles,
   getUsers,
 } from 'src/api/supabaseHelper';
-import supabase from 'src/api/supabase';
-import { useQuasar, copyToClipboard } from 'quasar';
+import DiffCard from 'src/components/DiffCard.vue';
+import DiffList from 'src/components/DiffList/DiffList.vue';
+import MwVisualEditor from 'src/components/MwVisualEditor.vue';
+import ShareCard from 'src/components/ShareCard.vue';
 import { Article, UserRole } from 'src/types';
+import { onBeforeMount, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -111,7 +110,7 @@ onBeforeMount(async () => {
 });
 
 async function copyValueToClipboard() {
-  await copyToClipboard(route.path);
+  await copyToClipboard(route.fullPath);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

@@ -90,7 +90,6 @@ const $q = useQuasar();
 const email = ref('');
 const password = ref('');
 const username = ref('');
-
 const signupError = ref('');
 
 const visibility = ref('password' as 'password' | 'text');
@@ -114,7 +113,6 @@ async function handleSignup() {
       email: email.value,
       password: password.value,
       options: {
-        emailRedirectTo: `${window.location.origin}`,
         data: {
           username: username.value,
         },
@@ -122,7 +120,7 @@ async function handleSignup() {
     });
     if (error) throw error;
     $q.notify({
-      message: 'We have sent a verification to your email',
+      message: 'We have sent a verification link to your email',
       icon: 'login',
       color: 'primary',
     });

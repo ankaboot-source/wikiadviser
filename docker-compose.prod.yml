@@ -15,6 +15,7 @@ services:
     image: wikiadviser-caddy:git
     container_name: wikiadviser-caddy
     volumes:
+      - caddy-data:/data
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
     build:
       context: frontend
@@ -30,3 +31,6 @@ services:
       - WIKIADVISER_API_PORT=${WIKIADVISER_API_PORT}
     depends_on:
       - wikiadviser-api
+
+volumes:
+  - caddy-data:

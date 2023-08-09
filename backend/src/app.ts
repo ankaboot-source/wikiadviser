@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { json } from 'express';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   decomposeArticle,
@@ -22,8 +22,9 @@ const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
+logger.info({ frontend: process.env.WIKIADVISER_FRONTEND_HOST });
 app.use(corsMiddleware);
-app.use(express.json({ limit: '300kb' }));
+app.use(json({ limit: '300kb' }));
 
 // POST and GET the html diff of the local mediawiki
 app.post('/api/rawArticle', async (req, res) => {

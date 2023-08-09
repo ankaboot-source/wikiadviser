@@ -11,6 +11,7 @@ FROM node:lts-alpine as app-stage
 WORKDIR /app
 COPY package*.json .
 RUN npm install --omit=dev
+RUN npx playwright install --with-deps chromium
 COPY --from=build-stage /wikiadviser-backend/dist .
 
 EXPOSE 3000

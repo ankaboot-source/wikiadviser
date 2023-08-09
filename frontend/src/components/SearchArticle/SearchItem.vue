@@ -33,7 +33,7 @@ const props = defineProps<{
 }>();
 
 const articleId = ref('');
-const articles = $q.localStorage.getItem<Article[]>('articles');
+const articles = JSON.parse($q.localStorage.getItem('articles')!);
 
 async function itemOnClick() {
   try {

@@ -1,9 +1,20 @@
 <template>
-  <q-card style="min-width: 25vw" class="q-pa-md q-mb-xl bg-secondary">
-    <q-card-section>
-      <p class="text-h5 text-center merriweather">Create new account</p>
-    </q-card-section>
-    <q-card-section>
+  <q-card style="min-width: 25vw" class="bg-secondary">
+    <q-toolbar class="borders">
+      <q-toolbar-title class="q-pa-md merriweather"
+        >Create new account</q-toolbar-title
+      >
+      <q-btn
+        ref="closeDialogButton"
+        v-close-popup
+        flat
+        round
+        dense
+        icon="close"
+        size="sm"
+      />
+    </q-toolbar>
+    <q-card-section class="q-pa-lg">
       <q-form ref="myform" @submit.prevent="handleSignup">
         <q-input
           v-model="username"
@@ -13,13 +24,13 @@
           bottom-slots
           label="Username"
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Enter your username.']"
+          :rules="[(val) => (val && val.length > 0) || 'Enter your username']"
           :error="!!signupError"
         >
           <template #prepend>
             <q-icon name="person" />
           </template>
-          <template v-if="!username" #hint> Enter your username. </template>
+          <template v-if="!username" #hint> Enter your username </template>
         </q-input>
         <q-input
           v-model="email"
@@ -31,7 +42,7 @@
           type="email"
           lazy-rules
           :rules="[
-            (val) => (val && val.length > 0) || 'Enter your email.',
+            (val) => (val && val.length > 0) || 'Enter your email',
             isValidEmail,
           ]"
           :error="!!signupError"
@@ -39,7 +50,7 @@
           <template #prepend>
             <q-icon name="email" />
           </template>
-          <template v-if="!email" #hint> Enter your email. </template>
+          <template v-if="!email" #hint> Enter your email </template>
         </q-input>
         <q-input
           v-model="password"
@@ -51,7 +62,7 @@
           counter
           :type="visibility"
           lazy-rules
-          :rules="[(val) => (val && val.length > 0) || 'Enter your password.']"
+          :rules="[(val) => (val && val.length > 0) || 'Enter your password']"
           :error="!!signupError"
           :error-message="signupError"
         >
@@ -66,16 +77,16 @@
               @click="changeTypeEdit()"
             ></q-icon>
           </template>
-          <template v-if="!password" #hint> Enter your password. </template>
+          <template v-if="!password" #hint> Enter your password </template>
         </q-input>
+        <q-separator />
         <q-btn
           unelevated
           label="Sign Up"
           color="green"
           class="full-width q-mt-md"
           type="submit"
-        >
-        </q-btn>
+        />
       </q-form>
     </q-card-section>
   </q-card>
@@ -90,9 +101,14 @@ const $q = useQuasar();
 const email = ref('');
 const password = ref('');
 const username = ref('');
+const closeDialogButton = ref();
 const signupError = ref('');
-
 const visibility = ref('password' as 'password' | 'text');
+
+function closeDialog() {
+  closeDialogButton.value.$el.click();
+}
+
 function changeTypeEdit() {
   if (visibility.value == 'text') {
     visibility.value = 'password';
@@ -103,7 +119,7 @@ function changeTypeEdit() {
 function isValidEmail(val: string) {
   const emailPattern =
     /^(?=[a-zA-Z0-9@._%+-]{6,254}$)[a-zA-Z0-9._%+-]{1,64}@(?:[a-zA-Z0-9-]{1,63}\.){1,8}[a-zA-Z]{2,63}$/;
-  return emailPattern.test(val) || 'Invalid email format.';
+  return emailPattern.test(val) || 'Invalid email format';
 }
 
 async function handleSignup() {
@@ -119,6 +135,7 @@ async function handleSignup() {
       },
     });
     if (error) throw error;
+    closeDialog();
     $q.notify({
       message: 'We have sent a verification link to your email',
       icon: 'login',

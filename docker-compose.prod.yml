@@ -33,4 +33,4 @@ services:
       - wikiadviser-api
 
 volumes:
-  - caddy-data:
+  caddy-data:

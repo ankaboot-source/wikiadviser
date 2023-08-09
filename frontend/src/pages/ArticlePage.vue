@@ -110,7 +110,7 @@ onBeforeMount(async () => {
 });
 
 async function copyValueToClipboard() {
-  await copyToClipboard(route.fullPath);
+  await copyToClipboard(window.location.href);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

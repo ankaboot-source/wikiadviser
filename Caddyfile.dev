@@ -6,5 +6,5 @@ http://localhost:8081 {
 }
 
 http://localhost:8082 {
-	reverse_proxy localhost:{$WIKIADVISER_API_PORT}
+	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
 }

@@ -1,4 +1,3 @@
-import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
@@ -15,6 +14,7 @@ import {
   updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
+import corsMiddleware from './middleware/cors';
 
 const app = express();
 const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
@@ -22,12 +22,8 @@ const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
+app.use(corsMiddleware);
 app.use(express.json({ limit: '300kb' }));
-app.use(
-  cors({
-    origin: '*'
-  })
-);
 
 // POST and GET the html diff of the local mediawiki
 app.post('/api/rawArticle', async (req, res) => {

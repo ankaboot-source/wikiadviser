@@ -16,11 +16,12 @@ jobs:
           WIKIADVISER_API_HOST: ${{ secrets.WIKIADVISER_API_HOST }}
           MEDIAWIKI_HOST: ${{ secrets.MEDIAWIKI_HOST }}
           WIKIADVISER_API_PORT: ${{ secrets.WIKIADVISER_API_PORT }}
+          WIKIADVISER_FRONTEND_HOST: ${{ vars.WIKIADVISER_FRONTEND_HOST }}
         with:
           host: ${{ vars.WIKIADVISER_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT
+          envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIADVISER_FRONTEND_HOST
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
 
@@ -42,6 +43,7 @@ jobs:
             echo "MEDIAWIKI_HOST=$MEDIAWIKI_HOST" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_FRONTEND_HOST=$WIKIADVISER_FRONTEND_HOST" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \

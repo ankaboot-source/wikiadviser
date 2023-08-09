@@ -34,5 +34,6 @@ app.wikiadviser.io {
 
 api.wikiadviser.io {
 	import cors https://app.wikiadviser.io
+	import cors https://wiki.wikiadviser.io
 	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
 }

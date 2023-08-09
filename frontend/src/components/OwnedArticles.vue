@@ -11,7 +11,7 @@
       outlined
       style="width: 40vw"
       debounce="700"
-      placeholder="Search wikipedia"
+      placeholder="Search your articles"
     >
       <template #append>
         <q-icon name="search" />
@@ -21,7 +21,7 @@
   <q-card-section class="q-pt-none q-pb-lg">
     <q-list padding>
       <owned-article-item
-        v-for="article in articles"
+        v-for="article in articlesFiltered"
         :key="article.article_id"
         :article="article"
         @update-articles-emit="updateArticles()"
@@ -30,15 +30,24 @@
   </q-card-section>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import OwnedArticleItem from './OwnedArticleItem.vue';
+import { Article } from 'src/types';
 
 const $q = useQuasar();
-const articles = ref();
+const articles = ref<Article[]>();
+const articlesFiltered = ref<Article[]>();
+const term = ref('');
+
 function updateArticles() {
   articles.value = JSON.parse($q.localStorage.getItem('articles')!);
+  articlesFiltered.value = articles.value;
 }
 updateArticles();
-const term = ref('');
+watch(term, async (term) => {
+  articlesFiltered.value = articles.value?.filter((article: Article) =>
+    article.title.toLowerCase().includes(term)
+  );
+});
 </script>

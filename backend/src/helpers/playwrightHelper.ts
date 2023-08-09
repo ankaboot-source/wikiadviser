@@ -24,7 +24,7 @@ export async function setupNewArticle(
 }
 
 export async function deleteArticleMW(articleId: string) {
-  const { MW_SITE_SERVER, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
+  const { MEDIAWIKI_HOST, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
   const usernameField = '#wpName1';
   const passwordField = '#wpPassword1';
   const loginButton = '#wpLoginAttempt';
@@ -37,7 +37,7 @@ export async function deleteArticleMW(articleId: string) {
   const page = await context.newPage();
 
   await page.goto(
-    `${MW_SITE_SERVER}/w/index.php?title=Special:UserLogin&returnto=${articleId}&returntoquery=action=delete`,
+    `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=${articleId}&returntoquery=action=delete`,
     { waitUntil: 'networkidle' }
   );
   await page.fill(usernameField, MW_ADMIN_USERNAME!);

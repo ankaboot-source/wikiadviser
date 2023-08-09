@@ -13,16 +13,22 @@ jobs:
         env:
           SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
           SUPABASE_SECRET_PROJECT_TOKEN: ${{ secrets.SUPABASE_SECRET_PROJECT_TOKEN }}
+
           WIKIADVISER_API_HOST: ${{ secrets.WIKIADVISER_API_HOST }}
-          MEDIAWIKI_HOST: ${{ secrets.MEDIAWIKI_HOST }}
           WIKIADVISER_API_PORT: ${{ secrets.WIKIADVISER_API_PORT }}
           WIKIADVISER_FRONTEND_HOST: ${{ vars.WIKIADVISER_FRONTEND_HOST }}
+
           WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
+
+          MEDIAWIKI_HOST: ${{ secrets.MEDIAWIKI_HOST }}
+          MW_ADMIN_USERNAME: ${{ secrets.MW_ADMIN_USERNAME }}
+          MW_ADMIN_PASSWORD: ${{ secrets.MW_ADMIN_PASSWORD }}
+
         with:
           host: ${{ vars.WIKIADVISER_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIADVISER_FRONTEND_HOST,WIKIPEDIA_PROXY
+          envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIADVISER_FRONTEND_HOST,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
 
@@ -38,13 +44,17 @@ jobs:
 
             cd $wikiadviser_path; docker compose -f docker-compose.prod.yml down; git pull
 
-            echo "WIKIADVISER_API_HOST=$WIKIADVISER_API_HOST" > $wikiadviser_path/.env
             echo "SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_SECRET_PROJECT_TOKEN" >> $wikiadviser_path/.env
             echo "SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL" >> $wikiadviser_path/.env
+
             echo "MEDIAWIKI_HOST=$MEDIAWIKI_HOST" >> $wikiadviser_path/.env
+            echo "MW_ADMIN_USERNAME=$MW_ADMIN_USERNAME" >> $wikiadviser_path/.env
+            echo "MW_ADMIN_PASSWORD=$MW_ADMIN_PASSWORD" >> $wikiadviser_path/.env
+
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
-            echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_API_HOST=$WIKIADVISER_API_HOST" > $wikiadviser_path/.env
             echo "WIKIADVISER_FRONTEND_HOST=$WIKIADVISER_FRONTEND_HOST" >> $wikiadviser_path/.env
+
             echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \

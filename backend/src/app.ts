@@ -17,7 +17,7 @@ import logger from './logger';
 import corsMiddleware from './middleware/cors';
 
 const app = express();
-const { MW_SITE_SERVER, WIKIADVISER_API_PORT } = process.env;
+const { MEDIAWIKI_HOST, WIKIADVISER_API_PORT } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
@@ -98,7 +98,7 @@ app.post('/api/article', async (req, res) => {
     const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
 
     // The article in our Mediawiki
-    const mwArticleUrl = `${MW_SITE_SERVER}/wiki/${articleId}?action=edit`;
+    const mwArticleUrl = `${MEDIAWIKI_HOST}/wiki/${articleId}?action=edit`;
 
     // Automate setting up the new article
     await setupNewArticle(mwArticleUrl, wpArticleWikitext);

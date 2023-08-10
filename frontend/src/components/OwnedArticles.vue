@@ -10,7 +10,6 @@
       standout
       outlined
       style="width: 40vw"
-      debounce="700"
       placeholder="Search your articles"
     >
       <template #append>
@@ -30,24 +29,26 @@
   </q-card-section>
 </template>
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useQuasar } from 'quasar';
 import OwnedArticleItem from './OwnedArticleItem.vue';
 import { Article } from 'src/types';
 
 const $q = useQuasar();
 const articles = ref<Article[]>();
-const articlesFiltered = ref<Article[]>();
 const term = ref('');
 
 function updateArticles() {
   articles.value = JSON.parse($q.localStorage.getItem('articles')!);
-  articlesFiltered.value = articles.value;
 }
 updateArticles();
-watch(term, (term) => {
-  articlesFiltered.value = articles.value?.filter((article: Article) =>
-    article.title.toLowerCase().includes(term)
-  );
+const articlesFiltered = computed(() => {
+  if (!term.value) {
+    return articles.value;
+  } else {
+    return articles.value?.filter((article: Article) =>
+      article.title.toLowerCase().includes(term.value.toLowerCase())
+    );
+  }
 });
 </script>

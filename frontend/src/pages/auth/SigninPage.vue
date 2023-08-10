@@ -112,7 +112,7 @@ const signinError = ref('');
 const passwordInputVisibility = ref<'password' | 'text'>('password');
 
 function changeTypeEdit() {
-  if (passwordInputVisibility.value == 'text') {
+  if (passwordInputVisibility.value === 'text') {
     passwordInputVisibility.value = 'password';
   } else {
     passwordInputVisibility.value = 'text';

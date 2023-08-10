@@ -43,12 +43,12 @@ const isSearching = ref(false);
 const results = ref<SearchResult[]>();
 
 watch(term, async (term) => {
-  isSearching.value = true;
-  if (!term) {
+  if (!term.trim()) {
     results.value = [];
     return;
   }
   try {
+    isSearching.value = true;
     const response = await api.get<{
       message: string;
       results: SearchResult[];
@@ -58,14 +58,23 @@ watch(term, async (term) => {
       },
     });
     results.value = response.data.results;
-  } catch (error: any) {
-    console.error(error);
-    $q.notify({
-      message: error,
-      color: 'negative',
-    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error(error.message);
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    } else {
+      console.error(error);
+      $q.notify({
+        message: 'Whoops, something went wrong while searching for articles',
+        color: 'negative',
+      });
+    }
+  } finally {
+    isSearching.value = false;
   }
-  isSearching.value = false;
 });
 
 onBeforeMount(() => {

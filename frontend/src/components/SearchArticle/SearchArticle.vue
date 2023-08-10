@@ -46,20 +46,24 @@ watch(term, async (term) => {
   isSearching.value = true;
   if (!term) {
     results.value = [];
-  } else {
-    try {
-      const response = await api.get<{
-        message: string;
-        results: SearchResult[];
-      }>('wikipedia/articles', {
-        params: {
-          term,
-        },
-      });
-      results.value = response.data.results;
-    } catch (error) {
-      console.error(error);
-    }
+    return;
+  }
+  try {
+    const response = await api.get<{
+      message: string;
+      results: SearchResult[];
+    }>('wikipedia/articles', {
+      params: {
+        term,
+      },
+    });
+    results.value = response.data.results;
+  } catch (error: any) {
+    console.error(error);
+    $q.notify({
+      message: error,
+      color: 'negative',
+    });
   }
   isSearching.value = false;
 });

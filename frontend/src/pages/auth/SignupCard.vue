@@ -15,13 +15,14 @@
       />
     </q-toolbar>
     <q-card-section class="q-pa-lg">
-      <q-form ref="myform" @submit.prevent="handleSignup">
+      <q-form @submit.prevent="handleSignup">
         <q-input
           v-model="username"
           class="q-mb-md"
           bg-color="white"
           outlined
           bottom-slots
+          :loading="isLoading"
           label="Username"
           lazy-rules
           :rules="[(val) => (val && val.length > 0) || 'Enter your username']"
@@ -93,17 +94,20 @@
 </template>
 
 <script setup lang="ts">
+import { AuthError } from '@supabase/supabase-js';
 import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import { ref } from 'vue';
 
 const $q = useQuasar();
+
+const isLoading = ref(false);
 const email = ref('');
 const password = ref('');
 const username = ref('');
 const closeDialogButton = ref();
 const signupError = ref('');
-const visibility = ref('password' as 'password' | 'text');
+const visibility = ref<'password' | 'text'>('password');
 
 function closeDialog() {
   closeDialogButton.value.$el.click();
@@ -123,8 +127,8 @@ function isValidEmail(val: string) {
 }
 
 async function handleSignup() {
+  isLoading.value = true;
   try {
-    // Use the Supabase provided method to handle the signup
     const { error } = await supabaseClient.auth.signUp({
       email: email.value,
       password: password.value,
@@ -141,9 +145,10 @@ async function handleSignup() {
       icon: 'login',
       color: 'primary',
     });
-  } catch (error: any) {
-    console.error(error.message);
-    signupError.value = error.message;
+  } catch (error) {
+    if (error instanceof AuthError) signupError.value = error.message;
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

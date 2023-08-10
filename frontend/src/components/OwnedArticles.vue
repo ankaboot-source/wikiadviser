@@ -43,11 +43,12 @@ function updateArticles() {
 }
 updateArticles();
 const articlesFiltered = computed(() => {
-  if (!term.value) {
+  const trimmedTerm = term.value.trim();
+  if (!trimmedTerm) {
     return articles.value;
   } else {
     return articles.value?.filter((article: Article) =>
-      article.title.toLowerCase().includes(term.value.toLowerCase())
+      article.title.toLowerCase().includes(trimmedTerm.toLowerCase())
     );
   }
 });

@@ -2,6 +2,10 @@ wikiadviser.io {
 	redir https://app.wikiadviser.io
 }
 
+app.wikiadviser.io/robots.txt, wikiadviser.io/robots.txt {
+	respond "User-agent: *\nDisallow: /\nNoindex: /\nNofollow: /"
+}
+
 app.wikiadviser.io {
 	root * /usr/share/caddy/html
 	encode gzip

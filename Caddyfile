@@ -11,4 +11,7 @@ app.wikiadviser.io {
 
 api.wikiadviser.io {
 	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
+	request_body {
+		max_size 10MB
+	}
 }

@@ -3,7 +3,7 @@ import cors, { CorsOptions } from 'cors';
 const corsOptions: CorsOptions = {
   origin: [
     process.env.WIKIADVISER_FRONTEND_HOST ?? 'https://app.wikiadviser.io',
-    process.env.MEDIAWIKI_HOSY ?? 'https://wiki.wikiadviser.io'
+    process.env.MEDIAWIKI_HOST ?? 'https://wiki.wikiadviser.io'
   ],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204,
 };

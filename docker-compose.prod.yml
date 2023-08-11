@@ -17,6 +17,7 @@ services:
     volumes:
       - caddy-data:/data
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./robots.txt:/etc/caddy/robots.txt:ro
     build:
       context: frontend
       args:

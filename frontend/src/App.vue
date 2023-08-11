@@ -18,6 +18,7 @@ import SigninPage from 'src/pages/auth/SigninPage.vue';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 import { Session } from '@supabase/supabase-js';
+import { useMeta } from 'quasar';
 
 const session = ref<Session | null>();
 
@@ -27,5 +28,10 @@ onMounted(async () => {
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
   });
+});
+useMeta({
+  meta: {
+    robots: { name: 'robots', content: 'noindex' },
+  },
 });
 </script>

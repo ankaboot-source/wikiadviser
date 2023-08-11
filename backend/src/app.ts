@@ -22,7 +22,7 @@ const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
-app.use(json({ limit: '300kb' }));
+app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 
 // POST and GET the html diff of the local mediawiki

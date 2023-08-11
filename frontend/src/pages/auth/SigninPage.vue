@@ -1,7 +1,6 @@
 <template>
   <q-page>
     <q-form
-      ref="myform"
       class="square-card row justify-center q-pt-xl"
       @submit.prevent="handleSignin"
     >
@@ -40,7 +39,7 @@
               bottom-slots
               label="Password"
               counter
-              :type="visibility"
+              :type="passwordInputVisibility"
               lazy-rules
               :rules="[
                 (val) => (val && val.length > 0) || 'Enter your password.',
@@ -54,7 +53,11 @@
 
               <template #append>
                 <q-icon
-                  :name="visibility == 'text' ? 'visibility_off' : 'visibility'"
+                  :name="
+                    passwordInputVisibility == 'text'
+                      ? 'visibility_off'
+                      : 'visibility'
+                  "
                   class="cursor-pointer"
                   @click="changeTypeEdit()"
                 ></q-icon>
@@ -63,6 +66,7 @@
             </q-input>
             <q-btn
               unelevated
+              :loading="isLoading"
               label="Login"
               color="primary"
               class="full-width"
@@ -73,7 +77,7 @@
               label="Create new account"
               color="green"
               class="full-width"
-              @click="signUp = !signUp"
+              @click="showSignUpDialog = !showSignUpDialog"
             ></q-btn>
             <q-btn
               unelevated
@@ -87,7 +91,7 @@
         </q-card-section>
       </q-card>
     </q-form>
-    <q-dialog v-model="signUp"> <signup-card /></q-dialog>
+    <q-dialog v-model="showSignUpDialog"> <signup-card /></q-dialog>
   </q-page>
 </template>
 
@@ -98,18 +102,20 @@ import { ref } from 'vue';
 import SignupCard from './SignupCard.vue';
 
 const $q = useQuasar();
+
 const email = ref('');
 const password = ref('');
-
-const signUp = ref(false);
+const isLoading = ref(false);
+const showSignUpDialog = ref(false);
 const signinError = ref('');
 
-const visibility = ref('password' as 'password' | 'text');
+const passwordInputVisibility = ref<'password' | 'text'>('password');
+
 function changeTypeEdit() {
-  if (visibility.value == 'text') {
-    visibility.value = 'password';
+  if (passwordInputVisibility.value === 'text') {
+    passwordInputVisibility.value = 'password';
   } else {
-    visibility.value = 'text';
+    passwordInputVisibility.value = 'text';
   }
 }
 function isValidEmail(val: string) {
@@ -119,8 +125,8 @@ function isValidEmail(val: string) {
 }
 
 async function handleSignin() {
+  isLoading.value = true;
   try {
-    // Use the Supabase provided method to handle the signin
     const { error } = await supabaseClient.auth.signInWithPassword({
       email: email.value,
       password: password.value,
@@ -134,6 +140,8 @@ async function handleSignin() {
     } else {
       signinError.value = 'Oops, something went wrong';
     }
+  } finally {
+    isLoading.value = false;
   }
 }
 

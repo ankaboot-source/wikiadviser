@@ -8,6 +8,21 @@
   - If using a cloud instance, you need to run the migrations manually.
   * If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
 
+## Important changes to do with the mediawiki instance
+
+- Add `$wgDefaultRobotPolicy = 'noindex,nofollow';` at the end of `LocalSettings.php` to avoid indexing the wiki by search engines.
+- Add robots.txt to and configure Caddy to use it:
+
+```txt
+User-agent: *
+Disallow: /
+```
+
+```caddy
+# Caddyfile
+rewrite /robots.txt ./robots.txt # Disable search engine indexing
+```
+
 ## Run using docker
 
 - Make sure you have setup all the necessary pre-requisits.

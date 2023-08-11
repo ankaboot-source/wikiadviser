@@ -1,5 +1,7 @@
 wikiadviser.io {
 	redir https://app.wikiadviser.io
+
+	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
 app.wikiadviser.io {
@@ -7,8 +9,13 @@ app.wikiadviser.io {
 	encode gzip
 	try_files {path} /index.html
 	file_server
+
+	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
 api.wikiadviser.io {
 	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
+	request_body {
+		max_size 10MB
+	}
 }

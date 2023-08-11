@@ -1,9 +1,7 @@
 wikiadviser.io {
 	redir https://app.wikiadviser.io
-}
 
-app.wikiadviser.io/robots.txt, wikiadviser.io/robots.txt {
-	respond "User-agent: *\nDisallow: /\nNoindex: /\nNofollow: /"
+	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
 app.wikiadviser.io {
@@ -11,6 +9,8 @@ app.wikiadviser.io {
 	encode gzip
 	try_files {path} /index.html
 	file_server
+
+	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
 api.wikiadviser.io {

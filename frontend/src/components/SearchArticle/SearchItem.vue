@@ -50,12 +50,13 @@ async function itemOnClick() {
         params: { articleId: articleId.value },
       });
     } else {
-      const extractingNotif = $q.notify({
-        message: 'Extracting article',
-        caption:
-          'Extracting article out of Wikipedia and importing into our Mediawiki.',
+      $q.loading.show({
+        boxClass: 'bg-secondary ',
+        message:
+          'Extracting article out of Wikipedia and importing it into out platform. Please wait...',
+        messageColor: 'black',
         spinner: QSpinnerGears,
-        timeout: 0,
+        spinnerColor: 'primary',
       });
       try {
         //NEW ARTICLE
@@ -64,8 +65,7 @@ async function itemOnClick() {
           data.session!.user.id,
           props.item.description
         );
-
-        extractingNotif();
+        $q.loading.hide();
         $q.notify({
           message: 'Article successfully created.',
           icon: 'check',
@@ -83,7 +83,7 @@ async function itemOnClick() {
           },
         });
       } catch (error) {
-        extractingNotif();
+        $q.loading.hide();
         if (error instanceof Error) {
           $q.notify({
             message: error.message,

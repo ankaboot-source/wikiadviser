@@ -34,9 +34,12 @@
       </q-dialog>
     </q-tabs>
     <q-tab-panels v-model="tab" class="col">
-      <q-tab-panel name="editor" class="row justify-evenly">
+      <q-tab-panel
+        v-if="article.title && article.permission_id && editorPermission"
+        name="editor"
+        class="row justify-evenly"
+      >
         <mw-visual-editor
-          v-if="article.title && article.permission_id"
           :article="article"
           class="col-10 rounded-borders q-pa-md bg-secondary borders"
         />
@@ -80,33 +83,44 @@ const articleId = ref('');
 const share = ref(false);
 const editorPermission = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
-const article = ref();
+const article = ref<Article>();
+const articles = ref<Article[] | null>([]);
 const users = ref();
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
-  // Access the article title parameter from the route's params object
+  // Access the article id parameter from the route's params object
   articleId.value = route.params.articleId as string;
-  // Access the selected tab else 'changes' tab
-  tab.value = route.params.tab ? (route.params.tab as string) : 'changes';
-  if (!article.value) {
-    //In case this article exists, a permission request will be sent to the Owner.
-    await createNewPermission(articleId.value, data.session!.user.id);
-  }
-  const articles = await getArticles(data.session!.user.id);
-  $q.localStorage.set('articles', JSON.stringify(articles));
-  if (articles) {
-    article.value = articles.find((article: Article) => {
+  articles.value = await getArticles(data.session!.user.id);
+  if (articles.value) {
+    article.value = articles.value.find((article: Article) => {
       return article.article_id === articleId.value;
     });
+    if (!article.value) {
+      // In case this article exists, a permission request will be sent to the Owner.
+      await createNewPermission(articleId.value, data.session!.user.id);
+      // Get updated articles
+      const articles = await getArticles(data.session!.user.id);
+      if (articles) {
+        article.value = articles.find((article: Article) => {
+          return article.article_id === articleId.value;
+        });
+      }
+    }
     if (article.value) {
       role.value = article.value.role;
       users.value = await getUsers(articleId.value);
       editorPermission.value =
         article.value.role === UserRole.Editor ||
-        article.value.role == UserRole.Owner;
+        article.value.role === UserRole.Owner;
+      $q.localStorage.set('articles', JSON.stringify(articles));
     }
   }
+  // Access the selected 'editor' tab if editorPermission else 'changes' tab
+  tab.value =
+    route.params.tab === 'editor' && editorPermission.value
+      ? 'editor'
+      : 'changes';
 });
 
 async function copyValueToClipboard() {

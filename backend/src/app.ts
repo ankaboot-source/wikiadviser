@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import express, { json } from 'express';
+import { deleteArticleMW, setupNewArticle } from './helpers/MediawikiApiHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
-import { deleteArticleMW, setupNewArticle } from './helpers/playwrightHelper';
 import {
   deleteArticle,
   insertArticle,

@@ -93,14 +93,16 @@ function gotoArticle(articleId: string) {
   });
 }
 async function removeArticle(articleId: string) {
-  const deletingNotif = $q.notify({
-    message: 'Deleting article.',
+  $q.loading.show({
+    boxClass: 'bg-secondary',
+    message: 'Deleting article. Please wait...',
+    messageColor: 'black',
     spinner: QSpinnerGears,
-    timeout: 0,
+    spinnerColor: 'primary',
   });
   try {
     await deleteArticle(articleId);
-    deletingNotif();
+    $q.loading.hide();
     $q.notify({
       message: 'Article deleted.',
       icon: 'check',
@@ -111,7 +113,7 @@ async function removeArticle(articleId: string) {
     $q.localStorage.set('articles', JSON.stringify(articles));
     emit('updateArticlesEmit');
   } catch (error: any) {
-    deletingNotif();
+    $q.loading.hide();
     $q.notify({
       message: error.message,
       color: 'negative',

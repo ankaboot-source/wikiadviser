@@ -23,13 +23,22 @@ function extractCookies(setCookieHeaders: any) {
 }
 
 function setCookies(response: any) {
-  const setCookieHeaders = response.headers['set-cookie'];
-  const cookies = extractCookies(setCookieHeaders);
-  const cookieHeader = Object.entries(cookies)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('; ');
-  // We set a cookie header for upcoming requests
-  api.defaults.headers.Cookie = cookieHeader;
+  try {
+    console.log(response.data, response.headers['set-cookie']);
+    const setCookieHeaders = response.headers['set-cookie'];
+    const cookies = extractCookies(setCookieHeaders);
+    const cookieHeader = Object.entries(cookies)
+      .map(([key, value]) => `${key}=${value}`)
+      .join('; ');
+    // We set a cookie header for upcoming requests
+    api.defaults.headers.Cookie = cookieHeader;
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
+  }
 }
 export default async function deleteArticleMW(articleId: string) {
   const loginTokenResponse = await api.get('', {
@@ -86,4 +95,20 @@ export default async function deleteArticleMW(articleId: string) {
   );
 
   logger.info(deleteResponse.data);
+
+  const logoutResponse = await api.post(
+    '',
+    {
+      action: 'logout',
+      token: csrftoken,
+      format: 'json'
+    },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+
+  logger.info(logoutResponse.data);
 }

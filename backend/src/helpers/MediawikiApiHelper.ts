@@ -1,10 +1,14 @@
 import axios from 'axios';
+import fs from 'fs';
 import https from 'https';
 import logger from '../logger';
 
 // Generate a bot password from here
 // http://localhost:8080/wiki/Special:BotPasswords
-const { MEDIAWIKI_HOST, MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
+const { MEDIAWIKI_HOST, MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } =
+  process.env;
+const wpLang = 'en';
+
 const api = axios.create({ baseURL: `${MEDIAWIKI_HOST}/w/api.php` });
 // Use to bypass https validation
 api.defaults.httpsAgent = new https.Agent({
@@ -21,7 +25,6 @@ function extractCookies(setCookieHeaders: any) {
 
   return cookies;
 }
-
 function setCookies(response: any) {
   const setCookieHeaders = response.headers['set-cookie'];
   const cookies = extractCookies(setCookieHeaders);
@@ -32,14 +35,7 @@ function setCookies(response: any) {
   api.defaults.headers.Cookie = cookieHeader;
 }
 
-export async function setupNewArticle(
-  mwArticleUrl: string,
-  wpArticleWikitext: string
-) {
-  return { mwArticleUrl, wpArticleWikitext };
-}
-
-export async function deleteArticleMW(articleId: string) {
+async function loginAndGetCsrf() {
   const loginTokenResponse = await api.get('', {
     params: {
       action: 'query',
@@ -48,7 +44,6 @@ export async function deleteArticleMW(articleId: string) {
       format: 'json'
     }
   });
-
   const { logintoken } = loginTokenResponse.data.query.tokens;
   setCookies(loginTokenResponse);
 
@@ -77,6 +72,27 @@ export async function deleteArticleMW(articleId: string) {
     }
   });
   const { csrftoken } = csrfResponse.data.query.tokens;
+  return csrftoken;
+}
+async function logout(csrftoken: string) {
+  const logoutResponse = await api.post(
+    '',
+    {
+      action: 'logout',
+      token: csrftoken,
+      format: 'json'
+    },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+  logger.info(logoutResponse.data);
+}
+
+export async function deleteArticleMW(articleId: string) {
+  const csrftoken = await loginAndGetCsrf();
 
   const deleteResponse = await api.post(
     '',
@@ -92,6 +108,68 @@ export async function deleteArticleMW(articleId: string) {
       }
     }
   );
-
   logger.info(deleteResponse.data);
+
+  logout(csrftoken);
+}
+
+export async function importNewArticle(articleId: string, title: string) {
+  // Export
+  const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
+    params: {
+      title: 'Special:Export',
+      pages: title,
+      templates: 'true',
+      lang: wpLang
+    },
+    responseType: 'stream'
+  });
+  exportResponse.data.pipe(fs.createWriteStream(`imports/${articleId}.xml`));
+  logger.info(exportResponse.status);
+
+  // Login
+  const csrftoken = await loginAndGetCsrf();
+
+  // Import
+  // const importResponse = await api.post(
+  //   '',
+  //   {
+  //     xml: fs.createReadStream(`imports/${articleId}.xml`)
+  //   },
+  //   {
+  //     params: {
+  //       action: 'import',
+  //       token: csrftoken,
+  //       format: 'json'
+  //     },
+  //     headers: {
+  //       'Content-Type': 'application/x-www-form-urlencoded'
+  //     }
+  //   }
+  // );
+  // logger.info(importResponse.data);
+
+  // Delete Export file
+
+  // Rename
+  // const renameResponse = await api.post(
+  //   '',
+  //   {
+  //     action: 'move',
+  //     from: title,
+  //     to: articleId,
+  //     noredirect: true,
+  //     token: csrftoken,
+  //     format: 'json'
+  //   },
+  //   {
+  //     headers: {
+  //       'Content-Type': 'application/x-www-form-urlencoded'
+  //     }
+  //   }
+  // );
+  // logger.info(renameResponse.data);
+
+  // Logout
+  logout(csrftoken);
 }

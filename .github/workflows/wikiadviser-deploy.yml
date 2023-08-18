@@ -32,6 +32,8 @@ jobs:
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
             
+            systemctl status docker
+            systemctl restart docker
             docker system prune -f
 
             # Check if the folder exists

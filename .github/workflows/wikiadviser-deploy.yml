@@ -32,7 +32,7 @@ jobs:
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
             
-            docker system prune
+            docker system prune -f
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then

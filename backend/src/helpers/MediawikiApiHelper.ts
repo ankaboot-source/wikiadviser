@@ -120,7 +120,7 @@ export async function deleteArticleMW(articleId: string) {
 export async function importNewArticle(
   articleId: string,
   title: string,
-  language?: 'en'
+  language = 'en'
 ) {
   const filePath = `src/helpers/imports/${articleId}.xml`;
   // Export

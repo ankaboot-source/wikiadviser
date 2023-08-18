@@ -3,6 +3,6 @@ import { WikipediaSearchResult } from '../types';
 export default interface WikipediaInteractor {
   getWikipediaArticles(
     term: string,
-    language?: 'en'
+    language?: string
   ): Promise<WikipediaSearchResult[]>;
 }

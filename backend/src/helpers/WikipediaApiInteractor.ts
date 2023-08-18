@@ -12,7 +12,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
   }
 
-  async getWikipediaArticles(term: string, language?: 'en') {
+  async getWikipediaArticles(term: string, language = 'en') {
     const response = await this.api.get('', {
       params: {
         action: 'query',

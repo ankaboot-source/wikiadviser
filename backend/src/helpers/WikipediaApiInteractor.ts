@@ -12,9 +12,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
   }
 
-  private static wpLang = 'en';
-
-  async getWikipediaArticles(term: string) {
+  async getWikipediaArticles(term: string, language?: 'en') {
     const response = await this.api.get('', {
       params: {
         action: 'query',
@@ -29,7 +27,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         gpsnamespace: 0,
         gpslimit: 6,
         origin: '*',
-        lang: WikipediaApiInteractor.wpLang
+        lang: language
       }
     });
 

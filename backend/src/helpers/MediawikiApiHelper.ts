@@ -1,13 +1,17 @@
 import axios from 'axios';
 import fs from 'fs';
 import https from 'https';
+import { chromium } from 'playwright';
 import logger from '../logger';
 
-// Generate a bot password from here
-// http://localhost:8080/wiki/Special:BotPasswords
-const { MEDIAWIKI_HOST, MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } =
-  process.env;
-const wpLang = 'en';
+const {
+  MEDIAWIKI_HOST,
+  WIKIPEDIA_PROXY,
+  MW_BOT_USERNAME,
+  MW_BOT_PASSWORD,
+  MW_ADMIN_USERNAME,
+  MW_ADMIN_PASSWORD
+} = process.env;
 
 const api = axios.create({ baseURL: `${MEDIAWIKI_HOST}/w/api.php` });
 // Use to bypass https validation
@@ -88,7 +92,7 @@ async function logout(csrftoken: string) {
       }
     }
   );
-  logger.info(logoutResponse.data);
+  logger.info({ Logout: logoutResponse.status });
 }
 
 export async function deleteArticleMW(articleId: string) {
@@ -113,63 +117,94 @@ export async function deleteArticleMW(articleId: string) {
   logout(csrftoken);
 }
 
-export async function importNewArticle(articleId: string, title: string) {
+export async function importNewArticle(
+  articleId: string,
+  title: string,
+  language?: 'en'
+) {
+  const filePath = `src/helpers/imports/${articleId}.xml`;
   // Export
   const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
     params: {
       title: 'Special:Export',
       pages: title,
-      templates: 'true',
-      lang: wpLang
+      templates: true,
+      lang: language
     },
     responseType: 'stream'
   });
-  exportResponse.data.pipe(fs.createWriteStream(`imports/${articleId}.xml`));
-  logger.info(exportResponse.status);
+  let exportData = '';
+  exportResponse.data.on('data', (chunk: string) => {
+    exportData += chunk;
+  });
 
-  // Login
-  const csrftoken = await loginAndGetCsrf();
+  await exportResponse.data.on('end', async () => {
+    // Add missing </base> into the file.
+    exportData = exportData.replace(
+      '\n    <generator>',
+      '</base>\n    <generator>'
+    );
+    // Save file
+    fs.writeFileSync(filePath, exportData);
+    logger.info(exportResponse.status);
 
-  // Import
-  // const importResponse = await api.post(
-  //   '',
-  //   {
-  //     xml: fs.createReadStream(`imports/${articleId}.xml`)
-  //   },
-  //   {
-  //     params: {
-  //       action: 'import',
-  //       token: csrftoken,
-  //       format: 'json'
-  //     },
-  //     headers: {
-  //       'Content-Type': 'application/x-www-form-urlencoded'
-  //     }
-  //   }
-  // );
-  // logger.info(importResponse.data);
+    // Automate Login
+    const usernameField = '#wpName1';
+    const passwordField = '#wpPassword1';
+    const loginButton = '#wpLoginAttempt';
 
-  // Delete Export file
+    const browser = await chromium.launch();
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true
+    });
+    const page = await context.newPage();
 
-  // Rename
-  // const renameResponse = await api.post(
-  //   '',
-  //   {
-  //     action: 'move',
-  //     from: title,
-  //     to: articleId,
-  //     noredirect: true,
-  //     token: csrftoken,
-  //     format: 'json'
-  //   },
-  //   {
-  //     headers: {
-  //       'Content-Type': 'application/x-www-form-urlencoded'
-  //     }
-  //   }
-  // );
-  // logger.info(renameResponse.data);
+    await page.goto(
+      `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
+      { waitUntil: 'networkidle' }
+    );
+    await page.fill(usernameField, MW_ADMIN_USERNAME!);
+    await page.fill(passwordField, MW_ADMIN_PASSWORD!);
+    await page.click(loginButton);
 
-  // Logout
-  logout(csrftoken);
+    // Automate Import
+    const submitButton = 'button[value^="Upload file"]';
+    const fileChooserButton = '#ooui-php-2';
+    const textBoxInterwikiprefix = '#ooui-php-3';
+
+    const fileChooserPromise = page.waitForEvent('filechooser');
+    await page.click(fileChooserButton);
+    const fileChooser = await fileChooserPromise;
+    await fileChooser.setFiles(filePath);
+
+    await page.fill(textBoxInterwikiprefix, ' ');
+    await page.click(submitButton, { timeout: 5 * 60 * 1000 }); // 5 Minutes
+    await page.waitForLoadState('networkidle');
+    await browser.close();
+
+    // Login
+    const csrftoken = await loginAndGetCsrf();
+    // Delete Export file
+    fs.unlinkSync(filePath);
+    // Rename
+    const renameResponse = await api.post(
+      '',
+      {
+        action: 'move',
+        from: title,
+        to: articleId,
+        noredirect: true,
+        token: csrftoken,
+        format: 'json'
+      },
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+    logger.info(renameResponse.data);
+    // Logout
+    logout(csrftoken);
+  });
 }

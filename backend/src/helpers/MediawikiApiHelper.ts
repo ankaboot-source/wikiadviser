@@ -121,90 +121,103 @@ export async function importNewArticle(
   articleId: string,
   title: string,
   language = 'en'
-) {
-  const filePath = `src/helpers/imports/${articleId}.xml`;
-  // Export
-  const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
-    params: {
-      title: 'Special:Export',
-      pages: title,
-      templates: true,
-      lang: language
-    },
-    responseType: 'stream'
-  });
-  let exportData = '';
-  exportResponse.data.on('data', (chunk: string) => {
-    exportData += chunk;
-  });
+): Promise<void> {
+  // eslint-disable-next-line no-async-promise-executor
+  return new Promise(async (resolve, reject) => {
+    try {
+      const filePath = `src/helpers/imports/${articleId}.xml`;
+      // Export
+      logger.info('Exporting file ', title);
+      const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
+        params: {
+          title: 'Special:Export',
+          pages: title,
+          templates: true,
+          lang: language
+        },
+        responseType: 'stream'
+      });
+      let exportData = '';
+      exportResponse.data.on('data', (chunk: string) => {
+        exportData += chunk;
+      });
 
-  await exportResponse.data.on('end', async () => {
-    // Add missing </base> into the file.
-    exportData = exportData.replace(
-      '\n    <generator>',
-      '</base>\n    <generator>'
-    );
-    // Save file
-    fs.writeFileSync(filePath, exportData);
-    logger.info(exportResponse.status);
+      await exportResponse.data.on('end', async () => {
+        // Add missing </base> into the file. (Exported files from proxies only)
+        exportData = exportData.replace(
+          '\n    <generator>',
+          '</base>\n    <generator>'
+        );
+        // Save file
+        fs.writeFileSync(filePath, exportData);
+        logger.info(`Succesfuly exported file ${title}`);
 
-    // Automate Login
-    const usernameField = '#wpName1';
-    const passwordField = '#wpPassword1';
-    const loginButton = '#wpLoginAttempt';
+        logger.info(`Importing into our instance file ${title}`);
+        // Automate Login
+        const usernameField = '#wpName1';
+        const passwordField = '#wpPassword1';
+        const loginButton = '#wpLoginAttempt';
 
-    const browser = await chromium.launch();
-    const context = await browser.newContext({
-      ignoreHTTPSErrors: true
-    });
-    const page = await context.newPage();
+        const browser = await chromium.launch();
+        const context = await browser.newContext({
+          ignoreHTTPSErrors: true
+        });
+        const page = await context.newPage();
 
-    await page.goto(
-      `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
-      { waitUntil: 'networkidle' }
-    );
-    await page.fill(usernameField, MW_ADMIN_USERNAME!);
-    await page.fill(passwordField, MW_ADMIN_PASSWORD!);
-    await page.click(loginButton);
+        await page.goto(
+          `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
+          { waitUntil: 'networkidle' }
+        );
+        await page.fill(usernameField, MW_ADMIN_USERNAME!);
+        await page.fill(passwordField, MW_ADMIN_PASSWORD!);
+        await page.click(loginButton);
 
-    // Automate Import
-    const submitButton = 'button[value^="Upload file"]';
-    const fileChooserButton = '#ooui-php-2';
-    const textBoxInterwikiprefix = '#ooui-php-3';
+        // Automate Import
+        const submitButton = 'button[value^="Upload file"]';
+        const fileChooserButton = '#ooui-php-2';
+        const textBoxInterwikiprefix = '#ooui-php-3';
 
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.click(fileChooserButton);
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(filePath);
+        const fileChooserPromise = page.waitForEvent('filechooser');
+        await page.click(fileChooserButton);
+        const fileChooser = await fileChooserPromise;
+        await fileChooser.setFiles(filePath);
 
-    await page.fill(textBoxInterwikiprefix, ' ');
-    await page.click(submitButton, { timeout: 5 * 60 * 1000 }); // 5 Minutes
-    await page.waitForLoadState('networkidle');
-    await browser.close();
+        await page.fill(textBoxInterwikiprefix, ' ');
+        await page.click(submitButton, { timeout: 5 * 60 * 1000 }); // 5 Minutes
+        await page.waitForLoadState('networkidle');
+        await browser.close();
+        logger.info(`Succesfuly imported file ${title}`);
 
-    // Login
-    const csrftoken = await loginAndGetCsrf();
-    // Delete Export file
-    fs.unlinkSync(filePath);
-    // Rename
-    const renameResponse = await api.post(
-      '',
-      {
-        action: 'move',
-        from: title,
-        to: articleId,
-        noredirect: true,
-        token: csrftoken,
-        format: 'json'
-      },
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
-    logger.info(renameResponse.data);
-    // Logout
-    logout(csrftoken);
+        // Delete Export file
+        fs.unlinkSync(filePath);
+        logger.info(`Succesfuly deleted exported file ${title}`);
+
+        // Login
+        const csrftoken = await loginAndGetCsrf();
+        // Rename
+        const renameResponse = await api.post(
+          '',
+          {
+            action: 'move',
+            from: title,
+            to: articleId,
+            noredirect: true,
+            token: csrftoken,
+            format: 'json'
+          },
+          {
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+            }
+          }
+        );
+        logger.info(renameResponse.data);
+        // Logout
+        logout(csrftoken);
+        resolve();
+      });
+    } catch (error) {
+      reject(error);
+    }
   });
 }

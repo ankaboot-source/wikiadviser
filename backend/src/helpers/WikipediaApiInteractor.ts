@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from 'axios';
-import logger from '../logger';
 import { WikipediaSearchResult } from '../types';
 import WikipediaInteractor from './WikipediaInteractor';
 
@@ -13,30 +12,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
   }
 
-  private static wpLang = 'en';
-
-  async getWikipediaArticleWikitext(title: string) {
-    const response = await this.api.get('', {
-      params: {
-        action: 'query',
-        format: 'json',
-        formatversion: 2,
-        prop: 'revisions',
-        rvprop: 'content',
-        rvslots: '*',
-        titles: title,
-        lang: WikipediaApiInteractor.wpLang
-      }
-    });
-
-    const wpArticleWikitext =
-      response.data.query.pages[0].revisions[0].slots.main.content;
-
-    logger.info('wikitext', { length: wpArticleWikitext.length });
-    return wpArticleWikitext;
-  }
-
-  async getWikipediaArticles(term: string) {
+  async getWikipediaArticles(term: string, language = 'en') {
     const response = await this.api.get('', {
       params: {
         action: 'query',
@@ -51,7 +27,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         gpsnamespace: 0,
         gpslimit: 6,
         origin: '*',
-        lang: WikipediaApiInteractor.wpLang
+        lang: language
       }
     });
 

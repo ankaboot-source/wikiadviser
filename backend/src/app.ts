@@ -1,13 +1,15 @@
 import 'dotenv/config';
 import express, { json } from 'express';
-import deleteArticleMW from './helpers/MediawikiApiHelper';
+import {
+  deleteArticleMW,
+  importNewArticle
+} from './helpers/MediawikiApiHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
-import setupNewArticle from './helpers/playwrightHelper';
 import {
   deleteArticle,
   insertArticle,
@@ -18,7 +20,7 @@ import logger from './logger';
 import corsMiddleware from './middleware/cors';
 
 const app = express();
-const { MEDIAWIKI_HOST, WIKIADVISER_API_PORT } = process.env;
+const { WIKIADVISER_API_PORT } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
@@ -94,14 +96,7 @@ app.post('/api/article', async (req, res) => {
   // Insert into supabase: Articles, Permissions.
   const articleId = await insertArticle(title, userId, description);
   try {
-    // The wikitext of the Wikipedia article
-    const wpArticleWikitext = await wikiApi.getWikipediaArticleWikitext(title);
-
-    // The article in our Mediawiki
-    const mwArticleUrl = `${MEDIAWIKI_HOST}/wiki/${articleId}?action=edit`;
-
-    // Automate setting up the new article
-    await setupNewArticle(mwArticleUrl, wpArticleWikitext);
+    await importNewArticle(articleId, title);
 
     res
       .status(201)

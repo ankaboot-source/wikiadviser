@@ -34,10 +34,6 @@ jobs:
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
 
-            systemctl status docker
-            systemctl restart docker
-            docker system prune -f
-
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
@@ -69,8 +65,8 @@ jobs:
               --build \
               --force-recreate
 
-            #Remove unused images
-            docker image prune -a -f
+            # Remove unused images/containers/volumes
+            docker system prune
 
   deploy-visual-editor:
     runs-on: ubuntu-latest

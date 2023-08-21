@@ -8,7 +8,6 @@
         v-model="term"
         bg-color="white"
         dense
-        standout
         outlined
         style="width: 40vw"
         placeholder="Search your articles"

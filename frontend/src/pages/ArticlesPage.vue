@@ -10,16 +10,12 @@
     <q-tab v-if="articles" name="ownedArticles" label="View Articles" />
     <q-tab name="wikipediaArticles" label="Create new article" />
   </q-tabs>
-  <q-tab-panels v-model="tab">
+  <q-tab-panels v-model="tab" class="col">
     <q-tab-panel name="wikipediaArticles" class="row justify-center">
-      <q-card class="q-pa-sm bg-secondary">
-        <search-article></search-article>
-      </q-card>
+      <search-article />
     </q-tab-panel>
     <q-tab-panel name="ownedArticles" class="row justify-center">
-      <q-card class="q-pa-sm bg-secondary">
-        <owned-articles></owned-articles>
-      </q-card>
+      <owned-articles />
     </q-tab-panel>
   </q-tab-panels>
 </template>

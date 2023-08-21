@@ -1,13 +1,7 @@
 <template>
-  <div class="app-search relative-position">
-    <q-list padding>
-      <search-item
-        v-for="item in props.results"
-        :key="item.title"
-        :item="item"
-      />
-    </q-list>
-  </div>
+  <q-list padding class="q-mx-md q-my-xs">
+    <search-item v-for="item in props.results" :key="item.title" :item="item" />
+  </q-list>
 </template>
 
 <script setup lang="ts">

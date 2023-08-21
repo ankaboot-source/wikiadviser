@@ -1,33 +1,31 @@
 <template>
-  <q-card-section>
-    <div class="text-h5 merriweather">
-      {{ title }}
-    </div>
-  </q-card-section>
-  <q-card-section class="q-pb-none">
-    <q-input
-      v-model="term"
-      bg-color="white"
-      dense
-      standout
-      outlined
-      style="width: 40vw"
-      debounce="700"
-      placeholder="Search wikipedia"
-      :loading="isSearching"
-    >
-      <template #append>
-        <q-icon name="search" />
-      </template>
-    </q-input>
-  </q-card-section>
-  <q-card-section class="q-pt-none q-pb-lg">
-    <div>
-      <template v-if="results">
-        <search-list :results="results" />
-      </template>
-    </div>
-  </q-card-section>
+  <q-card class="q-pa-sm bg-secondary column">
+    <q-card-section>
+      <div class="text-h5 merriweather">
+        {{ title }}
+      </div>
+    </q-card-section>
+    <q-card-section class="q-pb-none">
+      <q-input
+        v-model="term"
+        bg-color="white"
+        dense
+        standout
+        outlined
+        style="width: 40vw"
+        debounce="700"
+        placeholder="Search wikipedia"
+        :loading="isSearching"
+      >
+        <template #append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </q-card-section>
+    <q-scroll-area v-if="results" class="col-grow q-pt-none q-pb-lg">
+      <search-list :results="results" />
+    </q-scroll-area>
+  </q-card>
 </template>
 <script setup lang="ts">
 import SearchList from './SearchList.vue';

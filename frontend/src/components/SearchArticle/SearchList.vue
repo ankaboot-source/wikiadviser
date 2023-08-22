@@ -11,11 +11,11 @@
 
 <script setup lang="ts">
 import SearchItem from './SearchItem.vue';
-import { SearchResult } from 'src/types';
+import { SearchResult, wikipediaLanguage } from 'src/types';
 
 const props = defineProps<{
   searchResults: SearchResult[];
-  articleLanguage: string;
+  articleLanguage: wikipediaLanguage;
 }>();
 </script>
 <style lang="css">

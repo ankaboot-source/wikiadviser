@@ -23,6 +23,7 @@
 import { QSpinnerGears, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
+import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
 import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -30,6 +31,7 @@ const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
+  articleLanguage: wikipediaLanguage;
 }>();
 
 const articleId = ref('');
@@ -63,6 +65,7 @@ async function itemOnClick() {
         articleId.value = await createNewArticle(
           props.item.title,
           data.session!.user.id,
+          props.articleLanguage,
           props.item.description
         );
         $q.loading.hide();

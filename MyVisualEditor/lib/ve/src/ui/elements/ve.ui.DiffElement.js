@@ -70,7 +70,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
   const permissionId = urlParams.get("permissionid");
 
   // Post data to the backend
-  fetch(`${wikiadviserApiHost}/api/rawArticle`, {
+  fetch(`${wikiadviserApiHost}/rawArticle`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

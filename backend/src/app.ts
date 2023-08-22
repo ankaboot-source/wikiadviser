@@ -83,11 +83,12 @@ app.put('/api/article/change', async (req, res) => {
 
 // New Article
 app.post('/api/article', async (req, res) => {
-  const { title, userId, description } = req.body;
+  const { title, userId, language, description } = req.body;
   logger.info(
     {
       title,
       userId,
+      language,
       description
     },
     'New article title received'
@@ -96,7 +97,7 @@ app.post('/api/article', async (req, res) => {
   // Insert into supabase: Articles, Permissions.
   const articleId = await insertArticle(title, userId, description);
   try {
-    await importNewArticle(articleId, title);
+    await importNewArticle(articleId, title, language);
 
     res
       .status(201)
@@ -111,7 +112,8 @@ app.post('/api/article', async (req, res) => {
 app.get('/api/wikipedia/articles', async (req, res) => {
   try {
     const term = req.query.term as string;
-    const response = await wikiApi.getWikipediaArticles(term);
+    const language = req.query.language as string;
+    const response = await wikiApi.getWikipediaArticles(term, language);
     logger.info('Getting Wikipedia articles succeeded.', response);
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',

@@ -35,11 +35,13 @@ export async function getUsers(articleId: string): Promise<User[]> {
 export async function createNewArticle(
   title: string,
   userId: string,
+  language: string,
   description?: string
 ) {
   const response = await api.post('article', {
     title,
     userId,
+    language,
     description,
   });
   return response.data.articleId;

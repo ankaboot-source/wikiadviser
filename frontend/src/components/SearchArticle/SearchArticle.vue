@@ -44,7 +44,7 @@
       </q-input>
     </q-card-section>
     <q-scroll-area v-if="results" class="col-grow q-pt-none q-pb-lg">
-      <search-list :results="results" />
+      <search-list :results="results" :language="languageModel.value" />
     </q-scroll-area>
   </q-card>
 </template>
@@ -142,14 +142,14 @@ const languageOptions = ref([
   { label: 'Հայերեն', value: 'hy', description: 'Hayeren', lang: 'hy' },
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
 ]);
-const selectedOption = languageOptions.value.find(
+const defaultOption = languageOptions.value.find(
   (option) => window.navigator.language.split('-')[0] === option.lang
 ) || {
   label: 'English',
   value: 'en',
   description: 'English',
 };
-const languageModel = ref(selectedOption);
+const languageModel = ref(defaultOption);
 
 watch(term, async (term) => {
   if (!term.trim()) {
@@ -164,6 +164,7 @@ watch(term, async (term) => {
     }>('wikipedia/articles', {
       params: {
         term,
+        language: languageModel.value.value,
       },
     });
     results.value = response.data.results;

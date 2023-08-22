@@ -1,6 +1,11 @@
 <template>
   <q-list padding class="q-mx-md q-my-xs">
-    <search-item v-for="item in props.results" :key="item.title" :item="item" />
+    <search-item
+      v-for="item in props.results"
+      :key="item.title"
+      :item="item"
+      :language="props.language"
+    />
   </q-list>
 </template>
 
@@ -10,6 +15,7 @@ import { SearchResult } from 'src/types';
 
 const props = defineProps<{
   results: SearchResult[];
+  language: string;
 }>();
 </script>
 <style lang="css">

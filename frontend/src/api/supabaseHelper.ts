@@ -1,12 +1,7 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
-import {
-  Article,
-  User,
-  Permission,
-  UserRole,
-  wikipediaLanguage,
-} from 'src/types';
+import { Article, User, Permission, UserRole } from 'src/types';
+import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase

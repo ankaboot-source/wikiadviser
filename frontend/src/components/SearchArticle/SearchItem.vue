@@ -23,7 +23,8 @@
 import { QSpinnerGears, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
-import { Article, SearchResult, wikipediaLanguage } from 'src/types';
+import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
+import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 const $q = useQuasar();

@@ -79,6 +79,8 @@ const wikipediaLanguages = [
   { label: 'Русский', value: 'ru', description: 'Russkiy', lang: 'ru' },
   { label: 'Հայերեն', value: 'hy', description: 'Hayeren', lang: 'hy' },
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
-];
+] as const;
+
+export type wikipediaLanguage = (typeof wikipediaLanguages)[number]['value'];
 
 export default wikipediaLanguages;

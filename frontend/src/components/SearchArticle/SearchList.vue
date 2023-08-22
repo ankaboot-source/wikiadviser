@@ -10,8 +10,9 @@
 </template>
 
 <script setup lang="ts">
+import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
 import SearchItem from './SearchItem.vue';
-import { SearchResult, wikipediaLanguage } from 'src/types';
+import { SearchResult } from 'src/types';
 
 const props = defineProps<{
   searchResults: SearchResult[];

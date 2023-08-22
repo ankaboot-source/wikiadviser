@@ -3,6 +3,7 @@ version: "3.1"
 services:
   wikiadviser-api:
     image: wikiadviser-api:git
+    restart: on_failure
     container_name: wikiadviser-api
     build:
       context: backend

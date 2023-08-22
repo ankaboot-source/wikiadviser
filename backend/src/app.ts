@@ -29,7 +29,7 @@ app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 
 // POST and GET the html diff of the local mediawiki
-app.post('/api/rawArticle', async (req, res) => {
+app.post('/rawArticle', async (req, res) => {
   const { html, permissionId } = req.body;
   logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
   await removeChanges(permissionId);
@@ -38,7 +38,7 @@ app.post('/api/rawArticle', async (req, res) => {
 });
 
 // Get the Article current content HTML Parsed
-app.get('/api/article/parsedContent', async (req, res) => {
+app.get('/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const content = await getArticleParsedContent(articleId); // parsingHelper.ts
@@ -53,7 +53,7 @@ app.get('/api/article/parsedContent', async (req, res) => {
 });
 
 // Get Article Changes
-app.get('/api/article/changes', async (req, res) => {
+app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const changes = await getChangesAndParsedContent(articleId); // parsingHelper.ts
@@ -68,7 +68,7 @@ app.get('/api/article/changes', async (req, res) => {
 });
 
 // Update a Change
-app.put('/api/article/change', async (req, res) => {
+app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
     await updateChange({ changeId, status, description });
@@ -82,7 +82,7 @@ app.put('/api/article/change', async (req, res) => {
 });
 
 // New Article
-app.post('/api/article', async (req, res) => {
+app.post('/article', async (req, res) => {
   const { title, userId, language, description } = req.body;
   logger.info(
     {
@@ -94,7 +94,6 @@ app.post('/api/article', async (req, res) => {
     'New article title received'
   );
 
-  // Insert into supabase: Articles, Permissions.
   const articleId = await insertArticle(title, userId, description);
   try {
     await importNewArticle(articleId, title, language);
@@ -109,7 +108,7 @@ app.post('/api/article', async (req, res) => {
   }
 });
 
-app.get('/api/wikipedia/articles', async (req, res) => {
+app.get('/wikipedia/articles', async (req, res) => {
   try {
     const term = req.query.term as string;
     const language = req.query.language as string;
@@ -129,7 +128,7 @@ app.get('/api/wikipedia/articles', async (req, res) => {
   }
 });
 
-app.delete('/api/article', async (req, res) => {
+app.delete('/article', async (req, res) => {
   try {
     const { articleId } = req.body;
 

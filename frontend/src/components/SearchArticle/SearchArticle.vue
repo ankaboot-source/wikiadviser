@@ -57,7 +57,7 @@ import { onBeforeMount, ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
-import wikipediaLanguages from 'src/data/wikipediaLanguages.js';
+import wikipediaLanguages from 'src/data/wikipediaLanguages';
 
 const $q = useQuasar();
 const term = ref('');

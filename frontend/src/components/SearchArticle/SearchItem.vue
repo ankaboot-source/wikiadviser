@@ -30,7 +30,7 @@ const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
-  language: string;
+  articleLanguage: string;
 }>();
 
 const articleId = ref('');
@@ -64,7 +64,7 @@ async function itemOnClick() {
         articleId.value = await createNewArticle(
           props.item.title,
           data.session!.user.id,
-          props.language,
+          props.articleLanguage,
           props.item.description
         );
         $q.loading.hide();

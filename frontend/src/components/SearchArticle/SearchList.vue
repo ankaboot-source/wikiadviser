@@ -1,10 +1,10 @@
 <template>
   <q-list padding class="q-mx-md q-my-xs">
     <search-item
-      v-for="item in props.results"
+      v-for="item in props.searchResults"
       :key="item.title"
       :item="item"
-      :language="props.language"
+      :article-language="props.articleLanguage"
     />
   </q-list>
 </template>
@@ -14,8 +14,8 @@ import SearchItem from './SearchItem.vue';
 import { SearchResult } from 'src/types';
 
 const props = defineProps<{
-  results: SearchResult[];
-  language: string;
+  searchResults: SearchResult[];
+  articleLanguage: string;
 }>();
 </script>
 <style lang="css">

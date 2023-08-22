@@ -1,4 +1,4 @@
-const languageOptions = [
+const wikipediaLanguages = [
   { label: 'Afrikaans', value: 'af', lang: 'af' },
   { label: 'Polski', value: 'pl', lang: 'pl' },
   { label: 'العربية', value: 'ar', description: 'Al-ʿArabīyah', lang: 'ar' },
@@ -81,4 +81,4 @@ const languageOptions = [
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
 ];
 
-export default languageOptions;
+export default wikipediaLanguages;

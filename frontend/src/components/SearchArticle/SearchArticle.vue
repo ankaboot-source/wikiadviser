@@ -18,15 +18,15 @@
       >
         <template #append>
           <q-select
-            v-model="languageModel"
+            v-model="articleLanguage"
             :option-label="(item) => item.value.toLocaleUpperCase()"
-            :options="languageOptions"
+            :options="wikipediaLanguages"
             filled
             dense
             options-dense
           >
             <q-tooltip anchor="top middle" self="center middle">
-              {{ languageModel?.label }}
+              {{ articleLanguage?.label }}
             </q-tooltip>
             <template #option="scope">
               <q-item v-bind="scope.itemProps">
@@ -43,8 +43,11 @@
         </template>
       </q-input>
     </q-card-section>
-    <q-scroll-area v-if="results" class="col-grow q-pt-none q-pb-lg">
-      <search-list :results="results" :language="languageModel.value" />
+    <q-scroll-area v-if="searchResults" class="col-grow q-pt-none q-pb-lg">
+      <search-list
+        :search-results="searchResults"
+        :article-language="articleLanguage.value"
+      />
     </q-scroll-area>
   </q-card>
 </template>
@@ -54,40 +57,40 @@ import { onBeforeMount, ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
-import languageOptions from 'src/data/wikipediaLanguages.js';
+import wikipediaLanguages from 'src/data/wikipediaLanguages.js';
 
 const $q = useQuasar();
 const term = ref('');
 const title = ref('');
 const isSearching = ref(false);
-const results = ref<SearchResult[]>();
+const searchResults = ref<SearchResult[]>();
 
-const defaultOption = languageOptions.find(
+const defaultArticleLanguage = wikipediaLanguages.find(
   (option) => window.navigator.language.split('-')[0] === option.lang
 ) || {
   label: 'English',
   value: 'en',
   description: 'English',
 };
-const languageModel = ref(defaultOption);
+const articleLanguage = ref(defaultArticleLanguage);
 
 watch(term, async (term) => {
   if (!term.trim()) {
-    results.value = [];
+    searchResults.value = [];
     return;
   }
   try {
     isSearching.value = true;
     const response = await api.get<{
       message: string;
-      results: SearchResult[];
+      searchResults: SearchResult[];
     }>('wikipedia/articles', {
       params: {
         term,
-        language: languageModel.value.value,
+        language: articleLanguage.value.value,
       },
     });
-    results.value = response.data.results;
+    searchResults.value = response.data.searchResults;
   } catch (error) {
     if (error instanceof Error) {
       console.error(error.message);

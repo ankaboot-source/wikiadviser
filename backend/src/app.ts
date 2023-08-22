@@ -116,7 +116,7 @@ app.get('/wikipedia/articles', async (req, res) => {
     logger.info('Getting Wikipedia articles succeeded.', response);
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',
-      results: response
+      searchResults: response
     });
   } catch (error) {
     if (error instanceof Error) {

@@ -150,7 +150,7 @@ export async function importNewArticle(
       const passwordField = '#wpPassword1';
       const loginButton = '#wpLoginAttempt';
 
-      const browser = await chromium.launch()
+      const browser = await chromium.launch();
       const context = await browser.newContext({
         ignoreHTTPSErrors: true
       });

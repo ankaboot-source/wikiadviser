@@ -92,30 +92,30 @@ onBeforeMount(async () => {
   // Access the article id parameter from the route's params object
   articleId.value = route.params.articleId as string;
   articles.value = await getArticles(data.session!.user.id);
-  if (articles.value) {
-    article.value = articles.value.find((article: Article) => {
-      return article.article_id === articleId.value;
-    });
-    if (!article.value) {
-      // In case this article exists, a permission request will be sent to the Owner.
-      await createNewPermission(articleId.value, data.session!.user.id);
-      // Get updated articles
-      const articles = await getArticles(data.session!.user.id);
-      if (articles) {
-        article.value = articles.find((article: Article) => {
-          return article.article_id === articleId.value;
-        });
-      }
-    }
-    if (article.value) {
-      role.value = article.value.role;
-      users.value = await getUsers(articleId.value);
-      editorPermission.value =
-        article.value.role === UserRole.Editor ||
-        article.value.role === UserRole.Owner;
-      $q.localStorage.set('articles', JSON.stringify(articles));
+
+  article.value = articles.value?.find((article: Article) => {
+    return article.article_id === articleId.value;
+  });
+  if (!article.value) {
+    // In case this article exists, a permission request will be sent to the Owner.
+    await createNewPermission(articleId.value, data.session!.user.id);
+    // Get updated articles
+    const articles = await getArticles(data.session!.user.id);
+    if (articles) {
+      article.value = articles.find((article: Article) => {
+        return article.article_id === articleId.value;
+      });
     }
   }
+  if (article.value) {
+    role.value = article.value.role;
+    users.value = await getUsers(articleId.value);
+    editorPermission.value =
+      article.value.role === UserRole.Editor ||
+      article.value.role === UserRole.Owner;
+    $q.localStorage.set('articles', JSON.stringify(articles));
+  }
+
   // Access the selected 'editor' tab if editorPermission else 'changes' tab
   tab.value =
     route.params.tab === 'editor' && editorPermission.value

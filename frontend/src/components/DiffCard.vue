@@ -2,13 +2,13 @@
   <div class="column">
     <div class="text-h6 q-pb-sm">View Changes</div>
     <q-scroll-area class="col-grow">
-      <div class="q-mr-md" @click="handleClick($event)" v-html="data"></div>
+      <div class="q-mr-md" v-html="data" />
     </q-scroll-area>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
@@ -20,43 +20,65 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   articleId: string;
 }>();
+const data = ref('');
 
-const fetchData = async () => {
+function setTabindexForElements(selector: string, tabindexValue: string) {
+  const elements = document.querySelectorAll(selector);
+  elements.forEach((element) => {
+    element.setAttribute('tabindex', tabindexValue);
+
+    if (tabindexValue === '-1') {
+      // If link, Prevent visitng it
+      element.addEventListener('click', (event) => {
+        event.preventDefault();
+      });
+    }
+
+    if (tabindexValue === '0') {
+      // If change, select it
+      element.addEventListener('click', () => {
+        store.selectedChangeId = element.getAttribute('data-id') as string;
+      });
+      element.addEventListener('keydown', (event) => {
+        const keyboardEvent = event as KeyboardEvent;
+        if (keyboardEvent.key === 'Enter') {
+          store.selectedChangeId = element.getAttribute('data-id') as string;
+        }
+      });
+    }
+  });
+}
+
+function handleTabIndexes() {
+  setTabindexForElements('a', '-1'); // Links
+  setTabindexForElements('.ve-ui-diffElement-document [data-id]', '0'); // Changes
+}
+
+async function fetchData() {
   try {
-    data.value = await getArticleParsedContent(props.articleId);
+    const updatedData = await getArticleParsedContent(props.articleId);
+    if (data.value !== updatedData) {
+      data.value = updatedData;
+      await nextTick();
+      handleTabIndexes();
+    }
   } catch (error) {
     console.error(error);
   } finally {
     // Call fetchData again after the request completes to implement long polling
     setTimeout(() => fetchData(), 1000);
   }
-};
-
-const data = ref('');
+}
 
 onMounted(fetchData);
-
-function handleClick(event: MouseEvent) {
-  //Prevent visting links:
-  event.preventDefault();
-  let target = event.target as HTMLElement;
-  let ancestry = 0;
-  while (target && !target.getAttribute('data-id')) {
-    target = target.parentElement!;
-    ancestry++;
-  }
-  if (target) {
-    store.selectedChangeId = target.getAttribute('data-id') as string;
-  }
-}
 
 watch(
   () => store.hoveredChangeId,
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
-      const element = document
-        .querySelector('.ve-ui-diffElement-document')!
-        .querySelector('[data-id="' + hoveredChangeId + '"]');
+      const element = document.querySelector(
+        '.ve-ui-diffElement-document [data-id="' + hoveredChangeId + '"]'
+      );
       if (element) {
         element.scrollIntoView({
           behavior: 'smooth',

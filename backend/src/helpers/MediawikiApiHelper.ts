@@ -1,5 +1,4 @@
 import axios from 'axios';
-import fs from 'fs';
 import https from 'https';
 import { chromium } from 'playwright';
 import logger from '../logger';
@@ -122,7 +121,6 @@ export async function importNewArticle(
   title: string,
   language = 'en'
 ): Promise<void> {
-  const filePath = `src/helpers/imports/${articleId}.xml`;
   // Export
   logger.info('Exporting file ', title);
   const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
@@ -145,17 +143,14 @@ export async function importNewArticle(
         '\n    <generator>',
         '</base>\n    <generator>'
       );
-      // Save file
-      fs.writeFileSync(filePath, exportData);
       logger.info(`Succesfuly exported file ${title}`);
-
       logger.info(`Importing into our instance file ${title}`);
       // Automate Login
       const usernameField = '#wpName1';
       const passwordField = '#wpPassword1';
       const loginButton = '#wpLoginAttempt';
 
-      const browser = await chromium.launch();
+      const browser = await chromium.launch({ headless: false });
       const context = await browser.newContext({
         ignoreHTTPSErrors: true
       });
@@ -174,20 +169,19 @@ export async function importNewArticle(
       const fileChooserButton = '#ooui-php-2';
       const textBoxInterwikiprefix = '#ooui-php-3';
 
-      const fileChooserPromise = page.waitForEvent('filechooser');
-      await page.click(fileChooserButton);
-      const fileChooser = await fileChooserPromise;
-      await fileChooser.setFiles(filePath);
+      await page.locator(fileChooserButton).setInputFiles([
+        {
+          name: `${articleId}.xml`,
+          mimeType: 'application/xml',
+          buffer: Buffer.from(exportData, 'utf-8')
+        }
+      ]);
 
       await page.fill(textBoxInterwikiprefix, ' ');
       await page.click(submitButton, { timeout: 5 * 60 * 1000 }); // 5 Minutes
       await page.waitForLoadState('networkidle');
       await browser.close();
       logger.info(`Succesfuly imported file ${title}`);
-
-      // Delete Export file
-      fs.unlinkSync(filePath);
-      logger.info(`Succesfuly deleted exported file ${title}`);
 
       // Login
       const csrftoken = await loginAndGetCsrf();

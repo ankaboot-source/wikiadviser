@@ -77,8 +77,9 @@ watch(
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
       const element = document.querySelector(
-        '.ve-ui-diffElement-document [data-id="' + hoveredChangeId + '"]'
+        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`
       );
+
       if (element) {
         element.scrollIntoView({
           behavior: 'smooth',

@@ -66,3 +66,8 @@ rewrite /robots.txt ./robots.txt # Disable search engine indexing
 ```sh
 docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build --force-recreate -d
 ```
+
+## Known proxy limitations
+
+- Exporting xml dump: missing `</base>` tag at line 5.
+- Searching articles: missing image's src URL host. example: ~~missing URL host~~/media/wikipedia/...

@@ -33,7 +33,7 @@
     wfLoadExtension( 'TemplateStyles' );
     wfLoadExtension( 'InputBox' );
     wfLoadExtension( 'TemplateData' );
-    wfLoadExtension( 'JsonConfig' );
+
     $wgUseInstantCommons = true;
 
     wfLoadExtension( 'Cite' );

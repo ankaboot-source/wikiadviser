@@ -70,4 +70,5 @@ docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build -
 ## Known proxy limitations
 
 - Exporting xml dump: missing `</base>` tag at line 5.
-- Searching articles: missing image's src URL host. example: ~~missing URL host~~/media/wikipedia/...
+- Searching articles: missing image's src URL host.
+  - Example: ~~missing URL proxy host~~/media/wikipedia/...

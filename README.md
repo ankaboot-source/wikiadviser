@@ -12,35 +12,36 @@
 
 - <details>
     <summary>Add these settings to add at the end of <code>LocalSettings.php</code></summary>
-  
-    ```
-      $wgDefaultSkin = "vector-2022";
-      
-      wfLoadExtension( 'MyVisualEditor' );
-      
-      $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
-      
-      // Templates & Modules:
-      // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
-      // https://www.mediawiki.org/wiki/Help:Templates
-      
-      wfLoadExtension( 'ParserFunctions' );
-      $wgPFEnableStringFunctions = true;
-      
-      wfLoadExtension( 'Scribunto' );
-      $wgScribuntoDefaultEngine = 'luastandalone';
-      
-      wfLoadExtension( 'TemplateStyles' );
-      wfLoadExtension( 'InputBox' );
-      wfLoadExtension( 'TemplateData' );
-      wfLoadExtension( 'JsonConfig' );
-      $wgUseInstantCommons = true;
-      
-      wfLoadExtension( 'Cite' );
-      wfLoadExtension( 'PageForms' );
+
   ```
-  
+    $wgDefaultSkin = "vector-2022";
+
+    wfLoadExtension( 'MyVisualEditor' );
+
+    $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
+
+    // Templates & Modules:
+    // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
+    // https://www.mediawiki.org/wiki/Help:Templates
+
+    wfLoadExtension( 'ParserFunctions' );
+    $wgPFEnableStringFunctions = true;
+
+    wfLoadExtension( 'Scribunto' );
+    $wgScribuntoDefaultEngine = 'luastandalone';
+
+    wfLoadExtension( 'TemplateStyles' );
+    wfLoadExtension( 'InputBox' );
+    wfLoadExtension( 'TemplateData' );
+    wfLoadExtension( 'JsonConfig' );
+    $wgUseInstantCommons = true;
+
+    wfLoadExtension( 'Cite' );
+    wfLoadExtension( 'PageForms' );
+  ```
+
   </details>
+
 - Import CSS/JS from source wiki.
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js

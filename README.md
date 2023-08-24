@@ -13,7 +13,7 @@
 - <details>
     <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
 
-  ```
+  ```php
     $wgDefaultSkin = "vector-2022";
 
     wfLoadExtension( 'MyVisualEditor' );

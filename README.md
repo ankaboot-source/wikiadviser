@@ -10,7 +10,41 @@
 
 ## Important changes to do with the mediawiki instance
 
-- Add `$wgDefaultRobotPolicy = 'noindex,nofollow';` at the end of `LocalSettings.php` to avoid indexing the wiki by search engines.
+- <details>
+    <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
+
+  ```php
+    $wgDefaultSkin = "vector-2022";
+
+    wfLoadExtension( 'MyVisualEditor' );
+
+    $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
+
+    /* Templates & Modules */
+    // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
+    // https://www.mediawiki.org/wiki/Help:Templates
+
+    wfLoadExtension( 'ParserFunctions' );
+    $wgPFEnableStringFunctions = true;
+
+    wfLoadExtension( 'Scribunto' );
+    $wgScribuntoDefaultEngine = 'luastandalone';
+
+    wfLoadExtension( 'TemplateStyles' );
+    wfLoadExtension( 'InputBox' );
+    wfLoadExtension( 'TemplateData' );
+
+    $wgUseInstantCommons = true;
+
+    wfLoadExtension( 'Cite' );
+    wfLoadExtension( 'PageForms' );
+  ```
+
+  </details>
+
+- Either manually create or Export/Import the CSS & JS from the source wiki
+  - https://en.wikipedia.org/wiki/MediaWiki:Common.css
+  - https://en.wikipedia.org/wiki/MediaWiki:Common.js
 - Add robots.txt to and configure Caddy to use it:
 
 ```txt
@@ -32,3 +66,9 @@ rewrite /robots.txt ./robots.txt # Disable search engine indexing
 ```sh
 docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build --force-recreate -d
 ```
+
+## Known proxy limitations
+
+- Exporting xml dump: missing `</base>` tag at line 5.
+- Searching articles: missing image's src URL host.
+  - Example: ~~missing URL proxy host~~/media/wikipedia/...

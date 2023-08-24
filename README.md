@@ -42,7 +42,7 @@
 
   </details>
 
-- Import CSS/JS from source wiki.
+- Either manually create or Export/Import the CSS & JS from the source wiki
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js
 - Add robots.txt to and configure Caddy to use it:

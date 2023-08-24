@@ -141,7 +141,7 @@
 
     <!-- User: Reviewer Only -->
     <q-item-section
-      v-if="reviewerPermission && !props.item.status"
+      v-if="reviewerPermission && !viewerPermission && !props.item.status"
       class="bg-accent"
     >
       <div class="row q-ma-md">

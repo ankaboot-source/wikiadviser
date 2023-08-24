@@ -20,7 +20,7 @@
 
     $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
 
-    // Templates & Modules:
+    /* Templates & Modules */
     // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
     // https://www.mediawiki.org/wiki/Help:Templates
 

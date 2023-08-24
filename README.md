@@ -11,7 +11,7 @@
 ## Important changes to do with the mediawiki instance
 
 - <details>
-    <summary>Add these settings to add at the end of <code>LocalSettings.php</code></summary>
+    <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
 
   ```
     $wgDefaultSkin = "vector-2022";

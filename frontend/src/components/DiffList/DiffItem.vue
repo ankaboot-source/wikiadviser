@@ -279,10 +279,10 @@ async function handleDescription() {
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeId == '') {
+    if (selectedChangeId === '') {
       return;
     }
-    expanded.value = selectedChangeId == props.item.id;
+    expanded.value = selectedChangeId === props.item.id;
     if (expanded.value) {
       scrollToItem(false);
       highlighted.value = true;

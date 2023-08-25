@@ -13,7 +13,7 @@
         outlined
         style="width: 40vw"
         debounce="700"
-        placeholder="Search wikipedia"
+        placeholder="Search Wikipedia"
         :loading="isSearching"
       >
         <template #append>

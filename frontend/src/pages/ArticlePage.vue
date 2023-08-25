@@ -16,8 +16,9 @@
         icon="link"
         color="primary"
         outline
+        label="Share link"
+        no-caps
         class="q-mr-xs"
-        label="share link"
         @click="copyValueToClipboard()"
       />
       <q-btn
@@ -25,7 +26,8 @@
         icon="o_group"
         color="primary"
         outline
-        label="share"
+        label="Share"
+        no-caps
         class="q-pr-lg"
         @click="share = !share"
       />

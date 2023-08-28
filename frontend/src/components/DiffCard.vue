@@ -1,9 +1,23 @@
 <template>
   <div class="column">
     <div class="text-h6 q-pb-sm">View Changes</div>
-    <q-scroll-area class="col-grow">
+    <q-scroll-area v-if="data" class="col-grow">
       <div class="q-mr-md" v-html="data" />
     </q-scroll-area>
+    <template v-else>
+      <div class="q-py-sm text-body1 text-weight-medium">
+        There are currently no changes
+      </div>
+      <div class="q-pb-sm text-body2">
+        Easily navigate through changes using the changes tab once the article
+        is edited.
+      </div>
+      <div v-if="editorPermission" class="q-pb-sm">
+        <router-link :to="{ name: 'article', params: { tab: 'editor' } }">
+          <q-btn no-caps unelevated color="primary" label="Edit your article" />
+        </router-link>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -15,11 +29,16 @@ import 'src/css/styles/ve.scss';
 import 'src/css/styles/diff.scss';
 import { getArticleParsedContent } from 'src/api/supabaseHelper';
 import { useSelectedChangeStore } from '../stores/selectedChange';
+import { UserRole } from 'src/types';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
+  role: UserRole;
   articleId: string;
 }>();
+const editorPermission =
+  props.role === UserRole.Editor || props.role === UserRole.Owner;
+
 const data = ref('');
 
 function setTabindexForElements(selector: string, tabindexValue: string) {

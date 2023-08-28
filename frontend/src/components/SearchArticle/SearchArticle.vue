@@ -13,7 +13,7 @@
         outlined
         style="width: 40vw"
         debounce="700"
-        placeholder="Search wikipedia"
+        placeholder="Search Wikipedia"
         :loading="isSearching"
       >
         <template #append>
@@ -43,12 +43,31 @@
         </template>
       </q-input>
     </q-card-section>
-    <q-scroll-area v-if="searchResults" class="col-grow q-pt-none q-pb-lg">
+    <q-scroll-area
+      v-if="searchResults?.length"
+      class="col-grow q-pt-none q-pb-lg"
+    >
       <search-list
         :search-results="searchResults"
         :article-language="articleLanguage.value"
       />
     </q-scroll-area>
+    <q-item
+      v-if="!searchResults?.length && term && !isSearching"
+      padding
+      class="app-search__result q-mx-md q-my-xs"
+    >
+      <q-item-section>
+        <div class="app-search__result-title text-center q-gutter-sm">
+          <q-icon name="search_off" size="lg" />
+
+          <div class="col">
+            <div class="doc-token">Could not find any results</div>
+            <div class="q-pl-sm">Try another term</div>
+          </div>
+        </div>
+      </q-item-section>
+    </q-item>
   </q-card>
 </template>
 <script setup lang="ts">

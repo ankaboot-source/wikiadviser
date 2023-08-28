@@ -16,16 +16,18 @@
         icon="link"
         color="primary"
         outline
+        label="Share link"
+        no-caps
         class="q-mr-xs"
-        label="share link"
-        @click="copyValueToClipboard()"
+        @click="copyShareLinkToClipboard()"
       />
       <q-btn
         v-if="role != UserRole.Viewer"
         icon="o_group"
         color="primary"
         outline
-        label="share"
+        label="Share"
+        no-caps
         class="q-pr-lg"
         @click="share = !share"
       />
@@ -51,6 +53,7 @@
           class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
         />
         <diff-card
+          :role="role"
           :article-id="articleId"
           class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
         />
@@ -72,13 +75,16 @@ import DiffList from 'src/components/DiffList/DiffList.vue';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
 import { Article, UserRole } from 'src/types';
-import { onBeforeMount, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onBeforeMount, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const $q = useQuasar();
 const route = useRoute();
+const router = useRouter();
 
-const tab = ref('');
+const { params } = route;
+const currentTabParam = ref(params.tab);
+
 const articleId = ref('');
 const share = ref(false);
 const editorPermission = ref(false);
@@ -87,10 +93,17 @@ const article = ref<Article>();
 const articles = ref<Article[] | null>([]);
 const users = ref();
 
+const isEditorTab = computed(
+  () => currentTabParam.value === 'editor' && editorPermission.value
+);
+const tabSelected = computed(() => (isEditorTab.value ? 'editor' : 'changes'));
+
+const tab = ref(tabSelected.value);
+
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
   // Access the article id parameter from the route's params object
-  articleId.value = route.params.articleId as string;
+  articleId.value = params.articleId as string;
   articles.value = await getArticles(data.session!.user.id);
 
   article.value = articles.value?.find((article: Article) => {
@@ -98,7 +111,12 @@ onBeforeMount(async () => {
   });
   if (!article.value) {
     // In case this article exists, a permission request will be sent to the Owner.
-    await createNewPermission(articleId.value, data.session!.user.id);
+    try {
+      await createNewPermission(articleId.value, data.session!.user.id);
+    } catch (error) {
+      // Article does not exist or Another error
+      router.push('404');
+    }
     // Get updated articles
     const articles = await getArticles(data.session!.user.id);
     if (articles) {
@@ -116,15 +134,33 @@ onBeforeMount(async () => {
     $q.localStorage.set('articles', JSON.stringify(articles));
   }
 
-  // Access the selected 'editor' tab if editorPermission else 'changes' tab
-  tab.value =
-    route.params.tab === 'editor' && editorPermission.value
-      ? 'editor'
-      : 'changes';
+  watch(
+    route,
+    (newRoute) => {
+      if (newRoute.params.tab !== currentTabParam.value) {
+        currentTabParam.value = newRoute.params.tab;
+        tab.value = tabSelected.value;
+      }
+    },
+    { immediate: true }
+  );
+
+  watch(
+    tab,
+    (newTab) => {
+      if (['changes', 'editor'].includes(newTab)) {
+        router.push({ params: { tab: newTab } });
+      }
+    },
+    { immediate: true }
+  );
 });
 
-async function copyValueToClipboard() {
-  await copyToClipboard(window.location.href);
+async function copyShareLinkToClipboard() {
+  await copyToClipboard(
+    `${window.location.origin}/articles/${route.params.articleId}`
+  );
+  console.log(route);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

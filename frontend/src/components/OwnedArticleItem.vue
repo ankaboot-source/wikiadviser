@@ -69,7 +69,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { QSpinnerGears, useQuasar } from 'quasar';
+import { QSpinnerGrid, useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
 import { deleteArticle, getArticles } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
@@ -94,11 +94,15 @@ function gotoArticle(articleId: string) {
 }
 async function removeArticle(articleId: string) {
   $q.loading.show({
-    boxClass: 'bg-secondary',
-    message: 'Deleting article. Please wait...',
-    messageColor: 'black',
-    spinner: QSpinnerGears,
+    backgroundColor: 'secondary',
+
+    spinner: QSpinnerGrid,
     spinnerColor: 'primary',
+    spinnerSize: 140,
+
+    message: "<div class='text-h6'>Deleting article. Please wait...</div>",
+    html: true,
+    messageColor: 'black',
   });
   try {
     await deleteArticle(articleId);

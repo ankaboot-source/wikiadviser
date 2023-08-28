@@ -20,7 +20,7 @@
 </template>
 
 <script setup lang="ts">
-import { QSpinnerGears, useQuasar } from 'quasar';
+import { QSpinnerGrid, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
 import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
@@ -53,12 +53,16 @@ async function itemOnClick() {
       });
     } else {
       $q.loading.show({
-        boxClass: 'bg-secondary ',
-        message:
-          'Extracting article out of Wikipedia and importing it into out platform. Please wait...',
-        messageColor: 'black',
-        spinner: QSpinnerGears,
+        backgroundColor: 'secondary',
+
+        spinner: QSpinnerGrid,
         spinnerColor: 'primary',
+        spinnerSize: 140,
+
+        message:
+          "<div class='text-h6'>Extracting article out of Wikipedia and importing it into our platform. Please wait...</div>",
+        html: true,
+        messageColor: 'black',
       });
       try {
         //NEW ARTICLE

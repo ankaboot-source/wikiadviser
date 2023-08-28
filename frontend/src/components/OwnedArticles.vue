@@ -17,7 +17,10 @@
         </template>
       </q-input>
     </q-card-section>
-    <q-scroll-area class="col-grow q-pt-none q-pb-lg">
+    <q-scroll-area
+      v-if="articlesFiltered?.length"
+      class="col-grow q-pt-none q-pb-lg"
+    >
       <q-list padding class="q-mx-md q-my-xs">
         <owned-article-item
           v-for="article in articlesFiltered"
@@ -27,6 +30,18 @@
         />
       </q-list>
     </q-scroll-area>
+    <q-item v-else padding class="app-search__result q-mx-md q-my-xs">
+      <q-item-section>
+        <div class="app-search__result-title text-center q-gutter-sm">
+          <q-icon name="search_off" size="lg" />
+
+          <div class="col">
+            <div class="doc-token">Could not find any results</div>
+            <div class="q-pl-sm">Try another term</div>
+          </div>
+        </div>
+      </q-item-section>
+    </q-item>
   </q-card>
 </template>
 <script setup lang="ts">

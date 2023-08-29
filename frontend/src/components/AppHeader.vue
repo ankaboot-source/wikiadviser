@@ -3,8 +3,8 @@
     <q-toolbar>
       <q-toolbar-title class="merriweather">
         <router-link to="/" class="text-black" style="text-decoration: none">
-          <q-icon name="public" /> WikiAdviser</router-link
-        >
+          <q-icon name="public" /> WikiAdviser
+        </router-link>
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="session" icon="person" :label="username" no-caps flat>

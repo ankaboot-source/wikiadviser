@@ -8,14 +8,10 @@
       indicator-color="primary"
       align="left"
     >
-      <q-btn
-        icon="keyboard_backspace"
-        dense
-        unelevated
-        outline
-        @click="router.go(-1)"
-      />
-      <div class="q-pl-sm merriweather text-h6">{{ article.title }}</div>
+      <q-tab name="editor" label="editor" />
+      <q-tab name="changes" label="changes" />
+      <q-space />
+      <span class="merriweather text-h6">{{ article.title }}</span>
       <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
@@ -40,18 +36,6 @@
       <q-dialog v-model="share">
         <share-card :article-id="articleId" :role="article.role" />
       </q-dialog>
-    </q-tabs>
-
-    <q-tabs
-      v-model="tab"
-      dense
-      class="q-px-md"
-      active-color="primary"
-      indicator-color="primary"
-      align="left"
-    >
-      <q-tab name="editor" label="editor" />
-      <q-tab name="changes" label="changes" />
     </q-tabs>
     <q-tab-panels v-model="tab" class="col">
       <q-tab-panel

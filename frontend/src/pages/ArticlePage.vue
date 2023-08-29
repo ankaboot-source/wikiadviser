@@ -3,13 +3,15 @@
     <q-tabs
       v-model="tab"
       dense
-      class="q-px-md"
+      class="q-px-md q-pt-sm"
       active-color="primary"
       indicator-color="primary"
       align="left"
     >
-      <q-tab v-if="editorPermission" name="editor" label="editor" />
+      <q-tab name="editor" label="editor" />
       <q-tab name="changes" label="changes" />
+      <q-space />
+      <span class="merriweather text-h6">{{ article.title }}</span>
       <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
@@ -43,10 +45,10 @@
       >
         <mw-visual-editor
           :article="article"
-          class="col-10 rounded-borders q-pa-md bg-secondary borders"
+          class="col-10 rounded-borders q-pa-md bg-secondary borders q-pt-sm"
         />
       </q-tab-panel>
-      <q-tab-panel name="changes" class="row justify-evenly">
+      <q-tab-panel name="changes" class="row justify-evenly q-pt-sm">
         <diff-list
           :role="role"
           :article-id="articleId"

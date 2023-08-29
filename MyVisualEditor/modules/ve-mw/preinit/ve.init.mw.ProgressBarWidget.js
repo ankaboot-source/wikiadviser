@@ -35,11 +35,9 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
   // Remove non editor distractions
   const editorContainer = document.querySelector(".mw-content-container");
   if (editorContainer) {
-	console.log(editorContainer);
 	const siblingsToRemove = Array.from(editorContainer.parentElement.children).filter(
 		(element) => element !== editorContainer
 	  );
-	console.log(siblingsToRemove);
 	siblingsToRemove.forEach((sibling) => sibling.remove());
   }
   /* End Custom WikiAdviser */

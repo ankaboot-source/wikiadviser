@@ -1,6 +1,6 @@
 <template>
   <q-layout view="hHh lpR fFf">
-    <app-header></app-header>
+    <app-header />
     <q-page-container>
       <q-page class="flex">
         <div class="column col">
@@ -19,7 +19,6 @@ import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 import { Session } from '@supabase/supabase-js';
 import { useMeta } from 'quasar';
-
 const session = ref<Session | null>();
 
 onMounted(async () => {

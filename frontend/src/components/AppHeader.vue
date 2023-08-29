@@ -5,6 +5,9 @@
         <router-link to="/" class="text-black" style="text-decoration: none">
           <q-icon name="public" /> WikiAdviser
         </router-link>
+        <span v-if="article?.title" class="merriweather text-h6">
+          / {{ article.title }}
+        </span>
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="session" icon="person" :label="username" no-caps flat>
@@ -22,13 +25,30 @@
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
+import { useRoute } from 'vue-router';
+import { Article } from 'src/types';
 
 const session = ref<Session | null>();
 const username = ref('');
 const $q = useQuasar();
+const article = ref<Article | null>();
+
+watch(useRoute(), async (to) => {
+  const articleId = to.params.articleId;
+  if (articleId) {
+    if (articleId != article.value?.article_id) {
+      const articles = JSON.parse($q.localStorage.getItem('articles') || '[]');
+      article.value = articles?._value?.find(
+        (article: Article) => article.article_id === articleId
+      );
+    }
+  } else {
+    article.value = null;
+  }
+});
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();

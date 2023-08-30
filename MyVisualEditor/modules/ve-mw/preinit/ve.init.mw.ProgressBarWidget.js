@@ -30,6 +30,17 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	// Stylesheets might not have processed yet, so manually set starting width to 0
 	this.$bar = $( '<div>' ).addClass( 've-init-mw-progressBarWidget-bar' ).css( 'width', 0 );
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
+
+  /* Custom WikiAdviser */
+  // Remove non editor distractions
+  const editorContainer = document.querySelector(".mw-content-container");
+  if (editorContainer) {
+	const siblingsToRemove = Array.from(editorContainer.parentElement.children).filter(
+		(element) => element !== editorContainer
+	  );
+	siblingsToRemove.forEach((sibling) => sibling.remove());
+  }
+  /* End Custom WikiAdviser */
 };
 
 mw.libs.ve.ProgressBarWidget.prototype.setLoadingProgress = function ( target, duration ) {

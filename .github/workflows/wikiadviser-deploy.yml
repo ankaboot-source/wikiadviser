@@ -93,6 +93,6 @@ jobs:
             fi
 
             cd $canasta_path; docker compose down
-            mv $folder_path/$visual_editor_folder_name $canasta_path/extensions/$visual_editor_folder_name
+            cp -rf $folder_path/$visual_editor_folder_name $canasta_path/extensions/$visual_editor_folder_name
 
             cd $canasta_path; docker compose up -d

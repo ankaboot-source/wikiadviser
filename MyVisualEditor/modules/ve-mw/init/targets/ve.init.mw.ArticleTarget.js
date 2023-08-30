@@ -1904,8 +1904,10 @@ ve.init.mw.ArticleTarget.prototype.showSaveDialog = function ( action, checkboxN
 	// Get the save dialog
 	this.getSurface().getDialogs().getWindow( 'mwSave' ).done( function ( win ) {
 		var windowAction = ve.ui.actionFactory.create( 'window', target.getSurface() );
-		//debugger;
+		/* Custom WikiAdviser */
+		// On 'Save Changes...' show the Review instead of the Describe changes window.
 		action = 'review';
+		/* End Custom WikiAdviser */
 
 		if ( !target.saveDialog ) {
 			target.saveDialog = win;

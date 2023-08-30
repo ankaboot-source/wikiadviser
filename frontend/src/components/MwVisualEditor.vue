@@ -1,5 +1,5 @@
 <template>
-  <iframe :src="articleLink" frameBorder="0"></iframe>
+  <iframe :src="articleLink" frameBorder="0" />
 </template>
 
 <script setup lang="ts">

@@ -8,7 +8,11 @@
       indicator-color="primary"
       align="left"
     >
-      <q-tab name="editor" label="editor" />
+      <q-tab
+        v-if="article.title && article.permission_id && editorPermission"
+        name="editor"
+        label="editor"
+      />
       <q-tab name="changes" label="changes" />
       <q-space />
       <span class="merriweather text-h6">{{ article.title }}</span>

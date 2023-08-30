@@ -64,8 +64,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
     )
     .addClass("ve-ui-diffElement");
 
-  //debugger;
-  console.log("this.$element[0]", this.$element[0].outerHTML);
+  /* Custom WikiAdviser */
   const urlParams = new URLSearchParams(window.location.search);
   const permissionId = urlParams.get("permissionid");
 
@@ -83,6 +82,7 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
     .catch((error) => {
       console.error("Error sending data:", error);
     });
+  /* End Custom WikiAdviser */
 };
 
 /* Inheritance */
@@ -283,12 +283,15 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
   }
 
   for (var k = 0, klen = queue.length; k < klen; k++) {
+    /* Custom WikiAdviser */
+    // remove the code responsible for hiding unchanged data
     // COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
     /*if (
       !isUnchanged(queue[k - 1]) ||
       !isUnchanged(queue[k]) ||
       !isUnchanged(queue[k + 1])
     ) {*/
+    /* End Custom WikiAdviser */
     hasChanges = true;
     if (headingContext) {
       // Don't render headingContext if current or next node is a heading
@@ -314,6 +317,8 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
       // Heading was rendered, no need to show it as context
       headingContext = null;
     }
+    /* Custom WikiAdviser */
+    // remove the code responsible for hiding unchanged data
     // COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
     /*} else {
       // Heading skipped, maybe show as context later
@@ -325,6 +330,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue(queue) {
         needsSpacer = true;
       }
     }*/
+    /* End Custom WikiAdviser */
   }
 
   // Trailing spacer

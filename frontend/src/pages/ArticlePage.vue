@@ -15,8 +15,6 @@
       />
       <q-tab name="changes" label="changes" />
       <q-space />
-      <span class="merriweather text-h6">{{ article.title }}</span>
-      <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
         icon="link"

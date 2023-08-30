@@ -36,11 +36,11 @@ const username = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 
-watch(useRoute(), async (to) => {
+watch(useRoute(), (to) => {
   const articleId = to.params.articleId;
   if (articleId) {
-    if (articleId != article.value?.article_id) {
-      const articles = JSON.parse($q.localStorage.getItem('articles') || '[]');
+    if (articleId !== article.value?.article_id) {
+      const articles = JSON.parse($q.localStorage.getItem('articles') ?? '[]');
       article.value = articles?._value?.find(
         (article: Article) => article.article_id === articleId
       );

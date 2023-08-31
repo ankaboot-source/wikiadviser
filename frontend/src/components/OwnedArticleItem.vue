@@ -30,15 +30,15 @@
           <q-dialog v-model="deleteArticleDialog">
             <q-card>
               <q-toolbar class="bg-white borders">
-                <q-toolbar-title class="merriweather"
-                  >Delete Article '{{ article.title }}'
+                <q-toolbar-title class="merriweather">
+                  Delete Article “{{ article.title }}”
                 </q-toolbar-title>
                 <q-btn v-close-popup flat round dense icon="close" size="sm" />
               </q-toolbar>
               <q-card-section>
-                Are you sure you want to delete the article '{{
+                Are you sure you want to delete the article “{{
                   article.title
-                }}' ?
+                }}” ?
               </q-card-section>
               <q-card-actions class="borders">
                 <q-space />

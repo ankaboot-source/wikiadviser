@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
-import { Article, User, Permission, UserRole } from 'src/types';
+import { Article, User, Permission, UserRole, ChangesItem } from 'src/types';
 import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
 
 export async function getUsers(articleId: string): Promise<User[]> {
@@ -135,7 +135,7 @@ export async function getArticleParsedContent(articleId: string) {
   return response.data.content;
 }
 
-export async function getChanges(articleId: string) {
+export async function getChanges(articleId: string): Promise<ChangesItem[]> {
   const response = await api.get('article/changes', {
     params: {
       articleId,

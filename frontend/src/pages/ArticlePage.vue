@@ -13,7 +13,7 @@
         name="editor"
         label="editor"
       />
-      <q-tab name="changes" label="changes" />
+      <q-tab name="changes" label="changes" :disable="!changesList.length" />
       <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
@@ -53,12 +53,11 @@
       <q-tab-panel name="changes" class="row justify-evenly q-pt-sm">
         <diff-list
           :role="role"
-          :article-id="articleId"
+          :changes-list="changesList"
           class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
         />
         <diff-card
-          :role="role"
-          :article-id="articleId"
+          :changes-content="changesContent"
           class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
         />
       </q-tab-panel>
@@ -71,15 +70,17 @@ import { copyToClipboard, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import {
   createNewPermission,
+  getArticleParsedContent,
   getArticles,
+  getChanges,
   getUsers,
 } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
-import { Article, UserRole } from 'src/types';
-import { computed, onBeforeMount, ref, watch } from 'vue';
+import { Article, ChangesItem, UserRole } from 'src/types';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const $q = useQuasar();
@@ -91,17 +92,15 @@ const currentTabParam = ref(params.tab);
 
 const articleId = ref('');
 const share = ref(false);
-const editorPermission = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
 const article = ref<Article>();
 const articles = ref<Article[] | null>([]);
 const users = ref();
-
+const editorPermission = ref(false);
 const isEditorTab = computed(
   () => currentTabParam.value === 'editor' && editorPermission.value
 );
 const tabSelected = computed(() => (isEditorTab.value ? 'editor' : 'changes'));
-
 const tab = ref(tabSelected.value);
 
 onBeforeMount(async () => {
@@ -158,6 +157,30 @@ onBeforeMount(async () => {
     },
     { immediate: true }
   );
+  fetchChanges();
+});
+
+const changesList = ref<ChangesItem[]>([]);
+const changesContent = ref('');
+
+const pollTimer = ref();
+async function fetchChanges() {
+  try {
+    const updatedChangesList = await getChanges(articleId.value);
+    if (changesList.value !== updatedChangesList) {
+      changesList.value = updatedChangesList;
+      changesContent.value = await getArticleParsedContent(articleId.value);
+    }
+  } catch (error) {
+    console.error(error);
+  } finally {
+    // Call fetchChanges again after the request completes to implement long polling
+    pollTimer.value = setTimeout(() => fetchChanges(), 2000);
+  }
+}
+
+onBeforeUnmount(() => {
+  clearTimeout(pollTimer.value);
 });
 
 async function copyShareLinkToClipboard() {

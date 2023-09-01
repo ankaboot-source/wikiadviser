@@ -102,6 +102,7 @@ const editorPermission = ref(false);
 const tab = ref();
 const changesList = ref<ChangesItem[]>([]);
 const changesContent = ref('');
+const pollTimer = ref();
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -138,7 +139,12 @@ onBeforeMount(async () => {
   }
 
   const currentTabParam = ref(params.tab);
+
   await fetchChanges();
+  // keep calling fetchChanges to implement long polling
+  pollTimer.value = setInterval(async () => {
+    await fetchChanges();
+  }, 2000);
 
   const tabSelected = computed(() => {
     if (currentTabParam.value === 'editor') {
@@ -194,7 +200,6 @@ onBeforeMount(async () => {
   );
 });
 
-const pollTimer = ref();
 async function fetchChanges() {
   try {
     const updatedChangesList = await getChanges(articleId.value);
@@ -206,14 +211,11 @@ async function fetchChanges() {
     }
   } catch (error) {
     console.error(error);
-  } finally {
-    // Call fetchChanges again after the request completes to implement long polling
-    pollTimer.value = setTimeout(() => fetchChanges(), 2000);
   }
 }
 
 onBeforeUnmount(() => {
-  clearTimeout(pollTimer.value);
+  clearInterval(pollTimer.value);
 });
 
 async function copyShareLinkToClipboard() {

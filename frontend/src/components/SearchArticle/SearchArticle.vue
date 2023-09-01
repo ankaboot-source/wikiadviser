@@ -1,8 +1,8 @@
 <template>
-  <q-card class="q-pa-sm column" flat>
-    <q-toolbar class="bg-white borders">
+  <q-card class="column fit" style="max-width: 60vw; max-height: 80vh" flat>
+    <q-toolbar class="borders">
       <q-toolbar-title class="merriweather">
-        Edit a new article
+        Create a new article
       </q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
@@ -65,7 +65,7 @@
       class="q-mx-md q-my-xs"
     >
       <div class="text-center q-gutter-sm">
-        <q-icon name="search_off" size="lg" />
+        <q-icon name="search_off" size="xl" />
 
         <div class="col">
           <div class="text-weight-bold">Could not find any results</div>

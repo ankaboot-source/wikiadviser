@@ -32,9 +32,9 @@
             <q-tooltip>Delete article</q-tooltip>
             <q-dialog v-model="deleteArticleDialog">
               <q-card>
-                <q-toolbar class="bg-white borders">
-                  <q-toolbar-title class="merriweather"
-                    >Delete Article '{{ article.title }}'
+                <q-toolbar class="borders">
+                  <q-toolbar-title class="merriweather">
+                    Delete Article '{{ article.title }}'
                   </q-toolbar-title>
                   <q-btn
                     v-close-popup

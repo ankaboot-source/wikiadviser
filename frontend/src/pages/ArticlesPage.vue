@@ -7,13 +7,14 @@
           <q-space />
           <q-btn
             icon="add"
+            no-caps
             unelevated
             color="primary"
-            no-caps
-            label="Add new article"
+            class="q-mt-md"
+            label="Create a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           >
-            <q-dialog v-model="showNewArticleDialog" maximized>
+            <q-dialog v-model="showNewArticleDialog">
               <search-article />
             </q-dialog>
           </q-btn>
@@ -25,7 +26,7 @@
             bg-color="white"
             dense
             outlined
-            style="width: 40vw"
+            style="width: 80vw"
             placeholder="Find your articles"
           >
             <template #append>
@@ -53,7 +54,7 @@
           class="q-mx-md q-my-xs"
         >
           <div class="text-center q-gutter-sm">
-            <q-icon name="search_off" size="lg" />
+            <q-icon name="search_off" size="xl" />
 
             <div class="col">
               <div class="text-weight-bold">Could not find any results</div>
@@ -61,10 +62,9 @@
                 Try another term or
                 <span
                   style="color: #0645ad; cursor: pointer"
-                  class="text-weight-medium"
                   @click="showNewArticleDialog = !showNewArticleDialog"
                 >
-                  add a new article
+                  create a new article
                 </span>
               </div>
             </div>
@@ -79,14 +79,14 @@
           <div class="text-body1 text-weight-medium">
             There are currently no articles
           </div>
-          <div class="text-body2">Edit a new article to get started</div>
+          <div class="text-body2">Create a new article to get started</div>
           <q-btn
             icon="add"
             no-caps
             unelevated
             color="primary"
             class="q-mt-md"
-            label="Edit a new article"
+            label="Create a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           />
         </q-card-section>

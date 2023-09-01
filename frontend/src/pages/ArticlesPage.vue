@@ -10,7 +10,6 @@
             no-caps
             unelevated
             color="primary"
-            class="q-mt-md"
             label="Create a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           >

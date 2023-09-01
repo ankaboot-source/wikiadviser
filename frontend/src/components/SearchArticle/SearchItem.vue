@@ -1,6 +1,6 @@
 <template>
   <q-item
-    class="q-pa-sm q-mt-sm borders rounded-borders text-blue-grey-14"
+    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
     clickable
     @click="itemOnClick"
   >

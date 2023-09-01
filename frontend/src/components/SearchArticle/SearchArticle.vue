@@ -1,17 +1,18 @@
 <template>
-  <q-card class="q-pa-sm column">
+  <q-card class="q-pa-sm column" flat>
+    <q-toolbar class="bg-white borders">
+      <q-toolbar-title class="merriweather">
+        Edit a new article
+      </q-toolbar-title>
+      <q-btn v-close-popup flat round dense icon="close" size="sm" />
+    </q-toolbar>
+
     <q-card-section>
-      <div class="text-h5 merriweather">
-        {{ title }}
-      </div>
-    </q-card-section>
-    <q-card-section class="q-pb-none">
       <q-input
         v-model="term"
         bg-color="white"
         dense
         outlined
-        style="width: 40vw"
         debounce="700"
         placeholder="Search Wikipedia"
         :loading="isSearching"
@@ -43,44 +44,48 @@
         </template>
       </q-input>
     </q-card-section>
+
     <q-scroll-area
       v-if="searchResults?.length"
       class="col-grow q-pt-none q-pb-lg"
     >
-      <search-list
-        :search-results="searchResults"
-        :article-language="articleLanguage.value"
-      />
+      <q-list class="q-mx-md">
+        <search-item
+          v-for="item in searchResults"
+          :key="item.title"
+          :item="item"
+          :article-language="articleLanguage.value"
+        />
+      </q-list>
     </q-scroll-area>
-    <q-item
+
+    <q-card-section
       v-if="!searchResults?.length && term && !isSearching"
       padding
       class="q-mx-md q-my-xs"
     >
-      <q-item-section>
-        <div class="text-center q-gutter-sm">
-          <q-icon name="search_off" size="lg" />
+      <div class="text-center q-gutter-sm">
+        <q-icon name="search_off" size="lg" />
 
-          <div class="col">
-            <div class="text-weight-bold">Could not find any results</div>
-            <div class="q-pl-sm">Try another term</div>
-          </div>
+        <div class="col">
+          <div class="text-weight-bold">Could not find any results</div>
+          <div class="q-pl-sm">Try another term</div>
         </div>
-      </q-item-section>
-    </q-item>
+      </div>
+    </q-card-section>
   </q-card>
 </template>
+
 <script setup lang="ts">
-import SearchList from './SearchList.vue';
-import { onBeforeMount, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
 import wikipediaLanguages from 'src/data/wikipediaLanguages';
+import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();
 const term = ref('');
-const title = ref('');
 const isSearching = ref(false);
 const searchResults = ref<SearchResult[]>();
 
@@ -127,11 +132,5 @@ watch(term, async (term) => {
   } finally {
     isSearching.value = false;
   }
-});
-
-onBeforeMount(() => {
-  title.value = $q.localStorage.getItem('articles')
-    ? 'Edit a new article'
-    : 'Edit your first article';
 });
 </script>

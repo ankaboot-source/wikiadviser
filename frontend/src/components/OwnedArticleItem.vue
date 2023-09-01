@@ -1,6 +1,6 @@
 <template>
   <q-item
-    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-14"
+    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
     clickable
     @click="gotoArticle(article.article_id)"
   >
@@ -28,41 +28,49 @@
             dense
             icon="delete"
             @click.stop="deleteArticleDialog = true"
-          />
-          <q-tooltip>Delete article</q-tooltip>
-          <q-dialog v-model="deleteArticleDialog">
-            <q-card>
-              <q-toolbar class="bg-white borders">
-                <q-toolbar-title class="merriweather"
-                  >Delete Article '{{ article.title }}'
-                </q-toolbar-title>
-                <q-btn v-close-popup flat round dense icon="close" size="sm" />
-              </q-toolbar>
-              <q-card-section>
-                Are you sure you want to delete the article '{{
-                  article.title
-                }}' ?
-              </q-card-section>
-              <q-card-actions class="borders">
-                <q-space />
-                <q-btn
-                  v-close-popup
-                  no-caps
-                  outline
-                  color="primary"
-                  label="Cancel"
-                />
-                <q-btn
-                  v-close-popup
-                  unelevated
-                  color="negative"
-                  no-caps
-                  label="Delete"
-                  @click="removeArticle(article.article_id)"
-                />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          >
+            <q-tooltip>Delete article</q-tooltip>
+            <q-dialog v-model="deleteArticleDialog">
+              <q-card>
+                <q-toolbar class="bg-white borders">
+                  <q-toolbar-title class="merriweather"
+                    >Delete Article '{{ article.title }}'
+                  </q-toolbar-title>
+                  <q-btn
+                    v-close-popup
+                    flat
+                    round
+                    dense
+                    icon="close"
+                    size="sm"
+                  />
+                </q-toolbar>
+                <q-card-section>
+                  Are you sure you want to delete the article '{{
+                    article.title
+                  }}' ?
+                </q-card-section>
+                <q-card-actions class="borders">
+                  <q-space />
+                  <q-btn
+                    v-close-popup
+                    no-caps
+                    outline
+                    color="primary"
+                    label="Cancel"
+                  />
+                  <q-btn
+                    v-close-popup
+                    unelevated
+                    color="negative"
+                    no-caps
+                    label="Delete"
+                    @click="removeArticle(article.article_id)"
+                  />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
+          </q-btn>
         </div>
       </div>
     </q-item-section>

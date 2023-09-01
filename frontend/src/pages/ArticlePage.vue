@@ -102,7 +102,7 @@ const editorPermission = ref(false);
 const tab = ref();
 const changesList = ref<ChangesItem[]>([]);
 const changesContent = ref('');
-const pollTimer = ref();
+let pollTimer: NodeJS.Timeout;
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -142,7 +142,7 @@ onBeforeMount(async () => {
 
   await fetchChanges();
   // keep calling fetchChanges to implement long polling
-  pollTimer.value = setInterval(async () => {
+  pollTimer = setInterval(async () => {
     await fetchChanges();
   }, 2000);
 
@@ -215,7 +215,7 @@ async function fetchChanges() {
 }
 
 onBeforeUnmount(() => {
-  clearInterval(pollTimer.value);
+  clearInterval(pollTimer);
 });
 
 async function copyShareLinkToClipboard() {

@@ -13,7 +13,11 @@
         name="editor"
         label="editor"
       />
-      <q-tab name="changes" label="changes" />
+      <q-tab name="changes" label="changes" :disable="!changesList.length">
+        <q-tooltip v-if="!changesList.length">
+          There are currently no changes.
+        </q-tooltip>
+      </q-tab>
       <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
@@ -53,12 +57,11 @@
       <q-tab-panel name="changes" class="row justify-evenly q-pt-sm">
         <diff-list
           :role="role"
-          :article-id="articleId"
+          :changes-list="changesList"
           class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
         />
         <diff-card
-          :role="role"
-          :article-id="articleId"
+          :changes-content="changesContent"
           class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
         />
       </q-tab-panel>
@@ -71,38 +74,35 @@ import { copyToClipboard, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import {
   createNewPermission,
+  getArticleParsedContent,
   getArticles,
+  getChanges,
   getUsers,
 } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
-import { Article, UserRole } from 'src/types';
-import { computed, onBeforeMount, ref, watch } from 'vue';
+import { Article, ChangesItem, UserRole } from 'src/types';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
-
 const { params } = route;
-const currentTabParam = ref(params.tab);
 
 const articleId = ref('');
 const share = ref(false);
-const editorPermission = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
 const article = ref<Article>();
 const articles = ref<Article[] | null>([]);
 const users = ref();
-
-const isEditorTab = computed(
-  () => currentTabParam.value === 'editor' && editorPermission.value
-);
-const tabSelected = computed(() => (isEditorTab.value ? 'editor' : 'changes'));
-
-const tab = ref(tabSelected.value);
+const editorPermission = ref(false);
+const tab = ref();
+const changesList = ref<ChangesItem[]>([]);
+const changesContent = ref('');
+let pollTimer: number;
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -138,10 +138,50 @@ onBeforeMount(async () => {
     $q.localStorage.set('articles', JSON.stringify(articles));
   }
 
+  const currentTabParam = ref(params.tab);
+
+  await fetchChanges();
+  // keep calling fetchChanges to implement long polling
+  pollTimer = window.setInterval(async () => {
+    await fetchChanges();
+  }, 2000);
+
+  const tabSelected = computed(() => {
+    if (currentTabParam.value === 'editor') {
+      if (editorPermission.value) {
+        // editorParam & editorPerm -> Editor
+        return 'editor';
+      }
+      // editorParam & !editorPerm -> Changes
+      return 'changes';
+    }
+
+    if (currentTabParam.value === 'changes') {
+      if (changesList.value.length) {
+        // changeParam & changeLength -> Changes
+        return 'changes';
+      }
+      if (editorPermission.value) {
+        // changeParam & !changeLength & editorPerm -> Editor
+        return 'editor';
+      }
+      // changeParam & !changeLength & !editorPerm -> Changes (Empty state)
+      return 'changes';
+    }
+
+    // !changeParam & !editorParam -> Changes (Default)
+    return 'changes';
+  });
+
+  tab.value = tabSelected.value;
+
   watch(
     route,
     (newRoute) => {
-      if (newRoute.params.tab !== currentTabParam.value) {
+      if (
+        newRoute.params.tab !== currentTabParam.value &&
+        ['changes', 'editor'].includes(newRoute.params.tab as string)
+      ) {
         currentTabParam.value = newRoute.params.tab;
         tab.value = tabSelected.value;
       }
@@ -160,11 +200,28 @@ onBeforeMount(async () => {
   );
 });
 
+async function fetchChanges() {
+  try {
+    const updatedChangesList = await getChanges(articleId.value);
+    if (
+      JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)
+    ) {
+      changesList.value = updatedChangesList;
+      changesContent.value = await getArticleParsedContent(articleId.value);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+onBeforeUnmount(() => {
+  clearInterval(pollTimer);
+});
+
 async function copyShareLinkToClipboard() {
   await copyToClipboard(
     `${window.location.origin}/articles/${route.params.articleId}`
   );
-  console.log(route);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

@@ -100,6 +100,8 @@ const articles = ref<Article[] | null>([]);
 const users = ref();
 const editorPermission = ref(false);
 const tab = ref();
+const changesList = ref<ChangesItem[]>([]);
+const changesContent = ref('');
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -191,9 +193,6 @@ onBeforeMount(async () => {
     { immediate: true }
   );
 });
-
-const changesList = ref<ChangesItem[]>([]);
-const changesContent = ref('');
 
 const pollTimer = ref();
 async function fetchChanges() {

@@ -34,10 +34,11 @@
         no-caps
         class="q-pr-lg"
         @click="share = !share"
-      />
-      <q-dialog v-model="share">
-        <share-card :article-id="articleId" :role="article.role" />
-      </q-dialog>
+      >
+        <q-dialog v-model="share">
+          <share-card :article-id="articleId" :role="article.role" />
+        </q-dialog>
+      </q-btn>
     </q-tabs>
     <q-tab-panels v-model="tab" class="col">
       <q-tab-panel

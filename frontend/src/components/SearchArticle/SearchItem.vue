@@ -1,7 +1,11 @@
 <template>
-  <q-item class="app-search__result" clickable @click="itemOnClick">
+  <q-item
+    class="q-pa-sm q-mt-sm borders rounded-borders text-blue-grey-14"
+    clickable
+    @click="itemOnClick"
+  >
     <q-item-section>
-      <div class="app-search__result-title row items-center q-gutter-sm">
+      <div class="row items-center q-gutter-sm">
         <div class="col-auto">
           <q-avatar rounded size="4rem" class="borders">
             <img v-if="!!props.item?.thumbnail" :src="props.item.thumbnail" />
@@ -9,8 +13,8 @@
           </q-avatar>
         </div>
         <div class="col">
-          <div class="doc-token">{{ props.item!.title }}</div>
-          <div v-if="props.item!.description" class="q-pl-sm">
+          <div class="text-weight-bold">{{ props.item!.title }}</div>
+          <div v-if="props.item!.description">
             {{ props.item!.description }}
           </div>
         </div>

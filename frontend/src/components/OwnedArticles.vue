@@ -1,16 +1,16 @@
 <template>
-  <q-card class="q-pa-sm bg-secondary column">
+  <q-card class="q-pa-sm column">
     <q-card-section>
       <div class="text-h5 merriweather">Articles</div>
     </q-card-section>
-    <q-card-section class="q-pb-none">
+    <q-card-section class="q-pb-none row">
       <q-input
         v-model="term"
         bg-color="white"
         dense
         outlined
         style="width: 40vw"
-        placeholder="Search your articles"
+        placeholder="Find your articles"
       >
         <template #append>
           <q-icon name="search" />
@@ -21,7 +21,7 @@
       v-if="articlesFiltered?.length"
       class="col-grow q-pt-none q-pb-lg"
     >
-      <q-list padding class="q-mx-md q-my-xs">
+      <q-list padding class="q-mx-md q-mb-xs">
         <owned-article-item
           v-for="article in articlesFiltered"
           :key="article.article_id"
@@ -30,13 +30,13 @@
         />
       </q-list>
     </q-scroll-area>
-    <q-item v-else padding class="app-search__result q-mx-md q-my-xs">
+    <q-item v-else padding class="q-mx-md q-my-xs">
       <q-item-section>
-        <div class="app-search__result-title text-center q-gutter-sm">
+        <div class="text-center q-gutter-sm">
           <q-icon name="search_off" size="lg" />
 
           <div class="col">
-            <div class="doc-token">Could not find any results</div>
+            <div class="text-weight-bold">Could not find any results</div>
             <div class="q-pl-sm">Try another term</div>
           </div>
         </div>

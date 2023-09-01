@@ -1,20 +1,22 @@
 <template>
   <q-item
-    class="app-search__result"
+    class="q-pa-sm q-mt-sm borders rounded-borders text-blue-grey-14"
     clickable
     @click="gotoArticle(article.article_id)"
   >
     <q-item-section>
-      <div class="app-search__result-title row items-center q-gutter-sm">
-        <div class="col">
-          <div class="doc-token">{{ article.title }}</div>
-          <div v-if="article.description" class="q-pl-sm">
+      <div class="row items-center q-gutter-sm">
+        <div class="col q-pl-sm">
+          <div class="text-weight-bold">
+            {{ article.title }}
+          </div>
+          <div v-if="article.description">
             {{ article.description }}
           </div>
           <q-badge
             text-color="light-blue-10"
             color="light-blue-1"
-            class="q-ml-sm q-mt-sm"
+            class="q-mt-sm"
             :label="UserRole[article.role]"
           />
         </div>
@@ -22,7 +24,8 @@
           <q-btn
             round
             flat
-            size="sm"
+            color="negative"
+            dense
             icon="delete"
             @click.stop="deleteArticleDialog = true"
           />

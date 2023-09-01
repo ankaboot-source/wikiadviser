@@ -1,5 +1,5 @@
 <template>
-  <q-card class="q-pa-sm bg-secondary column">
+  <q-card class="q-pa-sm column">
     <q-card-section>
       <div class="text-h5 merriweather">
         {{ title }}
@@ -55,14 +55,14 @@
     <q-item
       v-if="!searchResults?.length && term && !isSearching"
       padding
-      class="app-search__result q-mx-md q-my-xs"
+      class="q-mx-md q-my-xs"
     >
       <q-item-section>
-        <div class="app-search__result-title text-center q-gutter-sm">
+        <div class="text-center q-gutter-sm">
           <q-icon name="search_off" size="lg" />
 
           <div class="col">
-            <div class="doc-token">Could not find any results</div>
+            <div class="text-weight-bold">Could not find any results</div>
             <div class="q-pl-sm">Try another term</div>
           </div>
         </div>

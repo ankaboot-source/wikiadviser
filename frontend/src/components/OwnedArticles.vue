@@ -3,7 +3,8 @@
     <q-card-section>
       <div class="text-h5 merriweather">Articles</div>
     </q-card-section>
-    <q-card-section class="q-pb-none row">
+
+    <q-card-section class="row">
       <q-input
         v-model="term"
         bg-color="white"
@@ -16,12 +17,18 @@
           <q-icon name="search" />
         </template>
       </q-input>
+      <q-btn icon="add" outline color="primary">
+        <q-tooltip anchor="center right" self="center left">
+          Create a new article
+        </q-tooltip>
+      </q-btn>
     </q-card-section>
+
     <q-scroll-area
       v-if="articlesFiltered?.length"
       class="col-grow q-pt-none q-pb-lg"
     >
-      <q-list padding class="q-mx-md q-mb-xs">
+      <q-list padding class="q-mx-md">
         <owned-article-item
           v-for="article in articlesFiltered"
           :key="article.article_id"
@@ -30,7 +37,12 @@
         />
       </q-list>
     </q-scroll-area>
-    <q-item v-else padding class="q-mx-md q-my-xs">
+
+    <q-item
+      v-if="!articlesFiltered?.length && !articles?.length"
+      padding
+      class="q-mx-md q-my-xs"
+    >
       <q-item-section>
         <div class="text-center q-gutter-sm">
           <q-icon name="search_off" size="lg" />
@@ -40,6 +52,25 @@
             <div class="q-pl-sm">Try another term</div>
           </div>
         </div>
+      </q-item-section>
+    </q-item>
+
+    <q-item v-if="!articlesFiltered?.length && articles?.length" padding>
+      <q-item-section>
+        <div class="text-body1 text-weight-medium">
+          There are currently no changes
+        </div>
+        <div class="text-body2">
+          Easily navigate through changes using the changes tab once the article
+          is edited.
+        </div>
+        <q-btn
+          no-caps
+          unelevated
+          color="primary"
+          class="q-mt-md"
+          label="Edit a new article"
+        />
       </q-item-section>
     </q-item>
   </q-card>

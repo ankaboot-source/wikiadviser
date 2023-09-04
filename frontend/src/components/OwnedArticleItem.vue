@@ -34,7 +34,7 @@
               <q-card>
                 <q-toolbar class="borders">
                   <q-toolbar-title class="merriweather">
-                    Delete Article '{{ article.title }}'
+                    Delete Article “{{ article.title }}”
                   </q-toolbar-title>
                   <q-btn
                     v-close-popup
@@ -46,9 +46,9 @@
                   />
                 </q-toolbar>
                 <q-card-section>
-                  Are you sure you want to delete the article '{{
+                  Are you sure you want to delete the article “{{
                     article.title
-                  }}' ?
+                  }}” and permanently lose all of your changes?
                 </q-card-section>
                 <q-card-actions class="borders">
                   <q-space />

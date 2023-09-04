@@ -34,8 +34,7 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
   /* Custom WikiAdviser */
   // Remove non editor distractions
   document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});
-  document.querySelector('.mw-page-container-inner').classList.remove('mw-page-container-inner');
-  document.querySelector('.mw-content-container').classList.remove('mw-content-container');
+  document.querySelectorAll('.mw-page-container-inner, .mw-content-container').forEach((element) => {element.removeAttribute('class')});
   /* End Custom WikiAdviser */
 };
 

@@ -33,13 +33,8 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 
   /* Custom WikiAdviser */
   // Remove non editor distractions
-  const editorContainer = document.querySelector(".mw-content-container");
-  if (editorContainer) {
-	const siblingsToRemove = Array.from(editorContainer.parentElement.children).filter(
-		(element) => element !== editorContainer
-	  );
-	siblingsToRemove.forEach((sibling) => sibling.remove());
-  }
+  document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});
+  document.querySelectorAll('.mw-page-container-inner, .mw-content-container').forEach((element) => {element.removeAttribute('class')});
   /* End Custom WikiAdviser */
 };
 

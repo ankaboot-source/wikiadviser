@@ -126,12 +126,21 @@ async function removeArticle(articleId: string) {
     const articles = await getArticles(data.session!.user.id);
     $q.localStorage.set('articles', JSON.stringify(articles));
     emit('updateArticlesEmit');
-  } catch (error: any) {
+  } catch (error) {
     $q.loading.hide();
-    $q.notify({
-      message: error.message,
-      color: 'negative',
-    });
+    if (error instanceof Error) {
+      console.error(error.message);
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    } else {
+      console.error(error);
+      $q.notify({
+        message: 'Whoops, something went wrong while deleting article',
+        color: 'negative',
+      });
+    }
   }
 }
 </script>

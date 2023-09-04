@@ -108,11 +108,21 @@ async function handlePermissionChange() {
         color: 'positive',
       });
       permissionsToDelete.value = [];
-    } catch (error: any) {
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
+    } catch (error) {
+      $q.loading.hide();
+      if (error instanceof Error) {
+        console.error(error.message);
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      } else {
+        console.error(error);
+        $q.notify({
+          message: 'Whoops, something went wrong while changing permissions',
+          color: 'negative',
+        });
+      }
     }
   }
   if (permissionsToUpdate.value.length) {
@@ -125,11 +135,21 @@ async function handlePermissionChange() {
       });
       users.value = await getUsers(props.articleId);
       permissionsToUpdate.value = [];
-    } catch (error: any) {
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
+    } catch (error) {
+      $q.loading.hide();
+      if (error instanceof Error) {
+        console.error(error.message);
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      } else {
+        console.error(error);
+        $q.notify({
+          message: 'Whoops, something went wrong while changing permissions',
+          color: 'negative',
+        });
+      }
     }
   }
 }

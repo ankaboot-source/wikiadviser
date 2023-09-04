@@ -78,7 +78,9 @@
               color="green"
               class="full-width"
               @click="showSignUpDialog = !showSignUpDialog"
-            ></q-btn>
+            >
+              <q-dialog v-model="showSignUpDialog"> <signup-card /></q-dialog>
+            </q-btn>
             <q-btn
               unelevated
               label="Forgot password?"
@@ -91,7 +93,6 @@
         </q-card-section>
       </q-card>
     </q-form>
-    <q-dialog v-model="showSignUpDialog"> <signup-card /></q-dialog>
   </q-page>
 </template>
 

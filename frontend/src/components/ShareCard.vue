@@ -55,7 +55,7 @@ const props = defineProps<{
 }>();
 const users = ref<User[]>();
 
-const ownerPermission = props.role == UserRole.Owner;
+const ownerPermission = props.role === UserRole.Owner;
 
 onMounted(async () => {
   users.value = await getUsers(props.articleId);
@@ -71,7 +71,7 @@ const permissionsToUpdate = ref<Permission[]>([]);
 const permissionsToDelete = ref<string[]>([]);
 
 const onPermissionChange = (permission: EmittedPermission) => {
-  const { permissionId, role, duplicate, remove } = permission;
+  const { permissionId, duplicate, remove } = permission;
 
   if (remove) {
     permissionsToDelete.value?.push(permissionId);
@@ -108,11 +108,21 @@ async function handlePermissionChange() {
         color: 'positive',
       });
       permissionsToDelete.value = [];
-    } catch (error: any) {
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
+    } catch (error) {
+      $q.loading.hide();
+      if (error instanceof Error) {
+        console.error(error.message);
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      } else {
+        console.error(error);
+        $q.notify({
+          message: 'Whoops, something went wrong while changing permissions',
+          color: 'negative',
+        });
+      }
     }
   }
   if (permissionsToUpdate.value.length) {
@@ -125,11 +135,21 @@ async function handlePermissionChange() {
       });
       users.value = await getUsers(props.articleId);
       permissionsToUpdate.value = [];
-    } catch (error: any) {
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
+    } catch (error) {
+      $q.loading.hide();
+      if (error instanceof Error) {
+        console.error(error.message);
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      } else {
+        console.error(error);
+        $q.notify({
+          message: 'Whoops, something went wrong while changing permissions',
+          color: 'negative',
+        });
+      }
     }
   }
 }

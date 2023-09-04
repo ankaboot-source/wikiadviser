@@ -1,20 +1,22 @@
 <template>
   <q-item
-    class="app-search__result"
+    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
     clickable
     @click="gotoArticle(article.article_id)"
   >
     <q-item-section>
-      <div class="app-search__result-title row items-center q-gutter-sm">
-        <div class="col">
-          <div class="doc-token">{{ article.title }}</div>
-          <div v-if="article.description" class="q-pl-sm">
+      <div class="row items-center q-gutter-sm">
+        <div class="col q-pl-sm">
+          <div class="text-weight-bold">
+            {{ article.title }}
+          </div>
+          <div v-if="article.description">
             {{ article.description }}
           </div>
           <q-badge
             text-color="light-blue-10"
             color="light-blue-1"
-            class="q-ml-sm q-mt-sm"
+            class="q-mt-sm"
             :label="UserRole[article.role]"
           />
         </div>
@@ -22,44 +24,52 @@
           <q-btn
             round
             flat
-            size="sm"
+            color="negative"
+            dense
             icon="delete"
             @click.stop="deleteArticleDialog = true"
-          />
-          <q-tooltip>Delete article</q-tooltip>
-          <q-dialog v-model="deleteArticleDialog">
-            <q-card>
-              <q-toolbar class="bg-white borders">
-                <q-toolbar-title class="merriweather">
-                  Delete Article “{{ article.title }}”
-                </q-toolbar-title>
-                <q-btn v-close-popup flat round dense icon="close" size="sm" />
-              </q-toolbar>
-              <q-card-section>
-                Are you sure you want to delete the article “{{
-                  article.title
-                }}” ?
-              </q-card-section>
-              <q-card-actions class="borders">
-                <q-space />
-                <q-btn
-                  v-close-popup
-                  no-caps
-                  outline
-                  color="primary"
-                  label="Cancel"
-                />
-                <q-btn
-                  v-close-popup
-                  unelevated
-                  color="negative"
-                  no-caps
-                  label="Delete"
-                  @click="removeArticle(article.article_id)"
-                />
-              </q-card-actions>
-            </q-card>
-          </q-dialog>
+          >
+            <q-tooltip>Delete article</q-tooltip>
+            <q-dialog v-model="deleteArticleDialog">
+              <q-card>
+                <q-toolbar class="borders">
+                  <q-toolbar-title class="merriweather">
+                    Delete Article “{{ article.title }}”
+                  </q-toolbar-title>
+                  <q-btn
+                    v-close-popup
+                    flat
+                    round
+                    dense
+                    icon="close"
+                    size="sm"
+                  />
+                </q-toolbar>
+                <q-card-section>
+                  Are you sure you want to delete “{{ article.title }}” and
+                  permanently lose all of your changes?
+                </q-card-section>
+                <q-card-actions class="borders">
+                  <q-space />
+                  <q-btn
+                    v-close-popup
+                    no-caps
+                    outline
+                    color="primary"
+                    label="Cancel"
+                  />
+                  <q-btn
+                    v-close-popup
+                    unelevated
+                    color="negative"
+                    no-caps
+                    label="Delete"
+                    @click="removeArticle(article.article_id)"
+                  />
+                </q-card-actions>
+              </q-card>
+            </q-dialog>
+          </q-btn>
         </div>
       </div>
     </q-item-section>
@@ -116,12 +126,21 @@ async function removeArticle(articleId: string) {
     const articles = await getArticles(data.session!.user.id);
     $q.localStorage.set('articles', JSON.stringify(articles));
     emit('updateArticlesEmit');
-  } catch (error: any) {
+  } catch (error) {
     $q.loading.hide();
-    $q.notify({
-      message: error.message,
-      color: 'negative',
-    });
+    if (error instanceof Error) {
+      console.error(error.message);
+      $q.notify({
+        message: error.message,
+        color: 'negative',
+      });
+    } else {
+      console.error(error);
+      $q.notify({
+        message: 'Whoops, something went wrong while deleting article',
+        color: 'negative',
+      });
+    }
   }
 }
 </script>

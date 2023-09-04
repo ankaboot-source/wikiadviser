@@ -10,7 +10,7 @@
             no-caps
             unelevated
             color="primary"
-            label="Create a new article"
+            label="Add a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           >
             <q-dialog v-model="showNewArticleDialog">
@@ -63,7 +63,7 @@
                   style="color: #0645ad; cursor: pointer"
                   @click="showNewArticleDialog = !showNewArticleDialog"
                 >
-                  create a new article
+                  add a new article
                 </span>
               </div>
             </div>
@@ -78,14 +78,14 @@
           <div class="text-body1 text-weight-medium">
             There are currently no articles
           </div>
-          <div class="text-body2">Create a new article to get started</div>
+          <div class="text-body2">Add a new article to get started</div>
           <q-btn
             icon="add"
             no-caps
             unelevated
             color="primary"
             class="q-mt-md"
-            label="Create a new article"
+            label="Add a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           />
         </q-card-section>

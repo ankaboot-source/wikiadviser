@@ -2,7 +2,7 @@
   <q-card class="column fit" style="max-width: 60vw; max-height: 80vh" flat>
     <q-toolbar class="borders">
       <q-toolbar-title class="merriweather">
-        Create a new article
+        Add a new article
       </q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>

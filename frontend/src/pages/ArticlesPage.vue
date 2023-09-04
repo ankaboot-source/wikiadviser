@@ -1,8 +1,8 @@
 <template>
   <div class="col q-panel q-py-lg">
     <div class="row justify-center">
-      <q-card class="q-pa-sm column" flat>
-        <q-card-section class="row">
+      <q-card class="q-pa-sm column" flat style="width: 80vw">
+        <q-card-section v-if="articles?.length" class="row">
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
           <q-btn
@@ -12,20 +12,16 @@
             color="primary"
             label="Add a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
-          >
-            <q-dialog v-model="showNewArticleDialog">
-              <search-article />
-            </q-dialog>
-          </q-btn>
+          />
         </q-card-section>
 
         <q-card-section>
           <q-input
+            v-if="articles?.length"
             v-model="term"
             bg-color="white"
             dense
             outlined
-            style="width: 80vw"
             placeholder="Find your articles"
           >
             <template #append>
@@ -70,21 +66,24 @@
           </div>
         </q-card-section>
 
-        <q-card-section
-          v-if="!articlesFiltered?.length && !articles?.length"
-          class="text-center"
-          padding
-        >
-          <div class="text-body1 text-weight-medium">
-            There are currently no articles
+        <q-card-section v-if="!articles?.length" class="text-center" padding>
+          <q-img
+            src="src/assets/images/Empty_State_Image.svg"
+            spinner-color="white"
+            alt="Empty state image"
+            height="17vh"
+            fit="contain"
+            class="q-mb-lg"
+          />
+          <div class="text-h6">There are currently no articles</div>
+          <div class="text-body2 q-mt-md q-mb-lg">
+            Add a new article to get started
           </div>
-          <div class="text-body2">Add a new article to get started</div>
           <q-btn
             icon="add"
             no-caps
             unelevated
             color="primary"
-            class="q-mt-md"
             label="Add a new article"
             @click="showNewArticleDialog = !showNewArticleDialog"
           />
@@ -92,6 +91,9 @@
       </q-card>
     </div>
   </div>
+  <q-dialog v-model="showNewArticleDialog">
+    <search-article />
+  </q-dialog>
 </template>
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';

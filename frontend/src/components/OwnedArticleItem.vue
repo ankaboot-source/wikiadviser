@@ -46,9 +46,8 @@
                   />
                 </q-toolbar>
                 <q-card-section>
-                  Are you sure you want to delete the article “{{
-                    article.title
-                  }}” and permanently lose all of your changes?
+                  Are you sure you want to delete “{{ article.title }}” and
+                  permanently lose all of your changes?
                 </q-card-section>
                 <q-card-actions class="borders">
                   <q-space />

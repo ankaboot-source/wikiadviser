@@ -68,7 +68,7 @@
 
         <q-card-section v-if="!articles?.length" class="text-center" padding>
           <q-img
-            src="src/assets/images/Empty_State_Image.svg"
+            src="images/Empty_State_Image.svg"
             spinner-color="white"
             alt="Empty state image"
             height="17vh"

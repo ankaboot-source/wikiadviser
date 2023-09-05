@@ -12,6 +12,8 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
   }
 
+  private static searchResultsLimit = 10;
+
   async getWikipediaArticles(term: string, language = 'en') {
     const response = await this.api.get('', {
       params: {
@@ -22,10 +24,10 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         ppprop: 'displaytitle',
         piprop: 'thumbnail',
         pithumbsize: 60,
-        pilimit: 6,
+        pilimit: WikipediaApiInteractor.searchResultsLimit,
         gpssearch: term,
         gpsnamespace: 0,
-        gpslimit: 6,
+        gpslimit: WikipediaApiInteractor.searchResultsLimit,
         origin: '*',
         lang: language
       }

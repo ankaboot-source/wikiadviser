@@ -64,7 +64,7 @@
                     color="negative"
                     no-caps
                     label="Delete"
-                    @click="removeArticle(article.article_id)"
+                    @click="removeArticle(article.article_id, article.title)"
                   />
                 </q-card-actions>
               </q-card>
@@ -102,17 +102,18 @@ function gotoArticle(articleId: string) {
     },
   });
 }
-async function removeArticle(articleId: string) {
+async function removeArticle(articleId: string, articleTitle: string) {
   $q.loading.show({
-    backgroundColor: 'secondary',
+    boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
 
     spinner: QSpinnerGrid,
     spinnerColor: 'primary',
     spinnerSize: 140,
 
-    message: "<div class='text-h6'>Deleting article. Please wait...</div>",
+    message: `
+        <div class='text-h6'> Deleting “${articleTitle}”  </div></br>
+        <div class='text-body1'>Please wait..</div>`,
     html: true,
-    messageColor: 'black',
   });
   try {
     await deleteArticle(articleId);

@@ -57,16 +57,16 @@ async function itemOnClick() {
       });
     } else {
       $q.loading.show({
-        backgroundColor: 'secondary',
+        boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
 
         spinner: QSpinnerGrid,
         spinnerColor: 'primary',
         spinnerSize: 140,
 
-        message:
-          "<div class='text-h6'>Extracting article out of Wikipedia and importing it into our platform. Please wait...</div>",
+        message: `
+        <div class='text-h6'> Importing “${props.item.title}” from Wikipedia. </div></br>
+        <div class='text-body1'>Please wait..</div>`,
         html: true,
-        messageColor: 'black',
       });
       try {
         //NEW ARTICLE

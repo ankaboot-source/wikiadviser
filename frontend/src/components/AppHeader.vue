@@ -1,13 +1,24 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title class="merriweather">
-        <router-link to="/" class="text-black" style="text-decoration: none">
-          <q-icon name="public" /> WikiAdviser
-        </router-link>
-        <span v-if="article?.title" class="merriweather text-h6">
-          / {{ article.title }}
-        </span>
+      <q-toolbar-title>
+        <q-breadcrumbs class="merriweather">
+          <q-breadcrumbs-el
+            label="WikiAdviser"
+            class="text-black"
+            style="text-decoration: none"
+            icon="public"
+            to="/"
+          />
+          <q-breadcrumbs-el
+            v-if="article?.title"
+            :label="article.title"
+            class="text-black"
+            style="text-decoration: none"
+            to="."
+            @click="$router.go(0)"
+          />
+        </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
       <q-btn-dropdown

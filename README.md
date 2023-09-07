@@ -43,7 +43,7 @@
     // https://www.mediawiki.org/wiki/Manual:Performance_tuning
     // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
 
-    // PHP cache & lifetime (2 years)
+    // Cache & Lifetime (2 years)
     $wgMainCacheType = CACHE_ACCEL;
     $wgMessageCacheType = CACHE_ACCEL;
     $wgParserCacheType = CACHE_DB;

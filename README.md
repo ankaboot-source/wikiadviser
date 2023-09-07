@@ -38,6 +38,22 @@
 
     wfLoadExtension( 'Cite' );
     wfLoadExtension( 'PageForms' );
+
+    /* Mediawiki Performance tuning */
+    // https://www.mediawiki.org/wiki/Manual:Performance_tuning
+    // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
+
+    // PHP cache & lifetime
+    $wgMainCacheType = CACHE_ACCEL;
+    $wgMessageCacheType = CACHE_ACCEL;
+    $wgParserCacheType = CACHE_DB;
+
+    $wgParserCacheExpireTime = 63072000;
+    $wgRevisionCacheExpiry = 63072000;
+    $wgResourceLoaderMaxage = [
+      'versioned' => 63072000,
+      'unversioned' => 63072000
+    ];
   ```
 
   </details>

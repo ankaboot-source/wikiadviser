@@ -22,7 +22,7 @@ import { nextTick, watch } from 'vue';
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
 import 'src/css/styles/diff.scss';
-import { useSelectedChangeStore } from '../stores/selectedChange';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{

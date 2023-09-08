@@ -45,20 +45,21 @@ import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useResetStore } from 'src/stores/useResetStore';
 
 const session = ref<Session | null>();
 const username = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
+const articlesStore = useArticlesStore();
+const resetStore = useResetStore();
 
 watch(useRoute(), (to) => {
   const articleId = to.params.articleId;
   if (articleId) {
     if (articleId !== article.value?.article_id) {
-      const articles = JSON.parse($q.localStorage.getItem('articles') ?? '[]');
-      article.value = articles?._value?.find(
-        (article: Article) => article.article_id === articleId
-      );
+      article.value = articlesStore.getArticleById(articleId as string);
     }
   } else {
     article.value = null;
@@ -77,7 +78,7 @@ onMounted(async () => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    $q.localStorage.clear();
+    resetStore.all();
 
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

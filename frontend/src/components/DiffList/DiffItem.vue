@@ -182,7 +182,7 @@ import { ChangesItem, UserRole } from 'src/types';
 import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
-import { useSelectedChangeStore } from '../../stores/selectedChange';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{

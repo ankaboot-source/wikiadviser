@@ -40,27 +40,24 @@
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useResetStore } from 'src/stores/useResetStore';
 
 const session = ref<Session | null>();
 const username = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
-const resetStore = useResetStore();
+const articles = computed(() => articlesStore.articles);
 
-watch(useRoute(), (to) => {
-  const articleId = to.params.articleId;
-  if (articleId) {
-    if (articleId !== article.value?.article_id) {
-      article.value = articlesStore.getArticleById(articleId as string);
-    }
+watch([useRoute(), articles], ([newRoute]) => {
+  const articleId = newRoute.params?.articleId;
+  if (newRoute.params?.articleId) {
+    article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
   }
@@ -78,8 +75,7 @@ onMounted(async () => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    resetStore.all();
-
+    articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;
   } catch (error) {

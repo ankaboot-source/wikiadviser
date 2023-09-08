@@ -1,22 +1,32 @@
 import { defineStore } from 'pinia';
 import { getArticles } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
+import { computed } from 'vue';
+import { ref } from 'vue';
 
-export const useArticlesStore = defineStore('articles', {
-  state: () => ({
-    articles: [] as Article[],
-  }),
-  actions: {
-    setArticles(articles: Article[]) {
-      this.articles = articles;
-    },
-    async fetchArticles(userId: string) {
-      const articles = await getArticles(userId);
-      this.setArticles(articles);
-    },
-  },
-  getters: {
-    getArticleById: (state) => (articleId: string) =>
-      state.articles.find((article) => article.article_id === articleId),
-  },
+export const useArticlesStore = defineStore('articles', () => {
+  // States
+  const articles = ref<Article[]>([]);
+
+  // Getters
+  const getArticleById = computed(
+    () => (articleId: string) =>
+      articles.value.find((article) => article.article_id === articleId)
+  );
+
+  // Actions
+  async function fetchArticles(userId: string) {
+    articles.value = await getArticles(userId);
+  }
+
+  function resetArticles() {
+    articles.value = [];
+  }
+
+  return {
+    articles,
+    fetchArticles,
+    getArticleById,
+    resetArticles,
+  };
 });

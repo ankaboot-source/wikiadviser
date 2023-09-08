@@ -3,18 +3,10 @@
     <q-toolbar>
       <q-toolbar-title>
         <q-breadcrumbs class="merriweather">
-          <q-breadcrumbs-el
-            label="WikiAdviser"
-            class="text-black"
-            style="text-decoration: none"
-            icon="public"
-            to="/"
-          />
+          <q-breadcrumbs-el label="WikiAdviser" icon="public" to="/" />
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
-            class="text-black"
-            style="text-decoration: none"
             to="."
             @click="$router.go(0)"
           />
@@ -83,3 +75,10 @@ async function signOut() {
   }
 }
 </script>
+
+<style>
+.q-breadcrumbs__el {
+  text-decoration: none !important;
+  color: black !important;
+}
+</style>

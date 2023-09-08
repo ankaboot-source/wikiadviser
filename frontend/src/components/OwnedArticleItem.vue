@@ -81,18 +81,18 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
-import { deleteArticle, getArticles } from 'src/api/supabaseHelper';
+import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 defineProps<{
   article: Article;
 }>();
 
-const emit = defineEmits(['updateArticlesEmit']);
-
 const $q = useQuasar();
 const router = useRouter();
 const deleteArticleDialog = ref(false);
+const articlesStore = useArticlesStore();
 
 function gotoArticle(articleId: string) {
   router.push({
@@ -124,9 +124,7 @@ async function removeArticle(articleId: string, articleTitle: string) {
       color: 'positive',
     });
     const { data } = await supabase.auth.getSession();
-    const articles = await getArticles(data.session!.user.id);
-    $q.localStorage.set('articles', JSON.stringify(articles));
-    emit('updateArticlesEmit');
+    await articlesStore.fetchArticles(data.session!.user.id);
   } catch (error) {
     $q.loading.hide();
     if (error instanceof Error) {

@@ -1,13 +1,16 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title class="merriweather">
-        <router-link to="/" class="text-black" style="text-decoration: none">
-          <q-icon name="public" /> WikiAdviser
-        </router-link>
-        <span v-if="article?.title" class="merriweather text-h6">
-          / {{ article.title }}
-        </span>
+      <q-toolbar-title>
+        <q-breadcrumbs class="merriweather">
+          <q-breadcrumbs-el label="WikiAdviser" icon="public" to="/" />
+          <q-breadcrumbs-el
+            v-if="article?.title"
+            :label="article.title"
+            to="."
+            @click="$router.go(0)"
+          />
+        </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
       <q-btn-dropdown
@@ -29,26 +32,24 @@
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 const session = ref<Session | null>();
 const username = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
+const articlesStore = useArticlesStore();
+const articles = computed(() => articlesStore.articles);
 
-watch(useRoute(), (to) => {
-  const articleId = to.params.articleId;
-  if (articleId) {
-    if (articleId !== article.value?.article_id) {
-      const articles = JSON.parse($q.localStorage.getItem('articles') ?? '[]');
-      article.value = articles?._value?.find(
-        (article: Article) => article.article_id === articleId
-      );
-    }
+watch([useRoute(), articles], ([newRoute]) => {
+  const articleId = newRoute.params?.articleId;
+  if (newRoute.params?.articleId) {
+    article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
   }
@@ -66,8 +67,7 @@ onMounted(async () => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    $q.localStorage.clear();
-
+    articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;
   } catch (error) {
@@ -75,3 +75,10 @@ async function signOut() {
   }
 }
 </script>
+
+<style>
+.q-breadcrumbs__el {
+  text-decoration: none !important;
+  color: black !important;
+}
+</style>

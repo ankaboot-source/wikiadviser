@@ -76,7 +76,6 @@ import supabase from 'src/api/supabase';
 import {
   createNewPermission,
   getArticleParsedContent,
-  getArticles,
   getChanges,
   getUsers,
 } from 'src/api/supabaseHelper';
@@ -87,6 +86,7 @@ import ShareCard from 'src/components/ShareCard.vue';
 import { Article, ChangesItem, UserRole } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 const $q = useQuasar();
 const route = useRoute();
@@ -97,23 +97,20 @@ const articleId = ref('');
 const share = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
 const article = ref<Article>();
-const articles = ref<Article[] | null>([]);
 const users = ref();
 const editorPermission = ref(false);
 const tab = ref();
 const changesList = ref<ChangesItem[]>([]);
 const changesContent = ref('');
 let pollTimer: number;
+const articlesStore = useArticlesStore();
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
   // Access the article id parameter from the route's params object
   articleId.value = params.articleId as string;
-  articles.value = await getArticles(data.session!.user.id);
-
-  article.value = articles.value?.find((article: Article) => {
-    return article.article_id === articleId.value;
-  });
+  await articlesStore.fetchArticles(data.session!.user.id);
+  article.value = articlesStore.getArticleById(articleId.value);
   if (!article.value) {
     // In case this article exists, a permission request will be sent to the Owner.
     try {
@@ -123,11 +120,9 @@ onBeforeMount(async () => {
       router.push('404');
     }
     // Get updated articles
-    const articles = await getArticles(data.session!.user.id);
-    if (articles) {
-      article.value = articles.find((article: Article) => {
-        return article.article_id === articleId.value;
-      });
+    await articlesStore.fetchArticles(data.session!.user.id);
+    if (articlesStore.articles) {
+      article.value = articlesStore.getArticleById(articleId.value);
     }
   }
   if (article.value) {
@@ -136,7 +131,6 @@ onBeforeMount(async () => {
     editorPermission.value =
       article.value.role === UserRole.Editor ||
       article.value.role === UserRole.Owner;
-    $q.localStorage.set('articles', JSON.stringify(articles));
   }
 
   const currentTabParam = ref(params.tab);

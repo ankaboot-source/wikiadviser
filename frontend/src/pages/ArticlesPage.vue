@@ -39,7 +39,6 @@
               v-for="article in articlesFiltered"
               :key="article.article_id"
               :article="article"
-              @update-articles-emit="updateArticles()"
             />
           </q-list>
         </q-scroll-area>
@@ -97,26 +96,20 @@
 </template>
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';
-import { useQuasar } from 'quasar';
 import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
 import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
 import { Article } from 'src/types';
 import supabase from 'src/api/supabase';
-import { getArticles } from 'src/api/supabaseHelper';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 
-const $q = useQuasar();
-const articles = ref<Article[]>();
 const term = ref('');
 const showNewArticleDialog = ref(false);
-
-function updateArticles() {
-  articles.value = JSON.parse($q.localStorage.getItem('articles')!);
-}
+const articlesStore = useArticlesStore();
+const articles = computed(() => articlesStore.articles);
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
-  articles.value = (await getArticles(data.session!.user.id)) || [];
-  $q.localStorage.set('articles', JSON.stringify(articles.value));
+  await articlesStore.fetchArticles(data.session!.user.id);
 });
 const articlesFiltered = computed(() => {
   const trimmedTerm = term.value.trim();

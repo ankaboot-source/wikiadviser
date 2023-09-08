@@ -26,26 +26,27 @@
 <script setup lang="ts">
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
-import { createNewArticle, getArticles } from 'src/api/supabaseHelper';
+import { createNewArticle } from 'src/api/supabaseHelper';
 import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
 import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+
 const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
   articleLanguage: wikipediaLanguage;
 }>();
-
+const articlesStore = useArticlesStore();
 const articleId = ref('');
-const articles = JSON.parse($q.localStorage.getItem('articles')!);
 
 async function itemOnClick() {
   try {
     const { data } = await supabase.auth.getSession();
     // check access
-    const articleExists = articles?.some(
+    const articleExists = articlesStore.articles?.find(
       (article: Article) => article.title === props.item.title
     );
 
@@ -82,8 +83,7 @@ async function itemOnClick() {
           icon: 'check',
           color: 'positive',
         });
-        const articles = await getArticles(data.session!.user.id);
-        $q.localStorage.set('articles', JSON.stringify(articles));
+        await articlesStore.fetchArticles(data.session!.user.id);
 
         // GOTO ARTICLE PAGE, EDIT TAB
         router.push({

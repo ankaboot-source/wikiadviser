@@ -75,7 +75,7 @@ export async function createNewPermission(
   }
 }
 
-export async function getArticles(userId: string): Promise<Article[] | null> {
+export async function getArticles(userId: string): Promise<Article[]> {
   // check if user has permission on that Article
   const { data: articleData, error: articleError } = await supabase
     .from('permissions')
@@ -93,7 +93,7 @@ export async function getArticles(userId: string): Promise<Article[] | null> {
     throw new Error(articleError.message);
   }
   if (articleData.length === 0) {
-    return null;
+    return [];
   }
 
   const articles: Article[] = articleData

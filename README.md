@@ -29,11 +29,11 @@
 
     wfLoadExtension( 'Scribunto' );
     $wgScribuntoDefaultEngine = 'luastandalone';
-    $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60;
+    $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
     $wgScribuntoEngineConf['luastandalone']['memoryLimit'] = 838860800; // 800M
     $wgMemoryLimit = '800M';
     $wgMaxShellFileSize = 838860800; // 800M
-    $wgMaxShellTime = 0;
+    $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
 
     wfLoadExtension( 'TemplateStyles' );
     wfLoadExtension( 'InputBox' );

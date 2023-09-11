@@ -178,7 +178,7 @@ export async function importNewArticle(
       ]);
 
       await page.fill(textBoxInterwikiprefix, ' ');
-      await page.click(submitButton, { timeout: 5 * 60 * 1000 }); // 5 Minutes
+      await page.click(submitButton, { timeout: 10 * 60 * 1000 }); // 10 Minutes
       await page.waitForLoadState('networkidle');
       await browser.close();
       logger.info(`Succesfuly imported file ${title}`);

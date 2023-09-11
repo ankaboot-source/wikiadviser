@@ -66,7 +66,8 @@ watch(
   async () => {
     await nextTick();
     handleTabIndexes();
-  }
+  },
+  { immediate: true }
 );
 
 watch(

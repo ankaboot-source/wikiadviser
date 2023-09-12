@@ -65,7 +65,7 @@ async function itemOnClick() {
         spinnerSize: 140,
 
         message: `
-        <div class='text-h6'> Anonymously and Safely Importing “${props.item.title}” from Wikipedia. </div></br>
+        <div class='text-h6'> 🕵️🔐 Anonymously and Safely Importing “${props.item.title}” from Wikipedia. </div></br>
         <div class='text-body1'>Please wait..</div>`,
         html: true,
       });

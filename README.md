@@ -29,6 +29,11 @@
 
     wfLoadExtension( 'Scribunto' );
     $wgScribuntoDefaultEngine = 'luastandalone';
+    $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
+    $wgScribuntoEngineConf['luastandalone']['memoryLimit'] = 838860800; // 800M
+    $wgMemoryLimit = '800M';
+    $wgMaxShellFileSize = 838860800; // 800M
+    $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
 
     wfLoadExtension( 'TemplateStyles' );
     wfLoadExtension( 'InputBox' );
@@ -54,6 +59,15 @@
       'versioned' => 63072000,
       'unversioned' => 63072000
     ];
+  ```
+
+  </details>
+
+- <details>
+    <summary>Modify settings of <code>default.vcl</code></summary>
+
+  ```
+    .first_byte_timeout = 600s;
   ```
 
   </details>

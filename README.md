@@ -38,7 +38,8 @@
     wfLoadExtension( 'TemplateStyles' );
     wfLoadExtension( 'InputBox' );
     wfLoadExtension( 'TemplateData' );
-
+    wfLoadExtension( 'SyntaxHighlight_GeSHi' );
+  
     $wgUseInstantCommons = true;
 
     wfLoadExtension( 'Cite' );

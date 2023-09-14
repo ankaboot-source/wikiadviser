@@ -98,7 +98,7 @@ const defaultArticleLanguage = wikipediaLanguages.find(
 };
 const articleLanguage = ref(defaultArticleLanguage);
 
-watch(term, async (term) => {
+watch([term, articleLanguage], async ([term]) => {
   if (!term.trim()) {
     searchResults.value = [];
     return;

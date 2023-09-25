@@ -1,12 +1,12 @@
 /* eslint-disable no-await-in-loop */
 import { load } from 'cheerio';
-import { ChildNodeData } from '../types';
+import { Change, ChildNodeData } from '../types';
 import {
-  createNewChange,
   getArticle,
   getChanges,
+  insertChanges,
   updateArticle,
-  updateChange
+  upsertChanges
 } from './supabaseHelper';
 
 export async function decomposeArticle(
@@ -93,7 +93,9 @@ export async function decomposeArticle(
     insert = 1,
     remove = 2
   }
-  const changeIndexedIds = [];
+  const changesToUpsert: Change[] = [];
+  const changesToInsert: Change[] = [];
+  let changeIndex = 0;
 
   for (const element of elements) {
     const $element = $(element);
@@ -112,30 +114,35 @@ export async function decomposeArticle(
         TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
         $element.html() === changeContentInnerHTML
       ) {
+        // Update the change INDEX
         changeId = change.id;
+        const { index, users, comments, ...baseChange } = change;
+        changesToUpsert.push({
+          ...baseChange,
+          index: changeIndex
+        });
+        changeIndex += 1;
         break;
       }
     }
 
     if (!changeId) {
-      changeId = await createNewChange(permissionId);
+      // Create new change
       description = $element.attr('data-description');
-
-      await updateChange({
-        changeId,
+      changesToInsert.push({
         content: $.html($element),
         status: 0,
         description,
-        type_of_edit: TypeOfEditDictionary[typeOfEdit]
+        type_of_edit: TypeOfEditDictionary[typeOfEdit],
+        index: changeIndex
       });
+      changeIndex += 1;
     }
 
     // Remove data-description & data-type-of-edit Attributes of the html content
     $element.removeAttr('data-description');
     $element.removeAttr('data-type-of-edit');
-
-    $element.attr('data-id', changeId);
-    changeIndexedIds.push(changeId);
+    $element.attr('data-id', '');
   }
 
   /*
@@ -143,16 +150,21 @@ export async function decomposeArticle(
   - If ID not in HTML: 'Unindexed'(null) else Index++
   */
   for (const change of changes) {
-    if (!changeIndexedIds.includes(change.id)) {
-      await updateChange({ changeId: change.id, index: null });
+    if (
+      !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
+    ) {
+      const { index, users, comments, ...baseChange } = change;
+
+      changesToUpsert.push({
+        ...baseChange,
+        index: null
+      });
     }
   }
-  for (const chandeIndexedId of changeIndexedIds) {
-    await updateChange({
-      changeId: chandeIndexedId,
-      index: changeIndexedIds.indexOf(chandeIndexedId)
-    });
-  }
+
+  // Bulk update & insert
+  await upsertChanges(changesToUpsert);
+  await insertChanges(changesToInsert, permissionId);
 
   await updateArticle(permissionId, $.html());
   return $.html();
@@ -169,6 +181,7 @@ export async function getArticleParsedContent(articleId: string) {
       const $element = $(element);
       $element.attr('data-type-of-edit', changes[index].type_of_edit);
       $element.attr('data-status', changes[index].status);
+      $element.attr('data-id', changes[index].id);
     });
     return $.html();
   }

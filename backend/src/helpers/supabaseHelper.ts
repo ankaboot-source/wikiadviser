@@ -55,15 +55,48 @@ export async function createNewChange(permissionId: string): Promise<string> {
 }
 
 export async function updateChange(toChange: Change): Promise<void> {
-  const { changeId, ...updateData } = toChange;
-
+  const { id, ...updateData } = toChange;
   const { error: changeError } = await supabase
     .from('changes')
     .update(updateData)
-    .eq('id', changeId);
-
+    .eq('id', id);
   if (changeError) {
     throw new Error(changeError.message);
+  }
+}
+export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
+  const { error } = await supabase.from('changes').upsert(changesToUpsert);
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function insertChanges(
+  changesToInsert: Change[],
+  permissionId?: string
+): Promise<void> {
+  if (permissionId) {
+    const { data: permissionData, error: permissionError } = await supabase
+      .from('permissions')
+      .select('article_id, user_id')
+      .eq('id', permissionId)
+      .maybeSingle();
+    if (permissionError) {
+      throw new Error(permissionError.message);
+    }
+    if (permissionData?.article_id && permissionData?.user_id) {
+      for (const change of changesToInsert) {
+        if (!change.id) {
+          // Add 'article_id' and 'contributor_id' properties
+          change.article_id = permissionData.article_id;
+          change.contributor_id = permissionData.user_id;
+        }
+      }
+    }
+    const { error } = await supabase.from('changes').insert(changesToInsert);
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 }
 
@@ -108,13 +141,19 @@ export async function getChanges(articleId: string) {
       `
       id,
       content,
-    created_at,
-    description,
-    status,
-    type_of_edit,
-    index,
-    users(
-      raw_user_meta_data), comments(content,created_at, users(raw_user_meta_data))`
+      created_at,
+      description,
+      status,
+      type_of_edit,
+      index,
+      article_id,
+      contributor_id,
+      users(
+        raw_user_meta_data), 
+        comments(content,created_at, 
+        users(raw_user_meta_data)
+        )
+      `
     )
     .order('index')
     .eq('article_id', articleId);

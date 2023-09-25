@@ -266,7 +266,7 @@ export async function updateChanges(articleId: string, permissionId: string) {
     latestRevidResponse.data.query.pages[0].revisions[0].revid;
 
   console.log('Diffing', originalRevid, latestRevid);
-  // Get the diff html
+  // Get the diff HTML
   const browser = await chromium.launch();
   const context = await browser.newContext({
     ignoreHTTPSErrors: true

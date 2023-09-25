@@ -14,7 +14,7 @@ create table "public"."changes" (
     "status" smallint,
     "type_of_edit" smallint,
     "description" text,
-    "content" text,
+    "content" text not null,
     "article_id" uuid,
     "contributor_id" uuid,
     "index" smallint

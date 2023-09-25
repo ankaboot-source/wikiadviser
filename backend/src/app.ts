@@ -73,7 +73,7 @@ app.get('/article/changes', async (req, res) => {
 app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
-    await updateChange({ changeId, status, description });
+    await updateChange({ id: changeId, status, description });
 
     logger.info('Updated Changes of the article:', changeId);
     res.status(201).json({ message: 'Updating change succeeded.' });

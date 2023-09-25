@@ -32,7 +32,6 @@ app.put('/article/changes', async (req, res) => {
     const { articleId, permissionId } = req.body;
     await updateChanges(articleId, permissionId); // Adds corresponding data from changes and into Articles:current_html_content
     logger.info('Updated Changes of the article:', articleId);
-    // Notify frontend
     res.status(201).json({ message: 'Updating changes succeeded.' });
   } catch (error: any) {
     logger.error(error.message);

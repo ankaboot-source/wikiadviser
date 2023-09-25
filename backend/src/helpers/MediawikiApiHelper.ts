@@ -276,7 +276,6 @@ export async function updateChanges(articleId: string, permissionId: string) {
     `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
     { waitUntil: 'networkidle' }
   );
-  await page.waitForTimeout(5000);
 
   const diffPage = await page.$eval(
     '.ve-init-mw-diffPage-diff',

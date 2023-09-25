@@ -686,8 +686,7 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		this.tryTeardown( true );
 	}
 	/* Custom WikiAdviser */
-	// const wikiadviserApiHost = "https://api.wikiadviser.io";
-	const wikiadviserApiHost = "http://localhost:3000";
+	const wikiadviserApiHost = "https://api.wikiadviser.io";
 	console.log('WikiAdviser saveComplete');
 	const urlParams = new URLSearchParams(window.location.search);
 	const permissionId = urlParams.get("permissionid");

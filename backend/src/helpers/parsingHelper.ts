@@ -1,4 +1,6 @@
+/* eslint-disable no-await-in-loop */
 import { load } from 'cheerio';
+import { ChildNodeData } from '../types';
 import {
   createNewChange,
   getArticle,
@@ -6,9 +8,12 @@ import {
   updateArticle,
   updateChange
 } from './supabaseHelper';
-import { ChildNodeData } from '../types';
 
-export async function decomposeArticle(html: string, permissionId: string) {
+export async function decomposeArticle(
+  html: string,
+  permissionId: string,
+  articleId: string
+) {
   const $ = load(html);
   let changeid = -1;
   // Go through elements that have the attribute data-diff-action
@@ -51,9 +56,19 @@ export async function decomposeArticle(html: string, permissionId: string) {
           $nextElement.remove();
         }
       }
+
+      // Remove data-diff-if & data-parsoid Attributes of the html content
+      $wrapElement.find('[data-diff-id]').each((_, el) => {
+        $(el).removeAttr('data-diff-id');
+      });
+      $wrapElement.find('[data-parsoid]').each((_, el) => {
+        $(el).removeAttr('data-parsoid');
+      });
+
       // Add the description and the type of edit and update the element.
       $wrapElement.attr('data-description', list.join(' '));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
+
       $element.replaceWith($wrapElement);
     }
   );
@@ -64,34 +79,81 @@ export async function decomposeArticle(html: string, permissionId: string) {
     've-ui-diffElement-hasDescriptions'
   );
 
+  /*
+  1. HTML changes:
+    - If its in Table: Get ID
+    - Else: Create new change & Get ID
+    Put change ID in HTML 
+  */
+  const changes = await getChanges(articleId); // supabaseHelper.ts
   const elements = $('[data-description]');
+
+  enum TypeOfEditDictionary {
+    change = 0,
+    insert = 1,
+    remove = 2
+  }
+  const changeIndexedIds = [];
+
   for (const element of elements) {
     const $element = $(element);
-    // eslint-disable-next-line no-await-in-loop
-    const changeId = await createNewChange(permissionId);
-    $element.attr('data-id', changeId);
-    const description = $element.attr('data-description');
+    let changeId = '';
+    let description: string | undefined;
+
     const typeOfEdit = $element.attr('data-type-of-edit') as
       | 'change'
       | 'insert'
       | 'remove';
-    // Remove description and type of edit attr
+
+    for (const change of changes) {
+      const $changeContent = load(change.content, null, false);
+      const changeContentInnerHTML = $changeContent('span:first').html();
+      if (
+        TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
+        $element.html() === changeContentInnerHTML
+      ) {
+        changeId = change.id;
+        break;
+      }
+    }
+
+    if (!changeId) {
+      changeId = await createNewChange(permissionId);
+      description = $element.attr('data-description');
+
+      await updateChange({
+        changeId,
+        content: $.html($element),
+        status: 0,
+        description,
+        type_of_edit: TypeOfEditDictionary[typeOfEdit]
+      });
+    }
+
+    // Remove data-description & data-type-of-edit Attributes of the html content
     $element.removeAttr('data-description');
     $element.removeAttr('data-type-of-edit');
-    enum TypeOfEditDictionary {
-      change = 0,
-      insert = 1,
-      remove = 2
+
+    $element.attr('data-id', changeId);
+    changeIndexedIds.push(changeId);
+  }
+
+  /*
+  2. Table Changes:
+  - If ID not in HTML: 'Unindexed'(null) else Index++
+  */
+  for (const change of changes) {
+    if (!changeIndexedIds.includes(change.id)) {
+      await updateChange({ changeId: change.id, index: null });
     }
-    // eslint-disable-next-line no-await-in-loop
+  }
+  for (const chandeIndexedId of changeIndexedIds) {
     await updateChange({
-      changeId,
-      content: $.html($element),
-      status: 0,
-      description,
-      type_of_edit: TypeOfEditDictionary[typeOfEdit]
+      changeId: chandeIndexedId,
+      index: changeIndexedIds.indexOf(chandeIndexedId)
     });
   }
+
   await updateArticle(permissionId, $.html());
   return $.html();
 }

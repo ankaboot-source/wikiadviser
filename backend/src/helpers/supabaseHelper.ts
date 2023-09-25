@@ -112,10 +112,11 @@ export async function getChanges(articleId: string) {
     description,
     status,
     type_of_edit,
+    index,
     users(
       raw_user_meta_data), comments(content,created_at, users(raw_user_meta_data))`
     )
-    .order('created_at')
+    .order('index')
     .eq('article_id', articleId);
 
   if (changesError) {

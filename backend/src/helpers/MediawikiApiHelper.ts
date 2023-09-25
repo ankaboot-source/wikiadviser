@@ -2,6 +2,7 @@ import axios from 'axios';
 import https from 'https';
 import { chromium } from 'playwright';
 import logger from '../logger';
+import { decomposeArticle } from './parsingHelper';
 
 const {
   MEDIAWIKI_HOST,
@@ -128,7 +129,8 @@ export async function importNewArticle(
       title: 'Special:Export',
       pages: title,
       templates: true,
-      lang: language
+      lang: language,
+      curonly: true
     },
     responseType: 'stream'
   });
@@ -213,4 +215,75 @@ export async function importNewArticle(
       reject(error);
     });
   });
+}
+
+export async function updateChanges(articleId: string, permissionId: string) {
+  /*
+  0. "Save changes" 
+  1. Identify latest & original revisions
+    revid:
+    - latest: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json |&rvlimit=1&rvdir=newer
+    - original: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json&rvlimit=1&rvdir=older
+    const latest/originalRevid = query.pages['1'].revisions[0].revid;
+  3. Automate diff
+    - https://localhost/w/index.php?title=TITLE&diff=LATEST&oldid=ORIGINAL&diffmode=visual&diffonly=1
+  4. Parse diff & add corresponding data of the changes table:
+    1. HTML changes:
+    - If its in Table: Get ID
+    - Else: Create new change & Get ID
+    - Put change ID in HTML 
+    2. Table Changes:
+    - If ID not in HTML: 'unassigned status' 
+ */
+
+  // Get the latest and original revids
+  const originalRevidResponse = await api.get('', {
+    params: {
+      action: 'query',
+      prop: 'revisions',
+      titles: articleId,
+      rvlimit: 1,
+      rvdir: 'newer',
+      format: 'json',
+      formatversion: 2
+    }
+  });
+  const latestRevidResponse = await api.get('', {
+    params: {
+      action: 'query',
+      prop: 'revisions',
+      titles: articleId,
+      rvlimit: 1,
+      rvdir: 'older',
+      format: 'json',
+      formatversion: 2
+    }
+  });
+
+  const originalRevid =
+    originalRevidResponse.data.query.pages[0].revisions[0].revid;
+  const latestRevid =
+    latestRevidResponse.data.query.pages[0].revisions[0].revid;
+
+  console.log('Diffing', originalRevid, latestRevid);
+  // Get the diff html
+  const browser = await chromium.launch();
+  const context = await browser.newContext({
+    ignoreHTTPSErrors: true
+  });
+  const page = await context.newPage();
+  await page.goto(
+    `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+    { waitUntil: 'networkidle' }
+  );
+  await page.waitForTimeout(5000);
+
+  const diffPage = await page.$eval(
+    '.ve-init-mw-diffPage-diff',
+    (el) => el.outerHTML
+  );
+  await browser.close();
+
+  // Parse diff & add corresponding data of the changes table.
+  await decomposeArticle(diffPage, permissionId, articleId);
 }

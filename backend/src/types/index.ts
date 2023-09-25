@@ -4,6 +4,7 @@ export type Change = {
   status?: 0 | 1 | 2;
   description?: string;
   type_of_edit?: 0 | 1 | 2;
+  index?: number | null;
 };
 
 export interface ChildNodeData extends ChildNode {

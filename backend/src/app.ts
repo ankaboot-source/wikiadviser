@@ -2,18 +2,17 @@ import 'dotenv/config';
 import express, { json } from 'express';
 import {
   deleteArticleMW,
-  importNewArticle
+  importNewArticle,
+  updateChanges
 } from './helpers/MediawikiApiHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
-  decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
 import {
   deleteArticle,
   insertArticle,
-  removeChanges,
   updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
@@ -22,19 +21,23 @@ import corsMiddleware from './middleware/cors';
 const app = express();
 const { WIKIADVISER_API_PORT } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
-const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 
-// POST and GET the html diff of the local mediawiki
-app.post('/rawArticle', async (req, res) => {
-  const { html, permissionId } = req.body;
-  logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
-  await removeChanges(permissionId);
-  data.html = await decomposeArticle(html, permissionId);
-  res.status(201).json({ message: 'Diff HTML created.' });
+// Update Changes
+app.put('/article/changes', async (req, res) => {
+  try {
+    const { articleId, permissionId } = req.body;
+    await updateChanges(articleId, permissionId); // Adds corresponding data from changes and into Articles:current_html_content
+    logger.info('Updated Changes of the article:', articleId);
+    // Notify frontend
+    res.status(201).json({ message: 'Updating changes succeeded.' });
+  } catch (error: any) {
+    logger.error(error.message);
+    res.status(500).json({ message: 'Updating changes failed.' });
+  }
 });
 
 // Get the Article current content HTML Parsed

@@ -16,7 +16,8 @@ create table "public"."changes" (
     "description" text,
     "content" text,
     "article_id" uuid,
-    "contributor_id" uuid
+    "contributor_id" uuid,
+    "index" smallint
 );
 
 

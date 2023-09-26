@@ -220,20 +220,14 @@ export async function importNewArticle(
 export async function updateChanges(articleId: string, permissionId: string) {
   /*
   On mediawiki's "Save changes":
-  1. Identify latest & original revisions
-    revid:
-    - latest: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json |&rvlimit=1&rvdir=newer
-    - original: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json&rvlimit=1&rvdir=older
-    const latest/originalRevid = query.pages['1'].revisions[0].revid;
-  3. Get the diff HTML
-    - https://localhost/w/index.php?title=TITLE&diff=LATEST&oldid=ORIGINAL&diffmode=visual&diffonly=1
+  1. Identify latest & original revisions (`Revids`)
+  2. Get the diff HTML
   3. Parse diff & add corresponding data of the changes table:
-    1. Loop through HTML Changes:
-      - If its in Table: Get changeID
-      - If not: Create new change & Get changeID
-      ++Index
-    2. Loop through Table Changes:
-    - If ID not in HTML Changes: set Index to null (unassigned)
+      1. Loop through HTML Changes:
+          - If Its in Table : Get `changeID` , Else: Create new change & Get `changeID`
+          - `Index++`
+      2. Loop through Table Changes:
+          - If ID not in HTML Changes: set Index to `null` (unassigned)
  */
 
   // 1. Identify latest & original revisions

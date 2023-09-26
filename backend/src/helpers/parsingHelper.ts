@@ -1,5 +1,3 @@
-/* eslint-disable no-plusplus */
-/* eslint-disable no-await-in-loop */
 import { load } from 'cheerio';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import {
@@ -109,8 +107,9 @@ export async function decomposeArticle(
         const { index, users, comments, ...baseChange } = change;
         changesToUpsert.push({
           ...baseChange,
-          index: changeIndex++
+          index: changeIndex
         });
+        changeIndex += 1;
         break;
       }
     }
@@ -123,8 +122,9 @@ export async function decomposeArticle(
         status: 0,
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
-        index: changeIndex++
+        index: changeIndex
       });
+      changeIndex += 1;
     }
 
     // Remove data-description & data-type-of-edit Attributes of the html content

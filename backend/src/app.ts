@@ -33,8 +33,12 @@ app.put('/article/changes', async (req, res) => {
     await updateChanges(articleId, permissionId); // MediawikiApiHelper.ts
     logger.info('Updated Changes of the article:', articleId);
     res.status(201).json({ message: 'Updating changes succeeded.' });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Updating changes failed.' });
   }
 });
@@ -48,8 +52,12 @@ app.get('/article/parsedContent', async (req, res) => {
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', content });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Getting article changes failed.' });
   }
 });
@@ -63,8 +71,12 @@ app.get('/article/changes', async (req, res) => {
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Getting article changes failed.' });
   }
 });
@@ -77,8 +89,12 @@ app.put('/article/change', async (req, res) => {
 
     logger.info('Updated Changes of the article:', changeId);
     res.status(201).json({ message: 'Updating change succeeded.' });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Updating change failed.' });
   }
 });
@@ -138,8 +154,12 @@ app.delete('/article', async (req, res) => {
     await deleteArticle(articleId); // supabaseHelper.ts
 
     res.status(200).json({ message: 'Deleting article succeeded.', articleId });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Deleting article failed.' });
   }
 });

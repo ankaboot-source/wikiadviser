@@ -17,7 +17,7 @@ export async function decomposeArticle(
 ) {
   const $ = load(html);
   let changeid = -1;
-  // Go through elements that have the attribute data-diff-action
+  // Loop through elements that have the attribute data-diff-action
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
@@ -81,9 +81,9 @@ export async function decomposeArticle(
   );
 
   /*
-  1. HTML changes:
+  1. Loop through HTML Changes:
     - If its in Table: Get changeID
-    - Else: Create new change & Get changeID
+    - If not: Create new change & Get changeID
     ++Index
   */
   const changes = await getChanges(articleId); // supabaseHelper.ts
@@ -145,8 +145,8 @@ export async function decomposeArticle(
   }
 
   /*
-  2. Table Changes:
-  - If ID not in HTML: set Index to null (unassigned)
+  2. Loop through Table Changes:
+  - If ID not in HTML Changes: set Index to null (unassigned)
   */
   for (const change of changes) {
     if (
@@ -162,8 +162,8 @@ export async function decomposeArticle(
   }
 
   // Bulk update & insert changes
-  await upsertChanges(changesToUpsert);
-  await insertChanges(changesToInsert, permissionId);
+  await upsertChanges(changesToUpsert); // supabaseHelper.ts
+  await insertChanges(changesToInsert, permissionId); // supabaseHelper.ts
 
   await updateArticle(permissionId, $.html());
   return $.html();

@@ -219,24 +219,24 @@ export async function importNewArticle(
 
 export async function updateChanges(articleId: string, permissionId: string) {
   /*
-  0. "Save changes" 
+  On mediawiki's "Save changes":
   1. Identify latest & original revisions
     revid:
     - latest: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json |&rvlimit=1&rvdir=newer
     - original: https://localhost/w/api.php?action=query&prop=revisions&titles=Main_Page&format=json&rvlimit=1&rvdir=older
     const latest/originalRevid = query.pages['1'].revisions[0].revid;
-  3. Automate diff
+  3. Get the diff HTML
     - https://localhost/w/index.php?title=TITLE&diff=LATEST&oldid=ORIGINAL&diffmode=visual&diffonly=1
-  4. Parse diff & add corresponding data of the changes table:
-    1. HTML changes:
-    - If its in Table: Get ID
-    - Else: Create new change & Get ID
-    - Put change ID in HTML 
-    2. Table Changes:
-    - If ID not in HTML: 'unassigned status' 
+  3. Parse diff & add corresponding data of the changes table:
+    1. Loop through HTML Changes:
+      - If its in Table: Get changeID
+      - If not: Create new change & Get changeID
+      ++Index
+    2. Loop through Table Changes:
+    - If ID not in HTML Changes: set Index to null (unassigned)
  */
 
-  // Get the latest and original revids
+  // 1. Identify latest & original revisions
   const originalRevidResponse = await api.get('', {
     params: {
       action: 'query',
@@ -265,8 +265,12 @@ export async function updateChanges(articleId: string, permissionId: string) {
   const latestRevid =
     latestRevidResponse.data.query.pages[0].revisions[0].revid;
 
-  console.log('Diffing', originalRevid, latestRevid);
-  // Get the diff HTML
+  // 2. Get the Diff HTML
+  logger.info('Getting the Diff HTML of Rivids:', {
+    originalRevid,
+    latestRevid
+  });
+
   const browser = await chromium.launch();
   const context = await browser.newContext({
     ignoreHTTPSErrors: true
@@ -283,6 +287,6 @@ export async function updateChanges(articleId: string, permissionId: string) {
   );
   await browser.close();
 
-  // Parse diff & add corresponding data of the changes table.
+  // 3. Parse diff & add corresponding data of the changes table.
   await decomposeArticle(diffPage, permissionId, articleId);
 }

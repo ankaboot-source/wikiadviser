@@ -30,7 +30,7 @@ app.use(corsMiddleware);
 app.put('/article/changes', async (req, res) => {
   try {
     const { articleId, permissionId } = req.body;
-    await updateChanges(articleId, permissionId); // Adds corresponding data from changes and into Articles:current_html_content
+    await updateChanges(articleId, permissionId); // MediawikiApiHelper.ts
     logger.info('Updated Changes of the article:', articleId);
     res.status(201).json({ message: 'Updating changes succeeded.' });
   } catch (error: any) {
@@ -73,7 +73,7 @@ app.get('/article/changes', async (req, res) => {
 app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
-    await updateChange({ id: changeId, status, description });
+    await updateChange({ id: changeId, status, description }); // supabaseHelper.ts
 
     logger.info('Updated Changes of the article:', changeId);
     res.status(201).json({ message: 'Updating change succeeded.' });
@@ -96,7 +96,7 @@ app.post('/article', async (req, res) => {
     'New article title received'
   );
 
-  const articleId = await insertArticle(title, userId, description);
+  const articleId = await insertArticle(title, userId, description); // supabaseHelper.ts
   try {
     await importNewArticle(articleId, title, language);
 
@@ -135,7 +135,7 @@ app.delete('/article', async (req, res) => {
     const { articleId } = req.body;
 
     await deleteArticleMW(articleId);
-    await deleteArticle(articleId);
+    await deleteArticle(articleId); // supabaseHelper.ts
 
     res.status(200).json({ message: 'Deleting article succeeded.', articleId });
   } catch (error: any) {

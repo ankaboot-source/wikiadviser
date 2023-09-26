@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { load } from 'cheerio';
 import { Change, ChildNodeData } from '../types';
@@ -57,7 +58,7 @@ export async function decomposeArticle(
         }
       }
 
-      // Remove data-diff-if & data-parsoid Attributes of the html content
+      // Remove data-diff-if & data-parsoid Attributes
       $wrapElement.find('[data-diff-id]').each((_, el) => {
         $(el).removeAttr('data-diff-id');
       });
@@ -81,9 +82,9 @@ export async function decomposeArticle(
 
   /*
   1. HTML changes:
-    - If its in Table: Get ID
-    - Else: Create new change & Get ID
-    Put change ID in HTML 
+    - If its in Table: Get changeID
+    - Else: Create new change & Get changeID
+    ++Index
   */
   const changes = await getChanges(articleId); // supabaseHelper.ts
   const elements = $('[data-description]');
@@ -119,9 +120,8 @@ export async function decomposeArticle(
         const { index, users, comments, ...baseChange } = change;
         changesToUpsert.push({
           ...baseChange,
-          index: changeIndex
+          index: changeIndex++
         });
-        changeIndex += 1;
         break;
       }
     }
@@ -134,9 +134,8 @@ export async function decomposeArticle(
         status: 0,
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
-        index: changeIndex
+        index: changeIndex++
       });
-      changeIndex += 1;
     }
 
     // Remove data-description & data-type-of-edit Attributes of the html content
@@ -147,7 +146,7 @@ export async function decomposeArticle(
 
   /*
   2. Table Changes:
-  - If ID not in HTML: 'Unindexed'(null) else Index++
+  - If ID not in HTML: set Index to null (unassigned)
   */
   for (const change of changes) {
     if (
@@ -162,7 +161,7 @@ export async function decomposeArticle(
     }
   }
 
-  // Bulk update & insert
+  // Bulk update & insert changes
   await upsertChanges(changesToUpsert);
   await insertChanges(changesToInsert, permissionId);
 
@@ -181,6 +180,7 @@ export async function getArticleParsedContent(articleId: string) {
       const $element = $(element);
       $element.attr('data-type-of-edit', changes[index].type_of_edit);
       $element.attr('data-status', changes[index].status);
+      $element.attr('data-index', changes[index].index);
       $element.attr('data-id', changes[index].id);
     });
     return $.html();

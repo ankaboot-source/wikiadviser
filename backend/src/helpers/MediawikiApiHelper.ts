@@ -218,18 +218,6 @@ export async function importNewArticle(
 }
 
 export async function updateChanges(articleId: string, permissionId: string) {
-  /*
-  On mediawiki's "Save changes":
-  1. Identify latest & original revisions (`Revids`)
-  2. Get the diff HTML
-  3. Parse diff & add corresponding data of the changes table:
-      1. Loop through HTML Changes:
-          - If Its in Table : Get `changeID` , Else: Create new change & Get `changeID`
-          - `Index++`
-      2. Loop through Table Changes:
-          - If ID not in HTML Changes: set Index to `null` (unassigned)
- */
-
   // 1. Identify latest & original revisions
   const originalRevidResponse = await api.get('', {
     params: {
@@ -281,6 +269,5 @@ export async function updateChanges(articleId: string, permissionId: string) {
   );
   await browser.close();
 
-  // 3. Parse diff & add corresponding data of the changes table.
   await decomposeArticle(diffPage, permissionId, articleId);
 }

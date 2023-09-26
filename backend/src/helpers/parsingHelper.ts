@@ -1,11 +1,11 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import { load } from 'cheerio';
-import { Change, ChildNodeData } from '../types';
+import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import {
   getArticle,
   getChanges,
-  insertChanges,
+  getPermissionData,
   updateArticle,
   upsertChanges
 } from './supabaseHelper';
@@ -80,20 +80,9 @@ export async function decomposeArticle(
     've-ui-diffElement-hasDescriptions'
   );
 
-  /*
-  1. Loop through HTML Changes:
-    - If its in Table: Get changeID
-    - If not: Create new change & Get changeID
-    ++Index
-  */
-  const changes = await getChanges(articleId); // supabaseHelper.ts
+  const changes = await getChanges(articleId);
   const elements = $('[data-description]');
 
-  enum TypeOfEditDictionary {
-    change = 0,
-    insert = 1,
-    remove = 2
-  }
   const changesToUpsert: Change[] = [];
   const changesToInsert: Change[] = [];
   let changeIndex = 0;
@@ -144,10 +133,6 @@ export async function decomposeArticle(
     $element.attr('data-id', '');
   }
 
-  /*
-  2. Loop through Table Changes:
-  - If ID not in HTML Changes: set Index to null (unassigned)
-  */
   for (const change of changes) {
     if (
       !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
@@ -161,17 +146,30 @@ export async function decomposeArticle(
     }
   }
 
-  // Bulk update & insert changes
-  await upsertChanges(changesToUpsert); // supabaseHelper.ts
-  await insertChanges(changesToInsert, permissionId); // supabaseHelper.ts
+  // Add 'article_id' and 'contributor_id' properties to changeToinsert
+  if (changesToInsert) {
+    const permissionData = await getPermissionData(permissionId);
+    if (permissionData) {
+      for (const change of changesToInsert) {
+        if (!change.id) {
+          change.article_id = permissionData.article_id;
+          change.contributor_id = permissionData.user_id;
+        }
+      }
+    }
+    changesToUpsert.push(...changesToInsert);
+  }
+
+  // Bulk upsert changes
+  await upsertChanges(changesToUpsert);
 
   await updateArticle(permissionId, $.html());
   return $.html();
 }
 
 export async function getArticleParsedContent(articleId: string) {
-  const article = await getArticle(articleId); // supabaseHelper.ts
-  const changes = await getChanges(articleId); // supabaseHelper.ts
+  const article = await getArticle(articleId);
+  const changes = await getChanges(articleId);
   const content: string = article.current_html_content;
   if (content !== undefined && content !== null) {
     const $ = load(content);
@@ -189,7 +187,7 @@ export async function getArticleParsedContent(articleId: string) {
 }
 
 export async function getChangesAndParsedContent(articleId: string) {
-  const changes = await getChanges(articleId); // supabaseHelper.ts
+  const changes = await getChanges(articleId);
   if (changes !== undefined && changes !== null) {
     for (const change of changes) {
       const $ = load(change.content);

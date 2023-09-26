@@ -19,3 +19,9 @@ export type WikipediaSearchResult = {
   description?: string;
   thumbnail?: string;
 };
+
+export enum TypeOfEditDictionary {
+  change = 0,
+  insert = 1,
+  remove = 2
+}

@@ -26,13 +26,12 @@ const wikiApi = new WikipediaApiInteractor();
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 
-// Update Changes
 app.put('/article/changes', async (req, res) => {
   try {
     const { articleId, permissionId } = req.body;
-    await updateChanges(articleId, permissionId); // MediawikiApiHelper.ts
+    await updateChanges(articleId, permissionId);
     logger.info('Updated Changes of the article:', articleId);
-    res.status(201).json({ message: 'Updating changes succeeded.' });
+    res.status(204);
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
@@ -43,7 +42,6 @@ app.put('/article/changes', async (req, res) => {
   }
 });
 
-// Get the Article current content HTML Parsed
 app.get('/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
@@ -85,7 +83,7 @@ app.get('/article/changes', async (req, res) => {
 app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
-    await updateChange({ id: changeId, status, description }); // supabaseHelper.ts
+    await updateChange({ id: changeId, status, description });
 
     logger.info('Updated Changes of the article:', changeId);
     res.status(201).json({ message: 'Updating change succeeded.' });
@@ -112,7 +110,7 @@ app.post('/article', async (req, res) => {
     'New article title received'
   );
 
-  const articleId = await insertArticle(title, userId, description); // supabaseHelper.ts
+  const articleId = await insertArticle(title, userId, description);
   try {
     await importNewArticle(articleId, title, language);
 
@@ -151,7 +149,7 @@ app.delete('/article', async (req, res) => {
     const { articleId } = req.body;
 
     await deleteArticleMW(articleId);
-    await deleteArticle(articleId); // supabaseHelper.ts
+    await deleteArticle(articleId);
 
     res.status(200).json({ message: 'Deleting article succeeded.', articleId });
   } catch (error) {

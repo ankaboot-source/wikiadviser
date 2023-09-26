@@ -64,39 +64,27 @@ export async function updateChange(toChange: Change): Promise<void> {
     throw new Error(changeError.message);
   }
 }
+
+export async function getPermissionData(permissionId: string) {
+  const { data: permissionData, error: permissionError } = await supabase
+    .from('permissions')
+    .select('article_id, user_id')
+    .eq('id', permissionId)
+    .maybeSingle();
+  if (permissionError) {
+    throw new Error(permissionError.message);
+  }
+
+  return permissionData;
+}
 export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
-  const { error } = await supabase.from('changes').upsert(changesToUpsert);
+  const { error } = await supabase.from('changes').upsert(changesToUpsert, {
+    defaultToNull: false,
+    onConflict: 'id'
+  });
+
   if (error) {
     throw new Error(error.message);
-  }
-}
-
-export async function insertChanges(
-  changesToInsert: Change[],
-  permissionId?: string
-): Promise<void> {
-  if (permissionId) {
-    const { data: permissionData, error: permissionError } = await supabase
-      .from('permissions')
-      .select('article_id, user_id')
-      .eq('id', permissionId)
-      .maybeSingle();
-    if (permissionError) {
-      throw new Error(permissionError.message);
-    }
-    if (permissionData?.article_id && permissionData?.user_id) {
-      for (const change of changesToInsert) {
-        if (!change.id) {
-          // Add 'article_id' and 'contributor_id' properties
-          change.article_id = permissionData.article_id;
-          change.contributor_id = permissionData.user_id;
-        }
-      }
-    }
-    const { error } = await supabase.from('changes').insert(changesToInsert);
-    if (error) {
-      throw new Error(error.message);
-    }
   }
 }
 

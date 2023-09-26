@@ -687,11 +687,9 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 	}
 	/* Custom WikiAdviser */
 	const wikiadviserApiHost = "https://api.wikiadviser.io";
-	console.log('WikiAdviser saveComplete');
 	const urlParams = new URLSearchParams(window.location.search);
 	const permissionId = urlParams.get("permissionid");
 	const articleId = this.getPageName();
-	// Post data to the backend
 	if (permissionId) {
 	fetch(`${wikiadviserApiHost}/article/changes`, {
 		method: "PUT",
@@ -700,12 +698,6 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		},
 		body: JSON.stringify({ articleId , permissionId }),
 	})
-	.then((response) => {
-	console.log("Data sent.");
-	})
-	.catch((error) => {
-	console.error("Error sending data:", error);
-	});
 	}
 	/* End Custom WikiAdviser */
 };

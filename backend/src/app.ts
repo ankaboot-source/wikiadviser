@@ -151,7 +151,7 @@ app.delete('/article', async (req, res) => {
     await deleteArticleMW(articleId);
     await deleteArticle(articleId);
 
-    res.status(200).json({ message: 'Deleting article succeeded.', articleId });
+    res.status(204);
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);

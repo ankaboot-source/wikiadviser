@@ -217,20 +217,8 @@ export async function importNewArticle(
   });
 }
 
-export async function updateChanges(articleId: string, permissionId: string) {
-  // 1. Identify latest & original revisions
-  const originalRevidResponse = await api.get('', {
-    params: {
-      action: 'query',
-      prop: 'revisions',
-      titles: articleId,
-      rvlimit: 1,
-      rvdir: 'newer',
-      format: 'json',
-      formatversion: 2
-    }
-  });
-  const latestRevidResponse = await api.get('', {
+async function getNewestRevisionId(articleId: string) {
+  const response = await api.get('', {
     params: {
       action: 'query',
       prop: 'revisions',
@@ -241,14 +229,29 @@ export async function updateChanges(articleId: string, permissionId: string) {
       formatversion: 2
     }
   });
+  return response.data.query.pages[0].revisions[0].revid;
+}
+async function getOldestRevisionId(articleId: string) {
+  const response = await api.get('', {
+    params: {
+      action: 'query',
+      prop: 'revisions',
+      titles: articleId,
+      rvlimit: 1,
+      rvdir: 'newer',
+      format: 'json',
+      formatversion: 2
+    }
+  });
+  return response.data.query.pages[0].revisions[0].revid;
+}
 
-  const originalRevid =
-    originalRevidResponse.data.query.pages[0].revisions[0].revid;
-  const latestRevid =
-    latestRevidResponse.data.query.pages[0].revisions[0].revid;
-
-  // 2. Get the Diff HTML
-  logger.info('Getting the Diff HTML of Rivids:', {
+async function getDiffHtml(
+  articleId: string,
+  originalRevid: string,
+  latestRevid: string
+) {
+  logger.info('Getting the Diff HTML of Revids:', {
     originalRevid,
     latestRevid
   });
@@ -268,6 +271,14 @@ export async function updateChanges(articleId: string, permissionId: string) {
     (el) => el.outerHTML
   );
   await browser.close();
+  return diffPage;
+}
+
+export async function updateChanges(articleId: string, permissionId: string) {
+  const originalRevid = await getOldestRevisionId(articleId);
+  const latestRevid = await getNewestRevisionId(articleId);
+
+  const diffPage = await getDiffHtml(articleId, originalRevid, latestRevid);
 
   await decomposeArticle(diffPage, permissionId, articleId);
 }

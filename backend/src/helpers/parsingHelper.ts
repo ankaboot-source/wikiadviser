@@ -56,7 +56,7 @@ export async function decomposeArticle(
         }
       }
 
-      // Remove data-diff-if & data-parsoid Attributes
+      // Remove data-diff-id & data-parsoid Attributes
       $wrapElement.find('[data-diff-id]').each((_, el) => {
         $(el).removeAttr('data-diff-id');
       });

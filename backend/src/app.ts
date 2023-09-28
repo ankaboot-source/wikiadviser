@@ -31,7 +31,7 @@ app.put('/article/changes', async (req, res) => {
     const { articleId, permissionId } = req.body;
     await updateChanges(articleId, permissionId);
     logger.info({ articleId }, 'Updated Changes of article');
-    res.status(204);
+    res.status(200).json({ message: 'Updating changes succeeded.' });
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
@@ -151,7 +151,7 @@ app.delete('/article', async (req, res) => {
     await deleteArticleMW(articleId);
     await deleteArticle(articleId);
 
-    res.status(204);
+    res.status(200).json({ message: 'Deleting article succeeded.' });
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);

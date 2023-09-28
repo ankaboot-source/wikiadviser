@@ -124,7 +124,7 @@ export async function importNewArticle(
   language = 'en'
 ): Promise<void> {
   // Export
-  logger.info('Exporting file ', title);
+  logger.info(`Exporting file  ${title}`);
   const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
     params: {
       title: 'Special:Export',
@@ -238,10 +238,10 @@ async function getDiffHtml(
   originalRevid: string,
   latestRevid: string
 ) {
-  logger.info('Getting the Diff HTML of Revids:', {
-    originalRevid,
-    latestRevid
-  });
+  logger.info(
+    { originalRevid, latestRevid },
+    'Getting the Diff HTML of Revids:'
+  );
 
   const browser = await chromium.launch();
   const context = await browser.newContext({

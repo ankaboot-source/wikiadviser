@@ -30,7 +30,7 @@ app.put('/article/changes', async (req, res) => {
   try {
     const { articleId, permissionId } = req.body;
     await updateChanges(articleId, permissionId);
-    logger.info('Updated Changes of the article:', articleId);
+    logger.info({ articleId }, 'Updated Changes of article');
     res.status(204);
   } catch (error) {
     if (error instanceof Error) {
@@ -46,7 +46,7 @@ app.get('/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const content = await getArticleParsedContent(articleId); // parsingHelper.ts
-    logger.info('Get Parsed Article');
+    logger.info({ articleId }, 'Get Parsed Article');
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', content });
@@ -65,7 +65,7 @@ app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const changes = await getChangesAndParsedContent(articleId); // parsingHelper.ts
-    logger.info('Parsed Changes recieved:', changes);
+    logger.info({ articleId }, 'Parsed Changes recieved');
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
@@ -85,7 +85,7 @@ app.put('/article/change', async (req, res) => {
     const { changeId, status, description } = req.body;
     await updateChange({ id: changeId, status, description });
 
-    logger.info('Updated Changes of the article:', changeId);
+    logger.info({ changeId }, 'Updated Change');
     res.status(201).json({ message: 'Updating change succeeded.' });
   } catch (error) {
     if (error instanceof Error) {
@@ -129,7 +129,7 @@ app.get('/wikipedia/articles', async (req, res) => {
     const term = req.query.term as string;
     const language = req.query.language as string;
     const response = await wikiApi.getWikipediaArticles(term, language);
-    logger.info('Getting Wikipedia articles succeeded.', response);
+    logger.info('Getting Wikipedia articles succeeded.');
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',
       searchResults: response

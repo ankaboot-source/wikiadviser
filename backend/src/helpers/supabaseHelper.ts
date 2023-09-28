@@ -88,23 +88,14 @@ export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
   }
 }
 
-export async function updateArticle(
-  permissionId: string,
+export async function updateCurrentHtmlContent(
+  articleId: string,
   current_html_content: string
 ) {
-  const { data: articleIddata, error: articleIdError } = await supabase
-    .from('permissions')
-    .select(`article_id`)
-    .eq('id', permissionId)
-    .single();
-  if (articleIdError) {
-    throw new Error(articleIdError.message);
-  }
-
   const { error: articleError } = await supabase
     .from('articles')
     .update({ current_html_content })
-    .eq('id', articleIddata.article_id);
+    .eq('id', articleId);
   if (articleError) {
     throw new Error(articleError.message);
   }

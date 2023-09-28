@@ -2,7 +2,8 @@ import axios from 'axios';
 import https from 'https';
 import { chromium } from 'playwright';
 import logger from '../logger';
-import { decomposeArticle } from './parsingHelper';
+import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
+import { refineArticleChanges } from './parsingHelper';
 
 const {
   MEDIAWIKI_HOST,
@@ -217,28 +218,14 @@ export async function importNewArticle(
   });
 }
 
-async function getNewestRevisionId(articleId: string) {
+async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
   const response = await api.get('', {
     params: {
       action: 'query',
       prop: 'revisions',
       titles: articleId,
       rvlimit: 1,
-      rvdir: 'older',
-      format: 'json',
-      formatversion: 2
-    }
-  });
-  return response.data.query.pages[0].revisions[0].revid;
-}
-async function getOldestRevisionId(articleId: string) {
-  const response = await api.get('', {
-    params: {
-      action: 'query',
-      prop: 'revisions',
-      titles: articleId,
-      rvlimit: 1,
-      rvdir: 'newer',
+      rvdir: sort,
       format: 'json',
       formatversion: 2
     }
@@ -275,10 +262,17 @@ async function getDiffHtml(
 }
 
 export async function updateChanges(articleId: string, permissionId: string) {
-  const originalRevid = await getOldestRevisionId(articleId);
-  const latestRevid = await getNewestRevisionId(articleId);
+  const originalRevid = await getRevisionId(articleId, 'newer');
+  const latestRevid = await getRevisionId(articleId, 'older');
 
   const diffPage = await getDiffHtml(articleId, originalRevid, latestRevid);
 
-  await decomposeArticle(diffPage, permissionId, articleId);
+  const { changesToUpsert, htmlContent } = await refineArticleChanges(
+    articleId,
+    diffPage,
+    permissionId
+  );
+
+  await upsertChanges(changesToUpsert);
+  await updateCurrentHtmlContent(articleId, htmlContent);
 }

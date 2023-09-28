@@ -1,17 +1,11 @@
 import { load } from 'cheerio';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
-import {
-  getArticle,
-  getChanges,
-  getPermissionData,
-  updateArticle,
-  upsertChanges
-} from './supabaseHelper';
+import { getArticle, getChanges, getPermissionData } from './supabaseHelper';
 
-export async function decomposeArticle(
+export async function refineArticleChanges(
+  articleId: string,
   html: string,
-  permissionId: string,
-  articleId: string
+  permissionId: string
 ) {
   const $ = load(html);
   let changeid = -1;
@@ -160,11 +154,8 @@ export async function decomposeArticle(
     changesToUpsert.push(...changesToInsert);
   }
 
-  // Bulk upsert changes
-  await upsertChanges(changesToUpsert);
-
-  await updateArticle(permissionId, $.html());
-  return $.html();
+  const htmlContent = $.html();
+  return { changesToUpsert, htmlContent };
 }
 
 export async function getArticleParsedContent(articleId: string) {

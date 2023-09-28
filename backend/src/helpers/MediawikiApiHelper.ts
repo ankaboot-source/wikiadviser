@@ -2,8 +2,8 @@ import axios from 'axios';
 import https from 'https';
 import { chromium } from 'playwright';
 import logger from '../logger';
-import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 import { refineArticleChanges } from './parsingHelper';
+import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
 const {
   MEDIAWIKI_HOST,

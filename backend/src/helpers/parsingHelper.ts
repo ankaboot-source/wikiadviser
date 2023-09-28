@@ -2,6 +2,36 @@ import { load } from 'cheerio';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getArticle, getChanges, getPermissionData } from './supabaseHelper';
 
+async function addPermissionDataToChanges(
+  changesToInsert: Change[],
+  permissionId: string
+) {
+  const permissionData = await getPermissionData(permissionId);
+  if (permissionData) {
+    for (const change of changesToInsert) {
+      if (!change.id) {
+        change.article_id = permissionData.article_id;
+        change.contributor_id = permissionData.user_id;
+      }
+    }
+  }
+}
+
+function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
+  for (const change of changes) {
+    if (
+      !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
+    ) {
+      const { index, users, comments, ...baseChange } = change;
+
+      changesToUpsert.push({
+        ...baseChange,
+        index: null
+      });
+    }
+  }
+}
+
 export async function refineArticleChanges(
   articleId: string,
   html: string,
@@ -127,30 +157,11 @@ export async function refineArticleChanges(
     $element.attr('data-id', '');
   }
 
-  for (const change of changes) {
-    if (
-      !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
-    ) {
-      const { index, users, comments, ...baseChange } = change;
-
-      changesToUpsert.push({
-        ...baseChange,
-        index: null
-      });
-    }
-  }
+  unindexUnassignedChanges(changesToUpsert, changes);
 
   // Add 'article_id' and 'contributor_id' properties to changeToinsert
   if (changesToInsert) {
-    const permissionData = await getPermissionData(permissionId);
-    if (permissionData) {
-      for (const change of changesToInsert) {
-        if (!change.id) {
-          change.article_id = permissionData.article_id;
-          change.contributor_id = permissionData.user_id;
-        }
-      }
-    }
+    await addPermissionDataToChanges(changesToInsert, permissionId);
     changesToUpsert.push(...changesToInsert);
   }
 

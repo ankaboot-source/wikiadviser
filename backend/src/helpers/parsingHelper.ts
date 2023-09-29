@@ -103,13 +103,13 @@ export async function refineArticleChanges(
   );
 
   const changes = await getChanges(articleId);
-  const elements = $('[data-description]');
+  const changeElements = $('[data-description]');
 
   const changesToUpsert: Change[] = [];
   const changesToInsert: Change[] = [];
   let changeIndex = 0;
 
-  for (const element of elements) {
+  for (const element of changeElements) {
     const $element = $(element);
     let changeId = '';
     let description: string | undefined;

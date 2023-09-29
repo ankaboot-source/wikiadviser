@@ -60,7 +60,6 @@ app.get('/article/parsedContent', async (req, res) => {
   }
 });
 
-// Get Article Changes
 app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
@@ -79,7 +78,6 @@ app.get('/article/changes', async (req, res) => {
   }
 });
 
-// Update a Change
 app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
@@ -97,7 +95,6 @@ app.put('/article/change', async (req, res) => {
   }
 });
 
-// New Article
 app.post('/article', async (req, res) => {
   const { title, userId, language, description } = req.body;
   logger.info(

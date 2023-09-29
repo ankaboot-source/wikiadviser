@@ -2,18 +2,17 @@ import 'dotenv/config';
 import express, { json } from 'express';
 import {
   deleteArticleMW,
-  importNewArticle
+  importNewArticle,
+  updateChanges
 } from './helpers/MediawikiApiHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
-  decomposeArticle,
   getArticleParsedContent,
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
 import {
   deleteArticle,
   insertArticle,
-  removeChanges,
   updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
@@ -22,66 +21,80 @@ import corsMiddleware from './middleware/cors';
 const app = express();
 const { WIKIADVISER_API_PORT } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
-const data = { html: '' };
 const wikiApi = new WikipediaApiInteractor();
 
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 
-// POST and GET the html diff of the local mediawiki
-app.post('/rawArticle', async (req, res) => {
-  const { html, permissionId } = req.body;
-  logger.info('Data received:', { size: Buffer.byteLength(html, 'utf8') });
-  await removeChanges(permissionId);
-  data.html = await decomposeArticle(html, permissionId);
-  res.status(201).json({ message: 'Diff HTML created.' });
+app.put('/article/changes', async (req, res) => {
+  try {
+    const { articleId, permissionId } = req.body;
+    await updateChanges(articleId, permissionId);
+    logger.info({ articleId }, 'Updated Changes of article');
+    res.status(200).json({ message: 'Updating changes succeeded.' });
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
+    res.status(500).json({ message: 'Updating changes failed.' });
+  }
 });
 
-// Get the Article current content HTML Parsed
 app.get('/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const content = await getArticleParsedContent(articleId); // parsingHelper.ts
-    logger.info('Get Parsed Article');
+    const content = await getArticleParsedContent(articleId);
+    logger.info({ articleId }, 'Get Parsed Article');
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', content });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Getting article changes failed.' });
   }
 });
 
-// Get Article Changes
 app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const changes = await getChangesAndParsedContent(articleId); // parsingHelper.ts
-    logger.info('Parsed Changes recieved:', changes);
+    const changes = await getChangesAndParsedContent(articleId);
+    logger.info({ articleId }, 'Parsed Changes recieved');
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Getting article changes failed.' });
   }
 });
 
-// Update a Change
 app.put('/article/change', async (req, res) => {
   try {
     const { changeId, status, description } = req.body;
-    await updateChange({ changeId, status, description });
+    await updateChange({ id: changeId, status, description });
 
-    logger.info('Updated Changes of the article:', changeId);
+    logger.info({ changeId }, 'Updated Change');
     res.status(201).json({ message: 'Updating change succeeded.' });
-  } catch (error: any) {
-    logger.error(error.message);
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Updating change failed.' });
   }
 });
 
-// New Article
 app.post('/article', async (req, res) => {
   const { title, userId, language, description } = req.body;
   logger.info(
@@ -113,7 +126,7 @@ app.get('/wikipedia/articles', async (req, res) => {
     const term = req.query.term as string;
     const language = req.query.language as string;
     const response = await wikiApi.getWikipediaArticles(term, language);
-    logger.info('Getting Wikipedia articles succeeded.', response);
+    logger.info('Getting Wikipedia articles succeeded.');
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',
       searchResults: response
@@ -135,9 +148,13 @@ app.delete('/article', async (req, res) => {
     await deleteArticleMW(articleId);
     await deleteArticle(articleId);
 
-    res.status(200).json({ message: 'Deleting article succeeded.', articleId });
-  } catch (error: any) {
-    logger.error(error.message);
+    res.status(200).json({ message: 'Deleting article succeeded.' });
+  } catch (error) {
+    if (error instanceof Error) {
+      logger.error(error.message);
+    } else {
+      logger.error(error);
+    }
     res.status(500).json({ message: 'Deleting article failed.' });
   }
 });

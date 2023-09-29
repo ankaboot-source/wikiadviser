@@ -1,17 +1,45 @@
 import { load } from 'cheerio';
-import {
-  createNewChange,
-  getArticle,
-  getChanges,
-  updateArticle,
-  updateChange
-} from './supabaseHelper';
-import { ChildNodeData } from '../types';
+import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
+import { getArticle, getChanges, getPermissionData } from './supabaseHelper';
 
-export async function decomposeArticle(html: string, permissionId: string) {
+async function addPermissionDataToChanges(
+  changesToInsert: Change[],
+  permissionId: string
+) {
+  const permissionData = await getPermissionData(permissionId);
+  if (permissionData) {
+    for (const change of changesToInsert) {
+      if (!change.id) {
+        change.article_id = permissionData.article_id;
+        change.contributor_id = permissionData.user_id;
+      }
+    }
+  }
+}
+
+function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
+  for (const change of changes) {
+    if (
+      !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
+    ) {
+      const { index, users, comments, ...baseChange } = change;
+
+      changesToUpsert.push({
+        ...baseChange,
+        index: null
+      });
+    }
+  }
+}
+
+export async function refineArticleChanges(
+  articleId: string,
+  html: string,
+  permissionId: string
+) {
   const $ = load(html);
   let changeid = -1;
-  // Go through elements that have the attribute data-diff-action
+  // Loop through elements that have the attribute data-diff-action
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
@@ -51,9 +79,19 @@ export async function decomposeArticle(html: string, permissionId: string) {
           $nextElement.remove();
         }
       }
+
+      // Remove data-diff-id & data-parsoid Attributes
+      $wrapElement.find('[data-diff-id]').each((_, el) => {
+        $(el).removeAttr('data-diff-id');
+      });
+      $wrapElement.find('[data-parsoid]').each((_, el) => {
+        $(el).removeAttr('data-parsoid');
+      });
+
       // Add the description and the type of edit and update the element.
       $wrapElement.attr('data-description', list.join(' '));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
+
       $element.replaceWith($wrapElement);
     }
   );
@@ -64,41 +102,76 @@ export async function decomposeArticle(html: string, permissionId: string) {
     've-ui-diffElement-hasDescriptions'
   );
 
-  const elements = $('[data-description]');
-  for (const element of elements) {
+  const changes = await getChanges(articleId);
+  const changeElements = $('[data-description]');
+
+  const changesToUpsert: Change[] = [];
+  const changesToInsert: Change[] = [];
+  let changeIndex = 0;
+
+  for (const element of changeElements) {
     const $element = $(element);
-    // eslint-disable-next-line no-await-in-loop
-    const changeId = await createNewChange(permissionId);
-    $element.attr('data-id', changeId);
-    const description = $element.attr('data-description');
+    let changeId = '';
+    let description: string | undefined;
+
     const typeOfEdit = $element.attr('data-type-of-edit') as
       | 'change'
       | 'insert'
       | 'remove';
-    // Remove description and type of edit attr
+
+    for (const change of changes) {
+      const $changeContent = load(change.content, null, false);
+      const changeContentInnerHTML = $changeContent('span:first').html();
+      if (
+        TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
+        $element.html() === changeContentInnerHTML
+      ) {
+        // Update the change INDEX
+        changeId = change.id;
+        const { index, users, comments, ...baseChange } = change;
+        changesToUpsert.push({
+          ...baseChange,
+          index: changeIndex
+        });
+        changeIndex += 1;
+        break;
+      }
+    }
+
+    if (!changeId) {
+      // Create new change
+      description = $element.attr('data-description');
+      changesToInsert.push({
+        content: $.html($element),
+        status: 0,
+        description,
+        type_of_edit: TypeOfEditDictionary[typeOfEdit],
+        index: changeIndex
+      });
+      changeIndex += 1;
+    }
+
+    // Remove data-description & data-type-of-edit Attributes of the html content
     $element.removeAttr('data-description');
     $element.removeAttr('data-type-of-edit');
-    enum TypeOfEditDictionary {
-      change = 0,
-      insert = 1,
-      remove = 2
-    }
-    // eslint-disable-next-line no-await-in-loop
-    await updateChange({
-      changeId,
-      content: $.html($element),
-      status: 0,
-      description,
-      type_of_edit: TypeOfEditDictionary[typeOfEdit]
-    });
+    $element.attr('data-id', '');
   }
-  await updateArticle(permissionId, $.html());
-  return $.html();
+
+  unindexUnassignedChanges(changesToUpsert, changes);
+
+  // Add 'article_id' and 'contributor_id' properties to changeToinsert
+  if (changesToInsert) {
+    await addPermissionDataToChanges(changesToInsert, permissionId);
+    changesToUpsert.push(...changesToInsert);
+  }
+
+  const htmlContent = $.html();
+  return { changesToUpsert, htmlContent };
 }
 
 export async function getArticleParsedContent(articleId: string) {
-  const article = await getArticle(articleId); // supabaseHelper.ts
-  const changes = await getChanges(articleId); // supabaseHelper.ts
+  const article = await getArticle(articleId);
+  const changes = await getChanges(articleId);
   const content: string = article.current_html_content;
   if (content !== undefined && content !== null) {
     const $ = load(content);
@@ -107,6 +180,8 @@ export async function getArticleParsedContent(articleId: string) {
       const $element = $(element);
       $element.attr('data-type-of-edit', changes[index].type_of_edit);
       $element.attr('data-status', changes[index].status);
+      $element.attr('data-index', changes[index].index);
+      $element.attr('data-id', changes[index].id);
     });
     return $.html();
   }
@@ -114,7 +189,7 @@ export async function getArticleParsedContent(articleId: string) {
 }
 
 export async function getChangesAndParsedContent(articleId: string) {
-  const changes = await getChanges(articleId); // supabaseHelper.ts
+  const changes = await getChanges(articleId);
   if (changes !== undefined && changes !== null) {
     for (const change of changes) {
       const $ = load(change.content);

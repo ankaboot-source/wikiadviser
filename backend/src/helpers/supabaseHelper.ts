@@ -55,35 +55,47 @@ export async function createNewChange(permissionId: string): Promise<string> {
 }
 
 export async function updateChange(toChange: Change): Promise<void> {
-  const { changeId, ...updateData } = toChange;
-
+  const { id, ...updateData } = toChange;
   const { error: changeError } = await supabase
     .from('changes')
     .update(updateData)
-    .eq('id', changeId);
-
+    .eq('id', id);
   if (changeError) {
     throw new Error(changeError.message);
   }
 }
 
-export async function updateArticle(
-  permissionId: string,
-  current_html_content: string
-) {
-  const { data: articleIddata, error: articleIdError } = await supabase
+export async function getPermissionData(permissionId: string) {
+  const { data: permissionData, error: permissionError } = await supabase
     .from('permissions')
-    .select(`article_id`)
+    .select('article_id, user_id')
     .eq('id', permissionId)
-    .single();
-  if (articleIdError) {
-    throw new Error(articleIdError.message);
+    .maybeSingle();
+  if (permissionError) {
+    throw new Error(permissionError.message);
   }
 
+  return permissionData;
+}
+export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
+  const { error } = await supabase.from('changes').upsert(changesToUpsert, {
+    defaultToNull: false,
+    onConflict: 'id'
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function updateCurrentHtmlContent(
+  articleId: string,
+  current_html_content: string
+) {
   const { error: articleError } = await supabase
     .from('articles')
     .update({ current_html_content })
-    .eq('id', articleIddata.article_id);
+    .eq('id', articleId);
   if (articleError) {
     throw new Error(articleError.message);
   }
@@ -108,14 +120,21 @@ export async function getChanges(articleId: string) {
       `
       id,
       content,
-    created_at,
-    description,
-    status,
-    type_of_edit,
-    users(
-      raw_user_meta_data), comments(content,created_at, users(raw_user_meta_data))`
+      created_at,
+      description,
+      status,
+      type_of_edit,
+      index,
+      article_id,
+      contributor_id,
+      users(
+        raw_user_meta_data), 
+        comments(content,created_at, 
+        users(raw_user_meta_data)
+        )
+      `
     )
-    .order('created_at')
+    .order('index')
     .eq('article_id', articleId);
 
   if (changesError) {

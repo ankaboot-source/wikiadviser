@@ -17,7 +17,6 @@
  */
 /* eslint-disable */
 ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
-  const wikiadviserApiHost = "https://api.wikiadviser.io";
   var diff = visualDiff.diff;
 
   // Parent constructor
@@ -63,26 +62,6 @@ ve.ui.DiffElement = function VeUiDiffElement(visualDiff, config) {
       this.$sidebar.append(this.descriptions.$element)
     )
     .addClass("ve-ui-diffElement");
-
-  /* Custom WikiAdviser */
-  const urlParams = new URLSearchParams(window.location.search);
-  const permissionId = urlParams.get("permissionid");
-
-  // Post data to the backend
-  fetch(`${wikiadviserApiHost}/rawArticle`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ html: this.$element[0].outerHTML, permissionId }),
-  })
-    .then((response) => {
-      console.log("Data sent.");
-    })
-    .catch((error) => {
-      console.error("Error sending data:", error);
-    });
-  /* End Custom WikiAdviser */
 };
 
 /* Inheritance */

@@ -685,6 +685,22 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		// Not passing trackMechanism because this isn't an abort action
 		this.tryTeardown( true );
 	}
+	/* Custom WikiAdviser */
+	// On "Save Changes", update changes
+	const wikiadviserApiHost = "https://api.wikiadviser.io";
+	const urlParams = new URLSearchParams(window.location.search);
+	const permissionId = urlParams.get("permissionid");
+	const articleId = this.getPageName();
+	if (permissionId) {
+	fetch(`${wikiadviserApiHost}/article/changes`, {
+		method: "PUT",
+		headers: {
+		"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ articleId , permissionId }),
+	})
+	}
+	/* End Custom WikiAdviser */
 };
 
 /**

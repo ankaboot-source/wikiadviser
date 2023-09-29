@@ -66,7 +66,7 @@ async function itemOnClick() {
 
         message: `
         <div class='text-h6'> 🕵️🔐 Anonymously and Safely Importing “${props.item.title}” from Wikipedia. </div></br>
-        <div class='text-body1'>Please wait..</div>`,
+        <div class='text-body1'>Please wait…</div>`,
         html: true,
       });
       try {

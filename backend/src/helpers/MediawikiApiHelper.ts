@@ -2,6 +2,8 @@ import axios from 'axios';
 import https from 'https';
 import { chromium } from 'playwright';
 import logger from '../logger';
+import { refineArticleChanges } from './parsingHelper';
+import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
 const {
   MEDIAWIKI_HOST,
@@ -122,13 +124,14 @@ export async function importNewArticle(
   language = 'en'
 ): Promise<void> {
   // Export
-  logger.info('Exporting file ', title);
+  logger.info(`Exporting file  ${title}`);
   const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
     params: {
       title: 'Special:Export',
       pages: title,
       templates: true,
-      lang: language
+      lang: language,
+      curonly: true
     },
     responseType: 'stream'
   });
@@ -213,4 +216,63 @@ export async function importNewArticle(
       reject(error);
     });
   });
+}
+
+async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
+  const response = await api.get('', {
+    params: {
+      action: 'query',
+      prop: 'revisions',
+      titles: articleId,
+      rvlimit: 1,
+      rvdir: sort,
+      format: 'json',
+      formatversion: 2
+    }
+  });
+  return response.data.query.pages[0].revisions[0].revid;
+}
+
+async function getDiffHtml(
+  articleId: string,
+  originalRevid: string,
+  latestRevid: string
+) {
+  logger.info(
+    { originalRevid, latestRevid },
+    'Getting the Diff HTML of Revids:'
+  );
+
+  const browser = await chromium.launch();
+  const context = await browser.newContext({
+    ignoreHTTPSErrors: true
+  });
+  const page = await context.newPage();
+  await page.goto(
+    `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+    { waitUntil: 'networkidle' }
+  );
+
+  const diffPage = await page.$eval(
+    '.ve-init-mw-diffPage-diff',
+    (el) => el.outerHTML
+  );
+  await browser.close();
+  return diffPage;
+}
+
+export async function updateChanges(articleId: string, permissionId: string) {
+  const originalRevid = await getRevisionId(articleId, 'newer');
+  const latestRevid = await getRevisionId(articleId, 'older');
+
+  const diffPage = await getDiffHtml(articleId, originalRevid, latestRevid);
+
+  const { changesToUpsert, htmlContent } = await refineArticleChanges(
+    articleId,
+    diffPage,
+    permissionId
+  );
+
+  await upsertChanges(changesToUpsert);
+  await updateCurrentHtmlContent(articleId, htmlContent);
 }

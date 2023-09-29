@@ -10,9 +10,9 @@ export async function getUsers(articleId: string): Promise<User[]> {
     .select(
       `
       id,
-    article_id,
-    role,
-    users(
+      article_id,
+      role,
+      users(
       raw_user_meta_data,
       email
       )`
@@ -81,7 +81,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
     .from('permissions')
     .select(
       `
-        id,
+      id,
       article_id,
       role,
       articles(title,description)

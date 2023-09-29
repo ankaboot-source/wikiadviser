@@ -3,7 +3,6 @@ create table "public"."articles" (
     "created_at" timestamp with time zone default now(),
     "title" text,
     "description" text,
-    "base_html_content" text,
     "current_html_content" text
 );
 
@@ -14,9 +13,9 @@ create table "public"."changes" (
     "status" smallint,
     "type_of_edit" smallint,
     "description" text,
-    "content" text not null,
     "article_id" uuid,
     "contributor_id" uuid,
+    "content" text not null,
     "index" smallint
 );
 
@@ -33,9 +32,9 @@ create table "public"."comments" (
 create table "public"."permissions" (
     "id" uuid not null default gen_random_uuid(),
     "created_at" timestamp with time zone default now(),
-    "role" smallint,
     "user_id" uuid,
-    "article_id" uuid
+    "article_id" uuid,
+    "role" smallint
 );
 
 
@@ -78,5 +77,42 @@ alter table "public"."permissions" validate constraint "permissions_article_id_f
 alter table "public"."permissions" add constraint "permissions_user_id_fkey" FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE not valid;
 
 alter table "public"."permissions" validate constraint "permissions_user_id_fkey";
+
+create or replace view "public"."users" as  SELECT users.instance_id,
+    users.id,
+    users.aud,
+    users.role,
+    users.email,
+    users.encrypted_password,
+    users.email_confirmed_at,
+    users.invited_at,
+    users.confirmation_token,
+    users.confirmation_sent_at,
+    users.recovery_token,
+    users.recovery_sent_at,
+    users.email_change_token_new,
+    users.email_change,
+    users.email_change_sent_at,
+    users.last_sign_in_at,
+    users.raw_app_meta_data,
+    users.raw_user_meta_data,
+    users.is_super_admin,
+    users.created_at,
+    users.updated_at,
+    users.phone,
+    users.phone_confirmed_at,
+    users.phone_change,
+    users.phone_change_token,
+    users.phone_change_sent_at,
+    users.confirmed_at,
+    users.email_change_token_current,
+    users.email_change_confirm_status,
+    users.banned_until,
+    users.reauthentication_token,
+    users.reauthentication_sent_at,
+    users.is_sso_user,
+    users.deleted_at
+   FROM auth.users;
+
 
 

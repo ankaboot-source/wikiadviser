@@ -45,7 +45,7 @@ app.put('/article/changes', async (req, res) => {
 app.get('/article/parsedContent', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const content = await getArticleParsedContent(articleId); // parsingHelper.ts
+    const content = await getArticleParsedContent(articleId);
     logger.info({ articleId }, 'Get Parsed Article');
     res
       .status(200)
@@ -63,7 +63,7 @@ app.get('/article/parsedContent', async (req, res) => {
 app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
-    const changes = await getChangesAndParsedContent(articleId); // parsingHelper.ts
+    const changes = await getChangesAndParsedContent(articleId);
     logger.info({ articleId }, 'Parsed Changes recieved');
     res
       .status(200)

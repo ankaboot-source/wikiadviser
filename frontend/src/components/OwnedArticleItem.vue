@@ -112,7 +112,7 @@ async function removeArticle(articleId: string, articleTitle: string) {
 
     message: `
         <div class='text-h6'> Deleting “${articleTitle}”  </div></br>
-        <div class='text-body1'>Please wait..</div>`,
+        <div class='text-body1'>Please wait…</div>`,
     html: true,
   });
   try {

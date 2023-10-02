@@ -39,7 +39,7 @@
     wfLoadExtension( 'InputBox' );
     wfLoadExtension( 'TemplateData' );
     wfLoadExtension( 'SyntaxHighlight_GeSHi' );
-  
+
     $wgUseInstantCommons = true;
 
     wfLoadExtension( 'Cite' );
@@ -109,3 +109,8 @@ docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build -
 - In `MyVisualEditor`
   - Our custom code is marked by `/* Custom WikiAdviser */` comments.
   - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (backend).
+
+## Important links and references
+
+- [Canasta official documentation](https://canasta.wiki/)
+- [Mediawiki API documentation](https://www.mediawiki.org/wiki/API:Main_page)

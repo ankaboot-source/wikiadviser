@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import DiffItem from './DiffItem.vue';
 import { ChangesItem, UserRole } from 'src/types';
 
@@ -48,8 +49,10 @@ const props = defineProps<{
   changesList: ChangesItem[];
 }>();
 
-const indexedChanges = props.changesList.filter((item) => item.index !== null);
-const unindexedChanges = props.changesList.filter(
-  (item) => item.index === null
+const indexedChanges = computed(() =>
+  props.changesList.filter((item) => item.index !== null)
+);
+const unindexedChanges = computed(() =>
+  props.changesList.filter((item) => item.index === null)
 );
 </script>

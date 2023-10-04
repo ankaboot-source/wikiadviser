@@ -33,7 +33,8 @@ jobs:
           envs: WIKIADVISER_API_HOST,SUPABASE_SECRET_PROJECT_TOKEN,WIKIADVISER_API_HOST,MEDIAWIKI_HOST,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIADVISER_FRONTEND_HOST,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
-
+            leadminer_io_path="/home/wikiadviser-user/leadminer.io"
+            
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
@@ -43,6 +44,17 @@ jobs:
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
+            
+            # Check if leadminer.io folder exists
+            if [ -d "$leadminer_io_path" ]; then
+                echo "leadminer.io exists..."
+                cd $leadminer_io_path
+                git pull
+            else
+                echo "leadminer.io doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/leadminer.io.git $leadminer_io_path
+            fi
+
 
             cd $wikiadviser_path; docker compose -f docker-compose.prod.yml down; git pull
 
@@ -65,6 +77,9 @@ jobs:
               --build \
               --force-recreate
 
+            # Start monitoring exporters 
+            cd; cd $leadminer_io_path/monitoring-agent; docker compose down; docker compose up -d;
+
             # Remove unused images/containers/volumes
             docker system prune -f
 
@@ -81,6 +96,7 @@ jobs:
             folder_path="/home/wiki-user/wikiadviser"
             canasta_path="/home/wiki-user/canasta"
             visual_editor_folder_name="MyVisualEditor"
+            leadminer_io_path="/home/wiki-user/leadminer.io"
 
             # Check if the folder exists
             if [ -d "$folder_path" ]; then
@@ -92,8 +108,21 @@ jobs:
                 git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
             fi
 
+            # Check if leadminer.io folder exists
+            if [ -d "$leadminer_io_path" ]; then
+                echo "leadminer.io exists..."
+                cd $leadminer_io_path
+                git pull
+            else
+                echo "leadminer.io doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/leadminer.io.git $leadminer_io_path
+            fi
+
             cd $canasta_path; docker compose down
             rm -rf $canasta_path/extensions/$visual_editor_folder_name
             cp -rf $folder_path/$visual_editor_folder_name $canasta_path/extensions/$visual_editor_folder_name
 
             cd $canasta_path; docker compose up -d
+
+            # Start monitoring exporters
+            cd; cd $leadminer_io_path/monitoring-agent; docker compose down; docker compose up -d;

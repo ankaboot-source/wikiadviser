@@ -24,15 +24,13 @@ jobs:
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
-                cd $wikiadviser_path
-                git pull
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
             
             # Start monitoring exporters 
-            cd; cd $wikiadviser_path/monitoring-agent; docker compose down; docker compose up -d;
+            cd $wikiadviser_path/monitoring-agent; docker compose down; git pull; docker compose up -d;
 
 
   deploy-monitoring-mediawiki:
@@ -50,12 +48,10 @@ jobs:
             # Check if the folder exists
             if [ -d "$folder_path" ]; then
                 echo "wikiadviser exists..."
-                cd $folder_path
-                git pull
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
             fi
 
             # Start monitoring exporters
-            cd; cd $folder_path/monitoring-agent; docker compose down; docker compose up -d;
+            cd $folder_path/monitoring-agent; docker compose down; git pull; docker compose up -d;

@@ -15,7 +15,7 @@
         v-if="unindexedChanges.length"
         style="border-radius: 4px"
         class="q-mb-md q-mx-sm borders bg-accent"
-        label="Unassigned changes"
+        label="Old changes"
       >
         <q-list>
           <diff-item

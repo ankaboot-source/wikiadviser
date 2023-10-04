@@ -1,0 +1,61 @@
+---
+version: "3"
+
+networks:
+  net:
+
+services:
+
+  promtail:
+    image: grafana/promtail:main-6dfcd59
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/log/journal/:/var/log/journal/
+      - /run/log/journal/:/run/log/journal/
+      - /etc/machine-id:/etc/machine-id
+      - /var/log/:/var/log
+    command: -config.file=/etc/promtail/config.yaml
+    networks:
+      - net
+ 
+  # Node-exporter for exporting server metrics
+  node-exporter:
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - 9100:9100
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - --collector.filesystem.ignored-mount-points
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    restart: always
+    network_mode: "host"
+    deploy:
+      mode: global
+    
+  # cAdvisor for exporting containers metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    ports:
+      - 7070:7070
+    command:
+      - '-housekeeping_interval=10s'
+      - '-docker_only=true'
+      - '-port=7070'
+    devices:
+      - /dev/kmsg:/dev/kmsg
+    networks:
+      - net
+    restart: always
+    deploy:
+      mode: global

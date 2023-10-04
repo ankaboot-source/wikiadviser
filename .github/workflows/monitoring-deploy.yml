@@ -1,0 +1,61 @@
+name: Deploy monitoring
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'monitoring-agent/**'
+  workflow_dispatch:
+
+jobs:
+  deploy-monitoring-wikiadviser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy monitoring wikiadviser
+        uses: appleboy/ssh-action@master
+        env:
+        with:
+          host: ${{ vars.WIKIADVISER_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.WIKIADVISER_USERNAME }}
+          envs:
+          script: |
+            wikiadviser_path="/home/wikiadviser-user/wikiadviser"
+            
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+            
+            # Start monitoring exporters 
+            cd; cd $wikiadviser_path/monitoring-agent; docker compose down; docker compose up -d;
+
+
+  deploy-monitoring-mediawiki:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy monitoring mediawiki
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.MEDIAWIKI_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          username: ${{ secrets.WIKI_USERNAME }}
+          script: |
+            folder_path="/home/wiki-user/wikiadviser"
+            
+            # Check if the folder exists
+            if [ -d "$folder_path" ]; then
+                echo "wikiadviser exists..."
+                cd $folder_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
+            fi
+
+            # Start monitoring exporters
+            cd; cd $folder_path/monitoring-agent; docker compose down; docker compose up -d;

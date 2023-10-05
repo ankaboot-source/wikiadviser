@@ -44,10 +44,13 @@ jobs:
     steps:
       - name: Deploy monitoring mediawiki
         uses: appleboy/ssh-action@master
+        env:
+          LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
         with:
           host: ${{ vars.MEDIAWIKI_HOST }}
           key: ${{ secrets.SSH_PRIVATE_MEDIAWIKI }}
           username: ${{ secrets.WIKI_USERNAME }}
+          envs: LOKI_ENDPOINT
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
             

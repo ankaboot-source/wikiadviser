@@ -13,11 +13,12 @@ jobs:
       - name: Deploy monitoring wikiadviser
         uses: appleboy/ssh-action@master
         env:
+          LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
         with:
           host: ${{ vars.WIKIADVISER_HOST }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs:
+          envs: LOKI_ENDPOINT
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
             
@@ -29,8 +30,13 @@ jobs:
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
             
+            # pull changes         
+            cd $wikiadviser_path/monitoring-agent; docker compose down; git pull;
+            export LOKI_ENDPOINT
+            envsubst < ./promtail-config.yaml.conf > ./promtail-config.yaml
+
             # Start monitoring exporters 
-            cd $wikiadviser_path/monitoring-agent; docker compose down; git pull; docker compose up -d;
+            docker compose up -d;
 
 
   deploy-monitoring-mediawiki:
@@ -53,5 +59,10 @@ jobs:
                 git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
             fi
 
-            # Start monitoring exporters
-            cd $folder_path/monitoring-agent; docker compose down; git pull; docker compose up -d;
+            # pull changes         
+            cd $wikiadviser_path/monitoring-agent; docker compose down; git pull;
+            export LOKI_ENDPOINT
+            envsubst < ./promtail-config.yaml.conf > ./promtail-config.yaml
+
+            # Start monitoring exporters 
+            docker compose up -d;

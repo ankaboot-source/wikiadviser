@@ -2,22 +2,22 @@
 version: "3"
 
 networks:
-  net:
+  monitor:
 
 services:
 
-  promtail:
-    image: grafana/promtail:main-6dfcd59
-    volumes:
-      - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /var/log/journal/:/var/log/journal/
-      - /run/log/journal/:/run/log/journal/
-      - /etc/machine-id:/etc/machine-id
-      - /var/log/:/var/log
-    command: -config.file=/etc/promtail/config.yaml
-    networks:
-      - net
+#  promtail:
+#    image: grafana/promtail:main-6dfcd59
+#    volumes:
+#      - ./promtail-config.yaml:/etc/promtail/config.yaml:ro
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - /var/log/journal/:/var/log/journal/
+#      - /run/log/journal/:/run/log/journal/
+#      - /etc/machine-id:/etc/machine-id
+#      - /var/log/:/var/log
+#    command: -config.file=/etc/promtail/config.yaml
+#    networks:
+#      - net
  
   # Node-exporter for exporting server metrics
   node-exporter:
@@ -55,7 +55,7 @@ services:
     devices:
       - /dev/kmsg:/dev/kmsg
     networks:
-      - net
+      - monitor
     restart: always
     deploy:
       mode: global

@@ -49,14 +49,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           username: ${{ secrets.WIKI_USERNAME }}
           script: |
-            folder_path="/home/wiki-user/wikiadviser"
+            wikiadviser_path="/home/wiki-user/wikiadviser"
             
             # Check if the folder exists
             if [ -d "$folder_path" ]; then
                 echo "wikiadviser exists..."
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."
-                git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
 
             # pull changes         

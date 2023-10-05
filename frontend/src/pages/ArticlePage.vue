@@ -1,77 +1,27 @@
 <template>
   <template v-if="article">
-    <q-tabs
-      v-model="tab"
-      dense
-      class="q-px-md q-pt-sm"
-      active-color="primary"
-      indicator-color="primary"
-      align="left"
-    >
-      <q-tab
-        v-if="article.title && article.permission_id && editorPermission"
-        name="editor"
-        label="editor"
-      />
-      <q-tab name="changes" label="changes" :disable="!changesList.length">
-        <q-tooltip v-if="!changesList.length">
-          There are currently no changes.
-        </q-tooltip>
-      </q-tab>
-      <q-space />
-      <q-btn
-        v-if="role != UserRole.Viewer"
-        icon="link"
-        color="primary"
-        outline
-        label="Share link"
-        no-caps
-        class="q-mr-xs"
-        @click="copyShareLinkToClipboard()"
-      />
-      <q-btn
-        v-if="role != UserRole.Viewer"
-        icon="o_group"
-        color="primary"
-        outline
-        label="Share"
-        no-caps
-        class="q-pr-lg"
-        @click="share = !share"
-      >
-        <q-dialog v-model="share">
-          <share-card :article-id="articleId" :role="article.role" />
-        </q-dialog>
-      </q-btn>
-    </q-tabs>
-    <q-tab-panels v-model="tab" class="col">
-      <q-tab-panel
-        v-if="article.title && article.permission_id && editorPermission"
-        name="editor"
-        class="row justify-evenly"
-      >
-        <mw-visual-editor
-          :article="article"
-          class="col-10 rounded-borders q-pa-md bg-secondary borders q-pt-sm"
-        />
-      </q-tab-panel>
-      <q-tab-panel name="changes" class="row justify-evenly q-pt-sm">
+    <div class="q-panel scroll col">
+      <div class="row justify-evenly q-pa-sm">
         <diff-list
           :role="role"
           :changes-list="changesList"
-          class="col q-mr-md rounded-borders q-pa-md bg-secondary borders"
+          class="col q-mr-md rounded-borders q-pa-md q-mt-xs bg-secondary borders"
         />
         <diff-card
+          :article="article"
           :changes-content="changesContent"
-          class="col-9 rounded-borders q-py-md q-pl-md bg-secondary borders"
+          :role="role"
+          :editor-permission="editorPermission"
+          class="col-9"
         />
-      </q-tab-panel>
-    </q-tab-panels>
+      </div>
+    </div>
   </template>
 </template>
 
 <script setup lang="ts">
-import { copyToClipboard, useQuasar } from 'quasar';
+// close (aligned 3alisar) view edit share link share : fard style
+// approve w reject: ghama9 3la fete7 l button style
 import supabase from 'src/api/supabase';
 import {
   createNewPermission,
@@ -81,27 +31,22 @@ import {
 } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
-import MwVisualEditor from 'src/components/MwVisualEditor.vue';
-import ShareCard from 'src/components/ShareCard.vue';
 import { Article, ChangesItem, UserRole } from 'src/types';
-import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
+import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 
-const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const { params } = route;
 
 const articleId = ref('');
-const share = ref(false);
 const role = ref<UserRole>(UserRole.Viewer);
 const article = ref<Article>();
 const users = ref();
-const editorPermission = ref(false);
-const tab = ref();
+const editorPermission = ref<boolean | null>(null);
 const changesList = ref<ChangesItem[]>([]);
-const changesContent = ref('');
+const changesContent = ref<string | null>(null);
 let pollTimer: number;
 const articlesStore = useArticlesStore();
 
@@ -133,76 +78,25 @@ onBeforeMount(async () => {
       article.value.role === UserRole.Owner;
   }
 
-  const currentTabParam = ref(params.tab);
-
   await fetchChanges();
   // keep calling fetchChanges to implement long polling
   pollTimer = window.setInterval(async () => {
     await fetchChanges();
   }, 2000);
-
-  const tabSelected = computed(() => {
-    if (currentTabParam.value === 'editor') {
-      if (editorPermission.value) {
-        // editorParam & editorPerm -> Editor
-        return 'editor';
-      }
-      // editorParam & !editorPerm -> Changes
-      return 'changes';
-    }
-
-    if (currentTabParam.value === 'changes') {
-      if (changesList.value.length) {
-        // changeParam & changeLength -> Changes
-        return 'changes';
-      }
-      if (editorPermission.value) {
-        // changeParam & !changeLength & editorPerm -> Editor
-        return 'editor';
-      }
-      // changeParam & !changeLength & !editorPerm -> Changes (Empty state)
-      return 'changes';
-    }
-
-    // !changeParam & !editorParam -> Changes (Default)
-    return 'changes';
-  });
-
-  tab.value = tabSelected.value;
-
-  watch(
-    route,
-    (newRoute) => {
-      if (
-        newRoute.params.tab !== currentTabParam.value &&
-        ['changes', 'editor'].includes(newRoute.params.tab as string)
-      ) {
-        currentTabParam.value = newRoute.params.tab;
-        tab.value = tabSelected.value;
-      }
-    },
-    { immediate: true }
-  );
-
-  watch(
-    tab,
-    (newTab) => {
-      if (['changes', 'editor'].includes(newTab)) {
-        router.push({ params: { tab: newTab } });
-      }
-    },
-    { immediate: true }
-  );
 });
 
 async function fetchChanges() {
   try {
     const updatedChangesList = await getChanges(articleId.value);
+
     if (
       JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)
     ) {
       changesList.value = updatedChangesList;
       changesContent.value = await getArticleParsedContent(articleId.value);
+    }
+    if (!changesList.value.length) {
+      changesContent.value = '';
     }
   } catch (error) {
     console.error(error);
@@ -212,15 +106,4 @@ async function fetchChanges() {
 onBeforeUnmount(() => {
   clearInterval(pollTimer);
 });
-
-async function copyShareLinkToClipboard() {
-  await copyToClipboard(
-    `${window.location.origin}/articles/${route.params.articleId}`
-  );
-  $q.notify({
-    message: 'Share link copied to clipboard',
-    color: 'positive',
-    icon: 'content_copy',
-  });
-}
 </script>

@@ -90,7 +90,6 @@ async function itemOnClick() {
           name: 'article',
           params: {
             articleId: articleId.value,
-            tab: 'editor',
           },
         });
       } catch (error) {

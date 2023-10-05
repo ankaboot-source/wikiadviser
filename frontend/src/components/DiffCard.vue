@@ -71,16 +71,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { copyToClipboard, useQuasar } from 'quasar';
+import MwVisualEditor from 'src/components/MwVisualEditor.vue';
+import ShareCard from 'src/components/ShareCard.vue';
+import 'src/css/styles/diff.scss';
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
-import 'src/css/styles/diff.scss';
-import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Article } from 'src/types';
-import { UserRole } from 'src/types';
-import ShareCard from 'src/components/ShareCard.vue';
-import { useQuasar, copyToClipboard } from 'quasar';
+import { Article, UserRole } from 'src/types';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{

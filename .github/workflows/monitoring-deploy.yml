@@ -16,7 +16,7 @@ jobs:
           LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
         with:
           host: ${{ vars.WIKIADVISER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
           envs: LOKI_ENDPOINT
           script: |
@@ -46,7 +46,7 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ vars.MEDIAWIKI_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_MEDIAWIKI }}
           username: ${{ secrets.WIKI_USERNAME }}
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"

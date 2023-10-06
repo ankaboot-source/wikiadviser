@@ -39,12 +39,12 @@
       </q-btn>
     </q-toolbar>
 
-    <template v-if="article.title && article.permission_id && editorPermission">
-      <mw-visual-editor
-        v-show="buttonToggle === 'edit'"
-        :article="article"
-        class="col-grow q-mr-md rounded-borders borders bg-secondary"
-    /></template>
+    <mw-visual-editor
+      v-if="article.title && article.permission_id && editorPermission"
+      v-show="buttonToggle === 'edit'"
+      :article="article"
+      class="col-grow q-mr-md rounded-borders borders bg-secondary"
+    />
 
     <template v-if="buttonToggle === 'view'">
       <q-scroll-area
@@ -53,19 +53,18 @@
       >
         <div class="q-mr-md" v-html="props.changesContent" />
       </q-scroll-area>
-      <template v-else>
-        <div
-          class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
-        >
-          <div class="q-py-sm text-body1 text-weight-medium">
-            There are currently no changes
-          </div>
-          <div class="q-pb-sm text-body2">
-            Easily navigate through changes using the changes tab once the
-            article has been edited.
-          </div>
+      <div
+        v-else
+        class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
+      >
+        <div class="q-py-sm text-body1 text-weight-medium">
+          There are currently no changes
         </div>
-      </template>
+        <div class="q-pb-sm text-body2">
+          Easily navigate through changes using the changes tab once the article
+          has been edited.
+        </div>
+      </div>
     </template>
   </div>
 </template>

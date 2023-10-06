@@ -20,8 +20,6 @@
 </template>
 
 <script setup lang="ts">
-// close (aligned 3alisar) view edit share link share : fard style
-// approve w reject: ghama9 3la fete7 l button style
 import supabase from 'src/api/supabase';
 import {
   createNewPermission,

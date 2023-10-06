@@ -82,7 +82,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
-  changesContent: string | null | undefined;
+  changesContent: string | null;
   article: Article;
   role: UserRole;
   editorPermission: boolean | null;

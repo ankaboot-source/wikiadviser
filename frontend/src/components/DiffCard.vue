@@ -190,7 +190,6 @@ const toggleOptions = computed(() =>
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
   if (props.editorPermission === true && props.changesContent === '') {
-    console.log(props.changesContent === '');
     return 'edit';
   }
   return 'view';

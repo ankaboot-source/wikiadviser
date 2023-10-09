@@ -148,7 +148,7 @@
         <q-btn
           no-caps
           outline
-          color="primary"
+          color="blue-grey-10"
           class="bg-white"
           label="Close"
           @click="expanded = false"
@@ -158,7 +158,8 @@
           class="q-mr-sm"
           no-caps
           icon="thumb_down"
-          color="red"
+          color="red-1"
+          text-color="red-10"
           label="Reject"
           unelevated
           @click="handleReview(Status.EditRejected)"
@@ -166,7 +167,8 @@
         <q-btn
           no-caps
           icon="thumb_up"
-          color="green"
+          color="green-1"
+          text-color="green-10"
           label="Approve"
           unelevated
           @click="handleReview(Status.EditApproved)"

@@ -1,32 +1,91 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-pb-sm">View Changes</div>
-    <q-scroll-area v-if="props.changesContent" class="col-grow">
-      <div class="q-mr-md" v-html="props.changesContent" />
-    </q-scroll-area>
-    <template v-else>
-      <div class="q-py-sm text-body1 text-weight-medium">
-        There are currently no changes
-      </div>
-      <div class="q-pb-sm text-body2">
-        Easily navigate through changes using the changes tab once the article
-        has been edited.
+    <q-toolbar class="q-pr-md q-pl-none">
+      <q-btn-toggle
+        v-model="buttonToggle"
+        no-caps
+        unelevated
+        toggle-color="blue-grey-2"
+        toggle-text-color="blue-grey-10"
+        text-color="blue-grey-10"
+        color="bg-secondary"
+        class="borders"
+        :options="toggleOptions"
+      />
+      <q-space />
+      <q-btn
+        v-if="role != UserRole.Viewer"
+        icon="link"
+        color="blue-grey-10"
+        outline
+        label="Share link"
+        no-caps
+        class="q-mr-xs"
+        @click="copyShareLinkToClipboard()"
+      />
+      <q-btn
+        v-if="role != UserRole.Viewer"
+        icon="o_group"
+        color="blue-grey-10"
+        outline
+        label="Share"
+        no-caps
+        class="q-pr-lg"
+        @click="share = !share"
+      >
+        <q-dialog v-model="share">
+          <share-card :article-id="article.article_id" :role="article.role" />
+        </q-dialog>
+      </q-btn>
+    </q-toolbar>
+
+    <mw-visual-editor
+      v-if="article.title && article.permission_id && editorPermission"
+      v-show="buttonToggle === 'edit'"
+      :article="article"
+      class="col-grow q-mr-md rounded-borders borders bg-secondary"
+    />
+
+    <template v-if="buttonToggle === 'view'">
+      <q-scroll-area
+        v-if="props.changesContent"
+        class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
+      >
+        <div class="q-mr-md" v-html="props.changesContent" />
+      </q-scroll-area>
+      <div
+        v-else
+        class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
+      >
+        <div class="q-py-sm text-body1 text-weight-medium">
+          There are currently no changes
+        </div>
+        <div class="q-pb-sm text-body2">
+          Easily navigate through changes using the changes tab once the article
+          has been edited.
+        </div>
       </div>
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { nextTick, watch } from 'vue';
-
+import { copyToClipboard, useQuasar } from 'quasar';
+import MwVisualEditor from 'src/components/MwVisualEditor.vue';
+import ShareCard from 'src/components/ShareCard.vue';
+import 'src/css/styles/diff.scss';
 import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
-import 'src/css/styles/diff.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { Article, UserRole } from 'src/types';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
-  changesContent: string;
+  changesContent: string | null;
+  article: Article;
+  role: UserRole;
+  editorPermission: boolean | null;
 }>();
 
 function setTabindexForElements(selector: string, tabindexValue: string) {
@@ -96,6 +155,55 @@ watch(
       });
     }
   }
+);
+
+const $q = useQuasar();
+const share = ref(false);
+async function copyShareLinkToClipboard() {
+  await copyToClipboard(
+    `${window.location.origin}/articles/${props.article.article_id}`
+  );
+  $q.notify({
+    message: 'Share link copied to clipboard',
+    color: 'positive',
+    icon: 'content_copy',
+  });
+}
+
+const viewButton = { label: 'View', value: 'view', icon: 'visibility' };
+const editButton = {
+  label: 'Edit',
+  value: 'edit',
+  icon: 'edit',
+};
+
+const buttonToggle = ref('');
+const toggleOptions = computed(() =>
+  !(
+    props.article.title &&
+    props.article.permission_id &&
+    props.editorPermission
+  )
+    ? [viewButton]
+    : [viewButton, editButton]
+);
+const firstToggle = computed(() => {
+  // editorPerm & !changes -> Editor
+  if (props.editorPermission === true && props.changesContent === '') {
+    return 'edit';
+  }
+  return 'view';
+});
+
+watch(
+  firstToggle,
+  (newToggle, oldToggle) => {
+    if (oldToggle === 'edit') {
+      return;
+    }
+    buttonToggle.value = newToggle;
+  },
+  { immediate: true }
 );
 </script>
 

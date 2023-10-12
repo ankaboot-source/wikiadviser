@@ -1,8 +1,7 @@
 import { defineStore } from 'pinia';
 import { getArticles } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
-import { computed } from 'vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 export const useArticlesStore = defineStore('articles', () => {
   // States

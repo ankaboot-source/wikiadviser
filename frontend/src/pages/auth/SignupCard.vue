@@ -73,7 +73,7 @@
 
           <template #append>
             <q-icon
-              :name="visibility == 'text' ? 'visibility_off' : 'visibility'"
+              :name="visibility === 'text' ? 'visibility_off' : 'visibility'"
               class="cursor-pointer"
               @click="changeTypeEdit()"
             ></q-icon>
@@ -114,7 +114,7 @@ function closeDialog() {
 }
 
 function changeTypeEdit() {
-  if (visibility.value == 'text') {
+  if (visibility.value === 'text') {
     visibility.value = 'password';
   } else {
     visibility.value = 'text';

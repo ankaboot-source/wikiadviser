@@ -159,17 +159,6 @@ app.delete('/article', async (req, res) => {
   }
 });
 
-app.get('/authenticate', async (req, res) => {
-  try {
-    logger.info(req);
-    res.status(200).json({
-      message: 'Success.'
-    });
-  } catch (error) {
-    logger.info(error);
-  }
-});
-
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);
 });

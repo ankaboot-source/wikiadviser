@@ -159,14 +159,10 @@ app.delete('/article', async (req, res) => {
   }
 });
 
-app.get('/authenticate', async (req, res) => {
+app.get('/authenticate', (req, res) => {
   try {
     logger.info(req);
-
-    //  Random status code (200 | 401)
-    const statusCode = Math.random() < 0.5 ? 200 : 401;
-
-    res.status(statusCode).json({
+    res.status(200).json({
       message: 'Recieved authentication request.'
     });
   } catch (error) {

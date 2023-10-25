@@ -20,6 +20,8 @@
 
     $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
 
+    wfLoadExtension( 'UniversalLanguageSelector' );
+
     /* Templates & Modules */
     // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
     // https://www.mediawiki.org/wiki/Help:Templates

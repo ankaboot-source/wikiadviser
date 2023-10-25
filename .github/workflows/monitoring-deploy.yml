@@ -55,7 +55,7 @@ jobs:
             wikiadviser_path="/home/wiki-user/wikiadviser"
             
             # Check if the folder exists
-            if [ -d "$folder_path" ]; then
+            if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."

@@ -162,8 +162,12 @@ app.delete('/article', async (req, res) => {
 app.get('/authenticate', async (req, res) => {
   try {
     logger.info(req);
-    res.status(200).json({
-      message: 'Success.'
+
+    //  Random status code (200 | 401)
+    const statusCode = Math.random() < 0.5 ? 200 : 401;
+
+    res.status(statusCode).json({
+      message: 'Recieved authentication request.'
     });
   } catch (error) {
     logger.info(error);

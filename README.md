@@ -10,7 +10,7 @@
 - You also need to have `MyVisualEditor` in the extensions folder of mediawiki (Either through a volume mount or a copy).
 
 - <details>
-    <summary>Add these settings at the end of `LocalSettings.php`</summary>
+    <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
 
   ```php
     $wgDefaultSkin = "vector-2022";
@@ -66,7 +66,7 @@
   </details>
 
 - <details>
-    <summary>Modify settings of `default.vcl`</summary>
+    <summary>Modify settings of <code>default.vcl</code></summary>
 
   ```
     .first_byte_timeout = 600s;

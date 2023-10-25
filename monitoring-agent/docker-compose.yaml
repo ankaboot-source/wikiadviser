@@ -17,7 +17,7 @@ services:
       - /var/log/:/var/log
     command: -config.file=/etc/promtail/config.yaml
     networks:
-      - net
+      - monitor
  
   # Node-exporter for exporting server metrics
   node-exporter:

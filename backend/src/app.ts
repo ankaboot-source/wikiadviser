@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import * as Sentry from '@sentry/node';
 import express, { json } from 'express';
 import {
   deleteArticleMW,
@@ -17,11 +18,18 @@ import {
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
+import initializeSentry from './middleware/sentry';
 
 const app = express();
-const { WIKIADVISER_API_PORT } = process.env;
+const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const wikiApi = new WikipediaApiInteractor();
+
+if (SENTRY_DSN) {
+  initializeSentry(app, SENTRY_DSN);
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
@@ -169,6 +177,9 @@ app.get('/authenticate', (req, res) => {
     logger.info(error);
   }
 });
+if (SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);

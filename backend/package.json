@@ -14,6 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sentry/node": "^7.75.1",
+    "@sentry/tracing": "^7.75.1",
     "@supabase/supabase-js": "^2.22.0",
     "axios": "^1.4.0",
     "cheerio": "^1.0.0-rc.12",

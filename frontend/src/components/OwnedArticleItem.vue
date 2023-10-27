@@ -13,12 +13,27 @@
           <div v-if="article.description">
             {{ article.description }}
           </div>
-          <q-badge
-            text-color="light-blue-10"
-            color="light-blue-1"
-            class="q-mt-sm"
-            :label="UserRole[article.role]"
-          />
+          <div class="row">
+            <q-badge
+              text-color="light-blue-10"
+              color="light-blue-1"
+              class="q-mt-s"
+              :label="UserRole[article.role]"
+            />
+            <div v-if="article.created_at" class="text-weight-light on-right">
+              Imported on
+              {{
+                article.created_at.toLocaleString(userLocale, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: user12H,
+                })
+              }}
+            </div>
+          </div>
         </div>
         <div v-if="article.role === UserRole.Owner" class="col-auto">
           <q-btn
@@ -93,6 +108,15 @@ const $q = useQuasar();
 const router = useRouter();
 const deleteArticleDialog = ref(false);
 const articlesStore = useArticlesStore();
+
+const userLocale = navigator.language || navigator.languages[0];
+
+// Create an Intl.DateTimeFormat object for the user's locale
+const dateTimeFormat = new Intl.DateTimeFormat(userLocale, { hour: 'numeric' });
+
+// Check if the locale prefers 12-hour format based on hourCycle
+const hourCycle = dateTimeFormat.resolvedOptions().hourCycle;
+const user12H = hourCycle === 'h12' || hourCycle === 'h11';
 
 function gotoArticle(articleId: string) {
   router.push({

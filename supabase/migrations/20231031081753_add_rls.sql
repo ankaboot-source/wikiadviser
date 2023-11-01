@@ -5,7 +5,15 @@ CREATE POLICY read_articles_policy
 ON articles
 FOR SELECT
 TO authenticated
-USING (select auth.uid() = (SELECT user_id FROM permissions p  WHERE p.article_id = articles.id AND p.user_id = auth.uid()));
+USING (
+    -- Check if the authenticated user has permissions to read the article
+    SELECT auth.uid() = (
+        SELECT user_id
+        FROM permissions p
+        WHERE p.article_id = articles.id
+        AND p.user_id = auth.uid()
+    )
+);
 
 -- RLS for TABLE changes --
 

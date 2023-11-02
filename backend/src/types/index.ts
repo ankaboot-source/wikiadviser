@@ -25,3 +25,9 @@ export enum TypeOfEditDictionary {
   insert = 1,
   remove = 2
 }
+
+export type WikiAdviserJWTcookie = {
+  name: 'WikiAdviserJWTcookie';
+  value: string;
+  url?: string;
+};

@@ -72,7 +72,7 @@ export async function getPermissionData(permissionId: string) {
     .eq('id', permissionId)
     .maybeSingle();
   if (permissionError) {
-    throw new Error(permissionError.message);
+    throw new Error(`PermissionError ${permissionError.message}`);
   }
 
   return permissionData;
@@ -173,4 +173,8 @@ export async function deleteArticle(articleId: string) {
   if (supabaseDeleteError) {
     throw new Error(supabaseDeleteError.message);
   }
+}
+
+export async function getUserByToken(accessToken: string) {
+  return supabase.auth.getUser(accessToken);
 }

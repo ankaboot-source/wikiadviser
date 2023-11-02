@@ -4,7 +4,7 @@ import {
   deleteArticleMW,
   importNewArticle,
   updateChanges
-} from './helpers/MediawikiApiHelper';
+} from './helpers/MediawikiHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   getArticleParsedContent,
@@ -12,14 +12,17 @@ import {
 } from './helpers/parsingHelper';
 import {
   deleteArticle,
+  getPermissionData,
+  getUserByToken,
   insertArticle,
   updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
+import { WikiAdviserJWTcookie } from './types';
 
 const app = express();
-const { WIKIADVISER_API_PORT } = process.env;
+const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const wikiApi = new WikipediaApiInteractor();
 
@@ -30,6 +33,7 @@ app.put('/article/changes', async (req, res) => {
   try {
     const { articleId, permissionId } = req.body;
     await updateChanges(articleId, permissionId);
+
     logger.info({ articleId }, 'Updated Changes of article');
     res.status(200).json({ message: 'Updating changes succeeded.' });
   } catch (error) {
@@ -159,14 +163,75 @@ app.delete('/article', async (req, res) => {
   }
 });
 
-app.get('/authenticate', (req, res) => {
+app.get('/authenticate', async (req, res) => {
   try {
-    logger.info(req);
+    const JWTcookie: WikiAdviserJWTcookie = {
+      name: 'WikiAdviserJWTcookie',
+      value: ''
+    };
+    const { cookie, referer } = req.headers;
+    let status = 401;
+
+    if (cookie) {
+      const cookieKeyValue = cookie?.split(';')[0];
+      const [key, cookieValue] = cookieKeyValue.split('=');
+      if (key.trim() === JWTcookie.name) {
+        JWTcookie.value = cookieValue.trim();
+        // Verify backend: using IP
+        // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
+        logger.info({ IPs: [req.headers['x-real-ip'], WIKIADVISER_API_IP] });
+        if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
+          // User verification
+          const userResponse = await getUserByToken(JWTcookie.value);
+          if (userResponse.error) {
+            throw new Error(userResponse.error.message);
+          }
+
+          // Valid link verification
+          const forwardedUri = req.headers['x-forwarded-uri'];
+          if (typeof forwardedUri === 'string') {
+            const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+            // Extract articleId from URI (Either from ForwardedURI or Referer)
+            const articleId =
+              forwardedUri?.match(articleIdRegEx)?.[1] ||
+              referer?.match(articleIdRegEx)?.[1];
+
+            // Permission verification
+            const permissionId = req.query.permissionid as string;
+            const permissionData = await getPermissionData(permissionId);
+
+            if (
+              permissionData?.user_id !== userResponse.data.user?.id ||
+              permissionData?.article_id !== articleId
+            ) {
+              throw new Error('User unauthorized'); // 403
+            }
+          }
+        }
+        status = 200;
+      }
+    }
+    if (status !== 200) {
+      throw new Error();
+    }
+    logger.info({ name: 'Authorized', headers: req.headers });
     res.status(200).json({
-      message: 'Recieved authentication request.'
+      message: 'Authorized'
     });
   } catch (error) {
-    logger.info(error);
+    if (error instanceof Error) {
+      logger.error({
+        name: 'Unauthorized',
+        message: error.message,
+        headers: req.headers
+      });
+      res.status(403).json({
+        message: error.message
+      });
+    } else {
+      logger.error({ name: 'Unauthorized', error });
+      res.status(403).json();
+    }
   }
 });
 

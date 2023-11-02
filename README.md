@@ -87,7 +87,25 @@ Disallow: /
 
 ```caddy
 # Caddyfile
-rewrite /robots.txt ./robots.txt # Disable search engine indexing
+{$MW_SITE_FQDN} {
+    log {
+          output file /var/log/caddy/access.log {
+              roll_size 10MiB
+              roll_keep 10
+              roll_keep_for 24h
+          }
+    }
+
+    forward_auth https://api.wikiadviser.io {
+        header_up Host {upstream_hostport}
+        header_up X-Real-IP {remote_host}
+        uri /authenticate
+        copy_headers X-User X-Client-IP X-Forwarded-Uri
+    }
+
+    rewrite /robots.txt ./robots.txt # Disable search engine indexing
+    reverse_proxy varnish:80
+}
 ```
 
 ## Run using docker

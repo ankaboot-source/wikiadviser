@@ -176,5 +176,6 @@ export async function deleteArticle(articleId: string) {
 }
 
 export async function getUserByToken(accessToken: string) {
-  return supabase.auth.getUser(accessToken);
+  const user = await supabase.auth.getUser(accessToken);
+  return user;
 }

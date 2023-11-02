@@ -7,7 +7,7 @@ FOR SELECT
 TO authenticated
 USING (
     -- Check if the authenticated user has permissions to read the article
-    SELECT auth.uid() = (
+    auth.uid() = (
         SELECT user_id
         FROM permissions p
         WHERE p.article_id = articles.id
@@ -24,7 +24,7 @@ FOR UPDATE
 TO authenticated
 USING (
     -- Check if the authenticated user has appropriate permissions
-    SELECT auth.uid() = (
+    auth.uid() = (
         SELECT user_id
         FROM permissions
         WHERE 
@@ -35,7 +35,14 @@ USING (
     )
 );
 
--- RLS for table permissions --
+-- RLS for table permissions AND change role to enum--
+
+CREATE TYPE Role AS ENUM ('owner', 'editor', 'reviewer', 'viewer');
+
+ALTER TABLE permissions
+  DROP COLUMN role;
+ALTER TABLE permissions
+  ADD COLUMN role Role;
 
 -- Policy to allow authenticated users to read permissions
 CREATE POLICY read_permissions_policy 

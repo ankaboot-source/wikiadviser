@@ -82,38 +82,38 @@
 
 - Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
 
-```caddy
-# Caddyfile
-{$MW_SITE_FQDN} {
-    log {
-          output file /var/log/caddy/access.log {
-              roll_size 10MiB
-              roll_keep 10
-              roll_keep_for 24h
-          }
-    }
+- <details>
+    <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it</summary>
 
-    forward_auth https://api.wikiadviser.io {
-        header_up Host {upstream_hostport}
-        header_up X-Real-IP {remote_host}
-        uri /authenticate
-        copy_headers X-User X-Client-IP X-Forwarded-Uri
-    }
+  ```txt
+  User-agent: *
+  Disallow: /
+  ```
 
-    rewrite /robots.txt ./robots.txt # Disable search engine indexing
-    reverse_proxy varnish:80
-}
-```
+  ```caddy
+  # Caddyfile
+  {$MW_SITE_FQDN} {
+      log {
+            output file /var/log/caddy/access.log {
+                roll_size 10MiB
+                roll_keep 10
+                roll_keep_for 24h
+            }
+      }
 
-```txt
-User-agent: *
-Disallow: /
-```
+      forward_auth https://api.wikiadviser.io {
+          header_up Host {upstream_hostport}
+          header_up X-Real-IP {remote_host}
+          uri /authenticate
+          copy_headers X-User X-Client-IP X-Forwarded-Uri
+      }
 
-```caddy
-# Caddyfile
-rewrite /robots.txt ./robots.txt # Disable search engine indexing
-```
+      rewrite /robots.txt ./robots.txt # Disable search engine indexing
+      reverse_proxy varnish:80
+  }
+  ```
+
+  </details>
 
 ### Supabase
 

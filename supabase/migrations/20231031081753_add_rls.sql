@@ -31,7 +31,7 @@ USING (
             permissions.user_id = auth.uid()
             AND permissions.article_id = changes.article_id
             AND changes.contributor_id = auth.uid()
-            AND permissions.role IN (0, 1, 3)
+            AND permissions.role IN (0, 1, 2)
     )
 );
 
@@ -53,8 +53,11 @@ WITH CHECK (
     permissions.user_id = auth.uid()
     AND (
         -- Check if no other permissions exist for the same article
-        (SELECT COUNT(*) FROM permissions p
-         WHERE p.article_id = permissions.article_id) = 0
+        NOT EXISTS (
+            SELECT 1
+            FROM permissions p
+            WHERE p.article_id = permissions.article_id
+        )
         OR
         permissions.role = 3
         OR
@@ -121,7 +124,7 @@ WITH CHECK (
         INNER JOIN permissions p ON p.article_id = c.article_id
         WHERE
             c.id = comments.change_id
-            AND p.role IN (1, 2, 3)
+            AND p.role IN (0, 1, 2)
     )
 );
 

@@ -208,9 +208,12 @@ app.get('/authenticate', async (req, res) => {
               referer?.match(articleIdRegEx)?.[1];
 
             // Permission verification
-            const permissionId = referer
-              ? url.parse(referer, true).query.permissionid
-              : req.query.permissionid;
+            let permissionId;
+            if (req.query.permissionid) {
+              permissionId = req.query.permissionid;
+            } else if (referer) {
+              permissionId = url.parse(referer, true).query.permissionid;
+            }
 
             const permissionData = await getPermissionData(
               permissionId as string

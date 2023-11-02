@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node';
 import 'dotenv/config';
 import express, { json } from 'express';
 import {
@@ -19,12 +20,23 @@ import {
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
+
 import { WikiAdviserJWTcookie } from './types';
 
+import initializeSentry from './middleware/sentry';
+
+const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
+
 const app = express();
-const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP } = process.env;
+
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 const wikiApi = new WikipediaApiInteractor();
+
+if (SENTRY_DSN) {
+  initializeSentry(app, SENTRY_DSN);
+  app.use(Sentry.Handlers.requestHandler());
+  app.use(Sentry.Handlers.tracingHandler());
+}
 
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
@@ -234,6 +246,9 @@ app.get('/authenticate', async (req, res) => {
     }
   }
 });
+if (SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);

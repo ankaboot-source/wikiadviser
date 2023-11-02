@@ -2,13 +2,11 @@
 
 ## Pre-requisites
 
-- You need to have a running mediawiki instance. We recommend to use the canasta distribution for ease of configuration. You can follow [these steps](https://canasta.wiki/setup/#create-new-wiki) for a fast setup. You also need to have `MyVisualEditor` in the extensions folder of mediawiki (Either through a volume mount or a copy).
+### Setup MediaWiki / Canasta
 
-- You need to have a supabase instance (In the cloud or locally hosted):
-  - If using a cloud instance, you need to run the migrations manually.
-  * If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+- You need to have a running mediawiki instance. We recommend to use the canasta distribution for ease of configuration. You can follow [these steps](https://canasta.wiki/setup/#create-new-wiki) for a fast setup.
 
-## Important changes to do with the mediawiki instance
+- You also need to have `MyVisualEditor` in the extensions folder of mediawiki (Either through a volume mount or a copy).
 
 - <details>
     <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
@@ -75,15 +73,14 @@
 
   </details>
 
-- Either manually create or Export/Import the CSS & JS from the source wiki
+- Export/Import the CSS & JS from the source wiki
+
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js
-- Add robots.txt to and configure Caddy to use it:
 
-```txt
-User-agent: *
-Disallow: /
-```
+  Into your MediaWiki instance http://localhost/wiki/MediaWiki: Common.css and Common.js
+
+- Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
 
 ```caddy
 # Caddyfile
@@ -108,10 +105,41 @@ Disallow: /
 }
 ```
 
-## Run using docker
+```txt
+User-agent: *
+Disallow: /
+```
 
-- Make sure you have setup all the necessary pre-requisits.
-- Copy `.env.example` to `.env` and update the missing env variables accordingly.
+```caddy
+# Caddyfile
+rewrite /robots.txt ./robots.txt # Disable search engine indexing
+```
+
+### Supabase
+
+You need to have a supabase instance (In the cloud or locally hosted):
+
+- If using a cloud instance, you need to run the migrations manually.
+
+* If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+
+## Running the Project
+
+Make sure you have setup all the necessary pre-requisits.
+
+### Using Node
+
+<b>
+In both `/frontend` and `/backend` directory
+</b>
+
+- Copy `.env.example` to `.env` and update the missing variables accordingly.
+- Install dependencies via` npm i`
+- Run each of the projects via`npm run dev`
+
+### Using Docker
+
+- Copy `.env.example` to `.env` and update the missing variables accordingly.
 - Start wikiadviser services:
 
 ```sh
@@ -129,6 +157,7 @@ docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build -
 - In `MyVisualEditor`
   - Our custom code is marked by `/* Custom WikiAdviser */` comments.
   - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (backend).
+- In `./backend/.env` use the `service_role` key from <b>supabase</b> for `SUPABASE_SECRET_PROJECT_TOKEN`
 
 ## Important links and references
 

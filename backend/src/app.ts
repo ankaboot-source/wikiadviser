@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/node';
 import 'dotenv/config';
 import express, { json } from 'express';
+import url from 'url';
 import {
   deleteArticleMW,
   importNewArticle,
@@ -20,10 +21,8 @@ import {
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
-
-import { WikiAdviserJWTcookie } from './types';
-
 import initializeSentry from './middleware/sentry';
+import { WikiAdviserJWTcookie } from './types';
 
 const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
 
@@ -209,8 +208,13 @@ app.get('/authenticate', async (req, res) => {
               referer?.match(articleIdRegEx)?.[1];
 
             // Permission verification
-            const permissionId = req.query.permissionid as string;
-            const permissionData = await getPermissionData(permissionId);
+            const permissionId = referer
+              ? url.parse(referer, true).query.permissionid
+              : req.query.permissionid;
+
+            const permissionData = await getPermissionData(
+              permissionId as string
+            );
 
             if (
               permissionData?.user_id !== userResponse.data.user?.id ||

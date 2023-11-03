@@ -209,31 +209,39 @@ app.get('/authenticate', async (req, res) => {
 
       // Valid link verification
       const forwardedUri = req.headers['x-forwarded-uri'];
-
       if (typeof forwardedUri !== 'string') {
         throw new Error('Missing forwardedUri');
       }
-      const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
       // Extract articleId from URI (Either from ForwardedURI or Referer)
-      const articleId =
-        forwardedUri?.match(articleIdRegEx)?.[1] ||
-        referer?.match(articleIdRegEx)?.[1];
-
-      // Permission verification
       let permissionId;
-      if (req.query.permissionid) {
+      let articleId;
+
+      const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+      articleId = forwardedUri?.match(articleIdRegEx)?.[1];
+      if (articleId) {
+        // ForwardedUri
         permissionId = req.query.permissionid;
       } else if (referer) {
+        // If ForwardURI.startswith /w/load.php? || /w/skins/ || /favicon.ico
+        const allowedPrefixRegEx = /^(w\/load.php\?|w\/skins\/|favicon.ico)/i;
+        if (forwardedUri?.match(allowedPrefixRegEx))
+          // Referer
+          articleId = referer?.match(articleIdRegEx)?.[1];
         permissionId = url.parse(referer, true).query.permissionid;
       }
 
+      if (!articleId || !permissionId) {
+        throw new Error('Missing articleId or permissionId');
+      }
+
+      // Permission verification
       const permissionData = await getPermissionData(permissionId as string);
 
       if (
         permissionData?.user_id !== userResponse.data.user?.id ||
         permissionData?.article_id !== articleId
       ) {
-        throw new Error('User unauthorized'); // 403
+        throw new Error('User unauthorized');
       }
     }
 

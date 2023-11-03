@@ -183,22 +183,23 @@ app.get('/authenticate', async (req, res) => {
     const { cookie, referer } = req.headers;
     let status = 401;
 
-    if (cookie) {
-      JWTcookie.value =
-        cookie
-          ?.split(';')
-          .find((singleCookie) => singleCookie.includes(JWTcookie.name))
-          ?.split('=')[1] || '';
-      if (!JWTcookie.value) {
-        throw new Error('Missing cookie');
-      }
-      // Verify backend: using IP
-      // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
-      logger.info({
-        RealIP: req.headers['x-real-ip'],
-        ApiIP: WIKIADVISER_API_IP
-      });
-      if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
+    // Verify backend: using IP
+    // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
+    logger.info({
+      RealIP: req.headers['x-real-ip'],
+      ApiIP: WIKIADVISER_API_IP
+    });
+    if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
+      if (cookie) {
+        JWTcookie.value =
+          cookie
+            ?.split(';')
+            .find((singleCookie) => singleCookie.includes(JWTcookie.name))
+            ?.split('=')[1] || '';
+        if (!JWTcookie.value) {
+          throw new Error('Missing cookie');
+        }
+
         // User verification
         const userResponse = await getUserByToken(JWTcookie.value);
         if (userResponse.error) {
@@ -234,8 +235,10 @@ app.get('/authenticate', async (req, res) => {
           }
         }
       }
+    } else {
       status = 200;
     }
+
     if (status !== 200) {
       throw new Error();
     }

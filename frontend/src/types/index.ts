@@ -29,6 +29,7 @@ export type Article = {
   description: string;
   permission_id: string;
   role: UserRole;
+  created_at: Date;
 };
 
 export type Comment = {

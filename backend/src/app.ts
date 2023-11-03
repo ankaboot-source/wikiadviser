@@ -226,9 +226,12 @@ app.get('/authenticate', async (req, res) => {
           permissionId = req.query.permissionid;
         } else {
           // If ForwardURI.startswith /w/load.php? || /w/skins/ || /favicon.ico : 200
-
           if (!referer) {
-            throw new Error('Missing Referer');
+            throw new Error(
+              `Missing Referer,forwardedUri Prefix: ${forwardedUri?.match(
+                allowedPrefixRegEx
+              )}`
+            );
           }
           // Referer
           articleId = referer?.match(articleIdRegEx)?.[1];

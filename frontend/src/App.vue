@@ -30,12 +30,13 @@ onMounted(async () => {
   session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
-    Cookies.remove(JWTcookie.name);
     if (session.value?.access_token) {
       Cookies.set(JWTcookie.name, session.value?.access_token, {
         domain: JWTcookie.url,
         path: '/',
       });
+    } else {
+      Cookies.remove(JWTcookie.name);
     }
   });
 });

@@ -181,7 +181,6 @@ app.get('/authenticate', async (req, res) => {
       value: ''
     };
     const { cookie, referer } = req.headers;
-    let status = 401;
 
     // Verify backend: using IP
     // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
@@ -235,13 +234,8 @@ app.get('/authenticate', async (req, res) => {
           }
         }
       }
-    } else {
-      status = 200;
     }
 
-    if (status !== 200) {
-      throw new Error();
-    }
     logger.info({ name: 'Authorized', headers: req.headers });
     res.status(200).json({
       message: 'Authorized'

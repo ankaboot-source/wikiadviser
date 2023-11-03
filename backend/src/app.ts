@@ -189,50 +189,51 @@ app.get('/authenticate', async (req, res) => {
       ApiIP: WIKIADVISER_API_IP
     });
     if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
-      if (cookie) {
-        JWTcookie.value =
-          cookie
-            ?.split(';')
-            .find((singleCookie) => singleCookie.includes(JWTcookie.name))
-            ?.split('=')[1] || '';
-        if (!JWTcookie.value) {
-          throw new Error('Missing cookie');
-        }
+      if (!cookie) {
+        throw new Error('Missing cookies');
+      }
+      JWTcookie.value =
+        cookie
+          ?.split(';')
+          .find((singleCookie) => singleCookie.includes(JWTcookie.name))
+          ?.split('=')[1] || '';
+      if (!JWTcookie.value) {
+        throw new Error('Missing token cookie');
+      }
 
-        // User verification
-        const userResponse = await getUserByToken(JWTcookie.value);
-        if (userResponse.error) {
-          throw new Error(userResponse.error.message);
-        }
+      // User verification
+      const userResponse = await getUserByToken(JWTcookie.value);
+      if (userResponse.error) {
+        throw new Error(userResponse.error.message);
+      }
 
-        // Valid link verification
-        const forwardedUri = req.headers['x-forwarded-uri'];
-        if (typeof forwardedUri === 'string') {
-          const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
-          // Extract articleId from URI (Either from ForwardedURI or Referer)
-          const articleId =
-            forwardedUri?.match(articleIdRegEx)?.[1] ||
-            referer?.match(articleIdRegEx)?.[1];
+      // Valid link verification
+      const forwardedUri = req.headers['x-forwarded-uri'];
 
-          // Permission verification
-          let permissionId;
-          if (req.query.permissionid) {
-            permissionId = req.query.permissionid;
-          } else if (referer) {
-            permissionId = url.parse(referer, true).query.permissionid;
-          }
+      if (typeof forwardedUri !== 'string') {
+        throw new Error('Missing forwardedUri');
+      }
+      const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+      // Extract articleId from URI (Either from ForwardedURI or Referer)
+      const articleId =
+        forwardedUri?.match(articleIdRegEx)?.[1] ||
+        referer?.match(articleIdRegEx)?.[1];
 
-          const permissionData = await getPermissionData(
-            permissionId as string
-          );
+      // Permission verification
+      let permissionId;
+      if (req.query.permissionid) {
+        permissionId = req.query.permissionid;
+      } else if (referer) {
+        permissionId = url.parse(referer, true).query.permissionid;
+      }
 
-          if (
-            permissionData?.user_id !== userResponse.data.user?.id ||
-            permissionData?.article_id !== articleId
-          ) {
-            throw new Error('User unauthorized'); // 403
-          }
-        }
+      const permissionData = await getPermissionData(permissionId as string);
+
+      if (
+        permissionData?.user_id !== userResponse.data.user?.id ||
+        permissionData?.article_id !== articleId
+      ) {
+        throw new Error('User unauthorized'); // 403
       }
     }
 

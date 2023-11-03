@@ -34,6 +34,7 @@ onMounted(async () => {
     if (session.value?.access_token) {
       Cookies.set(JWTcookie.name, session.value?.access_token, {
         domain: JWTcookie.url,
+        path: '/',
       });
     }
   });

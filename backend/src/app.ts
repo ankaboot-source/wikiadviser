@@ -194,7 +194,10 @@ app.get('/authenticate', async (req, res) => {
       }
       // Verify backend: using IP
       // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
-      logger.info({ IPs: [req.headers['x-real-ip'], WIKIADVISER_API_IP] });
+      logger.info({
+        RealIP: req.headers['x-real-ip'],
+        ApiIP: WIKIADVISER_API_IP
+      });
       if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
         // User verification
         const userResponse = await getUserByToken(JWTcookie.value);

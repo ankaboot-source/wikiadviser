@@ -1,7 +1,6 @@
 import * as Sentry from '@sentry/node';
 import 'dotenv/config';
 import express, { json } from 'express';
-import url from 'url';
 import {
   deleteArticleMW,
   importNewArticle,
@@ -13,8 +12,8 @@ import {
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
 import {
+  checkPermission,
   deleteArticle,
-  getPermissionData,
   getUserByToken,
   insertArticle,
   updateChange
@@ -180,7 +179,7 @@ app.get('/authenticate', async (req, res) => {
       name: 'WikiAdviserJWTcookie',
       value: ''
     };
-    const { cookie, referer } = req.headers;
+    const { cookie } = req.headers;
 
     // Verify backend: using IP
     // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
@@ -213,46 +212,20 @@ app.get('/authenticate', async (req, res) => {
         throw new Error('Missing forwardedUri');
       }
       // Extract articleId from URI (Either from ForwardedURI or Referer)
-      let permissionId;
-      let articleId;
 
-      const articleIdRegEx = /w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
-      const allowedPrefixRegEx = /^(w\/load.php\?|w\/skins\/|favicon.ico)/i;
+      const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+      const allowedPrefixRegEx =
+        /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+      // If ForwardURI.startswith /w/load.php? || /w/skins/ || /w/resources/ || /favicon.ico ||  : 200
 
       if (!forwardedUri?.match(allowedPrefixRegEx)) {
-        articleId = forwardedUri?.match(articleIdRegEx)?.[1];
-        if (articleId) {
-          // ForwardedUri
-          permissionId = req.query.permissionid;
-        } else {
-          // If ForwardURI.startswith /w/load.php? || /w/skins/ || /favicon.ico : 200
-          if (!referer) {
-            throw new Error(
-              `Missing Referer,forwardedUri Prefix: ${forwardedUri?.match(
-                allowedPrefixRegEx
-              )}`
-            );
-          }
-          // Referer
-          articleId = referer?.match(articleIdRegEx)?.[1];
-          permissionId = url.parse(referer, true).query.permissionid;
-
-          if (!articleId || !permissionId) {
-            throw new Error('Missing articleId or permissionId');
-          }
-
-          // Permission verification
-          const permissionData = await getPermissionData(
-            permissionId as string
-          );
-
-          if (
-            permissionData?.user_id !== userResponse.data.user?.id ||
-            permissionData?.article_id !== articleId
-          ) {
-            throw new Error('User unauthorized');
-          }
+        const articleId = forwardedUri?.match(articleIdRegEx)?.[1];
+        if (!articleId) {
+          throw new Error('Missing articleId');
         }
+
+        // Permission verification
+        await checkPermission(articleId, userResponse.data.user?.id);
       }
     }
 

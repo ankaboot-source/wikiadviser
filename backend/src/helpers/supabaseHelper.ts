@@ -179,3 +179,16 @@ export async function getUserByToken(accessToken: string) {
   const user = await supabase.auth.getUser(accessToken);
   return user;
 }
+
+export async function checkPermission(articleId: string, userId: string) {
+  const { error: permissionError } = await supabase
+    .from('permissions')
+    .select()
+    .eq('user_id', userId)
+    .eq('article_id', articleId)
+    .single();
+
+  if (permissionError) {
+    throw new Error(permissionError.message);
+  }
+}

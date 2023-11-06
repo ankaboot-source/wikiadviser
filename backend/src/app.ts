@@ -211,17 +211,23 @@ app.get('/authenticate', async (req, res) => {
         throw new Error('Missing forwardedUri');
       }
 
-      const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
-      const allowedPrefixRegEx =
-        /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+      // Allow POST api calls until there is a way to verify the payload (POST FORM)
+      if (
+        req.headers['x-forwarded-method'] !== 'POST' ||
+        forwardedUri !== '/w/api.php'
+      ) {
+        const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+        const allowedPrefixRegEx =
+          /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
 
-      if (!forwardedUri?.match(allowedPrefixRegEx)) {
-        const articleId = forwardedUri?.match(articleIdRegEx)?.[1];
-        if (!articleId) {
-          throw new Error('Missing articleId');
+        if (!forwardedUri?.match(allowedPrefixRegEx)) {
+          const articleId = forwardedUri?.match(articleIdRegEx)?.[1];
+          if (!articleId) {
+            throw new Error('Missing articleId');
+          }
+
+          await verifyPermission(articleId, userResponse.data.user?.id);
         }
-
-        await verifyPermission(articleId, userResponse.data.user?.id);
       }
     }
 

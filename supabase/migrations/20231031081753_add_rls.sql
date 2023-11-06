@@ -1,15 +1,23 @@
--- Security Using security definer function to bypass RLS
+-- Change role type to enum
+CREATE TYPE Role AS ENUM ('owner', 'editor', 'reviewer', 'viewer');
 
-CREATE FUNCTION get_permissions_for_article(article_id uuid)
-RETURNS SETOF uuid
+ALTER TABLE permissions
+  DROP COLUMN role CASCADE;
+ALTER TABLE permissions
+  ADD COLUMN role Role;
+
+-- Security definer function to retrieve all data from the permissions table for a specific article_id
+CREATE SCHEMA private;
+CREATE OR REPLACE FUNCTION private.get_all_permissions_by_article_id(article_id uuid)
+RETURNS SETOF permissions
 LANGUAGE SQL
 SECURITY DEFINER
 SET search_path = public
 STABLE
 AS $$
-SELECT user_id
-FROM permissions p
-WHERE p.article_id = article_id;
+  SELECT *
+  FROM permissions p
+  WHERE p.article_id = article_id;
 $$;
 
 -- RLS for TABLE articles --
@@ -22,31 +30,11 @@ CREATE POLICY read_articles_policy
   USING (
       -- Check if the authenticated user has permissions to read the article
       auth.uid() IN (
-          SELECT user_id
-          FROM permissions p
-          WHERE p.article_id = articles.id
+          SELECT user_id FROM private.get_all_permissions_by_article_id(id)
       )
   );
 
--- RLS for table permissions AND change role to enum--
-
-CREATE TYPE Role AS ENUM ('owner', 'editor', 'reviewer', 'viewer');
-
-ALTER TABLE permissions
-  DROP COLUMN role CASCADE;
-ALTER TABLE permissions
-  ADD COLUMN role Role;
-
--- Policy to allow authenticated users to read permissions
-CREATE POLICY read_permissions_policy 
-  ON permissions
-  FOR SELECT
-  TO authenticated
-  USING (
-    auth.uid() in (
-        SELECT * FROM get_permissions_for_article(article_id) 
-    )
-  );
+-- RLS for table permissions
 
 -- Create a policy to allow inserting permissions
 CREATE POLICY insert_permissions_policy
@@ -54,7 +42,21 @@ CREATE POLICY insert_permissions_policy
   FOR INSERT
   TO authenticated
   WITH CHECK (
-      permissions.user_id = auth.uid() AND permissions.role = 'viewer'
+      auth.uid() NOT IN (SELECT user_id from private.get_all_permissions_by_article_id(article_id))
+      AND
+      (permissions.user_id = auth.uid() AND permissions.role = 'viewer')
+  );
+
+-- Policy to allow authenticated users to read permissions
+CREATE POLICY read_permissions_policy 
+  ON permissions
+  FOR SELECT
+  TO authenticated
+  USING (
+      auth.uid() IN (
+        SELECT user_id
+        FROM private.get_all_permissions_by_article_id(article_id)
+      )
   );
 
 CREATE POLICY update_permissions_policy
@@ -64,11 +66,9 @@ CREATE POLICY update_permissions_policy
   USING (
       -- Check if the user is the owner of the article
       auth.uid() = (
-          SELECT p.user_id
-          FROM permissions p
-          WHERE p.user_id = auth.uid()
-          AND p.article_id = permissions.article_id
-          AND p.role = 'owner'
+        SELECT user_id
+        FROM private.get_all_permissions_by_article_id(article_id) p
+        WHERE p.role = 'owner' 
       )
   );
 
@@ -79,11 +79,9 @@ CREATE POLICY delete_permissions_policy
   USING (
       -- Check if the user is the owner of the article
       auth.uid() = (
-          SELECT p.user_id
-          FROM permissions p
-          WHERE p.user_id = auth.uid()
-          AND p.article_id = permissions.article_id
-          AND p.role = 'owner'
+        SELECT user_id
+        FROM private.get_all_permissions_by_article_id(article_id) p
+        WHERE p.role = 'owner' 
       )
   );
 
@@ -97,12 +95,9 @@ CREATE POLICY select_changes_policy
   USING (
       -- Check if the authenticated user has appropriate permissions
       auth.uid() IN (
-          SELECT user_id
-          FROM permissions
-          WHERE 
-              permissions.user_id = auth.uid()
-              AND permissions.article_id = changes.article_id
-              AND permissions.role IN ('owner', 'editor', 'reviewer')
+        SELECT user_id
+        FROM private.get_all_permissions_by_article_id(article_id) p
+        WHERE p.role IN ('owner', 'editor', 'reviewer')
       )
   );
 
@@ -114,12 +109,9 @@ CREATE POLICY update_changes_policy
   USING (
       -- Check if the authenticated user has appropriate permissions
       auth.uid() IN (
-          SELECT user_id
-          FROM permissions
-          WHERE 
-              permissions.user_id = auth.uid()
-              AND permissions.article_id = changes.article_id
-              AND permissions.role IN ('owner', 'editor', 'reviewer')
+        SELECT user_id
+        FROM private.get_all_permissions_by_article_id(article_id) p
+        WHERE p.role IN ('owner', 'editor', 'reviewer')
       )
   );
 
@@ -148,3 +140,5 @@ CREATE POLICY insert_comments_policy
 ALTER TABLE public.changes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.permissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.articles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+

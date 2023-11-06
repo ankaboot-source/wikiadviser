@@ -111,7 +111,6 @@ export async function getArticles(userId: string): Promise<Article[]> {
 }
 
 export async function updatePermission(
-  articleId: string,
   permissions: Permission[]
 ): Promise<void> {
   const updatedPermissionsPromises = permissions.map(
@@ -120,7 +119,7 @@ export async function updatePermission(
       const { error } = await supabase
         .from('permissions')
         .update({ role })
-        .match({ id: permissionId, article_id: articleId });
+        .match({ id: permissionId });
 
       if (error) {
         throw new Error(error.message);

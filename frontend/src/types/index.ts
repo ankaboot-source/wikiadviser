@@ -39,10 +39,10 @@ export type Comment = {
 };
 
 export enum UserRole {
-  Owner = 0,
-  Editor = 1,
-  Reviewer = 2,
-  Viewer = 3,
+  Owner = 'owner',
+  Editor = 'editor',
+  Reviewer = 'reviewer',
+  Viewer = 'viewer',
 }
 
 export type Permission = {

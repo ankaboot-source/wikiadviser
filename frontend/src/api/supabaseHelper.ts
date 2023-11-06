@@ -111,22 +111,24 @@ export async function getArticles(userId: string): Promise<Article[]> {
 }
 
 export async function updatePermission(
-  permission: Permission[]
+  articleId: string,
+  permissions: Permission[]
 ): Promise<void> {
-  const mappedPermissions = permission.map(({ permissionId, role }) => ({
-    id: permissionId,
-    role,
-  }));
 
-  const { error: changeError } = await supabase
-    .from('permissions')
-    .upsert(mappedPermissions);
+  const updatedPermissionsPromises = permissions.map(async ({ permissionId, role }) => {
+    // Update permissions where id matches permissionId
+    const { error } = await supabase
+      .from('permissions')
+      .update({ role })
+      .match({ id: permissionId, article_id: articleId });
 
-  if (changeError) {
-    throw new Error(changeError.message);
-  }
+    if (error) {
+      throw new Error(error.message);
+    }
+  });
+
+  await Promise.all(updatedPermissionsPromises);
 }
-
 export async function getArticleParsedContent(articleId: string) {
   const response = await api.get('article/parsedContent', {
     params: {
@@ -153,7 +155,7 @@ export async function updateChange(
   const { error: changeError } = await supabase
     .from('changes')
     .update({ status, description })
-    .eq('id', changeId);
+    .match({id: changeId});
 
   if (changeError) {
     throw new Error(changeError.message);

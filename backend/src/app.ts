@@ -184,7 +184,9 @@ app.get('/authenticate', async (req, res) => {
     // Verify backend: using IP, Next step: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
     logger.info({
       RealIP: req.headers['x-real-ip'],
-      ApiIP: WIKIADVISER_API_IP
+      ApiIP: WIKIADVISER_API_IP,
+      req: req.query,
+      reqAction: req.query.action
     });
     if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
       if (!cookie) {
@@ -221,7 +223,11 @@ app.get('/authenticate', async (req, res) => {
           /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
 
         if (!forwardedUri?.match(allowedPrefixRegEx)) {
-          const articleId = forwardedUri?.match(articleIdRegEx)?.[1];
+          const articleId =
+            forwardedUri.startsWith('/w/api.php?') &&
+            req?.query?.action === 'visualeditor'
+              ? (req?.query?.page as string)
+              : forwardedUri?.match(articleIdRegEx)?.[1];
           if (!articleId) {
             throw new Error('Missing articleId');
           }

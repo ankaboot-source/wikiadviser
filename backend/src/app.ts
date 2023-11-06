@@ -12,11 +12,11 @@ import {
   getChangesAndParsedContent
 } from './helpers/parsingHelper';
 import {
-  checkPermission,
   deleteArticle,
   getUserByToken,
   insertArticle,
-  updateChange
+  updateChange,
+  verifyPermission
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
@@ -181,8 +181,7 @@ app.get('/authenticate', async (req, res) => {
     };
     const { cookie } = req.headers;
 
-    // Verify backend: using IP
-    // Next PR: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
+    // Verify backend: using IP, Next step: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
     logger.info({
       RealIP: req.headers['x-real-ip'],
       ApiIP: WIKIADVISER_API_IP
@@ -211,12 +210,10 @@ app.get('/authenticate', async (req, res) => {
       if (typeof forwardedUri !== 'string') {
         throw new Error('Missing forwardedUri');
       }
-      // Extract articleId from URI (Either from ForwardedURI or Referer)
 
       const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
       const allowedPrefixRegEx =
         /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
-      // If ForwardURI.startswith /w/load.php? || /w/skins/ || /w/resources/ || /favicon.ico ||  : 200
 
       if (!forwardedUri?.match(allowedPrefixRegEx)) {
         const articleId = forwardedUri?.match(articleIdRegEx)?.[1];
@@ -224,8 +221,7 @@ app.get('/authenticate', async (req, res) => {
           throw new Error('Missing articleId');
         }
 
-        // Permission verification
-        await checkPermission(articleId, userResponse.data.user?.id);
+        await verifyPermission(articleId, userResponse.data.user?.id);
       }
     }
 

@@ -180,7 +180,7 @@ export async function getUserByToken(accessToken: string) {
   return user;
 }
 
-export async function checkPermission(articleId: string, userId: string) {
+export async function verifyPermission(articleId: string, userId: string) {
   const { error: permissionError } = await supabase
     .from('permissions')
     .select()

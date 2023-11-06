@@ -220,15 +220,3 @@ export async function updateChanges(articleId: string, permissionId: string) {
   await upsertChanges(changesToUpsert);
   await updateCurrentHtmlContent(articleId, htmlContent);
 }
-
-// async function test() {
-//   const browser = await chromium.launch({ headless: false });
-//   const context = await browser.newContext({
-//     ignoreHTTPSErrors: true
-//   });
-//   await context.addCookies([WikiAdviserJWTbackendCookie]);
-//   const page = await context.newPage();
-//   await page.goto(`localhost:81/success`);
-// }
-
-// test();

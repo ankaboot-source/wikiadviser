@@ -182,12 +182,6 @@ app.get('/authenticate', async (req, res) => {
     const { cookie } = req.headers;
 
     // Verify backend: using IP, Next step: Verify backend, pass and verify cookie: Frontend -> Backend -> Mediawiki
-    logger.info({
-      RealIP: req.headers['x-real-ip'],
-      ApiIP: WIKIADVISER_API_IP,
-      req: req.query,
-      reqAction: req.query.action
-    });
     if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
       if (!cookie) {
         throw new Error('Missing cookies');

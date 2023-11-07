@@ -1,18 +1,12 @@
 import axios from 'axios';
 import https from 'https';
-import { chromium } from 'playwright';
 import logger from '../logger';
+import Automator from './PlaywrightHelper';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const {
-  MEDIAWIKI_HOST,
-  WIKIPEDIA_PROXY,
-  MW_BOT_USERNAME,
-  MW_BOT_PASSWORD,
-  MW_ADMIN_USERNAME,
-  MW_ADMIN_PASSWORD
-} = process.env;
+const { MEDIAWIKI_HOST, WIKIPEDIA_PROXY, MW_BOT_USERNAME, MW_BOT_PASSWORD } =
+  process.env;
 
 const api = axios.create({ baseURL: `${MEDIAWIKI_HOST}/w/api.php` });
 // Use to bypass https validation
@@ -79,6 +73,7 @@ async function loginAndGetCsrf() {
   const { csrftoken } = csrfResponse.data.query.tokens;
   return csrftoken;
 }
+
 async function logout(csrftoken: string) {
   const logoutResponse = await api.post(
     '',
@@ -148,42 +143,9 @@ export async function importNewArticle(
       );
       logger.info(`Succesfuly exported file ${title}`);
       logger.info(`Importing into our instance file ${title}`);
-      // Automate Login
-      const usernameField = '#wpName1';
-      const passwordField = '#wpPassword1';
-      const loginButton = '#wpLoginAttempt';
 
-      const browser = await chromium.launch();
-      const context = await browser.newContext({
-        ignoreHTTPSErrors: true
-      });
-      const page = await context.newPage();
+      await Automator.importPage(articleId, exportData);
 
-      await page.goto(
-        `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
-        { waitUntil: 'networkidle' }
-      );
-      await page.fill(usernameField, MW_ADMIN_USERNAME!);
-      await page.fill(passwordField, MW_ADMIN_PASSWORD!);
-      await page.click(loginButton);
-
-      // Automate Import
-      const submitButton = 'button[value^="Upload file"]';
-      const fileChooserButton = '#ooui-php-2';
-      const textBoxInterwikiprefix = '#ooui-php-3';
-
-      await page.locator(fileChooserButton).setInputFiles([
-        {
-          name: `${articleId}.xml`,
-          mimeType: 'application/xml',
-          buffer: Buffer.from(exportData, 'utf-8')
-        }
-      ]);
-
-      await page.fill(textBoxInterwikiprefix, ' ');
-      await page.click(submitButton, { timeout: 10 * 60 * 1000 }); // 10 Minutes
-      await page.waitForLoadState('networkidle');
-      await browser.close();
       logger.info(`Succesfuly imported file ${title}`);
 
       // Login
@@ -233,39 +195,19 @@ async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
   return response.data.query.pages[0].revisions[0].revid;
 }
 
-async function getDiffHtml(
-  articleId: string,
-  originalRevid: string,
-  latestRevid: string
-) {
-  logger.info(
-    { originalRevid, latestRevid },
-    'Getting the Diff HTML of Revids:'
-  );
-
-  const browser = await chromium.launch();
-  const context = await browser.newContext({
-    ignoreHTTPSErrors: true
-  });
-  const page = await context.newPage();
-  await page.goto(
-    `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
-    { waitUntil: 'networkidle' }
-  );
-
-  const diffPage = await page.$eval(
-    '.ve-init-mw-diffPage-diff',
-    (el) => el.outerHTML
-  );
-  await browser.close();
-  return diffPage;
-}
-
 export async function updateChanges(articleId: string, permissionId: string) {
   const originalRevid = await getRevisionId(articleId, 'newer');
   const latestRevid = await getRevisionId(articleId, 'older');
 
-  const diffPage = await getDiffHtml(articleId, originalRevid, latestRevid);
+  logger.info(
+    { originalRevid, latestRevid },
+    'Getting the Diff HTML of Revids:'
+  );
+  const diffPage = await Automator.getDiffHtml(
+    articleId,
+    originalRevid,
+    latestRevid
+  );
 
   const { changesToUpsert, htmlContent } = await refineArticleChanges(
     articleId,

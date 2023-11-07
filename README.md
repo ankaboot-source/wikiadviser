@@ -2,10 +2,9 @@
 
 ## Pre-requisites
 
-
 ### Setup MediaWiki / Canasta
 
-- You need to have a running mediawiki instance. We recommend to use the canasta distribution for ease of configuration. You can follow [these steps](https://canasta.wiki/setup/#create-new-wiki) for a fast setup. 
+- You need to have a running mediawiki instance. We recommend to use the canasta distribution for ease of configuration. You can follow [these steps](https://canasta.wiki/setup/#create-new-wiki) for a fast setup.
 
 - You also need to have `MyVisualEditor` in the extensions folder of mediawiki (Either through a volume mount or a copy).
 
@@ -75,13 +74,16 @@
   </details>
 
 - Export/Import the CSS & JS from the source wiki
+
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js
 
-   Into your MediaWiki instance http://localhost/wiki/MediaWiki: Common.css and Common.js 
+  Into your MediaWiki instance http://localhost/wiki/MediaWiki: Common.css and Common.js
+
 - Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
 
-- Add robots.txt to ./config and configure Caddy to use it:
+- <details>
+    <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it (Prod only)</summary>
 
   ```txt
   User-agent: *
@@ -90,16 +92,39 @@
 
   ```caddy
   # Caddyfile
-  rewrite /robots.txt ./robots.txt # Disable search engine indexing
+  {$MW_SITE_FQDN} {
+      log {
+            output file /var/log/caddy/access.log {
+                roll_size 10MiB
+                roll_keep 10
+                roll_keep_for 24h
+            }
+      }
+
+      forward_auth https://api.wikiadviser.io {
+          header_up Host {upstream_hostport}
+          header_up X-Real-IP {remote_host}
+          uri /authenticate
+          copy_headers X-User X-Client-IP X-Forwarded-Uri
+      }
+
+      rewrite /robots.txt ./robots.txt # Disable search engine indexing
+      reverse_proxy varnish:80
+  }
   ```
 
-### Supabase
- You need to have a supabase instance (In the cloud or locally hosted):
-  - If using a cloud instance, you need to run the migrations manually.
-  * If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+  </details>
 
+### Supabase
+
+You need to have a supabase instance (In the cloud or locally hosted):
+
+- If using a cloud instance, you need to run the migrations manually.
+
+* If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
 
 ## Running the Project
+
 Make sure you have setup all the necessary pre-requisits.
 
 ### Using Node
@@ -110,7 +135,7 @@ In both `/frontend` and `/backend` directory
 
 - Copy `.env.example` to `.env` and update the missing variables accordingly.
 - Install dependencies via` npm i`
-- Run each of the projects via` npm run dev `
+- Run each of the projects via`npm run dev`
 
 ### Using Docker
 
@@ -132,7 +157,7 @@ docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build -
 - In `MyVisualEditor`
   - Our custom code is marked by `/* Custom WikiAdviser */` comments.
   - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (backend).
-- In `./backend/.env` use the `service_role` key  from <b>supabase</b> for `SUPABASE_SECRET_PROJECT_TOKEN`
+- In `./backend/.env` use the `service_role` key from <b>supabase</b> for `SUPABASE_SECRET_PROJECT_TOKEN`
 
 ## Important links and references
 

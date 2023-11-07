@@ -1,14 +1,12 @@
 import axios from 'axios';
 import https from 'https';
 import logger from '../logger';
-import PlaywrightAutomator from './PlaywrightHelper';
+import Automator from './PlaywrightHelper';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
 const { MEDIAWIKI_HOST, WIKIPEDIA_PROXY, MW_BOT_USERNAME, MW_BOT_PASSWORD } =
   process.env;
-
-const automate = new PlaywrightAutomator();
 
 const api = axios.create({ baseURL: `${MEDIAWIKI_HOST}/w/api.php` });
 // Use to bypass https validation
@@ -146,7 +144,7 @@ export async function importNewArticle(
       logger.info(`Succesfuly exported file ${title}`);
       logger.info(`Importing into our instance file ${title}`);
 
-      await automate.importPage(articleId, exportData);
+      await Automator.importPage(articleId, exportData);
 
       logger.info(`Succesfuly imported file ${title}`);
 
@@ -205,7 +203,7 @@ export async function updateChanges(articleId: string, permissionId: string) {
     { originalRevid, latestRevid },
     'Getting the Diff HTML of Revids:'
   );
-  const diffPage = await automate.getDiffHtml(
+  const diffPage = await Automator.getDiffHtml(
     articleId,
     originalRevid,
     latestRevid

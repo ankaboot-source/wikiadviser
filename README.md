@@ -83,7 +83,7 @@
 - Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
 
 - <details>
-    <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it</summary>
+    <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it (Prod only)</summary>
 
   ```txt
   User-agent: *

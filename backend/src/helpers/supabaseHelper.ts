@@ -176,19 +176,17 @@ export async function deleteArticle(articleId: string) {
 }
 
 export async function getUserByToken(accessToken: string) {
-  const user = await supabase.auth.getUser(accessToken);
-  return user;
+  const userResponse = await supabase.auth.getUser(accessToken);
+  return userResponse;
 }
 
-export async function verifyPermission(articleId: string, userId: string) {
-  const { error: permissionError } = await supabase
+export async function hasPermission(articleId: string, userId: string) {
+  const { data: permissionData, error: permissionError } = await supabase
     .from('permissions')
     .select()
     .eq('user_id', userId)
     .eq('article_id', articleId)
     .single();
 
-  if (permissionError) {
-    throw new Error(permissionError.message);
-  }
+  return { permissionData, permissionError };
 }

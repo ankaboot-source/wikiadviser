@@ -14,9 +14,9 @@ import {
 import {
   deleteArticle,
   getUserByToken,
+  hasPermission,
   insertArticle,
-  updateChange,
-  verifyPermission
+  updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
@@ -175,82 +175,91 @@ app.delete('/article', async (req, res) => {
 
 app.get('/authenticate', async (req, res) => {
   try {
+    // Authorize backend
+    if (req.headers['x-real-ip'] === WIKIADVISER_API_IP) {
+      logger.info({ name: 'Authorized Backend', headers: req.headers });
+      return res.sendStatus(200);
+    }
+    // forwardedUri verification
+    const forwardedUri = req.headers['x-forwarded-uri'];
+    if (!(typeof forwardedUri === 'string')) {
+      return res
+        .status(403)
+        .json({ message: 'Unauthorized: Missing x-forwarded-uri' });
+    }
+
     const JWTcookie: WikiAdviserJWTcookie = {
       name: 'WikiAdviserJWTcookie',
       value: ''
     };
     const { cookie } = req.headers;
+    JWTcookie.value =
+      cookie
+        ?.split(';')
+        .find((singleCookie) => singleCookie.includes(JWTcookie.name))
+        ?.split('=')[1] || '';
 
-    // Verify backend using IP address
-    if (req.headers['x-real-ip'] !== WIKIADVISER_API_IP) {
-      if (!cookie) {
-        throw new Error('Missing cookies');
-      }
-      JWTcookie.value =
-        cookie
-          ?.split(';')
-          .find((singleCookie) => singleCookie.includes(JWTcookie.name))
-          ?.split('=')[1] || '';
-      if (!JWTcookie.value) {
-        throw new Error('Missing token cookie');
-      }
+    // Cookie verification
+    if (!JWTcookie.value) {
+      return res.status(403).json({ message: 'Unauthorized: Missing cookies' });
+    }
 
-      // User verification
-      const userResponse = await getUserByToken(JWTcookie.value);
-      if (userResponse.error) {
-        throw new Error(userResponse.error.message);
-      }
+    // User verification
+    const userResponse = await getUserByToken(JWTcookie.value);
+    if (userResponse.error) {
+      return res.status(403).json({
+        message: `Unauthorized: User ${userResponse.error.message}`
+      });
+    }
 
-      // Valid link verification
-      const forwardedUri = req.headers['x-forwarded-uri'];
-      if (typeof forwardedUri !== 'string') {
-        throw new Error('Missing forwardedUri');
-      }
+    // Allow POST api calls until there is a way to verify the payload (POST FORM)
+    if (
+      req.headers['x-forwarded-method'] !== 'POST' ||
+      forwardedUri !== '/w/api.php'
+    ) {
+      const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+      const allowedPrefixRegEx =
+        /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
 
-      // Allow POST api calls until there is a way to verify the payload (POST FORM)
-      if (
-        req.headers['x-forwarded-method'] !== 'POST' ||
-        forwardedUri !== '/w/api.php'
-      ) {
-        const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
-        const allowedPrefixRegEx =
-          /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+      if (!forwardedUri?.match(allowedPrefixRegEx)) {
+        const articleId =
+          forwardedUri.startsWith('/w/api.php?') &&
+          req?.query?.action === 'visualeditor'
+            ? (req?.query?.page as string)
+            : forwardedUri?.match(articleIdRegEx)?.[1];
+        if (!articleId) {
+          return res.status(403).json({
+            message: 'Unauthorized: Missing articleId'
+          });
+        }
 
-        if (!forwardedUri?.match(allowedPrefixRegEx)) {
-          const articleId =
-            forwardedUri.startsWith('/w/api.php?') &&
-            req?.query?.action === 'visualeditor'
-              ? (req?.query?.page as string)
-              : forwardedUri?.match(articleIdRegEx)?.[1];
-          if (!articleId) {
-            throw new Error('Missing articleId');
-          }
-
-          await verifyPermission(articleId, userResponse.data.user?.id);
+        const { permissionError } = await hasPermission(
+          articleId,
+          userResponse.data.user?.id
+        );
+        if (permissionError) {
+          return res.status(403).json({
+            message: 'Unauthorized: Permission denied'
+          });
         }
       }
     }
 
     logger.info({ name: 'Authorized', headers: req.headers });
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Authorized'
     });
   } catch (error) {
+    let message = 'Something unexpected happened!';
+    logger.error({ name: 'Unauthorized', error, headers: req.headers });
+
     if (error instanceof Error) {
-      logger.error({
-        name: 'Unauthorized',
-        message: error.message,
-        headers: req.headers
-      });
-      res.status(403).json({
-        message: error.message
-      });
-    } else {
-      logger.error({ name: 'Unauthorized', error });
-      res.status(403).json();
+      message = error.message;
     }
+    return res.status(500).json({ message });
   }
 });
+
 if (SENTRY_DSN) {
   app.use(Sentry.Handlers.errorHandler());
 }

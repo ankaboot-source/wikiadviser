@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
 
-const supabaseClient = createClient(
+const supabaseClient = createBrowserClient(
   process.env.SUPABASE_PROJECT_URL!,
   process.env.SUPABASE_SECRET_PROJECT_TOKEN!
 );

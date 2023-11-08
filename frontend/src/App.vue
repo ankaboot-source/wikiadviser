@@ -21,6 +21,7 @@ import SigninPage from 'src/pages/auth/SigninPage.vue';
 import { onMounted, ref } from 'vue';
 
 const session = ref<Session | null>();
+
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
   session.value = data.session;

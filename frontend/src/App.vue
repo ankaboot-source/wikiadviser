@@ -23,7 +23,7 @@ import { onMounted, ref } from 'vue';
 const session = ref<Session | null>();
 const JWTcookie = {
   name: 'WikiAdviserJWTcookie',
-  url: process.env.WIKIADVISER_ROOT_DOMAIN,
+  url: process.env.WIKIADVISER_HOST,
 };
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();

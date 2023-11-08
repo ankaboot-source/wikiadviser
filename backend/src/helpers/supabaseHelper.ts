@@ -175,11 +175,6 @@ export async function deleteArticle(articleId: string) {
   }
 }
 
-export async function getUserByToken(accessToken: string) {
-  const userResponse = await supabase.auth.getUser(accessToken);
-  return userResponse;
-}
-
 export async function hasPermission(articleId: string, userId: string) {
   const { data: permissionData, error: permissionError } = await supabase
     .from('permissions')

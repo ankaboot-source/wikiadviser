@@ -14,7 +14,6 @@ import {
 } from './helpers/parsingHelper';
 import {
   deleteArticle,
-  getUserByToken,
   hasPermission,
   insertArticle,
   updateChange
@@ -22,7 +21,6 @@ import {
 import logger from './logger';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
-import { WikiAdviserJWTcookie } from './types';
 import authorizationMiddlware from './middleware/auth';
 
 const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;

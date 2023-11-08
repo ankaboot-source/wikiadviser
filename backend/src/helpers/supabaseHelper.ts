@@ -183,5 +183,5 @@ export async function hasPermission(articleId: string, userId: string) {
     .eq('article_id', articleId)
     .single();
 
-  return error ? false : true;
+  return !error;
 }

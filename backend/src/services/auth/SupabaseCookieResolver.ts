@@ -1,0 +1,31 @@
+import { createServerClient } from '@supabase/ssr';
+import { Logger } from 'pino';
+import { Request } from 'express';
+import Authorization from './AuthResolver';
+
+export default class SupabaseCookieAuthorization implements Authorization {
+  constructor(private readonly logger: Logger) {}
+
+  async verifyCookie(context: Request) {
+    try {
+      const supabase = createServerClient(
+        process.env.SUPABASE_PROJECT_URL!,
+        process.env.SUPABASE_SECRET_PROJECT_TOKEN!,
+        {
+          cookies: {
+            get: (key: string): string => {
+              const { cookies } = context;
+              const cookie = cookies[key] ?? '';
+              return decodeURIComponent(cookie);
+            }
+          }
+        }
+      );
+      const { data } = await supabase.auth.getSession();
+      return data?.session?.user;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/node';
 import 'dotenv/config';
 import express, { json } from 'express';
+import cookieParser from 'cookie-parser';
 import {
   deleteArticleMW,
   importNewArticle,
@@ -22,6 +23,7 @@ import logger from './logger';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
 import { WikiAdviserJWTcookie } from './types';
+import authorizationMiddlware from './middleware/auth';
 
 const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
 
@@ -38,6 +40,8 @@ if (SENTRY_DSN) {
 
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
+app.use(cookieParser());
+app.use(authorizationMiddlware);
 
 app.put('/article/changes', async (req, res) => {
   try {

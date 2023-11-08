@@ -9,6 +9,7 @@ export default class SupabaseCookieAuthorization implements Authorization {
   async verifyCookie(context: Request) {
     try {
       const supabase = createServerClient(
+        // skipcq: JS-0339 - Skip this issue until we migrate to zod for ENV checking 
         process.env.SUPABASE_PROJECT_URL!,
         process.env.SUPABASE_SECRET_PROJECT_TOKEN!,
         {

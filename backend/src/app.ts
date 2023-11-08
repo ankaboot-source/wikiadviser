@@ -177,80 +177,49 @@ app.delete('/article', async (req, res) => {
 
 app.get('/authenticate', async (req, res) => {
   try {
-    // Authorize backend
+    const { user } = res.locals;
+    const forwardedUri = req.headers['x-forwarded-uri'];
+    const forwardedMethod = req.headers['x-forwarded-method'];
+
+    const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+    const allowedPrefixRegEx =
+      /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+
+    // Authorize requests coming from backend to mediaWiki
     if (req.headers['x-real-ip'] === WIKIADVISER_API_IP) {
-      logger.info({ name: 'Authorized Backend', headers: req.headers });
+      logger.info({
+        message: 'Authorized: Request coming from backend',
+        headers: req.headers
+      });
       return res.sendStatus(200);
     }
-    // forwardedUri verification
-    const forwardedUri = req.headers['x-forwarded-uri'];
-    if (!(typeof forwardedUri === 'string')) {
-      return res
-        .status(403)
-        .json({ message: 'Unauthorized: Missing x-forwarded-uri' });
+
+    if (!user || !(typeof forwardedUri === 'string')) {
+      return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const JWTcookie: WikiAdviserJWTcookie = {
-      name: 'WikiAdviserJWTcookie',
-      value: ''
-    };
-    const { cookie } = req.headers;
-    JWTcookie.value =
-      cookie
-        ?.split(';')
-        .find((singleCookie) => singleCookie.includes(JWTcookie.name))
-        ?.split('=')[1] || '';
+    const hasAllowedPrefixes =
+      (forwardedMethod !== 'POST' || forwardedUri !== '/w/api.php') &&
+      forwardedUri.match(allowedPrefixRegEx);
 
-    // Cookie verification
-    if (!JWTcookie.value) {
-      return res.status(403).json({ message: 'Unauthorized: Missing cookies' });
-    }
+    if (!hasAllowedPrefixes) {
+      const isRequestFromVisualEditor =
+        forwardedUri.startsWith('/w/api.php?') &&
+        req.query.action === 'visualeditor';
 
-    // User verification
-    const userResponse = await getUserByToken(JWTcookie.value);
-    if (userResponse.error) {
-      return res.status(403).json({
-        message: `Unauthorized: User ${userResponse.error.message}`
-      });
-    }
+      const articleId = isRequestFromVisualEditor
+        ? (req.query.page as string)
+        : forwardedUri.match(articleIdRegEx)?.[1];
 
-    // Allow POST api calls until there is a way to verify the payload (POST FORM)
-    if (
-      req.headers['x-forwarded-method'] !== 'POST' ||
-      forwardedUri !== '/w/api.php'
-    ) {
-      const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
-      const allowedPrefixRegEx =
-        /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+      const permission = articleId
+        ? await hasPermission(articleId, res.locals.user.id)
+        : null;
 
-      if (!forwardedUri?.match(allowedPrefixRegEx)) {
-        const articleId =
-          forwardedUri.startsWith('/w/api.php?') &&
-          req?.query?.action === 'visualeditor'
-            ? (req?.query?.page as string)
-            : forwardedUri?.match(articleIdRegEx)?.[1];
-        if (!articleId) {
-          return res.status(403).json({
-            message: 'Unauthorized: Missing articleId'
-          });
-        }
-
-        const { permissionError } = await hasPermission(
-          articleId,
-          userResponse.data.user?.id
-        );
-        if (permissionError) {
-          return res.status(403).json({
-            message: 'Unauthorized: Permission denied'
-          });
-        }
+      if (permission) {
+        return res.status(403).json({ message: 'Unauthorized' });
       }
     }
-
-    logger.info({ name: 'Authorized', headers: req.headers });
-    return res.status(200).json({
-      message: 'Authorized'
-    });
+    return res.sendStatus(200);
   } catch (error) {
     let message = 'Something unexpected happened!';
     logger.error({ name: 'Unauthorized', error, headers: req.headers });

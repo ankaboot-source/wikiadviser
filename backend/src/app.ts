@@ -199,7 +199,8 @@ app.get('/authenticate', async (req, res) => {
     }
 
     const hasAllowedPrefixes =
-      (forwardedMethod !== 'POST' || forwardedUri !== '/w/api.php') &&
+      forwardedMethod === 'POST' ||
+      forwardedUri === '/w/api.php' ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
@@ -212,10 +213,10 @@ app.get('/authenticate', async (req, res) => {
         : forwardedUri.match(articleIdRegEx)?.[1];
 
       const permission = articleId
-        ? await hasPermission(articleId, res.locals.user.id)
+        ? await hasPermission(articleId, user.id)
         : null;
 
-      if (permission) {
+      if (!permission) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
     }

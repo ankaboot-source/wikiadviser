@@ -23,8 +23,9 @@ import { onMounted, ref } from 'vue';
 const session = ref<Session | null>();
 
 onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  session.value = data.session;
+  supabase.auth.onAuthStateChange((event, _session) => {
+    session.value = _session;
+  });
 });
 
 useMeta({

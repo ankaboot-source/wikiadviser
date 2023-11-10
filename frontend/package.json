@@ -16,7 +16,8 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "@supabase/supabase-js": "^2.22.0",
+    "@supabase/ssr": "^0.0.9",
+    "@supabase/supabase-js": "^2.38.4",
     "axios": "^0.21.1",
     "dotenv": "^16.0.3",
     "pinia": "^2.0.11",

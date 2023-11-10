@@ -199,8 +199,7 @@ app.get('/authenticate', async (req, res) => {
     }
 
     const hasAllowedPrefixes =
-      forwardedMethod === 'POST' ||
-      forwardedUri === '/w/api.php' ||
+      (forwardedMethod === 'POST' && forwardedUri === '/w/api.php') ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {

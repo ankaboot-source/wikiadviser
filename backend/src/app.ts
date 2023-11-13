@@ -181,7 +181,7 @@ app.get('/authenticate', async (req, res) => {
     const forwardedUri = req.headers['x-forwarded-uri'];
     const forwardedMethod = req.headers['x-forwarded-method'];
 
-    const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+    const articleIdRegEx = /^\/w\/index.php\/([0-9a-f-]{36})([?/]|$)/i;
     const allowedPrefixRegEx =
       /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
 

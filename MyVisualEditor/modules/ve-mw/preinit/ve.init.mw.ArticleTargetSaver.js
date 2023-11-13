@@ -107,9 +107,9 @@
 			mw.libs.ve.deduplicateStyles( newDoc.body );
 
 			// Add doctype manually
-			// ve.properOuterHtml is loaded separately in ve.utils.parsing.js
+			// ve.serializeXhtml is loaded separately from utils.parsing
 			// eslint-disable-next-line no-undef
-			return '<!doctype html>' + ve.properOuterHtml( newDoc.documentElement );
+			return '<!doctype html>' + ve.serializeXhtml( newDoc );
 		},
 
 		/**
@@ -240,17 +240,15 @@
 					formatversion: 2,
 					errorformat: 'html',
 					errorlang: mw.config.get( 'wgUserLanguage' ),
-					errorsuselocal: true
+					errorsuselocal: true,
+					editingStatsId: window.ve && window.ve.init && window.ve.init.editingSessionId
 				},
 				data
 			);
 
 			var action = data.action;
 
-			var request = api.postWithToken( 'csrf', data, {
-				contentType: 'multipart/form-data',
-				trackEditAttemptStepSessionId: true
-			} );
+			var request = api.postWithToken( 'csrf', data, { contentType: 'multipart/form-data' } );
 
 			return request.then(
 				function ( response, jqxhr ) {

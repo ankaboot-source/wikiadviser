@@ -4,11 +4,6 @@
 			"lib/socket.io-client/socket.io.min.js"
 		]
 	},
-	"peerjs": {
-		"scripts": [
-			"lib/peerjs/peerjs.min.js"
-		]
-	},
 	"jquery": {
 		"scripts": [
 			"lib/jquery/jquery.js"
@@ -591,8 +586,6 @@
 			"src/ui/ve.ui.ContextItem.js",
 			"src/ui/ve.ui.ContextItemFactory.js",
 			"src/ui/contextitems/ve.ui.LinearContextItem.js",
-			"src/ui/contextitems/ve.ui.ToolContextItem.js",
-			"src/ui/contextitems/ve.ui.PersistentContextItem.js",
 			"src/ui/contextitems/ve.ui.AnnotationContextItem.js",
 			"src/ui/contextitems/ve.ui.TableLineContextItem.js",
 			"src/ui/contextitems/ve.ui.MobileActionsContextItem.js",
@@ -600,6 +593,7 @@
 			"src/ui/contextitems/ve.ui.CommentContextItem.js",
 			"src/ui/contextitems/ve.ui.LanguageContextItem.js",
 			"src/ui/contextitems/ve.ui.LinkContextItem.js",
+			"src/ui/contextitems/ve.ui.ToolContextItem.js",
 			"src/ui/contextitems/ve.ui.TableContextItem.js",
 			"src/ui/contextitems/ve.ui.MergeCellsContextItem.js",
 			"src/ui/contextitems/ve.ui.SumCellsContextItem.js",
@@ -632,7 +626,6 @@
 			"src/ui/actions/ve.ui.CompletionAction.js",
 			"src/ui/actions/ve.ui.ContentAction.js",
 			"src/ui/actions/ve.ui.FormatAction.js",
-			"src/ui/actions/ve.ui.HelpCompletionAction.js",
 			"src/ui/actions/ve.ui.HistoryAction.js",
 			"src/ui/actions/ve.ui.IndentationAction.js",
 			"src/ui/actions/ve.ui.LinkAction.js",
@@ -683,7 +676,6 @@
 			"src/ui/tools/ve.ui.CommentInspectorTool.js",
 			"src/ui/tools/ve.ui.ToolbarDialogTool.js",
 			"src/ui/tools/ve.ui.FormatTool.js",
-			"src/ui/tools/ve.ui.HelpCompletionTool.js",
 			"src/ui/tools/ve.ui.HistoryTool.js",
 			"src/ui/tools/ve.ui.IndentationTool.js",
 			"src/ui/tools/ve.ui.LanguageInspectorTool.js",
@@ -704,6 +696,7 @@
 			"src/ui/styles/dialogs/ve.ui.ProgressDialog.css",
 			"src/ui/styles/dialogs/ve.ui.SpecialCharacterDialog.css",
 			"src/ui/styles/dialogs/ve.ui.TableDialog.css",
+			"src/ui/styles/elements/ve.ui.PreviewElement.css",
 			"src/ui/styles/tools/ve.ui.FormatTool.css",
 			"src/ui/styles/widgets/ve.ui.LanguageInputWidget.css",
 			"src/ui/styles/widgets/ve.ui.LanguageSearchWidget.css",
@@ -790,7 +783,6 @@
 	},
 	"visualEditor.rebase": {
 		"scripts": [
-			"src/ve.FakePeer.js",
 			"src/dm/ve.dm.RebaseClient.js",
 			"src/dm/ve.dm.SurfaceSynchronizer.js",
 			"src/ui/widgets/ve.ui.AuthorItemWidget.js",
@@ -837,7 +829,6 @@
 			"tests/ve.BranchNode.test.js",
 			"tests/ve.LeafNode.test.js",
 			"tests/ve.sanitize.test.js",
-			"tests/ve.FakePeer.test.js",
 			"tests/dm/ve.dm.example.js",
 			"tests/dm/ve.dm.example.StubReferenceNode.js",
 			"tests/dm/ve.dm.Annotation.test.js",
@@ -964,8 +955,7 @@
 			"jsdifflib",
 			"qunit",
 			"visualEditor.desktop.standalone.apex",
-			"visualEditor.rebase",
-			"visualEditor.collab"
+			"visualEditor.rebase"
 		]
 	},
 	"visualEditor.theme.apex": {
@@ -1097,29 +1087,6 @@
 			"visualEditor.standalone.wikimediaui.dist"
 		]
 	},
-	"visualEditor.collab": {
-		"scripts": [
-			"rebaser/src/dm/ve.dm.RebaseDocState.js",
-			"rebaser/src/dm/ve.dm.RebaseServer.js",
-			"rebaser/src/dm/ve.dm.DocumentStore.js",
-			"rebaser/src/dm/ve.dm.ProtocolServer.js",
-			"src/dm/ve.dm.RebaseClient.js",
-			"src/dm/ve.dm.SurfaceSynchronizer.js",
-			"src/ui/widgets/ve.ui.AuthorItemWidget.js",
-			"src/ui/tools/ve.ui.AuthorListPopupTool.js",
-			"src/ve.FakePeer.js",
-			"collab/ve.collab.js",
-			"collab/ve.dm.CollabTransportServer.js"
-		],
-		"styles": [
-			"src/ui/styles/widgets/ve.ui.AuthorItemWidget.css"
-		],
-		"styleGroup": "read",
-		"dependencies": [
-			"color-picker",
-			"peerjs"
-		]
-	},
 	"visualEditor.standalone.demo": {
 		"scripts": [
 			"demos/ve/ve.demo.js",
@@ -1128,10 +1095,7 @@
 		"styles": [
 			"demos/ve/demo.css"
 		],
-		"styleGroup": "read",
-		"dependencies": [
-			"visualEditor.collab"
-		]
+		"styleGroup": "read"
 	},
 	"visualEditor.desktop.standalone.demo": {
 		"scripts": [

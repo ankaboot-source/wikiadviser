@@ -21,9 +21,10 @@ ve.ui.MWEditSummaryWidget = function VeUiMWEditSummaryWidget( config ) {
 
 	// Parent method
 	ve.ui.MWEditSummaryWidget.super.call( this, ve.extendObject( {
-		autosize: true,
-		maxRows: 15,
-		allowLinebreaks: false
+		inputFilter: function ( value ) {
+			// Prevent the user from inputting newlines (this kicks in on paste, etc.)
+			return value.replace( /\r?\n/g, ' ' );
+		}
 	}, config ) );
 
 	// Mixin method
@@ -88,7 +89,7 @@ ve.ui.MWEditSummaryWidget.static.getMatchingSummaries = function ( summaries, qu
 				summaryPrefixMatches.push( summary );
 			}
 		} else if ( index !== -1 ) {
-			if ( /^\s/.test( lowerSummary.charAt( index - 1 ) ) ) {
+			if ( /\s/.test( lowerSummary[ index - 1 ] ) ) {
 				// Character before match is whitespace
 				wordPrefixMatches.push( summary );
 			} else {
@@ -104,28 +105,14 @@ ve.ui.MWEditSummaryWidget.static.getMatchingSummaries = function ( summaries, qu
 /**
  * @inheritdoc
  */
-ve.ui.MWEditSummaryWidget.prototype.adjustSize = function () {
-	// To autosize, the widget will render another element beneath the input
-	// with the same text for measuring. This extra element could cause scrollbars
-	// to appear, changing the available width, so if scrollbars are intially
-	// hidden, force them to stay hidden during the adjustment.
-	// TODO: Consider upstreaming this?
-	var scrollContainer = this.getClosestScrollableElementContainer();
-	var hasScrollbar = scrollContainer.offsetWidth > scrollContainer.scrollWidth;
-	var overflowY;
-	if ( !hasScrollbar ) {
-		overflowY = scrollContainer.style.overflowY;
-		scrollContainer.style.overflowY = 'hidden';
+ve.ui.MWEditSummaryWidget.prototype.onKeyPress = function ( e ) {
+	if ( e.which === OO.ui.Keys.ENTER ) {
+		e.preventDefault();
 	}
-
-	// Parent method
-	ve.ui.MWEditSummaryWidget.super.prototype.adjustSize.apply( this, arguments );
-
-	if ( !hasScrollbar ) {
-		scrollContainer.style.overflowY = overflowY;
-	}
-
-	return this;
+	// Grand-parent method
+	// Multi-line only fires 'enter' on ctrl+enter, but this should
+	// fire on plain enter as it behaves like a single line input.
+	OO.ui.TextInputWidget.prototype.onKeyPress.call( this, e );
 };
 
 /**
@@ -139,8 +126,6 @@ ve.ui.MWEditSummaryWidget.prototype.getSummaries = function () {
 		if ( mw.user.isAnon() ) {
 			this.getSummariesPromise = ve.createDeferred().resolve( [] ).promise();
 		} else {
-			// Allow this for temp users as well. The isAnon() check above is just to avoid autocompleting
-			// with someone else's summaries.
 			this.getSummariesPromise = ve.init.target.getLocalApi().get( {
 				action: 'query',
 				list: 'usercontribs',

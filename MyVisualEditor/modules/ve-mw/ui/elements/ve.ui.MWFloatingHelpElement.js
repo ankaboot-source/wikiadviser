@@ -39,7 +39,7 @@ ve.ui.MWFloatingHelpElement = function VeUiMWFloatingHelpElement( config ) {
 	this.windowManager.$element.addClass( 've-ui-mwFloatingHelpElement-windowManager' );
 
 	if ( OO.ui.isMobile() ) {
-		$( OO.ui.getTeleportTarget() ).append( this.windowManager.$element );
+		$( document.body ).append( this.windowManager.$element );
 	} else {
 		this.$element.append( this.windowManager.$element );
 	}

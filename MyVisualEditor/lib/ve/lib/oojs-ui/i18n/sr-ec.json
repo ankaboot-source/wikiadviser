@@ -11,7 +11,6 @@
 			"Милан Јелисавчић"
 		]
 	},
-	"ooui-copytextlayout-copy": "Копирај",
 	"ooui-outline-control-move-down": "Премести ставку надоле",
 	"ooui-outline-control-move-up": "Премести ставку нагоре",
 	"ooui-outline-control-remove": "Уклони ставку",
@@ -25,9 +24,8 @@
 	"ooui-dialog-process-dismiss": "Одбаци",
 	"ooui-dialog-process-retry": "Покушај поново",
 	"ooui-dialog-process-continue": "Настави",
-	"ooui-combobox-button-label": "Прикажи опције",
+	"ooui-combobox-button-label": "Падајућа листа за ComboBox",
 	"ooui-selectfile-button-select": "Изаберите датотеку",
-	"ooui-selectfile-button-select-multiple": "Изабери датотеке",
 	"ooui-selectfile-not-supported": "Избор датотеке није подржан",
 	"ooui-selectfile-placeholder": "Датотека није изабрана",
 	"ooui-selectfile-dragdrop-placeholder": "Отпустите датотеку овде",

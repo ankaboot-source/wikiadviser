@@ -20,6 +20,7 @@ ve.ui.ToolbarDialog = function VeUiToolbarDialog( config ) {
 
 	// Properties
 	this.disabled = false;
+	this.$shield = $( '<div>' ).addClass( 've-ui-toolbarDialog-shield' );
 
 	// Pre-initialization
 	// This class needs to exist before setup to constrain the height
@@ -55,6 +56,7 @@ ve.ui.ToolbarDialog.prototype.initialize = function () {
 	// Parent method
 	ve.ui.ToolbarDialog.super.prototype.initialize.call( this );
 
+	this.$body.append( this.$shield );
 	this.$content.addClass( 've-ui-toolbarDialog-content' );
 	// The following classes are used here:
 	// * ve-ui-toolbarDialog-position-above
@@ -79,7 +81,10 @@ ve.ui.ToolbarDialog.prototype.setDisabled = function ( disabled ) {
 	this.$content.addClass( 've-ui-toolbarDialog-content' );
 	if ( disabled !== this.disabled ) {
 		this.disabled = disabled;
-		this.$body.toggleClass( 've-ui-toolbarDialog-disabled', this.disabled );
+		this.$body
+			// Make sure shield is last child
+			.append( this.$shield )
+			.toggleClass( 've-ui-toolbarDialog-disabled', this.disabled );
 	}
 };
 

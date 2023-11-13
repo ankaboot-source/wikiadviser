@@ -23,20 +23,15 @@ ve.ce.MWInlineImageNode = function VeCeMWInlineImageNode( model, config ) {
 	if ( model.getAttribute( 'isError' ) ) {
 		this.$element = $( '<a>' )
 			.addClass( 'new' )
-			.append(
-				$( '<span>' )
-					.addClass( 'mw-file-element mw-broken-media' )
-					.text( model.getAttribute( 'errorText' ) )
-			);
+			.text( model.getAttribute( 'errorText' ) );
 		$image = $( [] );
 	} else {
-		$image = $( '<img>' ).addClass( 'mw-file-element' );
 		if ( model.getAttribute( 'href' ) ) {
 			hasHref = true;
-			this.$element = $( '<a>' ).addClass( 'mw-file-description' );
-			$image.appendTo( this.$element );
+			this.$element = $( '<a>' );
+			$image = $( '<img>' ).appendTo( this.$element );
 		} else {
-			this.$element = $image;
+			this.$element = $image = $( '<img>' );
 		}
 	}
 

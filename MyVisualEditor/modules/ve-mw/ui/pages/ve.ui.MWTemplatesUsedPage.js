@@ -30,7 +30,9 @@ ve.ui.MWTemplatesUsedPage = function VeUiMWTemplatesUsedPage() {
 	} );
 
 	this.templatesUsedFieldset.$group.addClass( [
-		'mw-body-content'
+		'mw-body-content',
+		// HACK: T287733
+		mw.config.get( 'skin' ) === 'vector' || mw.config.get( 'skin' ) === 'vector-2022' ? 'vector-body' : null
 	] );
 
 	target.getContentApi().get( {

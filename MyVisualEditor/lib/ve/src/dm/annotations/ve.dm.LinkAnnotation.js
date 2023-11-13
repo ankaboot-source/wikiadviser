@@ -57,7 +57,7 @@ ve.dm.LinkAnnotation.static.describeChange = function ( key, change ) {
 		}
 	}
 	// Parent method
-	return ve.dm.LinkAnnotation.super.static.describeChange.apply( this, arguments );
+	return ve.dm.LinkAnnotation.parent.static.describeChange.apply( this, arguments );
 };
 
 /**
@@ -104,11 +104,11 @@ ve.dm.LinkAnnotation.prototype.getDisplayTitle = function () {
  */
 ve.dm.LinkAnnotation.prototype.getFragment = function () {
 	var href = this.getHref(),
-		hashIndex = href.indexOf( '#' );
-	if ( hashIndex === -1 ) {
+		hash = href.indexOf( '#' );
+	if ( hash === -1 ) {
 		return null;
 	}
-	return href.slice( hashIndex + 1 );
+	return href.slice( hash + 1 );
 };
 
 /**

@@ -30,14 +30,12 @@ ve.dm.Converter = function VeDmConverter( modelRegistry, nodeFactory, annotation
 
 	// Whitespace regexes
 	var whitespaceList = this.constructor.static.whitespaceList;
-	/* eslint-disable security/detect-non-literal-regexp */
 	this.leadingWhitespaceRegex = new RegExp( '^[' + whitespaceList + ']' );
 	this.leadingWhitespacesRegex = new RegExp( '^[' + whitespaceList + ']+' );
 	this.trailingWhitespaceRegex = new RegExp( '[' + whitespaceList + ']$' );
 	this.trailingWhitespacesRegex = new RegExp( '[' + whitespaceList + ']+$' );
 	this.onlyWhitespaceRegex = new RegExp( '^[' + whitespaceList + ']+$' );
 	this.trimWhitespaceRegex = new RegExp( '^([' + whitespaceList + ']*)([\\s\\S]*?)([' + whitespaceList + ']*)$' );
-	/* eslint-enable security/detect-non-literal-regexp */
 };
 
 /* Inheritance */
@@ -1650,19 +1648,14 @@ ve.dm.Converter.prototype.getDomSubtreeFromData = function ( data, container, in
 							// so we only go up to length - 2
 							for ( j = previousSiblings.length - 2; j >= 0; j-- ) {
 								var sibling = previousSiblings[ j ];
-								if ( ve.isBlockElement( sibling ) ) {
-									// Stop searching early when we get to a block element.
+								if ( sibling.nodeType === Node.TEXT_NODE && !sibling.veIsWhitespace ) {
+									// we've found an unwrapped paragraph so don't unwrap
+									doUnwrap = false;
 									break;
 								}
-								// If we find content, don't unwrap.
-								if (
-									// Text node content (non-whitespace)
-									( sibling.nodeType === Node.TEXT_NODE && !sibling.veIsWhitespace ) ||
-									// Inline content tag
-									( sibling.nodeType === Node.ELEMENT_NODE && sibling.tagName !== 'META' && sibling.tagName !== 'LINK' )
-								) {
-									// we've found unwrapped content so don't unwrap
-									doUnwrap = false;
+								if ( ve.isBlockElement( sibling ) ) {
+									// there is a block element before the next unwrapped node
+									// so it's safe to unwrap
 									break;
 								}
 							}
@@ -1800,7 +1793,7 @@ ve.dm.Converter.prototype.getDomSubtreeFromData = function ( data, container, in
 		delete container.lastOuterPost;
 	}
 	// Get rid of excess text nodes
-	container.normalize();
+	ve.normalizeNode( container );
 };
 
 /* Initialization */

@@ -37,11 +37,6 @@
 		modules.push( 'ext.visualEditor.mwwikitext' );
 	}
 
-	var editCheck = conf.editCheck || !!url.searchParams.get( 'ecenable' );
-	if ( conf.editCheckTagging || editCheck ) {
-		modules.push( 'ext.visualEditor.editCheck' );
-	}
-
 	var namespaces = mw.config.get( 'wgNamespaceIds' );
 	// Load signature tool if *any* namespace supports it.
 	// It will be shown disabled on namespaces that don't support it.
@@ -94,12 +89,7 @@
 					pluginCallbacks.push( ve.init.platform.getInitializedPromise.bind( ve.init.platform ) );
 					// Execute plugin callbacks and collect promises
 					return $.when.apply( $, pluginCallbacks.map( function ( callback ) {
-						try {
-							return callback();
-						} catch ( e ) {
-							mw.log.warn( 'Failed to load VE plugin:', e );
-							return null;
-						}
+						return callback();
 					} ) );
 				} );
 		},
@@ -201,11 +191,11 @@
 		 * @param {null|string} [options.section] Section to edit; number, 'T-'-prefixed, null or 'new' (currently just source mode)
 		 * @param {number} [options.oldId] Old revision ID. Current if omitted.
 		 * @param {string} [options.targetName] Optional target name for tracking
-		 * @param {boolean} [options.modified] The page has been modified before loading (e.g. in source mode)
+		 * @param {boolean} [options.modified] The page was been modified before loading (e.g. in source mode)
 		 * @param {string} [options.wikitext] Wikitext to convert to HTML. The original document is fetched if undefined.
 		 * @param {string} [options.editintro] Name of a page to use as edit intro message
 		 * @param {string} [options.preload] Name of a page to use as preloaded content if pageName is empty
-		 * @param {string[]} [options.preloadparams] Parameters to substitute into preload if it's used
+		 * @param {Array} [options.preloadparams] Parameters to substitute into preload if it's used
 		 * @return {jQuery.Promise} Abortable promise resolved with a JSON object
 		 */
 		requestPageData: function ( mode, pageName, options ) {
@@ -337,10 +327,15 @@
 				}
 			}
 			if ( !apiPromise ) {
-				apiPromise = apiXhr.then( function ( response ) {
+				apiPromise = apiXhr.then( function ( response, jqxhr ) {
 					ve.track( 'trace.apiLoad.exit', { mode: 'visual' } );
-					mw.track( 'timing.ve.' + options.targetName + '.performance.system.apiLoad',
-						ve.now() - start );
+					ve.track( 'mwtiming.performance.system.apiLoad', {
+						bytes: require( 'mediawiki.String' ).byteLength( jqxhr.responseText ),
+						duration: ve.now() - start,
+						cacheHit: /hit/i.test( jqxhr.getResponseHeader( 'X-Cache' ) ),
+						targetName: options.targetName,
+						mode: 'visual'
+					} );
 					if ( response.visualeditor ) {
 						response.visualeditor.switched = switched;
 						response.visualeditor.fromEditedState = fromEditedState;
@@ -355,7 +350,7 @@
 
 				var headers = {
 					// Should be synchronised with DirectParsoidClient.php
-					Accept: 'text/html; charset=utf-8; profile="https://www.mediawiki.org/wiki/Specs/HTML/2.8.0"',
+					Accept: 'text/html; charset=utf-8; profile="https://www.mediawiki.org/wiki/Specs/HTML/2.6.0"',
 					'Accept-Language': mw.config.get( 'wgVisualEditor' ).pageLanguageCode,
 					'Api-User-Agent': 'VisualEditor-MediaWiki/' + mw.config.get( 'wgVersion' )
 				};
@@ -408,8 +403,12 @@
 				var restbasePromise = restbaseXhr.then(
 					function ( response, status, jqxhr ) {
 						ve.track( 'trace.restbaseLoad.exit', { mode: 'visual' } );
-						mw.track( 'timing.ve.' + options.targetName + '.performance.system.restbaseLoad',
-							ve.now() - start );
+						ve.track( 'mwtiming.performance.system.restbaseLoad', {
+							bytes: require( 'mediawiki.String' ).byteLength( jqxhr.responseText ),
+							duration: ve.now() - start,
+							targetName: options.targetName,
+							mode: 'visual'
+						} );
 						return [ response, jqxhr.getResponseHeader( 'etag' ) ];
 					},
 					function ( xhr, code, _ ) {

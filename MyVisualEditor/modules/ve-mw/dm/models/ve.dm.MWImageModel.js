@@ -136,8 +136,7 @@ ve.dm.MWImageModel.static.createImageNode = function ( attributes, imageType ) {
 		align: 'default',
 		width: defaultThumbSize,
 		mediaType: 'BITMAP',
-		defaultSize: true,
-		imageClassAttr: 'mw-file-element'
+		defaultSize: true
 	}, attributes );
 
 	if ( attrs.defaultSize ) {

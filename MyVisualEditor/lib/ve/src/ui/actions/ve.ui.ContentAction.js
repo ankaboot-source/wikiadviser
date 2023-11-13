@@ -12,7 +12,6 @@
  *
  * @constructor
  * @param {ve.ui.Surface} surface Surface to act on
- * @param {string} [source]
  */
 ve.ui.ContentAction = function VeUiContentAction() {
 	// Parent constructor

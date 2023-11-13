@@ -65,6 +65,7 @@
 		<link rel=stylesheet href="../../src/ui/styles/dialogs/ve.ui.ProgressDialog.css" class="stylesheet-ve">
 		<link rel=stylesheet href="../../src/ui/styles/dialogs/ve.ui.SpecialCharacterDialog.css" class="stylesheet-ve">
 		<link rel=stylesheet href="../../src/ui/styles/dialogs/ve.ui.TableDialog.css" class="stylesheet-ve">
+		<link rel=stylesheet href="../../src/ui/styles/elements/ve.ui.PreviewElement.css" class="stylesheet-ve">
 		<link rel=stylesheet href="../../src/ui/styles/tools/ve.ui.FormatTool.css" class="stylesheet-ve">
 		<link rel=stylesheet href="../../src/ui/styles/widgets/ve.ui.LanguageInputWidget.css" class="stylesheet-ve">
 		<link rel=stylesheet href="../../src/ui/styles/widgets/ve.ui.LanguageSearchWidget.css" class="stylesheet-ve">
@@ -106,12 +107,6 @@
 
 		<!-- visualEditor.standalone.read -->
 		<link rel=stylesheet href="../../src/init/sa/styles/ve.init.sa.css" class="stylesheet-read">
-
-		<!-- color-picker -->
-		<link rel=stylesheet href="../../lib/color-picker/color-picker.css">
-
-		<!-- visualEditor.collab -->
-		<link rel=stylesheet href="../../src/ui/styles/widgets/ve.ui.AuthorItemWidget.css" class="stylesheet-read">
 
 		<!-- visualEditor.standalone.demo -->
 		<link rel=stylesheet href="../../demos/ve/demo.css" class="stylesheet-read">
@@ -453,8 +448,6 @@
 		<script src="../../src/ui/ve.ui.ContextItem.js"></script>
 		<script src="../../src/ui/ve.ui.ContextItemFactory.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.LinearContextItem.js"></script>
-		<script src="../../src/ui/contextitems/ve.ui.ToolContextItem.js"></script>
-		<script src="../../src/ui/contextitems/ve.ui.PersistentContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.AnnotationContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.TableLineContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.MobileActionsContextItem.js"></script>
@@ -462,6 +455,7 @@
 		<script src="../../src/ui/contextitems/ve.ui.CommentContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.LanguageContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.LinkContextItem.js"></script>
+		<script src="../../src/ui/contextitems/ve.ui.ToolContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.TableContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.MergeCellsContextItem.js"></script>
 		<script src="../../src/ui/contextitems/ve.ui.SumCellsContextItem.js"></script>
@@ -494,7 +488,6 @@
 		<script src="../../src/ui/actions/ve.ui.CompletionAction.js"></script>
 		<script src="../../src/ui/actions/ve.ui.ContentAction.js"></script>
 		<script src="../../src/ui/actions/ve.ui.FormatAction.js"></script>
-		<script src="../../src/ui/actions/ve.ui.HelpCompletionAction.js"></script>
 		<script src="../../src/ui/actions/ve.ui.HistoryAction.js"></script>
 		<script src="../../src/ui/actions/ve.ui.IndentationAction.js"></script>
 		<script src="../../src/ui/actions/ve.ui.LinkAction.js"></script>
@@ -545,7 +538,6 @@
 		<script src="../../src/ui/tools/ve.ui.CommentInspectorTool.js"></script>
 		<script src="../../src/ui/tools/ve.ui.ToolbarDialogTool.js"></script>
 		<script src="../../src/ui/tools/ve.ui.FormatTool.js"></script>
-		<script src="../../src/ui/tools/ve.ui.HelpCompletionTool.js"></script>
 		<script src="../../src/ui/tools/ve.ui.HistoryTool.js"></script>
 		<script src="../../src/ui/tools/ve.ui.IndentationTool.js"></script>
 		<script src="../../src/ui/tools/ve.ui.LanguageInspectorTool.js"></script>
@@ -593,7 +585,7 @@
 				'../../i18n/',
 				'../../lib/oojs-ui/i18n/'
 			];
-			ve.availableLanguages = [ 'ace', 'acm', 'af', 'am', 'ang', 'ar', 'arc', 'arn', 'arq', 'as', 'ast', 'av', 'awa', 'az', 'azb', 'ba', 'ban', 'bcc', 'bci', 'bcl', 'be', 'be-tarask', 'bew', 'bg', 'bho', 'bjn', 'blk', 'bn', 'bqi', 'br', 'bs', 'ca', 'cdo', 'ce', 'cjy-hant', 'ckb', 'co', 'crh-cyrl', 'crh-latn', 'cs', 'cu', 'cy', 'da', 'dag', 'de', 'diq', 'dsb', 'dty', 'egl', 'el', 'eml', 'en', 'en-ca', 'eo', 'es', 'et', 'eu', 'fa', 'fat', 'fi', 'fo', 'fr', 'frp', 'frr', 'fur', 'fy', 'ga', 'gd', 'gl', 'glk', 'gn', 'gom-deva', 'gom-latn', 'gor', 'gsw', 'gu', 'guw', 'gv', 'ha', 'he', 'hi', 'hif-latn', 'hr', 'hrx', 'hsb', 'ht', 'hu', 'hu-formal', 'hy', 'hyw', 'ia', 'id', 'ie', 'ig', 'ilo', 'inh', 'io', 'is', 'it', 'ja', 'jv', 'ka', 'kaa', 'kab', 'kcg', 'khw', 'kk-cyrl', 'km', 'kn', 'ko', 'ko-kp', 'krc', 'krl', 'ks-arab', 'ksh', 'ku-latn', 'kus', 'kw', 'ky', 'la', 'lb', 'lez', 'lfn', 'li', 'lij', 'lki', 'lmo', 'lrc', 'lt', 'luz', 'lv', 'lzh', 'lzz', 'mai', 'mg', 'min', 'mk', 'ml', 'mn', 'mni', 'mr', 'mrh', 'ms', 'mt', 'my', 'myv', 'nan', 'nap', 'nb', 'nds', 'nds-nl', 'ne', 'nl', 'nn', 'nqo', 'oc', 'olo', 'om', 'or', 'os', 'pa', 'pam', 'pfl', 'pl', 'pms', 'pnb', 'ps', 'pt', 'pt-br', 'qqq', 'qu', 'rm', 'ro', 'roa-tara', 'rsk', 'ru', 'rue', 'rw', 'sa', 'sah', 'sc', 'scn', 'sco', 'sd', 'se', 'sgs', 'sh-latn', 'shn', 'si', 'sk', 'skr-arab', 'sl', 'smn', 'sn', 'sq', 'sr-ec', 'sr-el', 'st', 'su', 'sv', 'sw', 'szy', 'ta', 'tay', 'tdd', 'te', 'tg-cyrl', 'th', 'ti', 'tk', 'tl', 'tly', 'tr', 'tt-cyrl', 'tum', 'tw', 'tyv', 'tzm', 'ug-arab', 'uk', 'ur', 'uz', 'vec', 'vep', 'vi', 'vo', 'wal', 'war', 'xmf', 'yi', 'yo', 'yue-hant', 'zh-hans', 'zh-hant' ];
+			ve.availableLanguages = [ 'ace', 'af', 'am', 'ang', 'ar', 'arc', 'arn', 'arq', 'as', 'ast', 'av', 'awa', 'az', 'azb', 'ba', 'ban', 'bcc', 'bci', 'bcl', 'be', 'be-tarask', 'bg', 'bho', 'bjn', 'blk', 'bn', 'bqi', 'br', 'bs', 'ca', 'cdo', 'ce', 'cjy-hant', 'ckb', 'co', 'crh-cyrl', 'crh-latn', 'cs', 'cu', 'cy', 'da', 'dag', 'de', 'diq', 'dsb', 'dty', 'egl', 'el', 'eml', 'en', 'en-ca', 'eo', 'es', 'et', 'eu', 'fa', 'fat', 'fi', 'fo', 'fr', 'frp', 'frr', 'fur', 'fy', 'ga', 'gd', 'gl', 'glk', 'gn', 'gom-latn', 'gor', 'gsw', 'gu', 'gv', 'ha', 'he', 'hi', 'hif-latn', 'hr', 'hrx', 'hsb', 'ht', 'hu', 'hu-formal', 'hy', 'hyw', 'ia', 'id', 'ie', 'ig', 'ilo', 'inh', 'io', 'is', 'it', 'ja', 'jv', 'ka', 'kaa', 'kab', 'kcg', 'khw', 'kk-cyrl', 'km', 'kn', 'ko', 'ko-kp', 'krc', 'krl', 'ks-arab', 'ksh', 'ku-latn', 'kus', 'kw', 'ky', 'la', 'lb', 'lez', 'lfn', 'li', 'lij', 'lki', 'lmo', 'lrc', 'lt', 'luz', 'lv', 'lzh', 'lzz', 'mai', 'mg', 'min', 'mk', 'ml', 'mn', 'mni', 'mr', 'mrh', 'ms', 'mt', 'my', 'myv', 'nan', 'nap', 'nb', 'nds', 'nds-nl', 'ne', 'nl', 'nn', 'nqo', 'oc', 'olo', 'om', 'or', 'os', 'pa', 'pam', 'pfl', 'pl', 'pms', 'pnb', 'ps', 'pt', 'pt-br', 'qqq', 'qu', 'rm', 'ro', 'roa-tara', 'rsk', 'ru', 'rue', 'rw', 'sa', 'sah', 'sc', 'scn', 'sco', 'sd', 'se', 'sgs', 'sh', 'shn', 'si', 'sk', 'skr-arab', 'sl', 'sq', 'sr-ec', 'sr-el', 'st', 'su', 'sv', 'sw', 'szy', 'ta', 'tay', 'tdd', 'te', 'tg-cyrl', 'th', 'ti', 'tk', 'tl', 'tly', 'tr', 'tt-cyrl', 'tum', 'tw', 'tyv', 'tzm', 'ug-arab', 'uk', 'ur', 'uz', 'vec', 'vep', 'vi', 'vo', 'war', 'wuu', 'xmf', 'yi', 'yo', 'yue', 'zh-hans', 'zh-hant' ];
 			ve.demoPages = [
 				'aliens',
 				'comments',
@@ -612,25 +604,6 @@
 				'very long'
 			];
 		</script>
-
-		<!-- color-picker -->
-		<script src="../../lib/color-picker/color-picker.js"></script>
-
-		<!-- peerjs -->
-		<script src="../../lib/peerjs/peerjs.min.js"></script>
-
-		<!-- visualEditor.collab -->
-		<script src="../../rebaser/src/dm/ve.dm.RebaseDocState.js"></script>
-		<script src="../../rebaser/src/dm/ve.dm.RebaseServer.js"></script>
-		<script src="../../rebaser/src/dm/ve.dm.DocumentStore.js"></script>
-		<script src="../../rebaser/src/dm/ve.dm.ProtocolServer.js"></script>
-		<script src="../../src/dm/ve.dm.RebaseClient.js"></script>
-		<script src="../../src/dm/ve.dm.SurfaceSynchronizer.js"></script>
-		<script src="../../src/ui/widgets/ve.ui.AuthorItemWidget.js"></script>
-		<script src="../../src/ui/tools/ve.ui.AuthorListPopupTool.js"></script>
-		<script src="../../src/ve.FakePeer.js"></script>
-		<script src="../../collab/ve.collab.js"></script>
-		<script src="../../collab/ve.dm.CollabTransportServer.js"></script>
 
 		<!-- visualEditor.standalone.demo -->
 		<script src="../../demos/ve/ve.demo.js"></script>

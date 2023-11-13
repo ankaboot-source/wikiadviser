@@ -2,7 +2,6 @@
 	"@metadata": {
 		"authors": [
 			"Baloch Afghanistan",
-			"Moshtank",
 			"Sultanselim baloch"
 		]
 	},
@@ -12,12 +11,14 @@
 	"visualeditor-annotationbutton-subscript-tooltip": "چهلگ نیویس",
 	"visualeditor-annotationbutton-superscript-tooltip": "بُرزاگ نیویس",
 	"visualeditor-annotationbutton-underline-tooltip": "چیهر خت",
-	"visualeditor-clipboard-copy": "نکل",
+	"visualeditor-clipboard-copy": "کاپی",
 	"visualeditor-clipboard-cut": "بورریتین",
-	"visualeditor-dialog-action-cancel": "بججگ",
-	"visualeditor-dialog-action-done": "بیت",
+	"visualeditor-dialog-action-cancel": "کنسیل",
+	"visualeditor-dialog-action-done": "کار بوت",
 	"visualeditor-dialog-action-goback": "پدا روگ",
 	"visualeditor-dialog-action-insert": "درج",
+	"visualeditor-dialog-error": "یک مشکلی وجود داریت ...",
+	"visualeditor-dialog-error-dismiss": "پدا روگ",
 	"visualeditor-dialog-language-auto-direction": "وت کار",
 	"visualeditor-dialog-language-search-title": "زبانی گیچین کورتین",
 	"visualeditor-formatdropdown-format-heading-label": "سرپسل (1-6)",
@@ -29,8 +30,9 @@
 	"visualeditor-formatdropdown-format-heading6": "سرئنوان ۶",
 	"visualeditor-formatdropdown-format-paragraph": "پاراگراپ",
 	"visualeditor-help-tool": "کومک",
-	"visualeditor-historybutton-undo-tooltip": "پچ تَررݔنگ",
-	"visualeditor-inspector-remove-tooltip": "سللہ",
+	"visualeditor-historybutton-undo-tooltip": "بیر گردینتین",
+	"visualeditor-inspector-close-tooltip": "بستین",
+	"visualeditor-inspector-remove-tooltip": "پاک کورتین",
 	"visualeditor-language-search-input-placeholder": "گردگ بی اساسی زبانی نام یا کود",
 	"visualeditor-languageinspector-title": "زبان",
 	"visualeditor-languageinspector-widget-changelang": "زبانی ودی کورتین",
@@ -45,6 +47,6 @@
 	"visualeditor-mediasizewidget-sizeoptions-default": "پیش پرز",
 	"visualeditor-mediasizewidget-sizeoptions-scale": "مکیاس",
 	"visualeditor-shortcuts-clipboard": "کلیپ بورد",
-	"visualeditor-shortcuts-history": "گوَستانک",
+	"visualeditor-shortcuts-history": "دپتر",
 	"visualeditor-shortcuts-other": "دیگه"
 }

@@ -12,6 +12,7 @@
 	"visualeditor-align-desc-none": "yvei",
 	"visualeditor-align-desc-right": "chachâh",
 	"visualeditor-align-widget-center": "Liah",
+	"visualeditor-align-widget-default": "Kakuapa",
 	"visualeditor-align-widget-left": "Chavei",
 	"visualeditor-align-widget-right": "Chachâh",
 	"visualeditor-alignablecontextitem-title": "Pakhona",
@@ -69,12 +70,5 @@
 	"visualeditor-debugbar-close": "Khaw",
 	"visualeditor-debugbar-inputdebug": "Khôpa pâpa tlua",
 	"visualeditor-debugbar-logrange": "log atlypa",
-	"visualeditor-dialog-action-cancel": "Châvei",
-	"visualeditor-dialog-action-done": "Patlô",
-	"visualeditor-dialog-action-goback": "Hnôhlâ kua",
-	"visualeditor-dialog-action-insert": "Khô",
-	"visualeditor-dialog-language-auto-direction": "Anotata",
-	"visualeditor-dialog-language-search-title": "Reihchâ a tlyh teih",
-	"visualeditor-dialog-table-caption": "Chôtlâhpi",
 	"visualeditor-linkcontext-label-label": "Châtlâh"
 }

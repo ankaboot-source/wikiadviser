@@ -8,7 +8,6 @@
 
 module.exports = function ( grunt ) {
 	const modules = grunt.file.readJSON( 'lib/ve/build/modules.json' ),
-		conf = grunt.file.readJSON( 'extension.json' ),
 		screenshotOptions = {
 			reporter: 'spec',
 			// TODO: Work out how to catch this timeout and continue.
@@ -16,7 +15,8 @@ module.exports = function ( grunt ) {
 			timeout: 5 * 60 * 1000,
 			require: [
 				function () {
-					global.langs = [ grunt.option( 'lang' ) || 'en' ];
+					// eslint-disable-next-line no-undef
+					langs = [ grunt.option( 'lang' ) || 'en' ];
 				}
 			]
 		},
@@ -27,7 +27,8 @@ module.exports = function ( grunt ) {
 			timeout: 5 * 60 * 1000,
 			require: [
 				function () {
-					global.langs = require( './build/tasks/screenshotLangs.json' ).langs;
+					// eslint-disable-next-line no-undef
+					langs = require( './build/tasks/screenshotLangs.json' ).langs;
 				}
 			]
 		};
@@ -164,7 +165,11 @@ module.exports = function ( grunt ) {
 				'!vendor/**'
 			]
 		},
-		banana: conf.MessagesDirs,
+		banana: {
+			all: [
+				'i18n/{ve-mw,ve-mw/api,ve-wmf}'
+			]
+		},
 		copy: {
 			jsduck: {
 				src: 'lib/ve/**/*',

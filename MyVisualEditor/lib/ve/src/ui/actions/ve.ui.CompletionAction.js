@@ -16,7 +16,6 @@
  *
  * @constructor
  * @param {ve.ui.Surface} surface Surface to act on
- * @param {string} [source]
  */
 ve.ui.CompletionAction = function VeUiCompletionAction() {
 	// Parent constructor
@@ -38,15 +37,15 @@ OO.inheritClass( ve.ui.CompletionAction, ve.ui.Action );
 ve.ui.CompletionAction.static.defaultLimit = 8;
 
 /**
- * Length of the sequence which triggers the action
+ * Length of the trigger sequence for the action
  *
  * This many characters will be stripped from the start of the current input by
- * CompletionWidget when triggered by a sequence, see #getSequenceLength.
+ * CompletionWidget.
  *
  * @static
  * @property {number}
  */
-ve.ui.CompletionAction.static.sequenceLength = 1;
+ve.ui.CompletionAction.static.triggerLength = 1;
 
 /**
  * Whether the current input should be included as a completion automatically
@@ -63,11 +62,10 @@ ve.ui.CompletionAction.static.methods = [ 'open' ];
 /**
  * Show the completions
  *
- * @param {boolean} [isolateInput] Isolate input from the surface
  * @return {boolean} Action was executed
  */
-ve.ui.CompletionAction.prototype.open = function ( isolateInput ) {
-	this.surface.completion.setup( this, isolateInput );
+ve.ui.CompletionAction.prototype.open = function () {
+	this.surface.completion.setup( this );
 
 	return true;
 };
@@ -78,8 +76,7 @@ ve.ui.CompletionAction.prototype.open = function ( isolateInput ) {
  * @abstract
  * @param {string} input
  * @param {number} [limit=20] Maximum number of results
- * @return {jQuery.Promise} Promise that resolves with list of suggestions.
- *  Suggestions are converted to menu itmes by getMenuItemForSuggestion.
+ * @return {jQuery.Promise} Promise that resolves with list of suggestions
  */
 ve.ui.CompletionAction.prototype.getSuggestions = null;
 
@@ -91,7 +88,7 @@ ve.ui.CompletionAction.prototype.getSuggestions = null;
  * same input and its resolved suggestions
  *
  * @param {string} input User input
- * @param {Array} [suggestions] Returned suggestions
+ * @param {string[]} [suggestions] Returned suggestions
  * @return {jQuery|string|OO.ui.HtmlSnippet|Function|null|undefined} Label. Use undefined
  *  to avoid updating the label, and null to clear it.
  */
@@ -130,19 +127,8 @@ ve.ui.CompletionAction.prototype.insertCompletion = function ( data, range ) {
  * @return {boolean} Whether to abandon
  */
 ve.ui.CompletionAction.prototype.shouldAbandon = function ( input, matches ) {
-	// Abandon after adding whitespace if there are no active potential matches,
-	// or if whitespace has been the sole input
-	return /^\s+$/.test( input ) ||
-		( matches === 0 && /\s$/.test( input ) );
-};
-
-/**
- * Get the length of the sequence which triggered this action
- *
- * @return {number} Length of the sequence
- */
-ve.ui.CompletionAction.prototype.getSequenceLength = function () {
-	return this.source === 'sequence' ? this.constructor.static.sequenceLength : 0;
+	// Abandon after adding whitespace if there are no active potential matches
+	return matches === 0 && !!( input && /\s$/.test( input ) );
 };
 
 // helpers

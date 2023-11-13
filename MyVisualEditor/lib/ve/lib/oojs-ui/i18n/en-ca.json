@@ -4,5 +4,8 @@
 			"Skyllful"
 		]
 	},
-	"ooui-selectfile-placeholder": "No file selected"
+	"ooui-toolgroup-collapse": "Less",
+	"ooui-selectfile-not-supported": "File(s) not supported",
+	"ooui-selectfile-placeholder": "No file selected",
+	"ooui-selectfile-dragdrop-placeholder": "Drop file here (or click to browse your computer)"
 }

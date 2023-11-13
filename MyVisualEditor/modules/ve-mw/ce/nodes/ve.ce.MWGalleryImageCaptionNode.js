@@ -10,8 +10,6 @@
  *
  * @class
  * @extends ve.ce.BranchNode
- * @mixins ve.ce.ActiveNode
- *
  * @constructor
  * @param {ve.dm.MWGalleryImageCaptionNode} model Model to observe
  * @param {Object} [config] Configuration options
@@ -20,17 +18,12 @@ ve.ce.MWGalleryImageCaptionNode = function VeCeMWGalleryImageCaptionNode() {
 	// Parent constructor
 	ve.ce.MWGalleryImageCaptionNode.super.apply( this, arguments );
 
-	// Mixin constructor
-	ve.ce.ActiveNode.call( this );
-
 	this.$element.addClass( 'gallerytext' );
 };
 
 /* Inheritance */
 
 OO.inheritClass( ve.ce.MWGalleryImageCaptionNode, ve.ce.BranchNode );
-
-OO.mixinClass( ve.ce.MWGalleryImageCaptionNode, ve.ce.ActiveNode );
 
 /* Static Properties */
 

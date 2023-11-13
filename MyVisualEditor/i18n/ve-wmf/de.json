@@ -2,7 +2,6 @@
 	"@metadata": {
 		"authors": [
 			"APPER",
-			"Brettchenweber",
 			"G.Hagedorn",
 			"Inkowik",
 			"Jcornelius",
@@ -12,14 +11,10 @@
 			"Metalhead64",
 			"Murma174",
 			"Se4598",
-			"Tomabrafix"
+			"Tomabrafix",
+			"Brettchenweber"
 		]
 	},
-	"tag-editcheck-newcontent-description": "EditCheck geht davon aus, dass der Seite neue Inhalte hinzugefügt wurden",
-	"tag-editcheck-newreference-description": "Der Seite wurde ein Einzelnachweis hinzugefügt",
-	"tag-editcheck-references-description": "EditCheck ist der Meinung, dass möglicherweise ein Einzelnachweis benötigt wird",
-	"tag-editcheck-references-activated": "[[{{MediaWiki:editcheck-falsepositives-link}}|Bearbeitungsprüfung (Belege) aktiviert]]",
-	"tag-editcheck-references-activated-description": "EditCheck geht davon aus, dass möglicherweise ein Einzelnachweis erforderlich war, und die Benutzeroberfläche wurde angezeigt",
 	"tag-visualeditor": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|Visuelle Bearbeitung]]",
 	"tag-visualeditor-description": "Bearbeitungen, die mit dem [[{{MediaWiki:visualeditor-descriptionpagelink}}|visuellen Editor]] ausgeführt wurden.",
 	"tag-visualeditor-needcheck": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|Visuelle Bearbeitung: Überprüfung]]",
@@ -31,6 +26,7 @@
 	"visualeditor-feedback-link": "Project:VisualEditor/Rückmeldungen",
 	"visualeditor-feedback-tool": "Rückmeldungen über diese Software hinterlassen",
 	"visualeditor-help-label": "Lies das Benutzerhandbuch",
+	"visualeditor-help-title": "Handbuch für die Verwendung dieses Editors",
 	"visualeditor-welcomedialog-action": "Jetzt bearbeiten",
 	"visualeditor-welcomedialog-content": "Jeder kann hier mitarbeiten und Artikel verbessern.",
 	"visualeditor-welcomedialog-content-thanks": "Damit hilfst du, das menschliche Wissen allen zugänglich zu machen!",

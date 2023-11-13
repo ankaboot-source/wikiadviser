@@ -134,7 +134,7 @@ ve.dm.InternalList.prototype.getItemNode = function ( index ) {
 /**
  * Get all node groups.
  *
- * @return {Object.<string,Object>} Node groups, keyed by group name
+ * @return {Object} Node groups, keyed by group name
  */
 ve.dm.InternalList.prototype.getNodeGroups = function () {
 	return this.nodes;
@@ -144,7 +144,7 @@ ve.dm.InternalList.prototype.getNodeGroups = function () {
  * Get the node group object for a specified group name.
  *
  * @param {string} groupName Name of the group
- * @return {Object|undefined} Node group object, containing nodes and key order array
+ * @return {Object} Node group object, containing nodes and key order array
  */
 ve.dm.InternalList.prototype.getNodeGroup = function ( groupName ) {
 	return this.nodes[ groupName ];
@@ -378,6 +378,7 @@ ve.dm.InternalList.prototype.onTransact = function () {
  */
 ve.dm.InternalList.prototype.removeNode = function ( groupName, key, index, node ) {
 	var group = this.nodes[ groupName ];
+
 	var keyedNodes = group.keyedNodes[ key ];
 	for ( var i = 0, len = keyedNodes.length; i < len; i++ ) {
 		if ( keyedNodes[ i ] === node ) {
@@ -402,23 +403,11 @@ ve.dm.InternalList.prototype.removeNode = function ( groupName, key, index, node
 /**
  * Sort the indexOrder array within a group object.
  *
- * Items are sorted by the start offset of their firstNode, unless that node
- * has the 'placeholder' attribute, in which case it moved to the end of the
- * list, where it should be ignored.
- *
  * @param {Object} group
  */
 ve.dm.InternalList.prototype.sortGroupIndexes = function ( group ) {
 	// Sort indexOrder
 	group.indexOrder.sort( function ( index1, index2 ) {
-		// Sort placeholder nodes to the end, so they don't interfere with numbering
-		if ( group.firstNodes[ index1 ].getAttribute( 'placeholder' ) ) {
-			return group.firstNodes[ index2 ].getAttribute( 'placeholder' ) ? 0 : 1;
-		}
-		// Sometimes there is no node at the time of sorting (T350902) so move these to the end to be ignored
-		if ( !group.firstNodes[ index1 ] ) {
-			return !group.firstNodes[ index2 ] ? 0 : 1;
-		}
 		return group.firstNodes[ index1 ].getRange().start - group.firstNodes[ index2 ].getRange().start;
 	} );
 };

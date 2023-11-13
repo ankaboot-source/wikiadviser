@@ -53,7 +53,7 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	// * ve-ui-overlay-global-desktop
 	this.globalOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-global', 've-ui-overlay-global-' + ( OO.ui.isMobile() ? 'mobile' : 'desktop' ) ] } );
 	this.localOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-local' ] } );
-	this.$selections = $( '<div>' ).addClass( 've-ui-surface-selections' );
+	this.$selections = $( '<div>' );
 	this.$blockers = $( '<div>' );
 	this.$controls = $( '<div>' );
 	this.$menus = $( '<div>' );
@@ -124,7 +124,7 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 		position: 'onViewPosition',
 		activation: 'onViewActivation'
 	} );
-	this.getContext().connect( this, { resize: ve.debounce( this.onContextResize.bind( this ) ) } );
+	this.getContext().connect( this, { resize: 'onContextResize' } );
 
 	// Initialization
 	if ( OO.ui.isMobile() ) {
@@ -236,7 +236,8 @@ ve.ui.Surface.prototype.destroy = function () {
  * @chainable
  */
 ve.ui.Surface.prototype.initialize = function () {
-	$( OO.ui.getTeleportTarget() ).append( this.globalOverlay.$element );
+	// Attach globalOverlay to the global <body>, not the local frame's <body>
+	$( document.body ).append( this.globalOverlay.$element );
 
 	if ( ve.debug ) {
 		this.setupDebugBar();
@@ -293,7 +294,7 @@ ve.ui.Surface.prototype.getMode = function () {
  * Create a context.
  *
  * @param {Object} config Configuration options
- * @return {ve.ui.LinearContext}
+ * @return {ve.ui.Context}
  */
 ve.ui.Surface.prototype.createContext = function ( config ) {
 	return OO.ui.isMobile() ? new ve.ui.MobileContext( this, config ) : new ve.ui.DesktopContext( this, config );
@@ -408,7 +409,7 @@ ve.ui.Surface.prototype.getView = function () {
 /**
  * Get the context menu.
  *
- * @return {ve.ui.LinearContext} Context user interface
+ * @return {ve.ui.Context} Context user interface
  */
 ve.ui.Surface.prototype.getContext = function () {
 	return this.context;
@@ -530,22 +531,18 @@ ve.ui.Surface.prototype.onModelSelect = function () {
  * This is done for all selections, even native ones, to account
  * for the extra padding of the floating toolbar.
  *
- * @param {ve.dm.Selection} [selectionModel] Optional selection model, defaults to current selection
- * @param {Object} [scrollConfig] Scroll config options, passed to ve.scrollIntoView
  * @fires scroll
  */
-ve.ui.Surface.prototype.scrollSelectionIntoView = function ( selectionModel, scrollConfig ) {
-	selectionModel = selectionModel || this.getModel().getSelection();
-
+ve.ui.Surface.prototype.scrollSelectionIntoView = function () {
 	var animate = true,
 		view = this.getView(),
-		selectionView = view.getSelection( selectionModel ),
+		selection = view.getSelection(),
 		surface = this,
-		isNative = selectionView.isNativeCursor();
+		isNative = selection.isNativeCursor();
 
 	// We only care about the focus end of the selection, the anchor never
 	// moves and should be allowed off screen.
-	var clientRect = selectionView.getSelectionFocusRect();
+	var clientRect = selection.getSelectionFocusRect();
 	var surfaceRect = this.getBoundingClientRect();
 	if ( !clientRect || !surfaceRect ) {
 		return;
@@ -560,7 +557,7 @@ ve.ui.Surface.prototype.scrollSelectionIntoView = function ( selectionModel, scr
 		animate = false;
 		if (
 			OO.ui.isMobile() &&
-			!selectionModel.isCollapsed()
+			!this.getModel().getSelection().isCollapsed()
 		) {
 			var profile = $.client.profile();
 			// Assume that if the selection has been expanded, then a context menu is visible
@@ -580,6 +577,9 @@ ve.ui.Surface.prototype.scrollSelectionIntoView = function ( selectionModel, scr
 				padding.bottom += 30;
 			}
 		}
+
+		clientRect.top -= 5;
+		clientRect.bottom += 5;
 	} else {
 		// Don't attempt to scroll non-native selections into view if they
 		// are taller than the viewport (T305862).
@@ -589,17 +589,11 @@ ve.ui.Surface.prototype.scrollSelectionIntoView = function ( selectionModel, scr
 		}
 	}
 
-	// Add some minimum padding so the selection doesn't touch the edge of the viewport
-	padding.top += 5;
-	padding.bottom += 5;
-	padding.left += 5;
-	padding.right += 5;
-
-	ve.scrollIntoView( clientRect, ve.extendObject( {
+	ve.scrollIntoView( clientRect, {
 		animate: animate,
 		scrollContainer: this.$scrollContainer[ 0 ],
 		padding: padding
-	}, scrollConfig ) ).then( function () {
+	} ).then( function () {
 		if ( isNative ) {
 			// TODO: This event has only even been emitted for native selection
 			// scroll changes. Perhaps rename it.
@@ -666,12 +660,6 @@ ve.ui.Surface.prototype.updatePlaceholder = function () {
  * Handle position events from the view
  */
 ve.ui.Surface.prototype.onViewPosition = function () {
-	var padding = this.toolbarDialogs.getSurfacePadding();
-	if ( padding ) {
-		this.setPadding( padding );
-		this.adjustVisiblePadding();
-		this.scrollSelectionIntoView();
-	}
 	if ( this.placeholderVisible ) {
 		this.getView().$element.css( 'min-height', this.$placeholder.outerHeight() );
 	}
@@ -767,12 +755,9 @@ ve.ui.Surface.prototype.setPadding = function ( padding ) {
  * Handle resize events from the context
  */
 ve.ui.Surface.prototype.onContextResize = function () {
-	var padding = this.context.getSurfacePadding();
-	if ( padding ) {
-		this.setPadding( padding );
-		this.adjustVisiblePadding();
-		this.scrollSelectionIntoView();
-	}
+	this.setPadding( { bottom: this.context.$element[ 0 ].clientHeight } );
+	this.adjustVisiblePadding();
+	this.scrollSelectionIntoView();
 };
 
 /**
@@ -802,7 +787,8 @@ ve.ui.Surface.prototype.onViewActivation = function () {
  */
 ve.ui.Surface.prototype.adjustVisiblePadding = function () {
 	if ( OO.ui.isMobile() && !this.inTargetWidget ) {
-		var keyboardShown = this.getView().hasNativeCursorSelection();
+		var keyboardShown = this.getView().getSelection().isNativeCursor() &&
+			!this.getView().isShownAsDeactivated();
 		var bottom;
 		if ( ve.init.platform.constructor.static.isIos() && keyboardShown ) {
 			// iOS needs a whole extra page of padding when the virtual keyboard is shown.

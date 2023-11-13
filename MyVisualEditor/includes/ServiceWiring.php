@@ -11,6 +11,8 @@
 
 namespace MediaWiki\Extension\VisualEditor;
 
+use MediaWiki\Config\ServiceOptions;
+use MediaWiki\Logger\LoggerFactory;
 use MediaWiki\MediaWikiServices;
 
 return [
@@ -21,6 +23,19 @@ return [
 	VisualEditorParsoidClientFactory::SERVICE_NAME => static function (
 		MediaWikiServices $services
 	): VisualEditorParsoidClientFactory {
-		return new VisualEditorParsoidClientFactory( $services->getPageRestHelperFactory() );
+		$isPrivateWiki = !$services->getPermissionManager()->isEveryoneAllowed( 'read' );
+
+		return new VisualEditorParsoidClientFactory(
+			new ServiceOptions(
+				VisualEditorParsoidClientFactory::CONSTRUCTOR_OPTIONS,
+				$services->getMainConfig(),
+				[
+					VisualEditorParsoidClientFactory::ENABLE_COOKIE_FORWARDING => $isPrivateWiki
+				]
+			),
+			$services->getHttpRequestFactory(),
+			LoggerFactory::getInstance( 'VisualEditor' ),
+			$services->getPageRestHelperFactory()
+		);
 	},
 ];

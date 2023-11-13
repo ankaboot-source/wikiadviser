@@ -34,10 +34,7 @@ ve.ce.FocusableNode = function VeCeFocusableNode( $focusable, config ) {
 	this.focused = false;
 	this.highlighted = false;
 	this.isFocusableSetup = false;
-	this.$highlights = $( '<div>' ).addClass( 've-ce-focusableNode-highlights' )
-		// Allow the highlight to take focus, so that focus is not removed from
-		// the surface when clicking on it (T341681)
-		.attr( 'tabIndex', 0 );
+	this.$highlights = $( '<div>' ).addClass( 've-ce-focusableNode-highlights' );
 	this.$focusable = $focusable || this.$element;
 	this.$bounding = config.$bounding || this.$focusable;
 	this.focusableSurface = null;
@@ -129,6 +126,13 @@ ve.ce.FocusableNode.static.getRectsForElement = function ( $element, relativeRec
 	var $set;
 	var rects = [];
 
+	function contains( rect1, rect2 ) {
+		return rect2.left >= rect1.left &&
+			rect2.top >= rect1.top &&
+			rect2.right <= rect1.right &&
+			rect2.bottom <= rect1.bottom;
+	}
+
 	function process( el ) {
 		if ( el.classList.contains( 've-ce-noHighlight' ) ) {
 			return;
@@ -144,7 +148,27 @@ ve.ce.FocusableNode.static.getRectsForElement = function ( $element, relativeRec
 			$set = $set.not( $el.find( '*' ) );
 		}
 
-		ve.batchPush( rects, el.getClientRects() );
+		var clientRects = el.getClientRects();
+
+		for ( var j = 0, jl = clientRects.length; j < jl; j++ ) {
+			var contained = false;
+			for ( var k = 0, kl = rects.length; k < kl; k++ ) {
+				// This rect is contained by an existing rect, discard
+				if ( contains( rects[ k ], clientRects[ j ] ) ) {
+					contained = true;
+					break;
+				}
+				// An existing rect is contained by this rect, discard the existing rect
+				if ( contains( clientRects[ j ], rects[ k ] ) ) {
+					rects.splice( k, 1 );
+					k--;
+					kl--;
+				}
+			}
+			if ( !contained ) {
+				rects.push( clientRects[ j ] );
+			}
+		}
 	}
 
 	$set = $element.find( '*' ).addBack();
@@ -153,8 +177,6 @@ ve.ce.FocusableNode.static.getRectsForElement = function ( $element, relativeRec
 	for ( i = 0; i < $set.length; i++ ) {
 		process( $set[ i ] );
 	}
-
-	rects = ve.minimizeRects( rects );
 
 	// Elements with a width/height of 0 return a clientRect with a width/height of 1
 	// As elements with an actual width/height of 1 aren't that useful anyway, just
@@ -202,9 +224,10 @@ ve.ce.FocusableNode.static.getRectsForElement = function ( $element, relativeRec
  * @return {jQuery} A highlight element
  */
 ve.ce.FocusableNode.prototype.createHighlight = function () {
+	var extraClasses = this.generatedContentsInvalid ? ' ve-ce-focusableNode-highlight-error' : '';
 	// eslint-disable-next-line mediawiki/class-doc
 	return $( '<div>' )
-		.addClass( [ 've-ce-focusableNode-highlight' ].concat( this.getExtraHighlightClasses() ) )
+		.addClass( 've-ce-focusableNode-highlight' + extraClasses )
 		.prop( {
 			title: this.constructor.static.getDescription( this.model ),
 			draggable: true
@@ -213,15 +236,6 @@ ve.ce.FocusableNode.prototype.createHighlight = function () {
 			dragstart: this.onFocusableDragStart.bind( this ),
 			dragend: this.onFocusableDragEnd.bind( this )
 		} );
-};
-
-/**
- * Array of CSS classes to add to highlights
- *
- * @return {string[]}
- */
-ve.ce.FocusableNode.prototype.getExtraHighlightClasses = function () {
-	return this.generatedContentsInvalid ? [ 've-ce-focusableNode-highlight-error' ] : [];
 };
 
 /**
@@ -782,7 +796,7 @@ ve.ce.FocusableNode.prototype.getBoundingRect = function () {
 /**
  * Get start and end rectangles of an inline focusable node relative to the surface
  *
- * @return {Object.<string,Object>|null} Start and end rectangles
+ * @return {Object|null} Start and end rectangles
  */
 ve.ce.FocusableNode.prototype.getStartAndEndRects = function () {
 	if ( !this.highlighted ) {

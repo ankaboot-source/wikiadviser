@@ -39,32 +39,6 @@ ve.ui.MWEditModeTool.prototype.isModeAvailable = function ( mode ) {
 };
 
 /**
- * MediaWiki UserInterface edit mode visual tool.
- *
- * @class
- * @extends mw.libs.ve.MWEditModeVisualTool
- * @mixins ve.ui.MWEditModeTool
- * @constructor
- * @param {OO.ui.ToolGroup} toolGroup
- * @param {Object} [config] Config options
- */
-ve.ui.MWEditModeVisualTool = function VeUiMWEditModeVisualTool() {
-	// Parent constructor
-	ve.ui.MWEditModeVisualTool.super.apply( this, arguments );
-	// Mixin constructor
-	ve.ui.MWEditModeTool.call( this );
-};
-OO.inheritClass( ve.ui.MWEditModeVisualTool, mw.libs.ve.MWEditModeVisualTool );
-OO.mixinClass( ve.ui.MWEditModeVisualTool, ve.ui.MWEditModeTool );
-/**
- * @inheritdoc
- */
-ve.ui.MWEditModeVisualTool.prototype.switch = function () {
-	this.toolbar.getTarget().switchToVisualEditor();
-};
-ve.ui.toolFactory.register( ve.ui.MWEditModeVisualTool );
-
-/**
  * MediaWiki UserInterface edit mode source tool.
  *
  * @class
@@ -89,3 +63,29 @@ ve.ui.MWEditModeSourceTool.prototype.switch = function () {
 	this.toolbar.getTarget().editSource();
 };
 ve.ui.toolFactory.register( ve.ui.MWEditModeSourceTool );
+
+/**
+ * MediaWiki UserInterface edit mode visual tool.
+ *
+ * @class
+ * @extends mw.libs.ve.MWEditModeVisualTool
+ * @mixins ve.ui.MWEditModeTool
+ * @constructor
+ * @param {OO.ui.ToolGroup} toolGroup
+ * @param {Object} [config] Config options
+ */
+ve.ui.MWEditModeVisualTool = function VeUiMWEditModeVisualTool() {
+	// Parent constructor
+	ve.ui.MWEditModeVisualTool.super.apply( this, arguments );
+	// Mixin constructor
+	ve.ui.MWEditModeTool.call( this );
+};
+OO.inheritClass( ve.ui.MWEditModeVisualTool, mw.libs.ve.MWEditModeVisualTool );
+OO.mixinClass( ve.ui.MWEditModeVisualTool, ve.ui.MWEditModeTool );
+/**
+ * @inheritdoc
+ */
+ve.ui.MWEditModeVisualTool.prototype.switch = function () {
+	this.toolbar.getTarget().switchToVisualEditor();
+};
+ve.ui.toolFactory.register( ve.ui.MWEditModeVisualTool );

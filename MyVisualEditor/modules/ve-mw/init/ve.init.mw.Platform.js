@@ -143,7 +143,7 @@ ve.init.mw.Platform.prototype.getUserConfig = function ( keys ) {
  */
 ve.init.mw.Platform.prototype.setUserConfig = function ( keyOrValueMap, value ) {
 	// T214963: Don't try to set user preferences for logged-out users, it doesn't work
-	if ( !mw.user.isNamed() ) {
+	if ( mw.user.isAnon() ) {
 		return false;
 	}
 

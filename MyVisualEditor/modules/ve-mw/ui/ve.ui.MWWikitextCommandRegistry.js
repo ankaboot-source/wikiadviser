@@ -234,7 +234,7 @@ ve.ui.wikitextCommandRegistry.register(
 				[ { type: 'paragraph' } ].concat( '|}'.split( '' ) ).concat( { type: '/paragraph' } ),
 				function () {
 					return '' +
-						'|+ ' + ve.msg( 'visualeditor-dialog-table-caption' ) +
+						'|+ ' + ve.msg( 'visualeditor-table-caption' ) +
 						'\n' +
 						'! ' + ve.msg( 'visualeditor-table-format-header' ) + ' !! ' + ve.msg( 'visualeditor-table-format-header' ) +
 						'\n' +

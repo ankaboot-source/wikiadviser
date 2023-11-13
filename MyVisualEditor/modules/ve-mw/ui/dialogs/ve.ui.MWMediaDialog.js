@@ -230,12 +230,9 @@ ve.ui.MWMediaDialog.prototype.initialize = function () {
 	this.captionFieldset.addItems( [ captionField ] );
 
 	// Alt text
-	this.altTextInput = new OO.ui.MultilineTextInputWidget( {
+	this.altTextInput = new OO.ui.TextInputWidget( {
 		spellcheck: true,
-		classes: [ 've-ui-mwMediaDialog-altText' ],
-		autosize: true,
-		rows: 1,
-		allowLinebreaks: false
+		classes: [ 've-ui-mwMediaDialog-altText' ]
 	} );
 	var altTextField = new OO.ui.FieldLayout( this.altTextInput, {
 		align: 'top'
@@ -902,8 +899,7 @@ ve.ui.MWMediaDialog.prototype.confirmSelectedImage = function () {
 					mediaType: info.mediatype,
 					type: 'thumb',
 					align: 'default',
-					defaultSize: true,
-					imageClassAttr: 'mw-file-element'
+					defaultSize: true
 				},
 				this.getFragment().getDocument()
 			);
@@ -1204,9 +1200,6 @@ ve.ui.MWMediaDialog.prototype.switchPanels = function ( panel, noFocus ) {
 				// Focus the caption surface
 				this.captionTarget.focus();
 			}
-			// Auto-sized alt text field is populated while hidden,
-			// so force a manual resize now.
-			this.altTextInput.adjustSize( true );
 			break;
 		case 'search':
 			this.setSize( 'larger' );

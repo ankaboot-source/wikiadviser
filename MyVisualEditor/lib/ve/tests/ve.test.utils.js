@@ -188,7 +188,6 @@
 	};
 
 	var voidGroup = '(' + ve.elementTypes.void.join( '|' ) + ')';
-	// eslint-disable-next-line security/detect-non-literal-regexp
 	var voidRegexp = new RegExp( '(<' + voidGroup + '[^>]*?(/?))>', 'g' );
 	var originalCreateDocumentFromHtml = ve.createDocumentFromHtml;
 	/**

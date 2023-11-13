@@ -2,4 +2,5 @@
 host=gerrit.wikimedia.org
 port=29418
 project=VisualEditor/VisualEditor.git
-track=1
+defaultbranch=master
+defaultrebase=0

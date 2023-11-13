@@ -1,13 +1,10 @@
 {
 	"@metadata": {
 		"authors": [
-			"Ante75",
-			"Kimberli Mäkäräinen (WMNO)"
+			"Kimberli Mäkäräinen (WMNO)",
+			"Ante75"
 		]
 	},
-	"tag-editcheck-newcontent-description": "EditCheck doaivu ahte ođđa sisdoallu lea lasihuvvon siidui",
-	"tag-editcheck-newreference-description": "Siidui lasihuvvui gáldu",
-	"tag-editcheck-references-description": "EditCheck doaivu ahte okta referánsa sáhttá leamáš dárbbašlaš",
 	"tag-visualeditor": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|Rievdaduvvon visuála rievdadanprográmmain]]",
 	"tag-visualeditor-description": "Rievdadus dahkkon [[{{MediaWiki:visualeditor-descriptionpagelink}}|visuála rievdadanprográmmain]]",
 	"tag-visualeditor-needcheck": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|Rievdaduvvon visuála rievdadanprográmmain: Dárkkis]]",
@@ -18,6 +15,7 @@
 	"visualeditor-feedback-link": "Project:Visuála rievdadanprográmma/Máhcahat",
 	"visualeditor-feedback-tool": "Atte máhcahaga dán prográmmadaga birra",
 	"visualeditor-help-label": "Loga rávagihppaga",
+	"visualeditor-help-title": "Rievdadanprográmma geavahanrávvagat",
 	"visualeditor-welcomedialog-action": "Rievdadišgoađe",
 	"visualeditor-welcomedialog-switch": "Molsso wikiteavstta rievdadanprográmmii",
 	"visualeditor-welcomedialog-switch-ve": "Molsso visuála rievdadanprográmmii",

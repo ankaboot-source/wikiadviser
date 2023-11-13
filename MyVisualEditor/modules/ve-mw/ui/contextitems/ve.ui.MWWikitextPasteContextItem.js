@@ -8,11 +8,11 @@
  * Context item shown after a rich text paste.
  *
  * @class
- * @extends ve.ui.PersistentContextItem
+ * @extends ve.ui.LinearContextItem
  *
  * @constructor
- * @param {ve.ui.LinearContext} context Context the item is in
- * @param {Object} [data] Extra data
+ * @param {ve.ui.Context} context Context item is in
+ * @param {ve.dm.Model} model Model item is related to
  * @param {Object} [config]
  */
 ve.ui.MWWikitextPasteContextItem = function VeUiMWWikitextPasteContextItem() {
@@ -25,7 +25,7 @@ ve.ui.MWWikitextPasteContextItem = function VeUiMWWikitextPasteContextItem() {
 
 /* Inheritance */
 
-OO.inheritClass( ve.ui.MWWikitextPasteContextItem, ve.ui.PersistentContextItem );
+OO.inheritClass( ve.ui.MWWikitextPasteContextItem, ve.ui.LinearContextItem );
 
 /* Static Properties */
 
@@ -35,15 +35,17 @@ ve.ui.MWWikitextPasteContextItem.static.icon = 'wikiText';
 
 ve.ui.MWWikitextPasteContextItem.static.label = OO.ui.deferMsg( 'visualeditor-wikitextconvert-title' );
 
+ve.ui.MWWikitextPasteContextItem.static.editable = false;
+
 /* Methods */
 
 /**
  * @inheritdoc
  */
 ve.ui.MWWikitextPasteContextItem.prototype.renderBody = function () {
-	var fragment = this.data.fragment,
-		doc = this.data.doc,
-		contextRange = this.data.contextRange;
+	var fragment = this.model.fragment,
+		doc = this.model.doc,
+		contextRange = this.model.contextRange;
 
 	var convertButton = new OO.ui.ButtonWidget( {
 		label: ve.msg( 'visualeditor-wikitextconvert-convert' ),

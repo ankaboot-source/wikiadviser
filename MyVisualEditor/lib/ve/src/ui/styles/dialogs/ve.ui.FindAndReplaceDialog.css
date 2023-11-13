@@ -34,11 +34,19 @@
 	max-width: none;
 }
 
-.ve-ce-surface-selections-findResults .ve-ce-surface-selection {
+/* @noflip */
+.ve-ui-findAndReplaceDialog-findResults {
+	position: absolute;
+	top: 0;
+	left: 0;
+	pointer-events: none;
+}
+
+.ve-ui-findAndReplaceDialog-findResult {
 	opacity: 0.2;
 }
 
-.ve-ce-surface-selections-findResults .ve-ce-surface-selection > div {
+.ve-ui-findAndReplaceDialog-findResult > div {
 	background: #28bb0b;
 	position: absolute;
 	margin-top: -0.15em;
@@ -46,10 +54,21 @@
 	border-radius: 2px;
 }
 
-.ve-ce-surface-selections-findResults .ve-ce-surface-selections-findResult-focused {
+.ve-ui-findAndReplaceDialog-findResult-focused {
 	opacity: 0.4;
 }
 
-.ve-ce-surface-selections-findResults .ve-ce-surface-selections-findResult-focused > div {
+.ve-ui-findAndReplaceDialog-findResult-focused > div {
 	background: #1f850b;
+}
+
+/* Support: IE, Edge */
+/* Set opacity directly on the highlights, rather than their containers,
+   otherwise the opacity isn't applied at all */
+.ve-init-target-ie-or-edge .ve-ui-findAndReplaceDialog-findResult > div {
+	opacity: 0.2;
+}
+
+.ve-init-target-ie-or-edge .ve-ui-findAndReplaceDialog-findResult-focused > div {
+	opacity: 0.4;
 }

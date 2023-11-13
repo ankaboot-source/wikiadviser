@@ -11,8 +11,8 @@
  * @extends ve.ui.LinearContextItem
  *
  * @constructor
- * @param {ve.ui.LinearContext} context Context the item is in
- * @param {ve.dm.Model} model Model the item is related to
+ * @param {ve.ui.Context} context Context item is in
+ * @param {ve.dm.Model} model Model item is related to
  * @param {Object} [config]
  */
 ve.ui.MWTransclusionContextItem = function VeUiMWTransclusionContextItem() {
@@ -90,12 +90,11 @@ ve.ui.MWTransclusionContextItem.prototype.renderBody = function () {
 };
 
 /**
- * @inheritdoc
+ * @param {string} [source] Source for tracking in {@see ve.ui.WindowAction.open}
  */
-ve.ui.MWTransclusionContextItem.prototype.onEditButtonClick = function () {
+ve.ui.MWTransclusionContextItem.prototype.onEditButtonClick = function ( source ) {
 	var surfaceModel = this.context.getSurface().getModel(),
-		selection = surfaceModel.getSelection(),
-		contextItem = this;
+		selection = surfaceModel.getSelection();
 
 	if ( selection instanceof ve.dm.TableSelection ) {
 		surfaceModel.setLinearSelection( selection.getOuterRanges(
@@ -103,14 +102,18 @@ ve.ui.MWTransclusionContextItem.prototype.onEditButtonClick = function () {
 		)[ 0 ] );
 	}
 
-	ve.ui.MWTransclusionContextItem.super.prototype.onEditButtonClick.apply( this, arguments );
-
-	this.context.getSurface().getDialogs().once( 'opening', function ( win, opening ) {
-		opening.then( function () {
-			contextItem.toggleLoadingVisualization( false );
-		} );
-	} );
 	this.toggleLoadingVisualization( true );
+
+	// This replaces what the parent does because we can't store the `onTearDownCallback` argument
+	// in the {@see ve.ui.commandRegistry}.
+	this.getCommand().execute( this.context.getSurface(), [
+		// This will be passed as `name` and `data` arguments to {@see ve.ui.WindowAction.open}
+		ve.ui.MWTransclusionDialog.static.name,
+		{
+			onTearDownCallback: this.toggleLoadingVisualization.bind( this )
+		}
+	], source || 'context' );
+	this.emit( 'command' );
 };
 
 /**

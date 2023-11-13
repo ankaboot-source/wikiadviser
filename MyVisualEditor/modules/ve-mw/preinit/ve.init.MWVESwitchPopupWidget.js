@@ -36,7 +36,7 @@ mw.libs.ve.SwitchPopupWidget = function MWLibsVESwitchPopupWidget( mode, config 
 	// * visualeditor-mweditmodeve-popup-body
 	var $content = $( '<p>' ).text( mw.msg( prefix + '-popup-body' ) );
 
-	if ( mw.user.isNamed() ) {
+	if ( !mw.user.isAnon() ) {
 		var showAgainCheckbox = new OO.ui.CheckboxInputWidget()
 			.on( 'change', function ( value ) {
 				var configValue = value ? '1' : '';

@@ -1,7 +1,7 @@
 {
 	"root": true,
 	"extends": [
-		"wikimedia/client-es6",
+		"wikimedia/client",
 		"wikimedia/jquery",
 		"wikimedia/mediawiki",
 		"wikimedia/jsduck"
@@ -19,7 +19,6 @@
 		"no-jquery/no-extend": "error",
 		"no-jquery/no-html": [ "error", { "allowGetOrSet": "get" } ],
 		"no-jquery/no-visibility": "error",
-		"max-len": "off",
-		"no-var": "off"
+		"max-len": "off"
 	}
 }

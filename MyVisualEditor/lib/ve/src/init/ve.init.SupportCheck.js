@@ -17,21 +17,11 @@
 	 */
 	window.VisualEditorSupportCheck = function () {
 		return (
-			/* ES6 */
+			/* ES5 */
 			( function () {
-				try {
-					// eslint-disable-next-line no-new, no-new-func
-					new Function( '(a = 0) => a' );
-					return true;
-				} catch ( e ) {
-					return false;
-				}
+				'use strict';
+				return !this && !!Function.prototype.bind && !!window.JSON;
 			}() ) &&
-
-			/* ES6 RegExp.prototype.flags */
-			/./g.flags === 'g' &&
-
-			// TODO: Most of the below checks can probably be removed as they are supported in all ES6 browsers.
 
 			/* contentEditable */
 			!!( 'contentEditable' in document.createElement( 'div' ) ) &&

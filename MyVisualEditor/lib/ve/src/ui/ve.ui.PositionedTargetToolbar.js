@@ -233,11 +233,6 @@ ve.ui.PositionedTargetToolbar.prototype.onToolbarDialogsOpeningOrClosing = funct
 				toolbar.getSurface().getView().emit( 'position' );
 			}, transitionDuration );
 			toolbar.getSurface().getView().emit( 'position' );
-		} else if ( win.constructor.static.position === 'below' ) {
-			setTimeout( function () {
-				toolbar.onViewportResize();
-				toolbar.getSurface().getView().emit( 'position' );
-			}, transitionDuration );
 		}
 		// Wait for window transition
 		setTimeout( function () {

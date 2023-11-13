@@ -4,7 +4,7 @@ QUnit.module( 've.ui.MWParameterPage', ve.test.utils.newMwEnvironment );
 	[ undefined, '', ve.ui.MWLazyMultilineTextInputWidget ],
 	[ 'content', '', ve.ui.MWLazyMultilineTextInputWidget ],
 
-	[ 'line', '', ve.ui.MWLazyMultilineTextInputWidget ],
+	[ 'line', '', OO.ui.TextInputWidget ],
 	[ 'line', '\n', ve.ui.MWLazyMultilineTextInputWidget ],
 
 	[ 'number', '', ve.ui.MWLazyMultilineTextInputWidget ],

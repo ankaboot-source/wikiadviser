@@ -1,12 +1,12 @@
 /*!
- * OOUI v0.48.2
+ * OOUI v0.46.3
  * https://www.mediawiki.org/wiki/OOUI
  *
  * Copyright 2011–2023 OOUI Team and other contributors.
  * Released under the MIT license
  * http://oojs.mit-license.org
  *
- * Date: 2023-10-24T20:22:08Z
+ * Date: 2023-02-07T00:43:59Z
  */
 ( function ( OO ) {
 
@@ -1044,7 +1044,6 @@ OO.ui.WindowManager = function OoUiWindowManager( config ) {
 	this.preparingToOpen = null;
 	this.preparingToClose = null;
 	this.currentWindow = null;
-	this.lastSize = null;
 	this.globalEvents = false;
 	this.$returnFocusTo = null;
 	this.isolated = false;
@@ -1058,9 +1057,9 @@ OO.ui.WindowManager = function OoUiWindowManager( config ) {
 	// Initialization
 	this.$element
 		.addClass( 'oo-ui-windowManager' )
-		.toggleClass( 'oo-ui-windowManager-modal', this.isModal() )
+		.toggleClass( 'oo-ui-windowManager-modal', this.modal )
 		.toggleClass( 'oo-ui-windowManager-forceTrapFocus', !!config.forceTrapFocus );
-	if ( this.isModal() ) {
+	if ( this.modal ) {
 		this.$element
 			.attr( 'aria-hidden', 'true' )
 			.attr( 'inert', '' );
@@ -1108,8 +1107,6 @@ OO.mixinClass( OO.ui.WindowManager, OO.EventEmitter );
 
 /**
  * Map of the symbolic name of each window size and its CSS properties.
- *
- * Symbolic name must be valid as a CSS class name suffix.
  *
  * @static
  * @inheritable
@@ -1277,7 +1274,7 @@ OO.ui.WindowManager.prototype.getSetupDelay = function () {
  * @return {number} Milliseconds to wait
  */
 OO.ui.WindowManager.prototype.getReadyDelay = function () {
-	return this.isModal() ? OO.ui.theme.getDialogTransitionDuration() : 0;
+	return this.modal ? OO.ui.theme.getDialogTransitionDuration() : 0;
 };
 
 /**
@@ -1301,7 +1298,7 @@ OO.ui.WindowManager.prototype.getHoldDelay = function () {
  * @return {number} Milliseconds to wait
  */
 OO.ui.WindowManager.prototype.getTeardownDelay = function () {
-	return this.isModal() ? OO.ui.theme.getDialogTransitionDuration() : 0;
+	return this.modal ? OO.ui.theme.getDialogTransitionDuration() : 0;
 };
 
 /**
@@ -1424,7 +1421,7 @@ OO.ui.WindowManager.prototype.openWindow = function ( win, data, lifecycle, comp
 	this.preparingToOpen = $.when( this.lifecycle && this.lifecycle.closed );
 	// Ensure handlers get called after preparingToOpen is set
 	this.preparingToOpen.done( function () {
-		if ( manager.isModal() ) {
+		if ( manager.modal ) {
 			manager.toggleGlobalEvents( true );
 			manager.toggleIsolation( true );
 		}
@@ -1552,7 +1549,7 @@ OO.ui.WindowManager.prototype.closeWindow = function ( win, data ) {
 				setTimeout( function () {
 					win.teardown( data ).then( function () {
 						compatClosing.notify( { state: 'teardown' } );
-						if ( manager.isModal() ) {
+						if ( manager.modal ) {
 							manager.toggleGlobalEvents( false );
 							manager.toggleIsolation( false );
 						}
@@ -1704,25 +1701,10 @@ OO.ui.WindowManager.prototype.updateWindowSize = function ( win ) {
 		return;
 	}
 
-	var size = win.getSize();
+	var isFullscreen = win.getSize() === 'full';
 
-	// The following classes are used here
-	// * oo-ui-windowManager-size-small
-	// * oo-ui-windowManager-size-medium
-	// * oo-ui-windowManager-size-large
-	// * oo-ui-windowManager-size-larger
-	// * oo-ui-windowManager-size-full
-	this.$element
-		.removeClass( 'oo-ui-windowManager-size-' + this.lastSize )
-		.addClass( 'oo-ui-windowManager-size-' + size );
-
-	this.lastSize = size;
-
-	// Backwards compatibility
-	var isFullscreen = size === 'full';
 	this.$element.toggleClass( 'oo-ui-windowManager-fullscreen', isFullscreen );
 	this.$element.toggleClass( 'oo-ui-windowManager-floating', !isFullscreen );
-
 	win.setDimensions( win.getSizeProperties() );
 
 	this.emit( 'resize', win );
@@ -1737,7 +1719,7 @@ OO.ui.WindowManager.prototype.updateWindowSize = function ( win ) {
  * and the user won't see that we're doing weird things to the scroll position.
  *
  * @private
- * @param {boolean} [on=false]
+ * @param {boolean} on
  * @chainable
  * @return {OO.ui.WindowManager} The manager, for chaining
  */
@@ -1853,11 +1835,6 @@ OO.ui.WindowManager.prototype.toggleIsolation = function ( isolate ) {
 		while ( !$el.is( 'body' ) && $el.length ) {
 			// Hide all siblings at each level, just leaving the path to the manager visible.
 			var $siblings = $el.siblings().not( 'script' );
-			// Ensure the path to this manager is visible, as it may have been hidden by
-			// another manager.
-			$el
-				.removeAttr( 'aria-hidden' )
-				.removeAttr( 'inert' );
 			// $ariaHidden/$inert exclude elements which already have aria-hidden/inert set,
 			// as we wouldn't want to reset those attributes when window closes.
 			// This will also support multiple window managers opening on top of each other,
@@ -2466,7 +2443,7 @@ OO.ui.Window.prototype.onFocusTrapFocused = function ( event ) {
 /**
  * Focus the window
  *
- * @param {boolean} [focusLast=false] Focus the last focusable element in the window, instead of the first
+ * @param {boolean} focusLast Focus the last focusable element in the window, instead of the first
  * @chainable
  * @return {OO.ui.Window} The window, for chaining
  */
@@ -3689,7 +3666,7 @@ OO.ui.ProcessDialog.prototype.getTeardownProcess = function ( data ) {
 OO.ui.getWindowManager = function () {
 	if ( !OO.ui.windowManager ) {
 		OO.ui.windowManager = new OO.ui.WindowManager();
-		$( OO.ui.getTeleportTarget() ).append( OO.ui.windowManager.$element );
+		$( document.body ).append( OO.ui.windowManager.$element );
 		OO.ui.windowManager.addWindows( [ new OO.ui.MessageDialog() ] );
 	}
 	return OO.ui.windowManager;

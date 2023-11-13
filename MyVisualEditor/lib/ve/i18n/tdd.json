@@ -1,7 +1,6 @@
 {
 	"@metadata": {
 		"authors": [
-			"Aey Tai Nuea",
 			"咽頭べさ"
 		]
 	},
@@ -33,7 +32,7 @@
 	"visualeditor-content-select-all": "ᥘᥫᥐᥲᥛᥨᥖᥰ",
 	"visualeditor-contextitemwidget-label-close": "ᥞᥙᥰ",
 	"visualeditor-contextitemwidget-label-remove": "ᥛᥩᥖᥱᥙᥦᥖᥲ",
-	"visualeditor-contextitemwidget-label-secondary": "ᥛᥨᥢᥳ ᥛᥥᥰ",
+	"visualeditor-contextitemwidget-label-secondary": "ᥛᥨᥢᥳᥛᥦᥰ",
 	"visualeditor-contextitemwidget-label-view": "ᥘᥧᥴᥖᥨᥭᥰ",
 	"visualeditor-debugbar-close": "ᥞᥙᥰ",
 	"visualeditor-debugbar-updatemodel": "ᥟᥣᥙᥳᥖᥥᥐᥳᥢᥫᥴ ᥘᥩᥒᥲᥘᥦᥒᥲᥘᥣᥭᥲ",
@@ -43,6 +42,8 @@
 	"visualeditor-dialog-action-goback": "ᥐᥣᥱᥚᥣᥭᥱᥘᥒᥴ",
 	"visualeditor-dialog-action-insert": "ᥓᥤᥛᥴᥔᥬᥱ",
 	"visualeditor-dialog-command-help-title": "ᥘᥩᥐᥰᥘᥖᥰ ᥑᥤᥰᥙᥨᥖᥳ",
+	"visualeditor-dialog-error": "ᥔᥥᥴᥟᥢᥴᥟᥢᥴᥚᥤᥖᥰᥙᥫᥒᥲᥝᥭᥳ...",
+	"visualeditor-dialog-error-dismiss": "ᥐᥣᥱᥚᥣᥭᥱᥘᥒᥴ",
 	"visualeditor-dialog-language-auto-direction": "ᥞᥒᥰᥛᥢᥰ",
 	"visualeditor-dialog-language-search-title": "ᥘᥫᥐᥲ ᥚᥣᥱᥔᥣᥱᥐᥣᥛᥰ",
 	"visualeditor-dialog-table-caption": "ᥞᥨᥝᥴᥑᥩᥲ",
@@ -57,6 +58,7 @@
 	"visualeditor-find-and-replace-replace-button": "ᥖᥦᥢᥰᥖᥤᥲ",
 	"visualeditor-find-and-replace-replace-text": "ᥖᥦᥢᥰᥖᥤᥲ",
 	"visualeditor-help-tool": "ᥓᥩᥭᥲᥗᥦᥛᥴ",
+	"visualeditor-inspector-close-tooltip": "ᥞᥙᥰ",
 	"visualeditor-inspector-remove-tooltip": "ᥗᥩᥢᥴᥙᥦᥖᥲ",
 	"visualeditor-key-left": "ᥔᥣᥭᥳ",
 	"visualeditor-key-right": "ᥑᥣᥴ",
@@ -65,5 +67,6 @@
 	"visualeditor-linkinspector-title": "ᥐᥩᥒᥳ",
 	"visualeditor-shortcuts-history": "ᥙᥪᥢᥰ",
 	"visualeditor-shortcuts-insert": "ᥓᥤᥛᥴᥔᥬᥱ",
+	"visualeditor-table-caption": "ᥞᥨᥝᥴᥑᥩᥲ",
 	"visualeditor-toolbar-history": "ᥙᥪᥢᥰ"
 }

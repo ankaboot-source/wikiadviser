@@ -12,8 +12,9 @@
  * header is left intact. See files GPL-LICENSE and MIT-LICENSE for details.
  *
  * @file
- * @license GNU General Public Licence 2.0 or later
- * @license MIT License
+ * @ingroup Extensions
+ * @licence GNU General Public Licence 2.0 or later
+ * @licence MIT License
  */
 
 ( function ( $ ) {
@@ -21,7 +22,6 @@
 
 	/**
 	 * Is this language a redirect to another language?
-	 *
 	 * @param {string} language Language code
 	 * @return {string|boolean} Target language code if it's a redirect or false if it's not
 	 */
@@ -33,7 +33,6 @@
 
 	/**
 	 * Returns the script of the language.
-	 *
 	 * @param {string} language Language code
 	 * @return {string}
 	 */
@@ -54,7 +53,6 @@
 
 	/**
 	 * Returns the regions in which a language is spoken.
-	 *
 	 * @param {string} language Language code
 	 * @return {string|string[]}
 	 */
@@ -70,7 +68,6 @@
 
 	/**
 	 * Returns the autonym of the language.
-	 *
 	 * @param {string} language Language code
 	 * @return {string}
 	 */
@@ -87,7 +84,6 @@
 
 	/**
 	 * Returns all language codes and corresponding autonyms
-	 *
 	 * @return {string[]}
 	 */
 	$.uls.data.getAutonyms = function () {
@@ -107,7 +103,6 @@
 
 	/**
 	 * Returns all languages written in script.
-	 *
 	 * @param {string} script string
 	 * @return {string[]} languages codes
 	 */
@@ -117,7 +112,6 @@
 
 	/**
 	 * Returns all languages written in the given scripts.
-	 *
 	 * @param {string[]} scripts
 	 * @return {string[]} languages codes
 	 */
@@ -144,7 +138,6 @@
 	/**
 	 * Returns an associative array of languages in a region,
 	 * grouped by script group.
-	 *
 	 * @param {string} region Region code
 	 * @return {Object}
 	 */
@@ -154,7 +147,6 @@
 
 	/**
 	 * Get the given list of languages grouped by script.
-	 *
 	 * @param {string[]} languages Array of language codes to group
 	 * @return {string[]} Array of language codes
 	 */
@@ -177,7 +169,6 @@
 	/**
 	 * Returns an associative array of languages in several regions,
 	 * grouped by script group.
-	 *
 	 * @param {string[]} regions region codes
 	 * @return {Object}
 	 */
@@ -210,7 +201,6 @@
 	/**
 	 * Returns the script group of a script or 'Other' if it doesn't
 	 * belong to any group.
-	 *
 	 * @param {string} script Script code
 	 * @return {string} script group name
 	 */
@@ -228,7 +218,6 @@
 
 	/**
 	 * Returns the script group of a language.
-	 *
 	 * @param {string} language Language code
 	 * @return {string} script group name
 	 */
@@ -238,7 +227,6 @@
 
 	/**
 	 * Return the list of languages sorted by script groups.
-	 *
 	 * @param {string[]} languages Array of language codes to sort
 	 * @return {string[]} Array of language codes
 	 */
@@ -259,7 +247,6 @@
 	/**
 	 * A callback for sorting languages by autonym.
 	 * Can be used as an argument to a sort function.
-	 *
 	 * @param {string} a Language code
 	 * @param {string} b Language code
 	 * @return {number}
@@ -273,7 +260,6 @@
 
 	/**
 	 * Check if a language is right-to-left.
-	 *
 	 * @param {string} language Language code
 	 * @return {boolean}
 	 */
@@ -283,7 +269,6 @@
 
 	/**
 	 * Return the direction of the language
-	 *
 	 * @param {string} language Language code
 	 * @return {string}
 	 */
@@ -293,12 +278,11 @@
 
 	/**
 	 * Returns the languages spoken in a territory.
-	 *
 	 * @param {string} territory Territory code
 	 * @return {string[]} list of language codes
 	 */
 	$.uls.data.getLanguagesInTerritory = function ( territory ) {
-		return $.uls.data.territories[ territory ] || [];
+		return $.uls.data.territories[ territory ];
 	};
 
 	/**

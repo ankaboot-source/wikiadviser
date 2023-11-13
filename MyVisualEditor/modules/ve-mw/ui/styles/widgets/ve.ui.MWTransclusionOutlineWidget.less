@@ -1,14 +1,18 @@
-@import 'mediawiki.skin.variables.less';
 @import 'mediawiki.mixins.less';
 
-@selected-text-color: @color-progressive;
-// This shade on a white background results in #eaf3ff a.k.a. @background-color-progressive-subtle
+// Copied from wikimedia-ui-base.less
+@wmui-color-accent50: #36c;
+@color-base--subtle: #72777d;
+
+@selected-text-color: @wmui-color-accent50;
+// This shade on a white background results in #eaf3ff a.k.a. @wmui-color-accent90
 @selected-shading: rgba( 0, 109, 255, 21/255 );
 
-// This shade on a white background results in #eaecf0 a.k.a. @background-color-interactive
-@hover-shading: @background-color-button-quiet--active;
+// This shade on a white background results in #eaecf0 a.k.a. @background-color-base--hover a.k.a.
+// @wmui-color-base80
+@hover-shading: rgba( 0, 24, 73, 21/255 );
 
-@on-click-text-color: @color-progressive;
+@on-click-text-color: @wmui-color-accent50;
 // Same as .oo-ui-optionWidget-pressed, a.k.a. @background-color-primary--hover
 @on-click-shading: rgba( 41, 98, 204, 0.1 );
 
@@ -65,7 +69,7 @@
 				background-color: @selected-shading;
 
 				&:hover {
-					background-color: @hover-shading;
+					background-color: @selected-shading;
 					color: @selected-text-color;
 				}
 			}
@@ -75,7 +79,7 @@
 
 .ve-ui-mwTransclusionOutlineTemplateWidget {
 	&-sticky {
-		background-color: @background-color-base;
+		background-color: #fff;
 		.position-sticky();
 		top: 0;
 		z-index: 1;
@@ -83,7 +87,7 @@
 
 	&-no-template-parameters {
 		font-style: italic;
-		color: @color-subtle;
+		color: @color-base--subtle;
 		margin: 8px 24px 24px 24px;
 	}
 
@@ -99,7 +103,7 @@
 
 	&-no-match {
 		font-style: italic;
-		color: @color-subtle;
+		color: @color-base--subtle;
 		margin: 8px 24px;
 	}
 
@@ -115,9 +119,9 @@
 	}
 
 	.ve-ui-mwTransclusionOutlineParameterSelectWidget:focus {
-		border-radius: @border-radius-base;
-		box-shadow: @box-shadow-inset-small @box-shadow-color-progressive--focus;
-		outline: @outline-base--focus;
+		border-radius: 2px;
+		box-shadow: inset 0 0 0 1px @wmui-color-accent50;
+		outline: 0;
 	}
 
 	.ve-ui-mwTransclusionOutlineParameterWidget {
@@ -134,18 +138,16 @@
 			color: @on-click-text-color;
 		}
 
-		&.ve-ui-mwTransclusionOutlineParameterWidget-activePage {
+		&.ve-ui-mwTransclusionOutlineParameterWidget-activePage,
+		&.ve-ui-mwTransclusionOutlineParameterWidget-activePage:hover,
+		&.ve-ui-mwTransclusionOutlineParameterWidget-activePage.oo-ui-optionWidget-highlighted {
 			background-color: @selected-shading;
-
-			&,
-			&.oo-ui-optionWidget-highlighted {
-				color: @selected-text-color;
-			}
+			color: @selected-text-color;
 		}
 
 		&.oo-ui-optionWidget-highlighted {
 			background-color: @hover-shading;
-			color: @color-emphasized;
+			color: #000;
 		}
 
 		&-hasValue {

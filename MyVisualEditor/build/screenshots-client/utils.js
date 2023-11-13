@@ -32,6 +32,11 @@ module.exports = function () {
 					group.setActive( false );
 				}
 			} );
+			ve.init.target.actionsToolbar.items.forEach( function ( group ) {
+				if ( group.setActive ) {
+					group.setActive( false );
+				}
+			} );
 		},
 		runMenuTask: function ( done, tool, expanded, highlight, extraElements ) {
 			var toolGroup = tool.toolGroup;
@@ -101,16 +106,12 @@ module.exports = function () {
 	mw.hook( 've.activationComplete' ).add( function () {
 		var target = ve.init.target,
 			surfaceView = target.getSurface().getView();
-
-		// eslint-disable-next-line no-jquery/no-deferred
-		var welcomeDialogPromise = target.welcomeDialogPromise || $.Deferred().resolve().promise();
-
-		welcomeDialogPromise.then( function () {
-			// Hide edit notices
-			target.toolbar.tools.notices.getPopup().toggle( false );
-			surfaceView.focus();
-			// Modify the document to make the save button blue
+		// Modify the document to make the save button blue
+		// Wait for focus
+		surfaceView.once( 'focus', function () {
 			target.surface.getModel().getFragment().insertContent( ' ' ).collapseToStart().select();
+			// Hide edit notices
+			target.actionsToolbar.tools.notices.getPopup().toggle( false );
 			// Wait for save button fade
 			setTimeout( function () {
 				veDone( { width: window.innerWidth, height: window.innerHeight } );

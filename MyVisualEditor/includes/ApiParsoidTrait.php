@@ -10,26 +10,30 @@
 
 namespace MediaWiki\Extension\VisualEditor;
 
-use ApiUsageException;
 use Language;
 use Liuggio\StatsdClient\Factory\StatsdDataFactoryInterface;
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Rest\HttpException;
-use MediaWiki\Rest\LocalizedHttpException;
 use MediaWiki\Revision\RevisionRecord;
-use MediaWiki\Title\Title;
 use Message;
 use NullStatsdDataFactory;
 use PrefixingStatsdDataFactoryProxy;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Throwable;
+use Title;
 use WebRequest;
+use WikiMap;
 
 trait ApiParsoidTrait {
 
-	private ?LoggerInterface $logger = null;
-	private ?StatsdDataFactoryInterface $stats = null;
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger = null;
+
+	/**
+	 * @var StatsdDataFactoryInterface
+	 */
+	private $stats = null;
 
 	/**
 	 * @return LoggerInterface
@@ -56,7 +60,7 @@ trait ApiParsoidTrait {
 	 * @param StatsdDataFactoryInterface $stats
 	 */
 	protected function setStats( StatsdDataFactoryInterface $stats ) {
-		$this->stats = new PrefixingStatsdDataFactoryProxy( $stats, 'VE' );
+		$this->stats = new PrefixingStatsdDataFactoryProxy( $stats, WikiMap::getCurrentWikiId() );
 	}
 
 	/**
@@ -76,56 +80,48 @@ trait ApiParsoidTrait {
 	}
 
 	/**
-	 * @param HttpException $ex
-	 * @return never
-	 * @throws ApiUsageException
+	 * @param array $response
 	 */
-	private function dieWithRestHttpException( HttpException $ex ) {
-		if ( $ex instanceof LocalizedHttpException ) {
-			$msg = $ex->getMessageValue();
-		} else {
-			$this->dieWithException( $ex );
+	private function forwardErrorsAndCacheHeaders( array $response ) {
+		if ( !empty( $response['error'] ) ) {
+			$this->dieWithError( $response['error'] );
 		}
 
-		$this->dieWithError( [
-			'message' => $msg->getKey() ?? '',
-			'params' => $msg->getParams() ?? []
-		] );
+		// If response was received directly from Varnish, use the response
+		// (RP) header to declare the cache hit and pass the data to the client.
+		$headers = $response['headers'] ?? [];
+		if ( isset( $headers['x-cache'] ) && strpos( $headers['x-cache'], 'hit' ) !== false ) {
+			$this->getRequest()->response()->header( 'X-Cache: cached-response=true' );
+		}
 	}
 
 	/**
-	 * Request page HTML from Parsoid.
+	 * Request page HTML from RESTBase
 	 *
 	 * @param RevisionRecord $revision Page revision
-	 * @return array An array mimicking a RESTbase server's response, with keys: 'headers' and 'body'
-	 * @phan-return array{body:string,headers:array<string,string>}
-	 * @throws ApiUsageException
+	 * @return array The RESTBase server's response
 	 */
 	protected function requestRestbasePageHtml( RevisionRecord $revision ): array {
 		$title = Title::newFromLinkTarget( $revision->getPageAsLinkTarget() );
 		$lang = self::getPageLanguage( $title );
 
 		$startTime = $this->statsGetStartTime();
-		try {
-			$response = $this->getParsoidClient()->getPageHtml( $revision, $lang );
-		} catch ( HttpException $ex ) {
-			$this->dieWithRestHttpException( $ex );
-		}
+		$response = $this->getParsoidClient()->getPageHtml( $revision, $lang );
 		$this->statsRecordTiming( 'ApiVisualEditor.ParsoidClient.getPageHtml', $startTime );
+
+		$this->forwardErrorsAndCacheHeaders( $response );
 
 		return $response;
 	}
 
 	/**
-	 * Transform HTML to wikitext with Parsoid.
+	 * Transform HTML to wikitext via Parsoid through RESTbase. Wrapper for ::postData().
 	 *
 	 * @param Title $title The title of the page
 	 * @param string $html The HTML of the page to be transformed
 	 * @param int|null $oldid What oldid revision, if any, to base the request from (default: `null`)
 	 * @param string|null $etag The ETag to set in the HTTP request header
-	 * @return array An array mimicking a RESTbase server's response, with keys: 'headers' and 'body'
-	 * @phan-return array{body:string,headers:array<string,string>}
-	 * @throws ApiUsageException
+	 * @return array The RESTbase server's response, 'code', 'reason', 'headers' and 'body'
 	 */
 	protected function transformHTML(
 		Title $title, string $html, int $oldid = null, string $etag = null
@@ -133,27 +129,23 @@ trait ApiParsoidTrait {
 		$lang = self::getPageLanguage( $title );
 
 		$startTime = $this->statsGetStartTime();
-		try {
-			$response = $this->getParsoidClient()->transformHTML( $title, $lang, $html, $oldid, $etag );
-		} catch ( HttpException $ex ) {
-			$this->dieWithRestHttpException( $ex );
-		}
+		$response = $this->getParsoidClient()->transformHTML( $title, $lang, $html, $oldid, $etag );
 		$this->statsRecordTiming( 'ApiVisualEditor.ParsoidClient.transformHTML', $startTime );
+
+		$this->forwardErrorsAndCacheHeaders( $response );
 
 		return $response;
 	}
 
 	/**
-	 * Transform wikitext to HTML with Parsoid.
+	 * Transform wikitext to HTML via Parsoid through RESTbase. Wrapper for ::postData().
 	 *
 	 * @param Title $title The title of the page to use as the parsing context
 	 * @param string $wikitext The wikitext fragment to parse
 	 * @param bool $bodyOnly Whether to provide only the contents of the `<body>` tag
 	 * @param int|null $oldid What oldid revision, if any, to base the request from (default: `null`)
 	 * @param bool $stash Whether to stash the result in the server-side cache (default: `false`)
-	 * @return array An array mimicking a RESTbase server's response, with keys: 'headers' and 'body'
-	 * @phan-return array{body:string,headers:array<string,string>}
-	 * @throws ApiUsageException
+	 * @return array The RESTbase server's response, 'code', 'reason', 'headers' and 'body'
 	 */
 	protected function transformWikitext(
 		Title $title, string $wikitext, bool $bodyOnly, int $oldid = null, bool $stash = false
@@ -161,19 +153,17 @@ trait ApiParsoidTrait {
 		$lang = self::getPageLanguage( $title );
 
 		$startTime = $this->statsGetStartTime();
-		try {
-			$response = $this->getParsoidClient()->transformWikitext(
-				$title,
-				$lang,
-				$wikitext,
-				$bodyOnly,
-				$oldid,
-				$stash
-			);
-		} catch ( HttpException $ex ) {
-			$this->dieWithRestHttpException( $ex );
-		}
+		$response = $this->getParsoidClient()->transformWikitext(
+			$title,
+			$lang,
+			$wikitext,
+			$bodyOnly,
+			$oldid,
+			$stash
+		);
 		$this->statsRecordTiming( 'ApiVisualEditor.ParsoidClient.transformWikitext', $startTime );
+
+		$this->forwardErrorsAndCacheHeaders( $response );
 
 		return $response;
 	}
@@ -208,17 +198,8 @@ trait ApiParsoidTrait {
 	 * @param array|null $data See ApiErrorFormatter::addError()
 	 * @param int|null $httpCode HTTP error code to use
 	 * @return never
-	 * @throws ApiUsageException
 	 */
 	abstract public function dieWithError( $msg, $code = null, $data = null, $httpCode = null );
-
-	/**
-	 * @see ApiBase
-	 * @param Throwable $exception See ApiErrorFormatter::getMessageFromException()
-	 * @param array $options See ApiErrorFormatter::getMessageFromException()
-	 * @return never
-	 */
-	abstract public function dieWithException( Throwable $exception, array $options = [] );
 
 	/**
 	 * @see ContextSource

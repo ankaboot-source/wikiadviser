@@ -238,17 +238,15 @@ QUnit.test( 'Metadata transactions', function ( assert ) {
 		],
 		events = [];
 
-	function getElements( list ) {
-		return list.items.map( function ( item ) {
+	function getElements( metaList ) {
+		return metaList.items.map( function ( item ) {
 			return item.element;
 		} );
 	}
 
 	var doc = new ve.dm.Document( [] );
-	var metaList = doc.getMetaList();
 	var surface = new ve.dm.Surface( doc );
-	var fragment = surface.getFragment();
-	metaList.connect( null, {
+	surface.metaList.connect( null, {
 		insert: function ( item ) {
 			events.push( [ 'insert', item.element ] );
 		},
@@ -258,40 +256,40 @@ QUnit.test( 'Metadata transactions', function ( assert ) {
 	} );
 	surface.change( ve.dm.TransactionBuilder.static.newFromInsertion( doc, 0, data ) );
 	assert.deepEqual(
-		getElements( metaList ),
+		getElements( surface.metaList ),
 		[ fooMeta, barMeta ],
 		'Metadata inserted into meta list'
 	);
-	fragment.removeMeta( doc.documentNode.children[ 1 ] );
+	doc.documentNode.children[ 1 ].remove();
 	assert.deepEqual(
 		doc.data.data,
 		data.slice( 0, 3 ).concat( data.slice( 5 ) ),
 		'Metadata removed from linear data'
 	);
 	assert.deepEqual(
-		getElements( metaList ),
+		getElements( surface.metaList ),
 		[ barMeta ],
 		'Metadata removed from meta list'
 	);
-	fragment.replaceMeta( doc.documentNode.children[ 1 ], fooMeta );
+	doc.documentNode.children[ 1 ].replaceWith( fooMeta );
 	assert.deepEqual(
 		doc.data.data,
 		data.slice( 0, 5 ).concat( data.slice( 7 ) ),
 		'Metadata replaced in linear data'
 	);
 	assert.deepEqual(
-		getElements( metaList ),
+		getElements( surface.metaList ),
 		[ fooMeta ],
 		'Metadata replaced in meta list'
 	);
-	fragment.insertMeta( barMeta );
+	surface.metaList.insertMeta( barMeta );
 	assert.deepEqual(
 		doc.data.data,
 		data,
 		'Metadata re-inserted into linear data'
 	);
 	assert.deepEqual(
-		getElements( metaList ),
+		getElements( surface.metaList ),
 		[ fooMeta, barMeta ],
 		'Metadata re-inserted into meta list'
 	);

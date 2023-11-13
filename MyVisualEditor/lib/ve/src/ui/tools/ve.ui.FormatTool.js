@@ -39,8 +39,6 @@ ve.ui.FormatTool.static.deactivateOnSelect = false;
  */
 ve.ui.FormatTool.static.format = null;
 
-ve.ui.FormatTool.static.fallbackIcon = 'textStyle';
-
 /* Methods */
 
 /**

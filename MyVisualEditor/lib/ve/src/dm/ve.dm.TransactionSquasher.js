@@ -87,23 +87,6 @@ OO.initClass( ve.dm.TransactionSquasher );
 /* Static methods */
 
 /**
- * Test whether two linmod items have equal values
- *
- * @param {Mixed} item1 A data item
- * @param {Mixed} item2 Another data item
- * @return {boolean} Whether the items have equal values
- */
-ve.dm.TransactionSquasher.static.equalItems = function ( item1, item2 ) {
-	function stringifyItem( item ) {
-		return JSON.stringify( item, function ( key, value ) {
-			return key === 'changesSinceLoad' ? undefined : value;
-		} );
-	}
-	// Compare serializations, so that reference types need not be reference-equal
-	return stringifyItem( item1 ) === stringifyItem( item2 );
-};
-
-/**
  * Squash an array of consecutive transactions into a single transaction
  *
  * @param {ve.dm.Transaction[]} transactions Non-empty array of consecutive transactions
@@ -236,6 +219,16 @@ ve.dm.TransactionSquasher.prototype.processRetain = function ( maxLength ) {
 ve.dm.TransactionSquasher.prototype.processRemove = function ( items ) {
 	var tryUnsplit = false;
 
+	function stringifyItem( item ) {
+		return JSON.stringify( item, function ( key, value ) {
+			return key === 'changesSinceLoad' ? undefined : value;
+		} );
+	}
+
+	function equalItems( item1, item2 ) {
+		return stringifyItem( item1 ) === stringifyItem( item2 );
+	}
+
 	this.normalizePosition();
 	if ( !this.op ) {
 		throw new Error( 'Past end of transaction' );
@@ -290,10 +283,7 @@ ve.dm.TransactionSquasher.prototype.processRemove = function ( items ) {
 		// len must be greater than zero, since we're not at the end of this op
 		removal = items.slice( 0, len );
 		for ( var i = 0; i < len; i++ ) {
-			if ( !this.constructor.static.equalItems(
-				removal[ i ],
-				this.op.insert[ this.offset + i ]
-			) ) {
+			if ( !equalItems( removal[ i ], this.op.insert[ this.offset + i ] ) ) {
 				throw new Error( 'Remove does not match insert' );
 			}
 		}
@@ -397,7 +387,7 @@ ve.dm.TransactionSquasher.prototype.processAttribute = function ( key, from, to 
 	} else {
 		var op = this.attributeOperations[ key ];
 		if ( op ) {
-			if ( !this.constructor.static.equalItems( op.to, from ) ) {
+			if ( op.to !== from ) {
 				throw new Error( 'Unexpected prior attribute value' );
 			}
 			// Modify in place
@@ -430,10 +420,7 @@ ve.dm.TransactionSquasher.prototype.changeElement = function ( openElement, key,
 	if ( !openElement.attributes ) {
 		openElement.attributes = {};
 	}
-	if ( !this.constructor.static.equalItems(
-		openElement.attributes[ key ],
-		from
-	) ) {
+	if ( openElement.attributes[ key ] !== from ) {
 		throw new Error( 'Unexpected prior attribute value' );
 	}
 	if ( to === undefined ) {

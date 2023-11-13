@@ -40,41 +40,11 @@ ve.dm.MWGalleryImageNode.static.matchFunction = function ( element ) {
 
 ve.dm.MWGalleryImageNode.static.parentNodeTypes = [ 'mwGallery' ];
 
-ve.dm.MWGalleryImageNode.static.preserveHtmlAttributes = function ( attribute ) {
-	var attributes = [ 'typeof', 'class', 'src', 'resource', 'width', 'height', 'href', 'rel', 'alt', 'data-mw' ];
-	return attributes.indexOf( attribute ) === -1;
-};
-// By handling our own children we ensure that original DOM attributes
-// are deep copied back by the converter (in renderHtmlAttributeList)
-ve.dm.MWGalleryImageNode.static.handlesOwnChildren = true;
-
-// This should be kept in sync with Parsoid's WTUtils::textContentFromCaption
-// which drops <ref>s and metadata tags
-ve.dm.MWGalleryImageNode.static.textContentFromCaption = function textContentFromCaption( node ) {
-	var metaDataTags = [ 'base', 'link', 'meta', 'noscript', 'script', 'style', 'template', 'title' ];
-	var content = '';
-	var c = node.firstChild;
-	while ( c ) {
-		if ( c.nodeName === '#text' ) {
-			content += c.nodeValue;
-		} else if (
-			c instanceof HTMLElement &&
-			( metaDataTags.indexOf( c.nodeName.toLowerCase() ) === -1 ) &&
-			!/\bmw:Extension\/ref\b/.test( c.getAttribute( 'typeOf' ) )
-		) {
-			content += textContentFromCaption( c );
-		}
-		c = c.nextSibling;
-	}
-	return content;
-};
-
 ve.dm.MWGalleryImageNode.static.toDataElement = function ( domElements, converter ) {
 	// TODO: Improve handling of missing files. See 'isError' in MWBlockImageNode#toDataElement
 	var li = domElements[ 0 ];
-	var img = li.querySelector( '.mw-file-element' );
-	var imgWrapper = img.parentNode;
-	var container = imgWrapper.parentNode;
+	var img = li.querySelector( 'img,audio,video,span[resource]' );
+	var container = img.parentNode.parentNode;
 
 	// Get caption (may be missing for mode="packed-hover" galleries)
 	var captionNode = li.querySelector( '.gallerytext' );
@@ -87,28 +57,11 @@ ve.dm.MWGalleryImageNode.static.toDataElement = function ( domElements, converte
 		}
 	}
 
-	// For video thumbnails, the `alt` attribute is only in the data-mw of the container (see: T348703)
-	var mwDataJSON = container.getAttribute( 'data-mw' );
-	var mwData = mwDataJSON ? JSON.parse( mwDataJSON ) : {};
-	var mwAttribs = mwData.attribs || [];
-	var containerAlt;
-	for ( var i = mwAttribs.length - 1; i >= 0; i-- ) {
-		if ( mwAttribs[ i ][ 0 ] === 'alt' && mwAttribs[ i ][ 1 ].txt ) {
-			containerAlt = mwAttribs[ i ][ 1 ].txt;
-			break;
-		}
-	}
-
-	var altPresent = img.hasAttribute( 'alt' ) || containerAlt !== undefined;
-	var altText = null;
-	if ( altPresent ) {
-		altText = img.hasAttribute( 'alt' ) ? img.getAttribute( 'alt' ) : containerAlt;
-	}
-
-	var altFromCaption = captionNode ?
-		ve.dm.MWGalleryImageNode.static.textContentFromCaption( captionNode ).trim() : '';
-	var altTextSame = altPresent && altFromCaption &&
-		( altText.trim() === altFromCaption );
+	// FIXME: This should match Parsoid's WTUtils::textContentFromCaption,
+	// which drops <ref>s
+	var altFromCaption = captionNode ? captionNode.textContent.trim() : '';
+	var altTextSame = img.hasAttribute( 'alt' ) && altFromCaption &&
+		( img.getAttribute( 'alt' ).trim() === altFromCaption );
 
 	var caption;
 	if ( captionNode ) {
@@ -135,34 +88,20 @@ ve.dm.MWGalleryImageNode.static.toDataElement = function ( domElements, converte
 
 	var types = ve.dm.MWImageNode.static.rdfaToTypes[ typeofAttrs[ 0 ] ];
 
-	var href = imgWrapper.getAttribute( 'href' );
-	if ( href ) {
-		// Convert absolute URLs to relative if the href refers to a page on this wiki.
-		// Otherwise Parsoid generates |link= options for copy-pasted images (T193253).
-		var targetData = mw.libs.ve.getTargetDataFromHref( href, converter.getTargetHtmlDocument() );
-		if ( targetData.isInternal ) {
-			href = mw.libs.ve.encodeParsoidResourceName( targetData.title );
-		}
-	}
-
 	var dataElement = {
 		type: this.name,
 		attributes: {
 			mediaClass: types.mediaClass,
 			mediaTag: img.nodeName.toLowerCase(),
-			resource: img.getAttribute( 'resource' ),
-			altText: altText,
+			resource: './' + mw.libs.ve.normalizeParsoidResourceName( img.getAttribute( 'resource' ) ),
+			altText: img.getAttribute( 'alt' ),
 			altTextSame: altTextSame,
-			href: href,
 			// 'src' for images, 'poster' for video/audio
 			src: img.getAttribute( 'src' ) || img.getAttribute( 'poster' ),
 			width: width !== null && width !== '' ? +width : null,
 			height: height !== null && height !== '' ? +height : null,
 			isError: isError,
-			errorText: errorText,
-			mw: mwData,
-			imageClassAttr: img.getAttribute( 'class' ),
-			imgWrapperClassAttr: imgWrapper.getAttribute( 'class' )
+			errorText: errorText
 		}
 	};
 
@@ -171,45 +110,40 @@ ve.dm.MWGalleryImageNode.static.toDataElement = function ( domElements, converte
 		.concat( { type: '/' + this.name } );
 };
 
-ve.dm.MWGalleryImageNode.static.toDomElements = function ( data, doc, converter ) {
+ve.dm.MWGalleryImageNode.static.toDomElements = function ( data, doc ) {
 	// ImageNode:
 	//   <li> li (gallerybox)
 	//     <div> thumbDiv
 	//       <span> container
 	//         <a> a
 	//           <img> img (or span if error)
-	var model = data[ 0 ],
+	var model = data,
 		attributes = model.attributes,
 		li = doc.createElement( 'li' ),
 		thumbDiv = doc.createElement( 'div' ),
 		container = doc.createElement( 'span' ),
-		imgWrapper = doc.createElement( attributes.href ? 'a' : 'span' ),
-		img = doc.createElement( attributes.isError ? 'span' : attributes.mediaTag ),
-		alt = attributes.altText,
-		mwData = ve.copy( attributes.mw ) || {};
+		a = doc.createElement( 'a' ),
+		img = doc.createElement( attributes.isError ? 'span' : ( attributes.mediaTag || 'img' ) ),
+		alt = attributes.altText;
+
+	// FIXME: attributes.mediaTag and attributes.mediaClass aren't set after edit
 
 	li.classList.add( 'gallerybox' );
 	thumbDiv.classList.add( 'thumb' );
 	container.setAttribute( 'typeof', ve.dm.MWImageNode.static.getRdfa(
-		attributes.mediaClass, 'none', attributes.isError
+		( attributes.mediaClass || 'File' ), 'none', attributes.isError
 	) );
 
-	if ( attributes.href ) {
-		imgWrapper.setAttribute( 'href', attributes.href );
-	}
-
-	if ( attributes.imageClassAttr ) {
-		// eslint-disable-next-line mediawiki/class-doc
-		img.className = attributes.imageClassAttr;
-	}
-
-	if ( attributes.imgWrapperClassAttr ) {
-		// eslint-disable-next-line mediawiki/class-doc
-		imgWrapper.className = attributes.imgWrapperClassAttr;
-	}
+	// TODO: Support editing the link
+	// FIXME: Dropping the href causes Parsoid to mark the node as wrapper modified,
+	// making the whole gallery subtree edited, preventing selser.  When fixing,
+	// preserving the imgWrapperClassAttr, as in the MW*ImageNodes, will also be
+	// necessary.
+	// a.setAttribute( 'href', attributes.src );
 
 	img.setAttribute( 'resource', attributes.resource );
 	if ( attributes.isError ) {
+		img.classList.add( 'mw-broken-media' );
 		var filename = mw.libs.ve.normalizeParsoidResourceName( attributes.resource || '' );
 		img.appendChild( doc.createTextNode( attributes.errorText ? attributes.errorText : filename ) );
 	} else {
@@ -219,42 +153,14 @@ ve.dm.MWGalleryImageNode.static.toDomElements = function ( data, doc, converter 
 	img.setAttribute( attributes.isError ? 'data-width' : 'width', attributes.width );
 	img.setAttribute( attributes.isError ? 'data-height' : 'height', attributes.height );
 
-	imgWrapper.appendChild( img );
-	container.appendChild( imgWrapper );
+	if ( typeof alt === 'string' && !attributes.altTextSame ) {
+		img.setAttribute( 'alt', alt );
+	}
+
+	a.appendChild( img );
+	container.appendChild( a );
 	thumbDiv.appendChild( container );
 	li.appendChild( thumbDiv );
-
-	var captionData = data.slice( 1, -1 );
-	var captionWrapper = doc.createElement( 'div' );
-	converter.getDomSubtreeFromData( captionData, captionWrapper );
-	while ( captionWrapper.firstChild ) {
-		li.appendChild( captionWrapper.firstChild );
-	}
-
-	if ( img.nodeName.toLowerCase() === 'img' ) {
-		if ( attributes.altTextSame ) {
-			img.setAttribute( 'alt', ve.dm.MWGalleryImageNode.static.textContentFromCaption( li ).trim() );
-		} else if ( typeof alt === 'string' ) {
-			img.setAttribute( 'alt', alt );
-		}
-	} else {
-		var mwAttribs = mwData.attribs || [];
-		mwAttribs = mwAttribs.filter(
-			function ( attr ) { return attr[ 0 ] !== 'alt'; }
-		);
-		// Parsoid only sets an alt in the data-mw.attribs if it's explicit
-		// in the source
-		if ( !attributes.altTextSame && typeof alt === 'string' ) {
-			mwAttribs.push( [ 'alt', { txt: alt } ] );
-		}
-		if ( mwData.attribs || mwAttribs.length ) {
-			mwData.attribs = mwAttribs;
-		}
-	}
-
-	if ( !ve.isEmptyObject( mwData ) ) {
-		container.setAttribute( 'data-mw', JSON.stringify( mwData ) );
-	}
 
 	return [ li ];
 };

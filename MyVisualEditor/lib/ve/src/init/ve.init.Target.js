@@ -39,6 +39,7 @@ ve.init.Target = function VeInitTarget( config ) {
 	this.surfaces = [];
 	this.surface = null;
 	this.toolbar = null;
+	this.actionsToolbar = null;
 	this.toolbarConfig = config.toolbarConfig || {};
 	this.toolbarGroups = config.toolbarGroups || this.constructor.static.toolbarGroups;
 	this.actionGroups = config.actionGroups || this.constructor.static.actionGroups;
@@ -59,6 +60,19 @@ ve.init.Target = function VeInitTarget( config ) {
 
 	// Initialization
 	this.$element.addClass( 've-init-target' );
+
+	var isIe = ve.init.platform.constructor.static.isInternetExplorer(),
+		isEdge = ve.init.platform.constructor.static.isEdge();
+
+	if ( isIe ) {
+		this.$element.addClass( 've-init-target-ie' );
+	}
+
+	// We don't have any Edge CSS bugs that aren't present in IE, so
+	// use a combined class to simplify selectors.
+	if ( isIe || isEdge ) {
+		this.$element.addClass( 've-init-target-ie-or-edge' );
+	}
 
 	if ( ve.init.platform.constructor.static.isIos() ) {
 		this.$element.addClass( 've-init-target-ios' );
@@ -100,17 +114,10 @@ OO.mixinClass( ve.init.Target, OO.EventEmitter );
  */
 ve.init.Target.static.modes = [ 'visual' ];
 
-/**
- * Toolbar definition, passed to ve.ui.Toolbar#setup
- *
- * @static
- * @property {Array}
- * @inheritable
- */
 ve.init.Target.static.toolbarGroups = [
 	{
 		name: 'history',
-		include: [ { group: 'history' } ]
+		include: [ 'undo', 'redo' ]
 	},
 	{
 		name: 'format',
@@ -123,6 +130,8 @@ ve.init.Target.static.toolbarGroups = [
 	},
 	{
 		name: 'style',
+		header: OO.ui.deferMsg( 'visualeditor-toolbar-text-style' ),
+		title: OO.ui.deferMsg( 'visualeditor-toolbar-style-tooltip' ),
 		include: [ 'bold', 'italic', 'moreTextStyle' ]
 	},
 	{
@@ -160,25 +169,13 @@ ve.init.Target.static.toolbarGroups = [
 		align: 'after',
 		icon: 'menu',
 		indicator: null,
-		header: OO.ui.deferMsg( 'visualeditor-pagemenu-tooltip' ),
 		title: OO.ui.deferMsg( 'visualeditor-pagemenu-tooltip' ),
 		label: OO.ui.deferMsg( 'visualeditor-pagemenu-tooltip' ),
 		invisibleLabel: true,
-		include: [ { group: 'utility' }, { group: 'help' } ]
+		include: [ 'findAndReplace', 'changeDirectionality', 'commandHelp' ]
 	}
-	// ve-mw puts help in a separate group and so uses the
-	// visualeditor-help-tool message.
-	// TODO: Consider downstreaming this message.
 ];
 
-/**
- * Toolbar definition for the actions side of the toolbar
- *
- * @deprecated Use align:'after' in the regular toolbarGroups instead.
- * @static
- * @property {Array}
- * @inheritable
- */
 ve.init.Target.static.actionGroups = [];
 
 /**
@@ -225,8 +222,6 @@ ve.init.Target.static.importRules = {
 	external: {
 		blacklist: {
 			// Annotations
-			// TODO: This also removes harmless things like <span style="font-weight: bold;">
-			// which would otherwise get converted to a bold annotation
 			'textStyle/span': true,
 			'textStyle/font': true,
 			// Nodes
@@ -245,11 +240,7 @@ ve.init.Target.static.importRules = {
 				// Unsupported sectioning tags
 				main: true,
 				nav: true,
-				aside: true,
-				// HTML headings are already bold by default. Some skins may use non-bold
-				// heaidngs, but more likely we will end up with useless bold annotations.
-				'h1 b, h2 b, h3 b, h4 b, h5 b, h6 b': true,
-				'h1 strong, h2 strong, h3 strong, h4 strong, h5 strong, h6 strong': true
+				aside: true
 			}
 		},
 		nodeSanitization: true
@@ -649,14 +640,14 @@ ve.init.Target.prototype.getToolbar = function () {
 /**
  * Get the actions toolbar
  *
- * @deprecated
- * @return {ve.ui.TargetToolbar} Actions toolbar (same as the normal toolbar)
+ * @return {ve.ui.TargetToolbar} Actions toolbar
  */
 ve.init.Target.prototype.getActions = function () {
-	OO.ui.warnDeprecation( 'Target#getActions: Use #getToolbar instead ' +
-		'(actions toolbar has been merged into the normal toolbar)' );
 	if ( !this.actionsToolbar ) {
-		this.actionsToolbar = this.getToolbar();
+		this.actionsToolbar = new ve.ui.TargetToolbar( this, {
+			position: this.toolbarConfig.position,
+			$overlay: this.toolbarConfig.$overlay
+		} );
 	}
 	return this.actionsToolbar;
 };
@@ -668,17 +659,17 @@ ve.init.Target.prototype.getActions = function () {
  */
 ve.init.Target.prototype.setupToolbar = function ( surface ) {
 	var toolbar = this.getToolbar();
-	if ( this.actionGroups.length ) {
-		// Backwards-compatibility
-		if ( !this.actionsToolbar ) {
-			this.actionsToolbar = this.getToolbar();
-		}
-	}
 
 	toolbar.connect( this, {
 		resize: 'onToolbarResize',
 		active: 'onToolbarActive'
 	} );
+
+	var actions;
+	if ( this.actionGroups.length ) {
+		actions = this.getActions();
+		actions.connect( this, { active: 'onToolbarActive' } );
+	}
 
 	if ( surface.nullSelectionOnBlur ) {
 		toolbar.$element
@@ -709,12 +700,11 @@ ve.init.Target.prototype.setupToolbar = function ( surface ) {
 			} );
 	}
 
-	this.actionGroups.forEach( function ( group ) {
-		group.align = 'after';
-	} );
-	var groups = [].concat( this.toolbarGroups, this.actionGroups );
-
-	toolbar.setup( groups, surface );
+	toolbar.setup( this.toolbarGroups, surface );
+	if ( actions ) {
+		actions.setup( this.actionGroups, surface );
+		toolbar.$actions.append( actions.$element );
+	}
 	this.attachToolbar();
 	var rAF = window.requestAnimationFrame || setTimeout;
 	rAF( this.onContainerScrollHandler );
@@ -778,6 +768,7 @@ ve.init.Target.prototype.teardownToolbar = function () {
 		this.toolbar = null;
 	}
 	if ( this.actionsToolbar ) {
+		this.actionsToolbar.destroy();
 		this.actionsToolbar = null;
 	}
 	return ve.createDeferred().resolve().promise();
@@ -790,4 +781,7 @@ ve.init.Target.prototype.attachToolbar = function () {
 	var toolbar = this.getToolbar();
 	toolbar.$element.insertBefore( toolbar.getSurface().$element );
 	toolbar.initialize();
+	if ( this.actionsToolbar ) {
+		this.actionsToolbar.initialize();
+	}
 };

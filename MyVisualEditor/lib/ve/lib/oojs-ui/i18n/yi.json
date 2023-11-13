@@ -2,7 +2,6 @@
 	"@metadata": {
 		"authors": [
 			"Malafaya",
-			"Pacha Tchernof",
 			"פוילישער",
 			"十弌"
 		]
@@ -10,8 +9,8 @@
 	"ooui-outline-control-move-down": "רוקן עלעמענט אראפ",
 	"ooui-outline-control-move-up": "רוקן עלעמענט ארויף",
 	"ooui-outline-control-remove": "אַראָפנעמען איינס",
-	"ooui-toolbar-more": "נאָך",
-	"ooui-toolgroup-expand": "נאָך",
+	"ooui-toolbar-more": "נאך",
+	"ooui-toolgroup-expand": "נאך",
 	"ooui-toolgroup-collapse": "ווייניגער",
 	"ooui-item-remove": "אַראָפּנעמען",
 	"ooui-dialog-message-accept": "יאָ",
@@ -22,6 +21,5 @@
 	"ooui-dialog-process-continue": "פֿארזעצן",
 	"ooui-selectfile-button-select": "קלויבט א טעקע",
 	"ooui-selectfile-not-supported": "טעקע אויסווייל נישט געשטיצט",
-	"ooui-selectfile-placeholder": "קיין טעקע נישט אויסגעוויילט",
-	"ooui-field-help": "הילף"
+	"ooui-selectfile-placeholder": "קיין טעקע נישט אויסגעוויילט"
 }

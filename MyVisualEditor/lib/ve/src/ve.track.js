@@ -50,4 +50,16 @@
 			}
 		} );
 	};
+
+	/**
+	 * Register a handler for all analytic events
+	 *
+	 * Like ve#trackSubscribe, but binds the callback to all events, regardless of topic.
+	 *
+	 * @member ve
+	 * @param {Function} callback
+	 */
+	ve.trackSubscribeAll = function ( callback ) {
+		ve.trackSubscribe( '', callback );
+	};
 }() );

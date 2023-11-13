@@ -16,10 +16,10 @@ QUnit.module( 've.dm.MetaList' );
  * @param {string} msg The message
  */
 ve.test.utils.validateMetaListCache = function ( assert, metaList, msg ) {
-	var oldList = metaList.getItems();
+	var oldList = metaList.items;
 	var newList = [];
 	// Populate a current list of items
-	metaList.doc.documentNode.traverse( function ( node ) {
+	metaList.document.documentNode.traverse( function ( node ) {
 		if ( node instanceof ve.dm.MetaItem ) {
 			newList.push( node );
 		}
@@ -34,21 +34,15 @@ ve.test.utils.validateMetaListCache = function ( assert, metaList, msg ) {
 	assert.true( match, msg );
 };
 
-QUnit.test( 'constructor/getItems/getItemsInGroup/indexOf', function ( assert ) {
+QUnit.test( 'constructor', function ( assert ) {
 	var doc = ve.dm.example.createExampleDocument( 'withMeta' ),
-		list = doc.getMetaList();
+		surface = new ve.dm.Surface( doc ),
+		list = new ve.dm.MetaList( surface );
 
 	ve.test.utils.validateMetaListCache( assert, list, 'Constructor' );
-
-	assert.strictEqual( list.getItems().length, 9, 'getItems returns 9 items' );
-	assert.strictEqual( list.getItemsInGroup( 'misc' ).length, 9, '`misc` group has 9 items' );
-	assert.strictEqual( list.getItemsInGroup( 'foo' ).length, 0, '`foo` group has 0 items' );
-	assert.strictEqual( list.indexOf( list.items[ 3 ] ), 3, 'item found by indexOf' );
-	assert.strictEqual( list.indexOf( list.items[ 3 ], 'misc' ), 3, 'item found in group by indexOf' );
-	assert.strictEqual( list.indexOf( list.items[ 3 ], 'foo' ), -1, 'item not found in group by indexOf' );
 } );
 
-QUnit.test( 'onNodeAttached/onNodeDetached', function ( assert ) {
+QUnit.test( 'onTransact', function ( assert ) {
 	var doc = ve.dm.example.createExampleDocument( 'withMeta' ),
 		heading = { type: 'heading', attributes: { level: 2 } },
 		cases = [
@@ -89,8 +83,8 @@ QUnit.test( 'onNodeAttached/onNodeDetached', function ( assert ) {
 		}
 		var tx = txBuilder.getTransaction();
 		doc = ve.dm.example.createExampleDocument( 'withMeta' );
-		var list = doc.getMetaList();
 		var surface = new ve.dm.Surface( doc );
+		var list = new ve.dm.MetaList( surface );
 		// Test both the transaction-via-surface and transaction-via-document flows
 		surface.change( tx );
 		ve.test.utils.validateMetaListCache( assert, list, caseItem.msg );

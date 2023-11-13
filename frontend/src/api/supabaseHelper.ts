@@ -197,3 +197,14 @@ export async function deleteArticle(articleId: string) {
     throw new Error('Failed to delete article from API.');
   }
 }
+
+export async function updateChanges(articleId: string) {
+  const apiResponse = await api.put('/article/changes', {
+    data: {
+      articleId,
+    },
+  });
+  if (apiResponse.status !== 200) {
+    throw new Error('Failed to update changes from API.');
+  }
+}

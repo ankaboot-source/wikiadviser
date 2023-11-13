@@ -29,9 +29,6 @@
 	if ( expectedTitle ) {
 		$('.mw-page-title-main').text(expectedTitle);
 	}
-	// Remove non editor distractions
-	document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});
-	document.querySelectorAll('.mw-page-container-inner, .mw-content-container').forEach((element) => {element.removeAttribute('class')});
 	/* End Custom WikiAdviser */
 
 	var conf, tabMessages, url, pageExists, viewUrl, veEditUrl, veEditSourceUrl,

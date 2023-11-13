@@ -11,7 +11,7 @@ const props = defineProps({
   article: { type: Object as () => Article, required: true },
 });
 const $q = useQuasar();
-const articleLink = `${process.env.MEDIAWIKI_HOST}/wiki/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
+const articleLink = `${process.env.MEDIAWIKI_HOST}/w/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
 
 window.addEventListener('message', async (event) => {
   console.log('message');

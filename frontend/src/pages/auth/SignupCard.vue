@@ -136,6 +136,7 @@ async function handleSignup() {
         data: {
           username: username.value,
         },
+        emailRedirectTo: `${location.origin}/auth/callback`,
       },
     });
     if (error) throw error;

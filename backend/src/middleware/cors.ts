@@ -5,7 +5,8 @@ const corsOptions: CorsOptions = {
     process.env.WIKIADVISER_FRONTEND_HOST ?? 'https://app.wikiadviser.io',
     process.env.MEDIAWIKI_HOST ?? 'https://wiki.wikiadviser.io'
   ],
-  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204,
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204,
+  credentials: true
 };
 const corsMiddleware = cors(corsOptions);
 

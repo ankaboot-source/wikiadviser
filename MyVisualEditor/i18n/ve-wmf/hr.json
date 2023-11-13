@@ -3,10 +3,10 @@
 		"authors": [
 			"Bugoslav",
 			"MaGa",
+			"Ponor",
 			"Roberta F.",
 			"SpeedyGonsales",
-			"Zeljko.filipin",
-			"Ponor"
+			"Zeljko.filipin"
 		]
 	},
 	"tag-visualeditor": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|VisualEditor]]",
@@ -20,11 +20,10 @@
 	"visualeditor-feedback-link": "Project:VisualEditor/Feedback",
 	"visualeditor-feedback-tool": "Napišite povratnu informaciju o ovom softveru",
 	"visualeditor-help-label": "Pročitajte vodič za korisnike",
-	"visualeditor-help-title": "Vodič za uporabu VisualEditora",
 	"visualeditor-welcomedialog-action": "Počni s uređivanjem",
 	"visualeditor-welcomedialog-content": "Bilo tko može uređivati i svako poboljšanje je od pomoći.",
 	"visualeditor-welcomedialog-content-thanks": "Hvala što pomažete u širenju znanja!",
 	"visualeditor-welcomedialog-switch": "Prebaci na uređivanje kôda",
 	"visualeditor-welcomedialog-switch-ve": "Prebaci na vizualno uređivanje",
-	"visualeditor-welcomedialog-title": "{{GENDER:$1|Dobro došao|Dobro došla|Dobro došli}} na projekt $2"
+	"visualeditor-welcomedialog-title": "{{GENDER:$1|Dobro došli}} na projekt $2"
 }

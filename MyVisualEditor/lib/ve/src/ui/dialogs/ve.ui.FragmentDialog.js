@@ -49,6 +49,8 @@ ve.ui.FragmentDialog.static.actions = [
 		flags: [ 'progressive', 'primary' ],
 		modes: 'insert'
 	}
+	// The message visualeditor-dialog-action-goback is also available
+	// but currently only used in ve-mw.
 ];
 
 /* Methods */
@@ -92,7 +94,9 @@ ve.ui.FragmentDialog.prototype.getTeardownProcess = function ( data ) {
 	// Parent method
 	var process = ve.ui.FragmentDialog.super.prototype.getTeardownProcess.call( this, data )
 		.first( function () {
-			this.fragment.select();
+			if ( this.selectFragmentOnClose ) {
+				this.fragment.select();
+			}
 		}, this );
 	// Mixin method
 	return ve.ui.FragmentWindow.prototype.getTeardownProcess.call( this, data, process );

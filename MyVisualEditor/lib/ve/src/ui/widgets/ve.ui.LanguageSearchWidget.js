@@ -23,23 +23,17 @@ ve.ui.LanguageSearchWidget = function VeUiLanguageSearchWidget( config ) {
 	ve.ui.LanguageSearchWidget.super.call( this, config );
 
 	// Properties
-	this.languageResultWidgets = [];
 	this.filteredLanguageResultWidgets = [];
+	this.languageResultWidgets = ve.init.platform.getLanguageCodes()
+		.sort()
+		.map( function ( languageCode ) {
+			return new ve.ui.LanguageResultWidget( { data: {
+				code: languageCode,
+				name: ve.init.platform.getLanguageName( languageCode ),
+				autonym: ve.init.platform.getLanguageAutonym( languageCode )
+			} } );
+		} );
 
-	var languageCodes = ve.init.platform.getLanguageCodes().sort();
-
-	for ( var i = 0, l = languageCodes.length; i < l; i++ ) {
-		var languageCode = languageCodes[ i ];
-		this.languageResultWidgets.push(
-			new ve.ui.LanguageResultWidget( {
-				data: {
-					code: languageCode,
-					name: ve.init.platform.getLanguageName( languageCode ),
-					autonym: ve.init.platform.getLanguageAutonym( languageCode )
-				}
-			} )
-		);
-	}
 	this.setAvailableLanguages();
 
 	// Initialization
@@ -91,10 +85,7 @@ ve.ui.LanguageSearchWidget.prototype.setAvailableLanguages = function ( availabl
 ve.ui.LanguageSearchWidget.prototype.addResults = function () {
 	var matchProperties = [ 'name', 'autonym', 'code' ],
 		query = this.query.getValue().trim(),
-		compare = ve.supportsIntl ?
-			// eslint-disable-next-line compat/compat
-			new Intl.Collator( this.lang, { sensitivity: 'base' } ).compare :
-			function ( a, b ) { return a.toLowerCase() === b.toLowerCase() ? 0 : 1; },
+		compare = new Intl.Collator( this.lang, { sensitivity: 'base' } ).compare,
 		hasQuery = !!query.length,
 		items = [];
 

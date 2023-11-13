@@ -670,13 +670,12 @@ QUnit.test( 'onCopy', function ( assert ) {
 			expectedData: ve.dm.example.RDFaDoc.data.data.slice(),
 			expectedOriginalRange: new ve.Range( 0, 5 ),
 			expectedBalancedRange: new ve.Range( 0, 5 ),
-			expectedHtml:
-				'<p content="b" datatype="c" resource="f" rev="g" class="i" ' +
-					'data-ve-attributes="{&quot;rev&quot;:&quot;g&quot;,' +
-					'&quot;resource&quot;:&quot;f&quot;,' +
-					'&quot;datatype&quot;:&quot;c&quot;,&quot;content&quot;:&quot;b&quot;}">' +
-					'Foo' +
-				'</p>',
+			expectedHtml: ve.dm.example.singleLine`
+				<p content="b" datatype="c" resource="f" rev="g" class="i"
+				 data-ve-attributes='{"rev":"g","resource":"f","datatype":"c","content":"b"}'>
+					Foo
+				</p>
+			`,
 			expectedText: 'Foo',
 			msg: 'RDFa attributes encoded into data-ve-attributes'
 		},
@@ -1173,6 +1172,31 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 				msg: 'Corrupted paste target ignored'
 			},
 			{
+				documentHtml: '<h1>AB</h1><p>C</p>',
+				internalSourceRangeOrSelection: new ve.Range( 2, 6 ),
+				rangeOrSelection: new ve.Range( 3 ),
+				expectedRangeOrSelection: new ve.Range( 10 ),
+				expectedOps: [
+					[
+						{ type: 'retain', length: 4 },
+						{
+							type: 'replace',
+							insert: [
+								{ type: 'heading', attributes: { level: 1 } },
+								'B',
+								{ type: '/heading' },
+								{ type: 'paragraph' },
+								'C',
+								{ type: '/paragraph' }
+							],
+							remove: []
+						},
+						{ type: 'retain', length: 5 }
+					]
+				],
+				msg: 'Unbalanced HTML at end of heading'
+			},
+			{
 				rangeOrSelection: new ve.Range( 6 ),
 				pasteHtml: '<ul><li>Foo</li></ul>',
 				expectedRangeOrSelection: new ve.Range( 16 ),
@@ -1235,13 +1259,12 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 			},
 			{
 				rangeOrSelection: new ve.Range( 0 ),
-				pasteHtml:
-					'<figure class="notIgnored" rev="ignored" ' +
-						'data-ve-attributes="{&quot;rev&quot;:&quot;g&quot;,' +
-						'&quot;resource&quot;:&quot;f&quot;,' +
-						'&quot;datatype&quot;:&quot;c&quot;,&quot;content&quot;:&quot;b&quot;,&quot;about&quot;:&quot;a&quot;}">' +
-						'<img>' +
-					'</figure>',
+				pasteHtml: ve.dm.example.singleLine`
+					<figure class="notIgnored" rev="ignored"
+					 data-ve-attributes='{"rev":"g","resource":"f","datatype":"c","content":"b","about":"a"}'>
+						<img>
+					</figure>
+				`,
 				fromVe: true,
 				expectedRangeOrSelection: new ve.Range( 4 ),
 				expectedOps: [
@@ -1276,8 +1299,10 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 			{
 				rangeOrSelection: new ve.Range( 1 ),
 				documentHtml: '<p></p>',
-				pasteHtml: '<span data-ve-attributes="{{invalid">foo</span>' +
-					'<span data-ve-attributes="{&quot;about&quot;:&quot;quux&quot;}">bar</span>',
+				pasteHtml: ve.dm.example.singleLine`
+					<span data-ve-attributes='{{invalid'>foo</span>
+					<span data-ve-attributes='{"about":"quux"}'>bar</span>
+				`,
 				fromVe: true,
 				expectedHtml: '<p><span>foo</span><span about="quux">bar</span></p>',
 				expectedRangeOrSelection: new ve.Range( 7 ),
@@ -1287,10 +1312,11 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 			{
 				rangeOrSelection: new ve.Range( 1 ),
 				documentHtml: '<p></p>',
-				pasteHtml:
-					'<span class="ve-pasteProtect" id="meaningful">F</span>' +
-					'<span class="ve-pasteProtect" style="color: red;">o</span>' +
-					'<span class="ve-pasteProtect meaningful">o</span>',
+				pasteHtml: ve.dm.example.singleLine`
+					<span class="ve-pasteProtect" id="meaningful">F</span>
+					<span class="ve-pasteProtect" style="color: red;">o</span>
+					<span class="ve-pasteProtect meaningful">o</span>
+				`,
 				fromVe: true,
 				expectedRangeOrSelection: new ve.Range( 4 ),
 				expectedOps: [
@@ -1308,12 +1334,13 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 						{ type: 'retain', length: 3 }
 					]
 				],
-				expectedHtml:
-					'<p>' +
-						'<span id="meaningful">F</span>' +
-						'o' +
-						'<span class="meaningful">o</span>' +
-					'</p>',
+				expectedHtml: ve.dm.example.singleLine`
+					<p>
+					<span id="meaningful">F</span>
+					o
+					<span class="meaningful">o</span>
+					</p>
+				`,
 				testOriginalDomElements: true,
 				msg: 'Span cleanups: only meaningful attributes kept'
 			},
@@ -1362,24 +1389,36 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 			},
 			{
 				rangeOrSelection: new ve.Range( 1 ),
-				pasteHtml:
-					'<span style="font-weight:700;">A</span>' +
-					'<span style="font-weight:900;">2</span>' +
-					'<span style="font-weight:bold;">3</span>' +
-					'<span style="font-style:italic;">B</span>' +
-					'<span style="text-decoration:underline">C</span>' +
-					'<span style="text-decoration:line-through;">D</span>' +
-					'<span style="vertical-align:super;">E</span>' +
-					'<span style="vertical-align:sub;">F</span>' +
-					'<span style="font-weight:700; font-style:italic;">G</span>' +
-					'<span style="color:red;">H</span>',
+				pasteHtml: ve.dm.example.singleLine`
+					<span style="font-weight:700;">A</span>
+					<span style="font-weight:900;">2</span>
+					<span style="font-weight:bold;">3</span>
+					<span style="font-style:italic;">B</span>
+					<span style="text-decoration:underline">C</span>
+					<span style="text-decoration:line-through;">D</span>
+					<span style="vertical-align:super;">E</span>
+					<span style="vertical-align:sub;">F</span>
+					<span style="font-weight:700; font-style:italic;">G</span>
+					<span style="color:red;">H</span>
+				`,
 				fromVe: true,
 				expectedOps: [
 					[
 						{ type: 'retain', length: 1 },
 						{
 							type: 'replace',
-							insert: [ 'A', '2', '3', 'B', 'C', 'D', 'E', 'F', 'G', 'H' ],
+							insert: [
+								[ 'A', [ { type: 'textStyle/bold', attributes: { nodeName: 'b' } } ] ],
+								[ '2', [ { type: 'textStyle/bold', attributes: { nodeName: 'b' } } ] ],
+								[ '3', [ { type: 'textStyle/bold', attributes: { nodeName: 'b' } } ] ],
+								[ 'B', [ { type: 'textStyle/italic', attributes: { nodeName: 'i' } } ] ],
+								[ 'C', [ { type: 'textStyle/underline', attributes: { nodeName: 'u' } } ] ],
+								[ 'D', [ { type: 'textStyle/strikethrough', attributes: { nodeName: 's' } } ] ],
+								[ 'E', [ { type: 'textStyle/superscript', attributes: { nodeName: 'sup' } } ] ],
+								[ 'F', [ { type: 'textStyle/subscript', attributes: { nodeName: 'sub' } } ] ],
+								[ 'G', [ { type: 'textStyle/bold', attributes: { nodeName: 'b' } }, { type: 'textStyle/italic', attributes: { nodeName: 'i' } } ] ],
+								'H'
+							],
 							remove: []
 						},
 						{ type: 'retain', length: 29 }
@@ -1387,7 +1426,29 @@ QUnit.test( 'beforePaste/afterPaste', function ( assert ) {
 				],
 				expectedRangeOrSelection: new ve.Range( 11 ),
 				testOriginalDomElements: true,
-				msg: 'Span cleanups: style removed (not converted into markup)'
+				msg: 'Span cleanups: style converted into markup'
+			},
+			{
+				rangeOrSelection: new ve.Range( 1 ),
+				pasteHtml: '<a href="javascript:alert(\'unsafe\');">Foo</a><a href="#safe">Bar</a>',
+				expectedRangeOrSelection: new ve.Range( 7 ),
+				expectedOps: [
+					[
+						{ type: 'retain', length: 1 },
+						{
+							type: 'replace',
+							insert: [
+								'F', 'o', 'o',
+								[ 'B', [ { type: 'link', attributes: { href: '#safe' } } ] ],
+								[ 'a', [ { type: 'link', attributes: { href: '#safe' } } ] ],
+								[ 'r', [ { type: 'link', attributes: { href: '#safe' } } ] ]
+							],
+							remove: []
+						},
+						{ type: 'retain', length: docLen - 1 }
+					]
+				],
+				msg: 'Unsafe link removed by ve.sanitize'
 			},
 			{
 				rangeOrSelection: new ve.Range( 0 ),
@@ -2228,18 +2289,6 @@ QUnit.test( 'onDocumentDragStart/onDocumentDrop', function ( assert ) {
 				expectedSelection: new ve.dm.LinearSelection( new ve.Range( 7, 10 ) )
 			},
 			{
-				msg: 'Simple drag and drop in IE',
-				rangeOrSelection: new ve.Range( 1, 4 ),
-				targetOffset: 10,
-				isIE: true,
-				expectedTransfer: {},
-				expectedData: function ( data ) {
-					var removed = data.splice( 1, 3 );
-					data.splice.apply( data, [ 7, 0 ].concat( removed ) );
-				},
-				expectedSelection: new ve.dm.LinearSelection( new ve.Range( 7, 10 ) )
-			},
-			{
 				msg: 'Invalid target offset',
 				rangeOrSelection: new ve.Range( 1, 4 ),
 				targetOffset: -1,
@@ -2252,7 +2301,7 @@ QUnit.test( 'onDocumentDragStart/onDocumentDrop', function ( assert ) {
 			}
 		];
 
-	function testRunner( rangeOrSelection, targetOffset, expectedTransfer, expectedData, expectedSelection, isIE, msg ) {
+	function testRunner( rangeOrSelection, targetOffset, expectedTransfer, expectedData, expectedSelection, msg ) {
 		var view = ve.test.utils.createSurfaceViewFromDocument( ve.dm.example.createExampleDocument() ),
 			model = view.getModel(),
 			data = ve.copy( model.getDocument().getFullData() ),
@@ -2261,15 +2310,9 @@ QUnit.test( 'onDocumentDragStart/onDocumentDrop', function ( assert ) {
 				originalEvent: {
 					dataTransfer: {
 						setData: function ( key, value ) {
-							if ( isIE && key !== 'text' ) {
-								throw new Error( 'IE FAIL' );
-							}
 							dataTransfer[ key ] = value;
 						},
 						getData: function ( key ) {
-							if ( isIE && key !== 'text' ) {
-								throw new Error( 'IE FAIL' );
-							}
 							return dataTransfer[ key ];
 						}
 					}
@@ -2304,7 +2347,7 @@ QUnit.test( 'onDocumentDragStart/onDocumentDrop', function ( assert ) {
 	cases.forEach( function ( caseItem ) {
 		testRunner(
 			caseItem.rangeOrSelection, caseItem.targetOffset, caseItem.expectedTransfer, caseItem.expectedData,
-			caseItem.expectedSelection, caseItem.isIE, caseItem.msg
+			caseItem.expectedSelection, caseItem.msg
 		);
 	} );
 
@@ -2314,16 +2357,18 @@ QUnit.test( 'getSelectionState', function ( assert ) {
 	var cases = [
 		{
 			msg: 'Grouped aliens',
-			html: '<p>' +
-				'Foo' +
-				'<span rel="ve:Alien" about="g1">Bar</span>' +
-				'<span rel="ve:Alien" about="g1">Baz</span>' +
-				'<span rel="ve:Alien" about="g1">Quux</span>' +
-				'Whee' +
-			'</p>' +
-			'<p>' +
-				'2<b>n</b>d' +
-			'</p>',
+			html: ve.dm.example.singleLine`
+				<p>
+					Foo
+					<span rel="ve:Alien" about="g1">Bar</span>
+					<span rel="ve:Alien" about="g1">Baz</span>
+					<span rel="ve:Alien" about="g1">Quux</span>
+					Whee
+				</p>
+				<p>
+					2<b>n</b>d
+				</p>
+			`,
 			// The offset path of the result of getNodeAndOffset for
 			// each offset
 			expected: [
@@ -2404,7 +2449,7 @@ QUnit.test( 'getSelectionState', function ( assert ) {
 					assert.deepEqual(
 						ve.getOffsetPath( rootElement, selection.anchorNode, selection.anchorOffset ),
 						caseItem.expected[ i ],
-						'Path at ' + i + ' in ' + caseItem.msg
+						`Path at ${i} in ${caseItem.msg}`
 					);
 				}
 				// Check that this doesn't throw exceptions
@@ -2446,7 +2491,7 @@ QUnit.test( 'selectFirstSelectableContentOffset/selectLastSelectableContentOffse
 					{ type: 'internalList' },
 					{ type: '/internalList' }
 				]
-			) ),
+			), null, ve.dm.example.baseUri ),
 			firstRange: new ve.Range( 14 ),
 			lastRange: new ve.Range( 17 )
 		},
@@ -2460,7 +2505,7 @@ QUnit.test( 'selectFirstSelectableContentOffset/selectLastSelectableContentOffse
 					{ type: 'internalList' },
 					{ type: '/internalList' }
 				]
-			) ),
+			), null, ve.dm.example.baseUri ),
 			firstRange: new ve.Range( 52 ),
 			lastRange: new ve.Range( 55 )
 		},
@@ -2473,13 +2518,16 @@ QUnit.test( 'selectFirstSelectableContentOffset/selectLastSelectableContentOffse
 					{ type: 'internalList' },
 					{ type: '/internalList' }
 				]
-			) ),
+			), null, ve.dm.example.baseUri ),
 			firstRange: null,
 			lastRange: null
 		},
 		{
 			msg: 'Sections (ve.ce.ActiveNode) can take focus',
-			htmlOrDoc: ve.dm.example.createExampleDocumentFromData( ve.dm.example.domToDataCases[ 'article and sections' ].data ),
+			htmlOrDoc: ve.dm.example.createExampleDocumentFromData(
+				ve.dm.example.domToDataCases[ 'article and sections' ].data,
+				null, ve.dm.example.baseUri
+			),
 			firstRange: new ve.Range( 3 ),
 			lastRange: new ve.Range( 20 )
 		}

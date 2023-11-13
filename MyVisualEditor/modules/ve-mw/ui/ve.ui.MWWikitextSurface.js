@@ -9,6 +9,7 @@
  * @extends ve.ui.Surface
  *
  * @constructor
+ * @param {ve.init.Target} target
  * @param {HTMLDocument|Array|ve.dm.LinearData|ve.dm.Document} dataOrDoc Document data to edit
  * @param {Object} [config] Configuration options
  */
@@ -76,7 +77,7 @@ ve.ui.MWWikitextSurface = function VeUiMWWikitextSurface() {
 				caretPos = range ? surfaceModel.getSourceOffsetFromOffset( range.start ) : 0;
 
 			return options.startAndEnd ?
-				[ caretPos, surfaceModel.getSourceOffsetFromOffset( range.end ) ] :
+				[ caretPos, range ? surfaceModel.getSourceOffsetFromOffset( range.end ) : 0 ] :
 				caretPos;
 		},
 		replaceSelection: function ( value ) {

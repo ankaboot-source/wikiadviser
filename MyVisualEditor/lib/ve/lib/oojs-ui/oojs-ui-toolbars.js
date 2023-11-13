@@ -1,12 +1,12 @@
 /*!
- * OOUI v0.44.4
+ * OOUI v0.48.2
  * https://www.mediawiki.org/wiki/OOUI
  *
  * Copyright 2011–2023 OOUI Team and other contributors.
  * Released under the MIT license
  * http://oojs.mit-license.org
  *
- * Date: 2023-01-04T17:25:02Z
+ * Date: 2023-10-24T20:22:08Z
  */
 ( function ( OO ) {
 
@@ -415,13 +415,13 @@ OO.ui.Toolbar.prototype.getToolGroupFactory = function () {
 /**
  * @inheritdoc {OO.ui.mixin.GroupElement}
  */
-OO.ui.Toolbar.prototype.insertItemElements = function ( itemWidget ) {
+OO.ui.Toolbar.prototype.insertItemElements = function ( item ) {
 	// Mixin method
 	OO.ui.mixin.GroupElement.prototype.insertItemElements.apply( this, arguments );
 
-	if ( itemWidget.align === 'after' ) {
+	if ( item.align === 'after' ) {
 		// Toolbar only ever appends ToolGroups to the end, so we can ignore 'index'
-		this.$after.append( itemWidget.$element );
+		this.$after.append( item.$element );
 	}
 };
 
@@ -936,7 +936,7 @@ OO.ui.Tool.prototype.isActive = function () {
  * This method should be called within #onSelect or #onUpdateState event handlers to make the tool
  * appear pressed or not.
  *
- * @param {boolean} state Make tool appear active
+ * @param {boolean} [state=false] Make tool appear active
  */
 OO.ui.Tool.prototype.setActive = function ( state ) {
 	this.active = !!state;
@@ -1471,11 +1471,7 @@ OO.ui.ToolGroup.prototype.populate = function () {
 		this.removeItems( remove );
 	}
 	// Update emptiness state
-	if ( add.length ) {
-		this.$element.removeClass( 'oo-ui-toolGroup-empty' );
-	} else {
-		this.$element.addClass( 'oo-ui-toolGroup-empty' );
-	}
+	this.$element.toggleClass( 'oo-ui-toolGroup-empty', !add.length );
 	// Re-add tools (moving existing ones to new locations)
 	this.addItems( add );
 	// Disabled state may depend on items
@@ -2116,6 +2112,7 @@ OO.ui.PopupToolGroup = function OoUiPopupToolGroup( toolbar, config ) {
 		$floatableContainer: this.$handle,
 		hideWhenOutOfView: false,
 		verticalPosition: this.toolbar.position === 'bottom' ? 'above' : 'below'
+		// horizontalPosition is set in setActive
 	}, config ) );
 	OO.ui.mixin.TabIndexedElement.call( this, $.extend( {
 		$tabIndexed: this.$handle
@@ -2353,7 +2350,7 @@ OO.ui.PopupToolGroup.prototype.isActive = function () {
  * When active, the popup is visible. A mouseup event anywhere in the document will trigger
  * deactivation.
  *
- * @param {boolean} value The active state to set
+ * @param {boolean} [value=false] The active state to set
  * @fires active
  */
 OO.ui.PopupToolGroup.prototype.setActive = function ( value ) {
@@ -2380,13 +2377,18 @@ OO.ui.PopupToolGroup.prototype.setActive = function ( value ) {
 			this.togglePositioning( true );
 			this.toggleClipping( true );
 
-			// Try anchoring the popup to the left first
-			this.setHorizontalPosition( 'start' );
+			// Tools on the left of the toolbar will try to align their
+			// popups with their left side if possible, and vice-versa.
+			var preferredSide = this.align === 'before' ? 'start' : 'end';
+			var otherSide = this.align === 'before' ? 'end' : 'start';
+
+			// Try anchoring the popup to the preferred side first
+			this.setHorizontalPosition( preferredSide );
 
 			if ( this.isClippedHorizontally() || this.isFloatableOutOfView() ) {
-				// Anchoring to the left caused the popup to clip, so anchor it to the
-				// right instead.
-				this.setHorizontalPosition( 'end' );
+				// Anchoring to the preferred side caused the popup to clip, so anchor it
+				// to the other side instead.
+				this.setHorizontalPosition( otherSide );
 			}
 			if ( this.isClippedHorizontally() || this.isFloatableOutOfView() ) {
 				// Anchoring to the right also caused the popup to clip, so just make it fill the
@@ -2398,7 +2400,7 @@ OO.ui.PopupToolGroup.prototype.setActive = function ( value ) {
 					this.$clippableScrollableContainer.offset().left;
 
 				this.toggleClipping( false );
-				this.setHorizontalPosition( 'start' );
+				this.setHorizontalPosition( preferredSide );
 
 				this.$clippable.css( {
 					'margin-left': -( this.$element.offset().left - containerLeft ),

@@ -8,7 +8,7 @@
 	position: relative;
 }
 
-.ve-ui-surface:after {
+.ve-ui-surface::after {
 	content: '.';
 	display: block;
 	clear: both;
@@ -32,9 +32,7 @@
 
 .ve-ui-surface-source .ve-ui-surface-placeholder,
 .ve-ui-surface-source .ve-ce-attachedRootNode {
-	/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 	-moz-tab-size: 4;
-	/* stylelint-disable-next-line plugin/no-unsupported-browser-features */
 	tab-size: 4;
 }
 
@@ -49,5 +47,9 @@
 	/* stylelint-disable-next-line declaration-no-important */
 	margin: 0 !important;
 	word-wrap: break-word;
+	/* Support: Chrome<76, Firefox<69 */
+	/* Fallback for browsers which don't support break-spaces */
 	white-space: pre-wrap;
+	/* T348006 */
+	white-space: break-spaces;
 }

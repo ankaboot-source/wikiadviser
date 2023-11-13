@@ -321,6 +321,7 @@ ve.dm.TreeModifier.static.applyTreeOperation = function ( isReversed, document, 
 	var isTextOp = treeOp.type.slice( -4 ) === 'Text';
 	var f = treeOp.from && prepareSplice( treeOp.from, treeOp.isContent, isTextOp );
 	var t = treeOp.to && prepareSplice( treeOp.to, treeOp.isContent, isTextOp );
+	// eslint-disable-next-line es-x/no-array-string-prototype-at
 	var a = treeOp.at && prepareSplice( treeOp.at, treeOp.isContent, isTextOp );
 
 	// Always adjust linear data before tree, to ensure consistency when node events
@@ -699,7 +700,11 @@ ve.dm.TreeModifier.prototype.processInsert = function ( itemOrData ) {
 		}
 	} else if ( type === 'close' ) {
 		if ( this.insertedPositions.length ) {
-			this.insertedNodes.pop();
+			var insertedNode = this.insertedNodes.pop();
+			if ( insertedNode.type !== item.type.slice( 1 ) ) {
+				throw new Error( 'Expected closing for ' + insertedNode.type +
+					' but got closing for ' + item.type.slice( 1 ) );
+			}
 			this.insertedPositions.pop();
 			if ( this.insertedPositions.length ) {
 				this.insertedPositions[ this.insertedPositions.length - 1 ] +=

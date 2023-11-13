@@ -70,6 +70,20 @@ ve.ui.PreviewElement.prototype.setModel = function ( model ) {
 };
 
 /**
+ * Modify DOM node before appending to the preview
+ *
+ * @param {HTMLElement} element Element to be appended
+ */
+ve.ui.PreviewElement.prototype.beforeAppend = function ( element ) {
+	// Remove slugs and nails. This used to be done in CSS but triggered
+	// a catastrophic browser bug in Chrome (T341901)
+	Array.prototype.forEach.call( element.querySelectorAll( '.ve-ce-nail, .ve-ce-branchNode-slug' ), function ( el ) {
+		el.parentNode.removeChild( el );
+	} );
+	ve.targetLinksToNewWindow( element );
+};
+
+/**
  * Replace the content of the body with the model DOM
  *
  * Doesn't use jQuery to avoid document switching performance bug
@@ -86,7 +100,7 @@ ve.ui.PreviewElement.prototype.replaceWithModelDom = function () {
 		ve.dm.Converter.static.computedAttributes
 	);
 
-	ve.targetLinksToNewWindow( body );
+	this.beforeAppend( body );
 
 	// Move content to element
 	element.innerHTML = '';
@@ -107,6 +121,7 @@ ve.ui.PreviewElement.prototype.updatePreview = function () {
 
 	// Initial CE node
 	this.view = ve.ce.nodeFactory.createFromModel( this.model );
+	this.beforeAppend( this.view.$element[ 0 ] );
 	this.$element.append( this.view.$element );
 	this.view.setLive( true );
 

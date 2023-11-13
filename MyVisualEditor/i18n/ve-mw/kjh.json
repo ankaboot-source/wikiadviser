@@ -1,15 +1,17 @@
 {
 	"@metadata": {
 		"authors": [
+			"AlexandrL714",
 			"Amire80",
-			"Андрей Саг.",
-			"AlexandrL714"
+			"Oxianboal",
+			"Андрей Саг."
 		]
 	},
 	"tooltip-ca-ve-edit": "Пу страницаны тӱзедерге",
-	"visualeditor-ca-createsource": "Кодты пӱдірерге",
-	"visualeditor-ca-editsource": "Код тӱзедерге",
-	"visualeditor-ca-editsource-section": "код тӱзедерге",
+	"visualeditor-ca-createlocaldescriptionsource": "Код чiли пос тілінең чарыдары",
+	"visualeditor-ca-createsource": "Кодты ит саларға",
+	"visualeditor-ca-editsource": "Кодты тӱзедерге",
+	"visualeditor-ca-editsource-section": "кодты тӱзедерге",
 	"visualeditor-descriptionpagelink": "Project:Визуал редакторы",
 	"visualeditor-dialog-meta-settings-index-force": "Я",
 	"visualeditor-dialog-meta-settings-newsectioneditlink-force": "Я"

@@ -68,13 +68,23 @@ ve.ce.MWGalleryImageNode = function VeCeMWGalleryImageNode( model ) {
 		.css( 'height', innerDivHeight + 'px' );
 	var $innerDiv = $( '<span>' )
 		.css( 'margin', innerDivMargin );
-	var $a = $( '<a>' );
-	var $img = $( '<img>' )
-		.attr( 'resource', attributes.resource )
-		.attr( 'alt', attributes.altText )
-		.attr( 'src', attributes.src )
-		.attr( 'height', attributes.height )
-		.attr( 'width', attributes.width );
+	var $a = $( '<a>' ).addClass( 'mw-file-description' );
+
+	var $img;
+	if ( model.getAttribute( 'isError' ) ) {
+		$img = $( '<span>' )
+			.addClass( 'mw-file-element mw-broken-media' )
+			.text( model.getAttribute( 'errorText' ) );
+	} else {
+		$img = $( '<img>' )
+			.addClass( 'mw-file-element' )
+			.attr( 'resource', attributes.resource )
+			.attr( 'alt', attributes.altText )
+			.attr( 'src', attributes.src )
+			.attr( 'height', attributes.height )
+			.attr( 'width', attributes.width );
+	}
+
 	this.$filenameA = $( '<a>' )
 		.attr( 'href', '#' ) // Just to make it look like a link
 		.text( resourceTitle ? resourceTitle.getMainText() : attributes.resource )

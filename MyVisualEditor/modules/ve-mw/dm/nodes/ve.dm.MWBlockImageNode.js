@@ -42,7 +42,7 @@ OO.mixinClass( ve.dm.MWBlockImageNode, ve.dm.ClassAttributeNode );
 ve.dm.MWBlockImageNode.static.name = 'mwBlockImage';
 
 ve.dm.MWBlockImageNode.static.preserveHtmlAttributes = function ( attribute ) {
-	var attributes = [ 'typeof', 'class', 'src', 'resource', 'width', 'height', 'href', 'rel', 'data-mw' ];
+	var attributes = [ 'typeof', 'class', 'src', 'resource', 'width', 'height', 'href', 'rel', 'data-mw', 'alt' ];
 	return attributes.indexOf( attribute ) === -1;
 };
 
@@ -65,15 +65,22 @@ ve.dm.MWBlockImageNode.static.classAttributes = {
 
 ve.dm.MWBlockImageNode.static.toDataElement = function ( domElements, converter ) {
 	var figure = domElements[ 0 ];
-	var imgWrapper = figure.children[ 0 ]; // <a> or <span>
-	var img = imgWrapper.children[ 0 ]; // <img>, <video>, <audio>, or <span> if mw:Error
-	var captionNode = figure.children[ 1 ]; // <figcaption> or undefined
+	var img = figure.querySelector( '.mw-file-element' ); // <img>, <video>, <audio>, or <span> if mw:Error
+	// Images copied from the old parser output can have typeof=mw:Image but no resource information. T337438
+	if ( !img || !img.hasAttribute( 'resource' ) ) {
+		return [];
+	}
+	var imgWrapper = img.parentNode; // <a> or <span>
+	// NB: A caption could contain another block image with a caption, but the outer
+	// image must always contain a caption for that to happen, and that one will match first.
+	var captionNode = figure.querySelector( 'figcaption' );
 	var classAttr = figure.getAttribute( 'class' );
 	var typeofAttrs = figure.getAttribute( 'typeof' ).trim().split( /\s+/ );
 	var mwDataJSON = figure.getAttribute( 'data-mw' );
 	var mwData = mwDataJSON ? JSON.parse( mwDataJSON ) : {};
 	var errorIndex = typeofAttrs.indexOf( 'mw:Error' );
 	var isError = errorIndex !== -1;
+	var errorText = isError ? img.textContent : null;
 	var width = img.getAttribute( isError ? 'data-width' : 'width' );
 	var height = img.getAttribute( isError ? 'data-height' : 'height' );
 
@@ -83,7 +90,7 @@ ve.dm.MWBlockImageNode.static.toDataElement = function ( domElements, converter 
 		// Otherwise Parsoid generates |link= options for copy-pasted images (T193253).
 		var targetData = mw.libs.ve.getTargetDataFromHref( href, converter.getTargetHtmlDocument() );
 		if ( targetData.isInternal ) {
-			href = './' + targetData.rawTitle;
+			href = mw.libs.ve.encodeParsoidResourceName( targetData.title );
 		}
 	}
 
@@ -106,7 +113,8 @@ ve.dm.MWBlockImageNode.static.toDataElement = function ( domElements, converter 
 		height: height !== null && height !== '' ? +height : null,
 		alt: img.getAttribute( 'alt' ),
 		mw: mwData,
-		isError: isError
+		isError: isError,
+		errorText: errorText
 	};
 
 	this.setClassAttributes( attributes, classAttr );
@@ -166,9 +174,7 @@ ve.dm.MWBlockImageNode.static.toDomElements = function ( data, doc, converter ) 
 		figure = doc.createElement( 'figure' ),
 		imgWrapper = doc.createElement( attributes.href ? 'a' : 'span' ),
 		img = doc.createElement( attributes.isError ? 'span' : attributes.mediaTag ),
-		wrapper = doc.createElement( 'div' ),
-		classAttr = this.getClassAttrFromAttributes( attributes ),
-		captionData = data.slice( 1, -1 );
+		classAttr = this.getClassAttrFromAttributes( attributes );
 
 	// RDFa type
 	figure.setAttribute( 'typeof', this.getRdfa( attributes.mediaClass, attributes.type, attributes.isError ) );
@@ -185,8 +191,7 @@ ve.dm.MWBlockImageNode.static.toDomElements = function ( data, doc, converter ) 
 		imgWrapper.setAttribute( 'href', attributes.href );
 	}
 
-	// At the moment, preserving this is only relevant on mw:Error spans
-	if ( attributes.isError && attributes.imageClassAttr ) {
+	if ( attributes.imageClassAttr ) {
 		// eslint-disable-next-line mediawiki/class-doc
 		img.className = attributes.imageClassAttr;
 	}
@@ -218,7 +223,7 @@ ve.dm.MWBlockImageNode.static.toDomElements = function ( data, doc, converter ) 
 			imgWrapper.classList.add( 'new' );
 		}
 		var filename = mw.libs.ve.normalizeParsoidResourceName( attributes.resource || '' );
-		img.appendChild( doc.createTextNode( filename ) );
+		img.appendChild( doc.createTextNode( attributes.errorText ? attributes.errorText : filename ) );
 	}
 
 	if ( width !== null ) {
@@ -236,12 +241,14 @@ ve.dm.MWBlockImageNode.static.toDomElements = function ( data, doc, converter ) 
 	figure.appendChild( imgWrapper );
 	imgWrapper.appendChild( img );
 
+	var captionData = data.slice( 1, -1 );
 	// If length of captionData is smaller or equal to 2 it means that there is no caption or that
 	// it is empty - in both cases we are going to skip appending <figcaption>.
 	if ( captionData.length > 2 ) {
-		converter.getDomSubtreeFromData( data.slice( 1, -1 ), wrapper );
-		while ( wrapper.firstChild ) {
-			figure.appendChild( wrapper.firstChild );
+		var captionWrapper = doc.createElement( 'div' );
+		converter.getDomSubtreeFromData( data.slice( 1, -1 ), captionWrapper );
+		while ( captionWrapper.firstChild ) {
+			figure.appendChild( captionWrapper.firstChild );
 		}
 	}
 	return [ figure ];

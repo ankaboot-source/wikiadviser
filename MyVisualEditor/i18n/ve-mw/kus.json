@@ -1,18 +1,17 @@
 {
 	"@metadata": {
 		"authors": [
+			"Agurwin Isaac",
 			"Bugirbiig",
-			"Musahfm",
-			"Agurwin Isaac"
+			"Musahfm"
 		]
 	},
 	"collabpad-doctitle": "CollabPad: $1",
 	"collabpad-import-subtitle": "li yine $1 san'an na",
 	"collabpad": "CollabPad",
-	"tooltip-ca-createsource": "dεmisim lak kaŋa sↄb zi'esim",
-	"tooltip-ca-edit": "Nↄkim wikisↄbʋg n dεmis lak kaŋa",
-	"tooltip-ca-editsource": "dεmisim lak kaŋa sↄb zi'esim",
 	"tooltip-ca-ve-edit": "Dεmisim lak kaŋa",
+	"tooltip-ca-editsource": "dεmisim lak kaŋa sↄb zi'esim",
+	"tooltip-ca-createsource": "dεmisim lak kaŋa sↄb zi'esim",
 	"visualeditor-advancedsettings-tool": "tuon ken maalʋg",
 	"visualeditor-annotations-default-description": " Lak kaŋa paasnε Pian’ad dↄlisʋg suor",
 	"visualeditor-annotations-default-end": "Pian’ad dↄlisʋg suor la ba'asʋg",
@@ -27,7 +26,6 @@
 	"visualeditor-autosave-recovered-text": "Tiakir kanε ka fʋ maal ka pʋ su’a la mεŋ yina",
 	"visualeditor-autosave-recovered-title": "Tiakir kanε ka fʋ maal la mεŋ yina",
 	"visualeditor-backbutton-tooltip": "Lεm nya’aŋ",
-	"visualeditor-beta-warning": "Fʋ ya’a paam daaʋŋ fʋ dεmisʋg la ni, m bεlmnε kε ti baŋi ba",
 	"visualeditor-browserwarning": "Fʋ dↄlnε vεεnsʋg suokanε pʋ siakid dεmisigↄ",
 	"visualeditor-ca-createlocaldescriptionsource": "Paasim yidim pa’alʋg suor",
 	"visualeditor-ca-createsource": "maalim zin'ig",

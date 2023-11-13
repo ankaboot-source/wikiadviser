@@ -49,12 +49,16 @@ ve.dm.MWInlineImageNode.static.disallowedAnnotationTypes = [ 'link' ];
 
 ve.dm.MWInlineImageNode.static.toDataElement = function ( domElements, converter ) {
 	var container = domElements[ 0 ]; // <span>
-	var imgWrapper = container.children[ 0 ]; // <a> or <span>
-	if ( !imgWrapper ) {
-		// Malformed figure, alienate (T267282)
+	if ( !container.children.length ) {
+		// Malformed image, alienate (T267282)
 		return null;
 	}
-	var img = imgWrapper.children[ 0 ]; // <img>, <video>, <audio>, or <span> if mw:Error
+	var img = container.querySelector( '.mw-file-element' ); // <img>, <video>, <audio>, or <span> if mw:Error
+	// Images copied from the old parser output can have typeof=mw:Image but no resource information. T337438
+	if ( !img || !img.hasAttribute( 'resource' ) ) {
+		return [];
+	}
+	var imgWrapper = img.parentNode; // <a> or <span>
 	var typeofAttrs = ( container.getAttribute( 'typeof' ) || '' ).trim().split( /\s+/ );
 	var mwDataJSON = container.getAttribute( 'data-mw' );
 	var mwData = mwDataJSON ? JSON.parse( mwDataJSON ) : {};
@@ -62,6 +66,7 @@ ve.dm.MWInlineImageNode.static.toDataElement = function ( domElements, converter
 	var recognizedClasses = [];
 	var errorIndex = typeofAttrs.indexOf( 'mw:Error' );
 	var isError = errorIndex !== -1;
+	var errorText = isError ? img.textContent : null;
 	var width = img.getAttribute( isError ? 'data-width' : 'width' );
 	var height = img.getAttribute( isError ? 'data-height' : 'height' );
 
@@ -71,7 +76,7 @@ ve.dm.MWInlineImageNode.static.toDataElement = function ( domElements, converter
 		// Otherwise Parsoid generates |link= options for copy-pasted images (T193253).
 		var targetData = mw.libs.ve.getTargetDataFromHref( href, converter.getTargetHtmlDocument() );
 		if ( targetData.isInternal ) {
-			href = './' + targetData.rawTitle;
+			href = mw.libs.ve.encodeParsoidResourceName( targetData.title );
 		}
 	}
 
@@ -95,7 +100,8 @@ ve.dm.MWInlineImageNode.static.toDataElement = function ( domElements, converter
 		height: height !== null && height !== '' ? +height : null,
 		alt: img.getAttribute( 'alt' ),
 		mw: mwData,
-		isError: isError
+		isError: isError,
+		errorText: errorText
 	};
 
 	// Extract individual classes
@@ -144,6 +150,7 @@ ve.dm.MWInlineImageNode.static.toDataElement = function ( domElements, converter
 ve.dm.MWInlineImageNode.static.toDomElements = function ( dataElement, doc, converter ) {
 	var attributes = dataElement.attributes,
 		container = doc.createElement( 'span' ),
+		imgWrapper = doc.createElement( attributes.href ? 'a' : 'span' ),
 		img = doc.createElement( attributes.isError ? 'span' : attributes.mediaTag ),
 		classes = [],
 		originalClasses = attributes.originalClasses;
@@ -201,33 +208,30 @@ ve.dm.MWInlineImageNode.static.toDomElements = function ( dataElement, doc, conv
 		container.className = classes.join( ' ' );
 	}
 
-	var firstChild;
 	if ( attributes.href ) {
-		firstChild = doc.createElement( 'a' );
-		firstChild.setAttribute( 'href', attributes.href );
-		if ( attributes.imgWrapperClassAttr ) {
-			// eslint-disable-next-line mediawiki/class-doc
-			firstChild.className = attributes.imgWrapperClassAttr;
-		}
-	} else {
-		firstChild = doc.createElement( 'span' );
+		imgWrapper.setAttribute( 'href', attributes.href );
+	}
+
+	if ( attributes.imgWrapperClassAttr ) {
+		// eslint-disable-next-line mediawiki/class-doc
+		imgWrapper.className = attributes.imgWrapperClassAttr;
+	}
+
+	if ( attributes.imageClassAttr ) {
+		// eslint-disable-next-line mediawiki/class-doc
+		img.className = attributes.imageClassAttr;
 	}
 
 	if ( attributes.isError ) {
 		if ( converter.isForPreview() ) {
-			firstChild.classList.add( 'new' );
+			imgWrapper.classList.add( 'new' );
 		}
 		var filename = mw.libs.ve.normalizeParsoidResourceName( attributes.resource || '' );
-		img.appendChild( doc.createTextNode( filename ) );
-		// At the moment, preserving this is only relevant on mw:Error spans
-		if ( attributes.imageClassAttr ) {
-			// eslint-disable-next-line mediawiki/class-doc
-			img.className = attributes.imageClassAttr;
-		}
+		img.appendChild( doc.createTextNode( attributes.errorText ? attributes.errorText : filename ) );
 	}
 
-	container.appendChild( firstChild );
-	firstChild.appendChild( img );
+	imgWrapper.appendChild( img );
+	container.appendChild( imgWrapper );
 
 	return [ container ];
 };

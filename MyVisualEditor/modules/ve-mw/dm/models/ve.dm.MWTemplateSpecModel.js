@@ -6,40 +6,90 @@
  */
 
 /**
+ * Object literal returned by the TemplataData API. Expected to be in formatversion=2,
+ * guaranteed via ve.init.mw.Target#getContentApi.
+ *
+ * @class ve.dm.MWTemplatePageMetadata
+ * @private
+ */
+/**
+ * @property {string|boolean} [missing] Either "1" or true
+ * @property {string|boolean} [notemplatedata] Either "1" or true when there is no user-provided
+ *   documentation `params` are auto-detected in this case.
+ * @property {string} title Template page name including the "Template:" namespace
+ * @property {string|Object.<string,string>} [description] Template description
+ * @property {Object.<string,ve.dm.MWTemplateParamDescription>} [params] Parameters by param name
+ * @property {string[]} [paramOrder] Preferred parameter order as documented via TemplateData. If
+ *  given, the TemplateData API makes sure this contains the same parameters as `params`.
+ * @property {{label:(string|Object.<string,string>),params:string[]}[]} [sets] List of parameter
+ *  sets, i.e. parameters that belong together (whatever that means, this feature is underspecified
+ *  and unused)
+ * @property {Object.<string,Object.<string,string|string[]|string[][]>>} [maps] Source to target
+ *  parameter mappings for consumers like Citoid or gadgets
+ */
+
+/**
+ * Object literal
+ *
+ * @class ve.dm.MWTemplateParamDescription
+ * @private
+ */
+/**
+ * @property {string|Object.<string,string>} [label]
+ * @property {string|Object.<string,string>} [description]
+ * @property {string[]} [suggestedvalues]
+ * @property {string} [default]
+ * @property {string|Object.<string,string>} [example]
+ * @property {string} [autovalue]
+ * @property {string} [type]
+ * @property {string[]} [aliases]
+ * @property {boolean} [required]
+ * @property {boolean} [suggested]
+ * @property {boolean|string} [deprecated]
+ */
+
+/**
  * Holds a mixture of:
+ *
  * - A copy of a template's specification as it is documented via TemplateData.
- * - Undocumented parameters that appear in a template invocation, {@see fillFromTemplate}.
+ * - Undocumented parameters that appear in a template invocation, {@link #fillFromTemplate}.
  * - Documented aliases are also considered valid, known parameter names. Use
- *   {@see isParameterAlias} to differentiate between the two.
+ *   {@link #isParameterAlias} to differentiate between the two.
+ *
  * Therefore this is not the original specification but an accessor to the documentation for an
  * individual template invocation. It's possible different for every invocation.
  *
- * Meant to be in a 1:1 relationship to {@see ve.dm.MWTemplateModel}.
+ * Meant to be in a 1:1 relationship to ve.dm.MWTemplateModel.
  *
- * The actual, unmodified specification can be found in the {@see templateData} property and in a
- * local `specCache` in {@see ve.dm.MWTransclusionModel}.
+ * The actual, unmodified specification can be found in the {@link #templateData} property, and
+ * the local `specCache` in ve.dm.MWTransclusionModel.
  *
- * See https://github.com/wikimedia/mediawiki-extensions-TemplateData/blob/master/Specification.md
+ * See <https://github.com/wikimedia/mediawiki-extensions-TemplateData/blob/master/Specification.md>
  * for the latest version of the TemplateData specification.
  *
  * @class
  *
  * @constructor
  * @param {ve.dm.MWTemplateModel} template
- * @property {Object.<string,boolean>} seenParameterNames Keeps track of any parameter from any
- *  source and in which order they have been seen first. Includes parameters that have been removed
- *  during the lifetime of this object, i.e. {@see fillFromTemplate} doesn't remove parameters that
- *  have been seen before. The order is typically but not necessarily the original order in which
- *  the parameters appear in the template. Aliases are resolved and don't appear on their original
- *  position any more.
- * @property {Object} templateData Documentation as provided by the TemplateData API
- * @property {Object.<string,string>} aliases Maps aliases to primary parameter names
  */
 ve.dm.MWTemplateSpecModel = function VeDmMWTemplateSpecModel( template ) {
-	// Properties
 	this.template = template;
+	/**
+	 * @property {Object.<string,boolean>} seenParameterNames Keeps track of any parameter from any
+	 *  source and in which order they have been seen first. Includes parameters that have been removed
+	 *  during the lifetime of this object, i.e. {@see fillFromTemplate} doesn't remove parameters that
+	 *  have been seen before. The order is typically but not necessarily the original order in which
+	 *  the parameters appear in the template. Aliases are resolved and don't appear on their original
+	 *  position any more.
+	 */
 	this.seenParameterNames = {};
+	/**
+	 * @property {Object} templateData Documentation as provided by the TemplateData API
+	 */
 	this.templateData = { notemplatedata: true, params: {} };
+	/**
+	 * @property {Object.<string,string>} aliases Maps aliases to primary parameter names
+	 */
 	this.aliases = {};
 
 	// Initialization
@@ -67,19 +117,7 @@ ve.dm.MWTemplateSpecModel.static.getLocalValue = function ( stringOrObject, lang
 /**
  * Template spec data is available from the TemplateData extension's API.
  *
- * @param {Object} data As returned by the TemplataData API. Expected to be in formatversion=2,
- *  guaranteed via {@see ve.init.mw.Target.prototype.getContentApi}.
- * @param {boolean} [data.notemplatedata] True when there is no user-provided documentation.
- *  `params` are auto-detected in this case.
- * @param {string|Object.<string,string>} [data.description] Template description
- * @param {string[]} [data.paramOrder] Preferred parameter order as documented via TemplateData. If
- *  given, the TemplateData API makes sure this contains the same parameters as `params`.
- * @param {Object.<string,Object>} [data.params] Template param specs keyed by param name
- * @param {{label:(string|Object.<string,string>),params:string[]}[]} [data.sets] List of parameter
- *  sets, i.e. parameters that belong together (whatever that means, this feature is underspecified
- *  and unused)
- * @param {Object.<string,Object.<string,string|string[]|string[][]>>} [data.maps] Source to target
- *  parameter mappings for consumers like Citoid or gadgets
+ * @param {ve.dm.MWTemplatePageMetadata} data
  */
 ve.dm.MWTemplateSpecModel.prototype.setTemplateData = function ( data ) {
 	if ( !data || !ve.isPlainObject( data ) ) {
@@ -87,10 +125,13 @@ ve.dm.MWTemplateSpecModel.prototype.setTemplateData = function ( data ) {
 	}
 
 	this.templateData = data;
-	// Better be safe even if the `params` element isn't optional in the TemplateData API
+	// This is currently not optional in the TemplateData API but might be in the future
 	if ( !this.templateData.params ) {
 		this.templateData.params = {};
 	}
+	// Incomplete server validation makes this possible, but the empty string is reserved for
+	// {@see ve.ui.MWAddParameterPage}.
+	delete this.templateData.params[ '' ];
 
 	var resolveAliases = false;
 
@@ -178,11 +219,15 @@ ve.dm.MWTemplateSpecModel.prototype.isDocumented = function () {
  */
 ve.dm.MWTemplateSpecModel.prototype.getDocumentedParameterOrder = function () {
 	return Array.isArray( this.templateData.paramOrder ) ?
-		this.templateData.paramOrder.slice() :
+		this.templateData.paramOrder.filter( function ( name ) {
+			return name;
+		} ) :
 		Object.keys( this.templateData.params );
 };
 
 /**
+ * The returned array is a copy, i.e. it's safe to manipulate.
+ *
  * @return {string[]}
  */
 ve.dm.MWTemplateSpecModel.prototype.getUndocumentedParameterNames = function () {
@@ -199,29 +244,21 @@ ve.dm.MWTemplateSpecModel.prototype.getUndocumentedParameterNames = function () 
  * are first, in their documented order. Undocumented parameters are sorted with numeric names
  * first, followed by alphabetically sorted names.
  *
+ * The returned array is a copy, i.e. it's safe to manipulate.
+ *
  * @return {string[]}
  */
 ve.dm.MWTemplateSpecModel.prototype.getCanonicalParameterOrder = function () {
 	var undocumentedParameters = this.getUndocumentedParameterNames();
 
 	undocumentedParameters.sort( function ( a, b ) {
-		var aIsNaN = isNaN( a ),
-			bIsNaN = isNaN( b );
-
-		if ( aIsNaN && bIsNaN ) {
-			// Two strings
-			return a.localeCompare( b );
+		if ( isNaN( a ) ) {
+			// If a and b are string, order alphabetically, otherwise numbers before strings
+			return isNaN( b ) ? a.localeCompare( b ) : 1;
+		} else {
+			// If a and b are numeric, order incrementally, otherwise numbers before strings
+			return !isNaN( b ) ? a - b : -1;
 		}
-		if ( aIsNaN ) {
-			// A is a string
-			return 1;
-		}
-		if ( bIsNaN ) {
-			// B is a string
-			return -1;
-		}
-		// Two numbers
-		return a - b;
 	} );
 
 	return this.getDocumentedParameterOrder().concat( undocumentedParameters );

@@ -35,6 +35,9 @@ ve.init.mw.MobileArticleTarget = function VeInitMwMobileArticleTarget( overlay, 
 	// Parent constructor
 	ve.init.mw.MobileArticleTarget.super.call( this, config );
 
+	// eslint-disable-next-line no-jquery/no-global-selector
+	this.$editableContent = $( '#mw-content-text' );
+
 	if ( config.section !== undefined ) {
 		this.section = config.section;
 	}
@@ -343,23 +346,6 @@ ve.init.mw.MobileArticleTarget.prototype.adjustContentPadding = function () {
 /**
  * @inheritdoc
  */
-ve.init.mw.MobileArticleTarget.prototype.getSaveButtonLabel = function ( startProcess ) {
-	var suffix = startProcess ? '-start' : '';
-	// The following messages can be used here:
-	// * visualeditor-savedialog-label-publish-short
-	// * visualeditor-savedialog-label-publish-short-start
-	// * visualeditor-savedialog-label-save-short
-	// * visualeditor-savedialog-label-save-short-start
-	if ( mw.config.get( 'wgEditSubmitButtonLabelPublish' ) ) {
-		return OO.ui.deferMsg( 'visualeditor-savedialog-label-publish-short' + suffix );
-	}
-
-	return OO.ui.deferMsg( 'visualeditor-savedialog-label-save-short' + suffix );
-};
-
-/**
- * @inheritdoc
- */
 ve.init.mw.MobileArticleTarget.prototype.switchToFallbackWikitextEditor = function ( modified ) {
 	var dataPromise;
 	if ( modified ) {
@@ -402,40 +388,16 @@ ve.init.mw.MobileArticleTarget.prototype.showSaveDialog = function () {
  * @inheritdoc
  */
 ve.init.mw.MobileArticleTarget.prototype.replacePageContent = function (
-	html, categoriesHtml, displayTitle, lastModified, contentSub, sections
+	html, categoriesHtml, displayTitle, lastModified /* , contentSub, sections */
 ) {
-	var $content = $( $.parseHTML( html ) );
+	// Parent method
+	ve.init.mw.MobileArticleTarget.super.prototype.replacePageContent.apply( this, arguments );
 
 	if ( lastModified ) {
 		// TODO: Update the last-modified-bar with the correct info
 		// eslint-disable-next-line no-jquery/no-global-selector
 		$( '.last-modified-bar' ).remove();
 	}
-
-	// eslint-disable-next-line no-jquery/no-global-selector
-	var $editableContent = $( '#mw-content-text' );
-	$editableContent.find( '.mw-parser-output' ).replaceWith( $content );
-	mw.hook( 'wikipage.content' ).fire( $editableContent );
-	if ( displayTitle ) {
-		// eslint-disable-next-line no-jquery/no-html, no-jquery/no-global-selector
-		$( '#firstHeading' ).html( displayTitle );
-	}
-
-	// Categories are only shown in AMC
-	// eslint-disable-next-line no-jquery/no-global-selector
-	if ( $( '#catlinks' ).length ) {
-		var $categories = $( $.parseHTML( categoriesHtml ) );
-		mw.hook( 'wikipage.categories' ).fire( $categories );
-		// eslint-disable-next-line no-jquery/no-global-selector
-		$( '#catlinks' ).replaceWith( $categories );
-	}
-
-	// eslint-disable-next-line no-jquery/no-global-selector, no-jquery/no-html
-	$( '.minerva__subtitle' ).html( contentSub );
-
-	mw.hook( 'wikipage.tableOfContents' ).fire( sections );
-
-	this.setRealRedirectInterface();
 };
 
 /**
@@ -450,16 +412,16 @@ ve.init.mw.MobileArticleTarget.prototype.saveComplete = function ( data ) {
 	// Parent method
 	ve.init.mw.MobileArticleTarget.super.prototype.saveComplete.apply( this, arguments );
 
-	var fragment = this.getSectionFragmentFromPage();
+	var fragment = this.getSectionHashFromPage().slice( 1 );
 
 	this.overlay.sectionId = fragment;
-	this.overlay.onSaveComplete( data.newrevid );
+	this.overlay.onSaveComplete( data.newrevid, data.tempusercreatedredirect, data.tempusercreated );
 };
 
 /**
  * @inheritdoc
  */
-ve.init.mw.MobileArticleTarget.prototype.saveFail = function ( doc, saveData, wasRetry, code, data ) {
+ve.init.mw.MobileArticleTarget.prototype.saveFail = function ( doc, saveData, code, data ) {
 	// parent method
 	ve.init.mw.MobileArticleTarget.super.prototype.saveFail.apply( this, arguments );
 
@@ -471,21 +433,6 @@ ve.init.mw.MobileArticleTarget.prototype.saveFail = function ( doc, saveData, wa
  */
 ve.init.mw.MobileArticleTarget.prototype.tryTeardown = function () {
 	this.overlay.onExitClick( $.Event() );
-};
-
-/**
- * @inheritdoc
- */
-ve.init.mw.MobileArticleTarget.prototype.teardown = function () {
-	var target = this;
-	// Parent method
-	return ve.init.mw.MobileArticleTarget.super.prototype.teardown.call( this ).then( function () {
-		if ( !target.isViewPage ) {
-			location.href = target.viewUri.clone().extend( {
-				redirect: mw.config.get( 'wgIsRedirect' ) ? 'no' : undefined
-			} );
-		}
-	} );
 };
 
 /**
@@ -512,15 +459,15 @@ ve.init.mw.MobileArticleTarget.prototype.setupToolbar = function ( surface ) {
 				name: 'editMode',
 				type: 'list',
 				icon: 'edit',
-				title: OO.ui.deferMsg( 'visualeditor-mweditmode-tooltip' ),
-				label: OO.ui.deferMsg( 'visualeditor-mweditmode-tooltip' ),
+				title: ve.msg( 'visualeditor-mweditmode-tooltip' ),
+				label: ve.msg( 'visualeditor-mweditmode-tooltip' ),
 				invisibleLabel: true,
-				include: [ 'editModeVisual', 'editModeSource' ]
+				include: [ { group: 'editMode' } ]
 			},
 			{
 				name: 'save',
 				type: 'bar',
-				include: [ 'showMobileSave' ]
+				include: [ 'showSave' ]
 			}
 		]
 	);
@@ -530,7 +477,6 @@ ve.init.mw.MobileArticleTarget.prototype.setupToolbar = function ( surface ) {
 
 	this.toolbarGroups = originalToolbarGroups;
 
-	this.toolbar.$group.addClass( 've-init-mw-mobileArticleTarget-editTools' );
 	this.toolbar.$element.addClass( 've-init-mw-mobileArticleTarget-toolbar' );
 	this.toolbar.$popups.addClass( 've-init-mw-mobileArticleTarget-toolbar-popups' );
 };
@@ -569,17 +515,3 @@ ve.init.mw.MobileArticleTarget.prototype.done = function () {
 /* Registration */
 
 ve.init.mw.targetFactory.register( ve.init.mw.MobileArticleTarget );
-
-/**
- * Mobile save tool
- */
-ve.ui.MWMobileSaveTool = function VeUiMWMobileSaveTool() {
-	// Parent Constructor
-	ve.ui.MWMobileSaveTool.super.apply( this, arguments );
-};
-OO.inheritClass( ve.ui.MWMobileSaveTool, ve.ui.MWSaveTool );
-ve.ui.MWMobileSaveTool.static.name = 'showMobileSave';
-ve.ui.MWMobileSaveTool.static.icon = 'next';
-ve.ui.MWMobileSaveTool.static.displayBothIconAndLabel = false;
-
-ve.ui.toolFactory.register( ve.ui.MWMobileSaveTool );

@@ -56,6 +56,7 @@ body {
 }
 
 .ve-demo-toolbar .oo-ui-dropdownWidget .oo-ui-labelElement-label {
+	/* stylelint-disable-next-line declaration-property-value-disallowed-list */
 	text-transform: capitalize;
 }
 
@@ -170,12 +171,12 @@ body {
 	list-style: none;
 }
 
-.ve-filibuster-frame-expandable:before,
-.ve-filibuster-frame-collapsed:before {
+.ve-filibuster-frame-expandable::before,
+.ve-filibuster-frame-collapsed::before {
 	content: '+';
 }
 
-.ve-filibuster-frame-expanded:before {
+.ve-filibuster-frame-expanded::before {
 	content: '-';
 }
 

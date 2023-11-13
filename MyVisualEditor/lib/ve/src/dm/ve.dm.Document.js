@@ -47,6 +47,7 @@ ve.dm.Document = function VeDmDocument( data, htmlDocument, parentDocument, inte
 	this.documentNode.setDocument( doc );
 	this.internalList = internalList ? internalList.clone( this ) : new ve.dm.InternalList( this );
 	this.innerWhitespace = innerWhitespace ? ve.copy( innerWhitespace ) : new Array( 2 );
+	this.metaList = new ve.dm.MetaList( this );
 
 	// Properties
 	this.parentDocument = parentDocument || null;
@@ -321,6 +322,17 @@ ve.dm.Document.prototype.buildNodeTree = function () {
  */
 ve.dm.Document.prototype.getLength = function () {
 	return this.data.getLength();
+};
+
+/**
+ * Get the meta list.
+ *
+ * @return {ve.dm.MetaList} Meta list of the surface
+ */
+ve.dm.Document.prototype.getMetaList = function () {
+	// Ensure the DM tree has been built
+	this.getDocumentNode();
+	return this.metaList;
 };
 
 /**
@@ -1647,26 +1659,14 @@ ve.dm.Document.prototype.findText = function ( query, options ) {
 		} );
 	} else {
 		var qLen = query.length;
-		var compare;
-		if ( ve.supportsIntl ) {
-			var sensitivity;
-			if ( options.diacriticInsensitiveString ) {
-				sensitivity = options.caseSensitiveString ? 'case' : 'base';
-			} else {
-				sensitivity = options.caseSensitiveString ? 'variant' : 'accent';
-			}
-			// Intl is only used browser clients
-			compare = new Intl.Collator( this.lang, { sensitivity: sensitivity } ).compare;
+		var sensitivity;
+		if ( options.diacriticInsensitiveString ) {
+			sensitivity = options.caseSensitiveString ? 'case' : 'base';
 		} else {
-			// Support: Firefox<29, Chrome<24, Safari<10
-			compare = options.caseSensitiveString ?
-				function ( a, b ) {
-					return a === b ? 0 : 1;
-				} :
-				function ( a, b ) {
-					return a.toLowerCase() === b.toLowerCase() ? 0 : 1;
-				};
+			sensitivity = options.caseSensitiveString ? 'variant' : 'accent';
 		}
+		// Intl is only used browser clients
+		var compare = new Intl.Collator( this.lang, { sensitivity: sensitivity } ).compare;
 		// Iterate up to (and including) offset textLength - queryLength. Beyond that point
 		// there is not enough room for the query to exist
 		for ( var offset = 0, l = documentRange.getLength() - qLen; offset <= l; offset++ ) {

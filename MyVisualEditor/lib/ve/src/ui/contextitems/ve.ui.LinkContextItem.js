@@ -10,9 +10,9 @@
  * @class
  * @extends ve.ui.AnnotationContextItem
  *
- * @param {ve.ui.Context} context Context item is in
- * @param {ve.dm.Model} model Model item is related to
- * @param {Object} config Configuration options
+ * @param {ve.ui.LinearContext} context Context the item is in
+ * @param {ve.dm.Model} model Model the item is related to
+ * @param {Object} [config] Configuration options
  */
 ve.ui.LinkContextItem = function VeUiLinkContextItem( context, model, config ) {
 	// Parent constructor
@@ -102,16 +102,16 @@ ve.ui.LinkContextItem.prototype.getDescription = function () {
  */
 ve.ui.LinkContextItem.prototype.renderBody = function () {
 	var htmlDoc = this.context.getSurface().getModel().getDocument().getHtmlDocument();
-	this.$body.empty().append(
-		$( '<a>' )
-			.addClass( 've-ui-linkContextItem-link' )
-			.text( this.getDescription() )
-			.attr( {
-				href: ve.resolveUrl( this.model.getHref(), htmlDoc ),
-				target: '_blank',
-				rel: 'noopener'
-			} )
-	);
+	var $link = $( '<a>' )
+		.addClass( 've-ui-linkContextItem-link' )
+		.text( this.getDescription() )
+		.attr( {
+			target: '_blank',
+			rel: 'noopener'
+		} );
+	// T322704
+	ve.setAttributeSafe( $link[ 0 ], 'href', ve.resolveUrl( this.model.getHref(), htmlDoc ), '#' );
+	this.$body.empty().append( $link );
 	if ( !this.context.isMobile() ) {
 		this.$body.append( this.$labelLayout );
 	}

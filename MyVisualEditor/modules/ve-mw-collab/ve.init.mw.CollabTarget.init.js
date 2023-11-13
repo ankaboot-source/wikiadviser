@@ -126,7 +126,7 @@
 								// Something (an animation?) steals focus during load, so wait a bit
 								// before opening and focusing the authorList.
 								setTimeout( function () {
-									target.actionsToolbar.tools.authorList.onSelect();
+									target.toolbar.tools.authorList.onSelect();
 								}, 500 );
 							}
 						} );
@@ -174,7 +174,7 @@
 
 						// Look for import metadata in document
 						surfaceModel = target.getSurface().getModel();
-						surfaceModel.getMetaList().getItemsInGroup( 'misc' ).some( function ( item ) {
+						surfaceModel.getDocument().getMetaList().getItemsInGroup( 'misc' ).some( function ( item ) {
 							var importedDocument = item.getAttribute( 'importedDocument' );
 							if ( importedDocument ) {
 								target.importTitle = mw.Title.newFromText( importedDocument.title );
@@ -236,13 +236,9 @@
 
 	function loadTitle( title, importTitle ) {
 		var specialTitle = mw.Title.newFromText( 'Special:CollabPad/' + title.toString() );
-		if ( history.pushState ) {
-			// TODO: Handle popstate
-			history.pushState( { tag: 'collabTarget', title: title.toString() }, '', specialTitle.getUrl() );
-			showPage( title, importTitle );
-		} else {
-			location.href = specialTitle.getUrl( { import: importTitle } );
-		}
+		// TODO: Handle popstate
+		history.pushState( { tag: 'collabTarget', title: title.toString() }, '', specialTitle.getUrl() );
+		showPage( title, importTitle );
 	}
 
 	function getRandomTitle() {
@@ -312,8 +308,8 @@
 	onImportChange();
 
 	if ( pageTitle ) {
-		var uri = new mw.Uri( location.href ),
-			importTitleText = uri.query.import,
+		var url = new URL( location.href ),
+			importTitleText = url.searchParams.get( 'import' ),
 			importTitleParam = ( importTitleText ? mw.Title.newFromText( importTitleText ) : null );
 		showPage( pageTitle, importTitleParam );
 	} else {
@@ -326,9 +322,7 @@
 	} );
 
 	// Tag current state
-	if ( history.replaceState ) {
-		history.replaceState( { tag: 'collabTarget', title: pageName }, '', location.href );
-	}
+	history.replaceState( { tag: 'collabTarget', title: pageName }, '', location.href );
 	window.addEventListener( 'popstate', function ( e ) {
 		if ( e.state && e.state.tag === 'collabTarget' ) {
 			if ( e.state.title ) {

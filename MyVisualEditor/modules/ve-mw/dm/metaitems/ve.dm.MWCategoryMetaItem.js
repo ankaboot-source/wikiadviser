@@ -33,49 +33,104 @@ ve.dm.MWCategoryMetaItem.static.matchTagNames = [ 'link' ];
 ve.dm.MWCategoryMetaItem.static.matchRdfaTypes = [ 'mw:PageProp/Category' ];
 
 ve.dm.MWCategoryMetaItem.static.toDataElement = function ( domElements ) {
+	// Parsoid: LinkHandlerUtils::serializeAsWikiLink
 	var href = domElements[ 0 ].getAttribute( 'href' ),
-		data = mw.libs.ve.parseParsoidResourceName( href ),
-		rawTitleAndFragment = data.rawTitle.match( /^(.*?)(?:#(.*))?$/ ),
-		titleAndFragment = data.title.match( /^(.*?)(?:#(.*))?\s*$/ );
+		titleAndFragment = href.match( /^(.*?)(?:#(.*))?\s*$/ );
 	return {
 		type: this.name,
 		attributes: {
-			category: titleAndFragment[ 1 ],
-			origCategory: rawTitleAndFragment[ 1 ],
-			sortkey: titleAndFragment[ 2 ] || '',
-			origSortkey: rawTitleAndFragment[ 2 ] || ''
+			category: mw.libs.ve.parseParsoidResourceName( titleAndFragment[ 1 ] ).title,
+			sortkey: titleAndFragment[ 2 ] ? decodeURIComponent( titleAndFragment[ 2 ] ) : ''
 		}
 	};
 };
 
-ve.dm.MWCategoryMetaItem.static.toDomElements = function ( dataElement, doc ) {
-	var domElement = doc.createElement( 'link' ),
-		category = dataElement.attributes.category || '',
-		sortkey = dataElement.attributes.sortkey || '',
-		origCategory = dataElement.attributes.origCategory || '',
-		origSortkey = dataElement.attributes.origSortkey || '',
-		normalizedOrigCategory = mw.libs.ve.decodeURIComponentIntoArticleTitle( origCategory ),
-		normalizedOrigSortkey = mw.libs.ve.decodeURIComponentIntoArticleTitle( origSortkey );
-	if ( normalizedOrigSortkey === sortkey ) {
-		sortkey = origSortkey;
+ve.dm.MWCategoryMetaItem.static.toDomElements = function ( dataElement, doc, converter ) {
+	var domElement;
+	var category = dataElement.attributes.category || '';
+	if ( converter.isForPreview() ) {
+		domElement = doc.createElement( 'a' );
+		var title = mw.Title.newFromText( category );
+		domElement.setAttribute( 'href', title.getUrl() );
+		domElement.appendChild( doc.createTextNode( title.getMainText() ) );
 	} else {
-		sortkey = encodeURIComponent( sortkey );
+		domElement = doc.createElement( 'link' );
+		var sortkey = dataElement.attributes.sortkey || '';
+		domElement.setAttribute( 'rel', 'mw:PageProp/Category' );
+
+		// Parsoid: WikiLinkHandler::renderCategory
+		var href = mw.libs.ve.encodeParsoidResourceName( category );
+		if ( sortkey !== '' ) {
+			href += '#' + sortkey.replace( /[%? [\]#|<>]/g, function ( match ) {
+				return encodeURIComponent( match );
+			} );
+		}
+
+		domElement.setAttribute( 'href', href );
 	}
-	var encodedCategory;
-	if ( normalizedOrigCategory === category ) {
-		encodedCategory = origCategory;
-	} else {
-		encodedCategory = encodeURIComponent( category );
-	}
-	domElement.setAttribute( 'rel', 'mw:PageProp/Category' );
-	var href = './' + encodedCategory;
-	if ( sortkey !== '' ) {
-		href += '#' + sortkey;
-	}
-	domElement.setAttribute( 'href', href );
 	return [ domElement ];
+};
+
+ve.dm.MWCategoryMetaItem.static.isDiffComparable = function ( element, other ) {
+	// Don't try to compare different categories. Even fixing a typo in a category name
+	// results in one category being removed and another added, which we shoud show.
+	return element.type === other.type && element.attributes.category === other.attributes.category;
+};
+
+ve.dm.MWCategoryMetaItem.static.describeChange = function ( key, change ) {
+	if ( key === 'sortkey' ) {
+		if ( !change.from ) {
+			return ve.htmlMsg( 'visualeditor-changedesc-mwcategory-sortkey-set', this.wrapText( 'ins', change.to ) );
+		} else if ( !change.to ) {
+			return ve.htmlMsg( 'visualeditor-changedesc-mwcategory-sortkey-unset', this.wrapText( 'del', change.from ) );
+		} else {
+			return ve.htmlMsg( 'visualeditor-changedesc-mwcategory-sortkey-changed',
+				this.wrapText( 'del', change.from ),
+				this.wrapText( 'ins', change.to )
+			);
+		}
+	}
+
+	// Parent method
+	return ve.dm.MWCategoryMetaItem.super.static.describeChange.apply( this, arguments );
 };
 
 /* Registration */
 
 ve.dm.modelRegistry.register( ve.dm.MWCategoryMetaItem );
+
+ve.ui.metaListDiffRegistry.register( 'mwCategory', function ( diffElement, diffQueue, documentNode /* , documentSpacerNode */ ) {
+	diffQueue = diffElement.processQueue( diffQueue );
+
+	if ( !diffQueue.length ) {
+		return;
+	}
+
+	var catLinks = document.createElement( 'div' );
+	catLinks.setAttribute( 'class', 'catlinks' );
+
+	var headerLink = document.createElement( 'a' );
+	headerLink.appendChild( document.createTextNode( ve.msg( 'pagecategories', diffQueue.length ) ) );
+	headerLink.setAttribute( 'href', ve.msg( 'pagecategorieslink' ) );
+
+	catLinks.appendChild( headerLink );
+	catLinks.appendChild( document.createTextNode( ve.msg( 'colon-separator' ) ) );
+
+	var list = document.createElement( 'ul' );
+	catLinks.appendChild( list );
+
+	var catSpacerNode = document.createElement( 'span' );
+	catSpacerNode.appendChild( document.createTextNode( ' … ' ) );
+
+	// Wrap each item in the queue in an <li>
+	diffQueue.forEach( function ( diffItem ) {
+		var listItem = document.createElement( 'li' );
+		diffElement.renderQueue(
+			[ diffItem ],
+			listItem, catSpacerNode
+		);
+		list.appendChild( listItem );
+	} );
+
+	documentNode.appendChild( catLinks );
+} );

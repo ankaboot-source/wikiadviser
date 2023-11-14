@@ -13,41 +13,42 @@ const props = defineProps({
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_HOST}/w/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
 
-window.addEventListener('message', async (event) => {
-  console.log('message');
-  if (event.data === 'updateChanges') {
-    console.log('updateChanges');
-    try {
-      $q.loading.show({
-        boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
-        spinner: QSpinnerGrid,
-        spinnerColor: 'primary',
-        spinnerSize: 140,
-        message: `
+async function loadingChanges() {
+  try {
+    $q.loading.show({
+      boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
+      spinner: QSpinnerGrid,
+      spinnerColor: 'primary',
+      spinnerSize: 140,
+      message: `
         <div class='text-h6'> Creating new changes of “${props.article.title}” </div></br>
         <div class='text-body1'>Please wait…</div>`,
-        html: true,
-      });
+      html: true,
+    });
 
-      // await updateChanges(props.article.article_id);
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 sec
-      console.log(props.article.article_id);
-      $q.loading.hide();
-      $q.notify({
-        message: 'New changes successfully created.',
-        icon: 'check',
-        color: 'positive',
-      });
-    } catch (error) {
-      let message = 'Creating changes failed.';
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      $q.notify({
-        message,
-        color: 'negative',
-      });
+    await updateChanges(props.article.article_id);
+
+    $q.loading.hide();
+    $q.notify({
+      message: 'New changes successfully created.',
+      icon: 'check',
+      color: 'positive',
+    });
+  } catch (error) {
+    let message = 'Creating changes failed.';
+    if (error instanceof Error) {
+      message = error.message;
     }
+    $q.notify({
+      message,
+      color: 'negative',
+    });
+  }
+}
+
+window.addEventListener('message', async (event) => {
+  if (event.data === 'updateChanges') {
+    loadingChanges();
   }
 });
 </script>

@@ -43,7 +43,7 @@ app.use(authorizationMiddlware);
 
 app.put('/article/changes', async (req, res) => {
   try {
-    const { articleId } = req.body;
+    const { articleId } = req.body.data;
     const { user } = res.locals;
 
     await updateChanges(articleId, user.id);

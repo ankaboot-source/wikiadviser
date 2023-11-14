@@ -14,24 +14,9 @@ api.defaults.httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
-function extractCookies(setCookieHeaders: any) {
-  const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
-    const cookieKeyValue = header.split(';')[0];
-    const [key, value] = cookieKeyValue.split('=');
-    acc[key.trim()] = value.trim();
-    return acc;
-  }, {});
-
-  return cookies;
-}
 function setCookies(response: any) {
   const setCookieHeaders = response.headers['set-cookie'];
-  const cookies = extractCookies(setCookieHeaders);
-  const cookieHeader = Object.entries(cookies)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('; ');
-  // We set a cookie header for upcoming requests
-  api.defaults.headers.Cookie = cookieHeader;
+  api.defaults.headers.Cookie = setCookieHeaders;
 }
 
 async function loginAndGetCsrf() {

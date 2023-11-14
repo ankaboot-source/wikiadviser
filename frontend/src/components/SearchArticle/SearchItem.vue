@@ -52,63 +52,51 @@ async function itemOnClick() {
 
     if (articleExists) {
       // GOTO ARTICLE PAGE
-      router.push({
+      return router.push({
         name: 'article',
         params: { articleId: articleId.value },
       });
-    } else {
-      $q.loading.show({
-        boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
-
-        spinner: QSpinnerGrid,
-        spinnerColor: 'primary',
-        spinnerSize: 140,
-
-        message: `
-        <div class='text-h6'> 🕵️🔐 Anonymously and Safely Importing “${props.item.title}” from Wikipedia. </div></br>
-        <div class='text-body1'>Please wait…</div>`,
-        html: true,
-      });
-      try {
-        //NEW ARTICLE
-        articleId.value = await createNewArticle(
-          props.item.title,
-          data.session!.user.id,
-          props.articleLanguage,
-          props.item.description
-        );
-        $q.loading.hide();
-        $q.notify({
-          message: 'Article successfully created.',
-          icon: 'check',
-          color: 'positive',
-        });
-        await articlesStore.fetchArticles(data.session!.user.id);
-
-        // GOTO ARTICLE PAGE, EDIT TAB
-        router.push({
-          name: 'article',
-          params: {
-            articleId: articleId.value,
-          },
-        });
-      } catch (error) {
-        $q.loading.hide();
-        if (error instanceof Error) {
-          $q.notify({
-            message: error.message,
-            color: 'negative',
-          });
-        }
-      }
     }
-  } catch (error) {
-    let message = 'Failed importing or creating article';
-    if (error instanceof Error) {
-      message = error.message;
-    }
+
+    $q.loading.show({
+      boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
+
+      spinner: QSpinnerGrid,
+      spinnerColor: 'primary',
+      spinnerSize: 140,
+
+      message: `
+      <div class='text-h6'> 🕵️🔐 Anonymously and Safely Importing “${props.item.title}” from Wikipedia. </div></br>
+      <div class='text-body1'>Please wait…</div>`,
+      html: true,
+    });
+
+    //NEW ARTICLE
+    articleId.value = await createNewArticle(
+      props.item.title,
+      data.session!.user.id,
+      props.articleLanguage,
+      props.item.description
+    );
+    $q.loading.hide();
     $q.notify({
-      message,
+      message: 'Article successfully created.',
+      icon: 'check',
+      color: 'positive',
+    });
+    await articlesStore.fetchArticles(data.session!.user.id);
+
+    // GOTO ARTICLE PAGE, EDIT TAB
+    router.push({
+      name: 'article',
+      params: {
+        articleId: articleId.value,
+      },
+    });
+  } catch (error) {
+    $q.loading.hide();
+    $q.notify({
+      message: 'Failed importing or creating article',
       color: 'negative',
     });
   }

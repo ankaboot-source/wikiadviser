@@ -44,6 +44,7 @@
       v-show="buttonToggle === 'edit'"
       :article="article"
       class="col-grow q-mr-md rounded-borders borders bg-secondary"
+      @switch-tab-emit="onSwitchTabEmitChange"
     />
 
     <template v-if="buttonToggle === 'view'">
@@ -87,7 +88,9 @@ const props = defineProps<{
   role: UserRole;
   editorPermission: boolean | null;
 }>();
-
+const onSwitchTabEmitChange = (tab: string) => {
+  buttonToggle.value = tab;
+};
 function setTabindexForElements(selector: string, tabindexValue: string) {
   const elements = document.querySelectorAll(selector);
   elements.forEach((element) => {

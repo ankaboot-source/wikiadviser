@@ -1,34 +1,36 @@
 <template>
-  <iframe :src="articleLink" frameBorder="0" />
+  <iframe v-if="!loading" :src="articleLink" frameBorder="0" />
+  <div v-else class="q-pa-xl">
+    <div class="text-h6">
+      Creating new changes of {{ props.article.title }}”
+    </div>
+    <div class="text-body1">Please wait…</div>
+    <QSpinnerGrid color="primary" size="140" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
+import { ref } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
 });
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_HOST}/w/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
+const loading = ref(false);
+const emit = defineEmits(['switchTabEmit']);
 
 async function loadingChanges() {
   try {
-    $q.loading.show({
-      boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
-      spinner: QSpinnerGrid,
-      spinnerColor: 'primary',
-      spinnerSize: 140,
-      message: `
-        <div class='text-h6'> Creating new changes of “${props.article.title}” </div></br>
-        <div class='text-body1'>Please wait…</div>`,
-      html: true,
-    });
+    loading.value = true;
 
     await updateChanges(props.article.article_id);
 
-    $q.loading.hide();
+    emit('switchTabEmit', 'view');
+    loading.value = false;
     $q.notify({
       message: 'New changes successfully created.',
       icon: 'check',
@@ -48,7 +50,7 @@ async function loadingChanges() {
 
 window.addEventListener('message', async (event) => {
   if (event.data === 'updateChanges') {
-    loadingChanges();
+    await loadingChanges();
   }
 });
 </script>

@@ -93,7 +93,7 @@ async function itemOnClick() {
     await articlesStore.fetchArticles(data.session.user.id);
 
     // GOTO ARTICLE PAGE, EDIT TAB
-    router.push({
+    return router.push({
       name: 'article',
       params: {
         articleId: articleId.value,

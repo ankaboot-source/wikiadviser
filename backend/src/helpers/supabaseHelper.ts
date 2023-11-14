@@ -65,18 +65,6 @@ export async function updateChange(toChange: Change): Promise<void> {
   }
 }
 
-export async function getPermissionData(permissionId: string) {
-  const { data: permissionData, error: permissionError } = await supabase
-    .from('permissions')
-    .select('article_id, user_id')
-    .eq('id', permissionId)
-    .maybeSingle();
-  if (permissionError) {
-    throw new Error(`PermissionError ${permissionError.message}`);
-  }
-
-  return permissionData;
-}
 export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
   const { error } = await supabase.from('changes').upsert(changesToUpsert, {
     defaultToNull: false,

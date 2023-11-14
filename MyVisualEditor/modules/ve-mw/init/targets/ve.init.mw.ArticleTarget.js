@@ -688,7 +688,6 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 	/* Custom WikiAdviser */
 	// On "Save Changes", update changes
 	const isIframe =  window.location !== window.parent.location;
-	console.log({isIframe});
 	if (isIframe) {
 		window.parent.postMessage('updateChanges', '*');
 	} else {

@@ -195,7 +195,7 @@ async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
   return response.data.query.pages[0].revisions[0].revid;
 }
 
-export async function updateChanges(articleId: string, permissionId: string) {
+export async function updateChanges(articleId: string, userId: string) {
   const originalRevid = await getRevisionId(articleId, 'newer');
   const latestRevid = await getRevisionId(articleId, 'older');
 
@@ -212,7 +212,7 @@ export async function updateChanges(articleId: string, permissionId: string) {
   const { changesToUpsert, htmlContent } = await refineArticleChanges(
     articleId,
     diffPage,
-    permissionId
+    userId
   );
 
   await upsertChanges(changesToUpsert);

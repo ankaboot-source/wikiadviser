@@ -1,18 +1,16 @@
 import { load } from 'cheerio';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
-import { getArticle, getChanges, getPermissionData } from './supabaseHelper';
+import { getArticle, getChanges } from './supabaseHelper';
 
 async function addPermissionDataToChanges(
   changesToInsert: Change[],
-  permissionId: string
+  articleId: string,
+  userId: string
 ) {
-  const permissionData = await getPermissionData(permissionId);
-  if (permissionData) {
-    for (const change of changesToInsert) {
-      if (!change.id) {
-        change.article_id = permissionData.article_id;
-        change.contributor_id = permissionData.user_id;
-      }
+  for (const change of changesToInsert) {
+    if (!change.id) {
+      change.article_id = articleId;
+      change.contributor_id = userId;
     }
   }
 }
@@ -35,7 +33,7 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
 export async function refineArticleChanges(
   articleId: string,
   html: string,
-  permissionId: string
+  userId: string
 ) {
   const $ = load(html);
   let changeid = -1;
@@ -161,7 +159,7 @@ export async function refineArticleChanges(
 
   // Add 'article_id' and 'contributor_id' properties to changeToinsert
   if (changesToInsert) {
-    await addPermissionDataToChanges(changesToInsert, permissionId);
+    await addPermissionDataToChanges(changesToInsert, articleId, userId);
     changesToUpsert.push(...changesToInsert);
   }
 

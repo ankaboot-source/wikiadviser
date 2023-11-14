@@ -2,7 +2,7 @@ import { load } from 'cheerio';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getArticle, getChanges } from './supabaseHelper';
 
-async function addPermissionDataToChanges(
+function addPermissionDataToChanges(
   changesToInsert: Change[],
   articleId: string,
   userId: string
@@ -159,7 +159,7 @@ export async function refineArticleChanges(
 
   // Add 'article_id' and 'contributor_id' properties to changeToinsert
   if (changesToInsert) {
-    await addPermissionDataToChanges(changesToInsert, articleId, userId);
+    addPermissionDataToChanges(changesToInsert, articleId, userId);
     changesToUpsert.push(...changesToInsert);
   }
 

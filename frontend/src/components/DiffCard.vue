@@ -88,9 +88,7 @@ const props = defineProps<{
   role: UserRole;
   editorPermission: boolean | null;
 }>();
-const onSwitchTabEmitChange = (tab: string) => {
-  buttonToggle.value = tab;
-};
+
 function setTabindexForElements(selector: string, tabindexValue: string) {
   const elements = document.querySelectorAll(selector);
   elements.forEach((element) => {
@@ -208,6 +206,10 @@ watch(
   },
   { immediate: true }
 );
+
+const onSwitchTabEmitChange = (tab: string) => {
+  buttonToggle.value = tab;
+};
 </script>
 
 <style>

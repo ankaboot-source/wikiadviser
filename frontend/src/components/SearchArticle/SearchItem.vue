@@ -45,6 +45,11 @@ const articleId = ref('');
 async function itemOnClick() {
   try {
     const { data } = await supabase.auth.getSession();
+
+    if (!data.session?.user.id) {
+      throw new Error('User session not found.');
+    }
+
     // check access
     const articleExists = articlesStore.articles?.find(
       (article: Article) => article.title === props.item.title
@@ -74,7 +79,7 @@ async function itemOnClick() {
     //NEW ARTICLE
     articleId.value = await createNewArticle(
       props.item.title,
-      data.session!.user.id,
+      data.session.user.id,
       props.articleLanguage,
       props.item.description
     );
@@ -84,7 +89,8 @@ async function itemOnClick() {
       icon: 'check',
       color: 'positive',
     });
-    await articlesStore.fetchArticles(data.session!.user.id);
+
+    await articlesStore.fetchArticles(data.session.user.id);
 
     // GOTO ARTICLE PAGE, EDIT TAB
     router.push({

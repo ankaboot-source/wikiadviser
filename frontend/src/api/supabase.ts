@@ -7,7 +7,7 @@ const supabaseClient = createBrowserClient(
   {
     cookies: Cookies,
     cookieOptions: {
-      domain: process.env.WIKIADVISER_HOST ?? 'localhost',
+      domain: process.env.WIKIADVISER_ROOT_DOMAIN ?? 'localhost',
       secure: true,
     },
   }

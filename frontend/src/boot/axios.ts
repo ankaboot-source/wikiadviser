@@ -15,7 +15,7 @@ declare module '@vue/runtime-core' {
 // for each client)
 const api = axios.create({
   withCredentials: true,
-  baseURL: `${process.env.WIKIADVISER_API_HOST}/`,
+  baseURL: `${process.env.WIKIADVISER_API_ENDPOINT}/`,
 });
 
 export default boot(({ app }) => {

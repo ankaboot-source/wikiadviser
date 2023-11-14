@@ -1,7 +1,7 @@
 import { BrowserContext, chromium } from 'playwright';
 import logger from '../logger';
 
-const { MEDIAWIKI_HOST, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
+const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
 
 class PlaywrightAutomator {
   private context: BrowserContext | null = null;
@@ -36,7 +36,7 @@ class PlaywrightAutomator {
         throw new Error('Context not properly initialized');
       }
       await page.goto(
-        `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
+        `${MEDIAWIKI_ENDPOINT}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
         { waitUntil: 'networkidle' }
       );
       await page.fill(usernameField, MW_ADMIN_USERNAME!);
@@ -75,7 +75,7 @@ class PlaywrightAutomator {
 
     try {
       await page.goto(
-        `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+        `${MEDIAWIKI_ENDPOINT}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
         { waitUntil: 'networkidle' }
       );
       const diffPage = await page.$eval(

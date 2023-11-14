@@ -78,7 +78,7 @@ module.exports = configure(function (/* ctx */) {
         SUPABASE_SECRET_PROJECT_TOKEN: process.env.SUPABASE_SECRET_PROJECT_TOKEN,
         WIKIADVISER_API_ENDPOINT: process.env.WIKIADVISER_API_ENDPOINT,
         MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
-        WIKIADVISER_HOST: process.env.WIKIADVISER_HOST,
+        WIKIADVISER_ROOT_DOMAIN: process.env.WIKIADVISER_ROOT_DOMAIN,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

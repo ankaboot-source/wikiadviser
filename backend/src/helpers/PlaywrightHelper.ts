@@ -5,12 +5,13 @@ const { MEDIAWIKI_HOST, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
 
 class PlaywrightMediaWikiAutomation {
   private static instance: PlaywrightMediaWikiAutomation | null;
+
   private readonly browserContext: Promise<BrowserContext>;
 
   constructor(
-    private readonly MEDIAWIKI_HOST: string,
-    private readonly MW_ADMIN_USERNAME: string,
-    private readonly MW_ADMIN_PASSWORD: string
+    private readonly MediawikiHost: string,
+    private readonly MediawikiAdminUsername: string,
+    private readonly MediawikiAdminPassword: string
   ) {
     if (PlaywrightMediaWikiAutomation.instance) {
       throw new Error(
@@ -18,7 +19,7 @@ class PlaywrightMediaWikiAutomation {
       );
     }
 
-    if (!MEDIAWIKI_HOST || !MW_ADMIN_PASSWORD || !MW_ADMIN_USERNAME) {
+    if (!MediawikiHost || !MediawikiAdminPassword || !MediawikiAdminUsername) {
       throw new Error(
         'Class is not being instantiated with valid credentials.'
       );
@@ -35,12 +36,12 @@ class PlaywrightMediaWikiAutomation {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       const page = await context.newPage();
       await page.goto(
-        `${this.MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
+        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
         { waitUntil: 'networkidle' }
       );
 
-      await page.fill('#wpName1', this.MW_ADMIN_USERNAME);
-      await page.fill('#wpPassword1', this.MW_ADMIN_PASSWORD);
+      await page.fill('#wpName1', this.MediawikiAdminUsername);
+      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
       await page.click('#wpLoginAttempt');
       await page.close();
       return context;
@@ -71,7 +72,7 @@ class PlaywrightMediaWikiAutomation {
   ): Promise<void> {
     const page = await this.getPageInContext();
 
-    await page.goto(`${this.MEDIAWIKI_HOST}/w/index.php?title=Special:Import`, {
+    await page.goto(`${this.MediawikiHost}/w/index.php?title=Special:Import`, {
       waitUntil: 'networkidle'
     });
 
@@ -106,7 +107,7 @@ class PlaywrightMediaWikiAutomation {
     const page = await this.getPageInContext();
 
     await page.goto(
-      `${this.MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
     );
 

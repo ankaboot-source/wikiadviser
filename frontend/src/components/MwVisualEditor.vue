@@ -1,11 +1,13 @@
 <template>
   <iframe v-if="!loading" :src="articleLink" frameBorder="0" />
-  <div v-else class="q-pa-xl">
-    <div class="text-h6">
-      Creating new changes of {{ props.article.title }}”
+  <div v-else class="q-pa-xl row justify-center text-center">
+    <div>
+      <div class="text-h6">
+        Treating the new changes of “{{ props.article.title }}”
+      </div>
+      <QSpinnerGrid class="q-my-xl self-center" color="primary" size="140" />
+      <div class="text-body1">Please wait…</div>
     </div>
-    <div class="text-body1">Please wait…</div>
-    <QSpinnerGrid color="primary" size="140" />
   </div>
 </template>
 
@@ -37,6 +39,7 @@ async function loadingChanges() {
       color: 'positive',
     });
   } catch (error) {
+    loading.value = false;
     let message = 'Creating changes failed.';
     if (error instanceof Error) {
       message = error.message;

@@ -7,7 +7,7 @@
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
-{$WIKIADVISER_BACKEND_ENDPOINT} {
+{$WIKIADVISER_API_ENDPOINT} {
 	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
 	request_body {
 		max_size 10MB

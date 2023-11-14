@@ -701,7 +701,6 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 			body: JSON.stringify({ articleId }),
 		})
 	}
-	debugger;
 	/* End Custom WikiAdviser */
 };
 

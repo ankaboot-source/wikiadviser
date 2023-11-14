@@ -200,9 +200,7 @@ export async function deleteArticle(articleId: string) {
 
 export async function updateChanges(articleId: string) {
   const apiResponse = await api.put('/article/changes', {
-    data: {
-      articleId,
-    },
+    articleId,
   });
   if (apiResponse.status !== 200) {
     throw new Error('Failed to update changes from API.');

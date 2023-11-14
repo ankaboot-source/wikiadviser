@@ -106,5 +106,6 @@ async function itemOnClick() {
       color: 'negative',
     });
   }
+  return undefined
 }
 </script>

@@ -21,8 +21,7 @@ class PlaywrightMediaWikiAutomation {
 
     if (!MediawikiHost || !MediawikiAdminPassword || !MediawikiAdminUsername) {
       throw new Error(
-        'Class is not being instantiated with valid credentials.'
-      );
+        'Incomplete instantiation: Please provide valid values for MediawikiHost, MediawikiAdminPassword, and MediawikiAdminUsername.');
     }
 
     PlaywrightMediaWikiAutomation.instance = this;
@@ -36,7 +35,7 @@ class PlaywrightMediaWikiAutomation {
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       const page = await context.newPage();
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
+        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
         { waitUntil: 'networkidle' }
       );
 

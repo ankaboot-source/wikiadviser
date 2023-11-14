@@ -1,97 +1,106 @@
-import { BrowserContext, chromium } from 'playwright';
+import { BrowserContext, chromium, Page } from 'playwright';
 import logger from '../logger';
 
 const { MEDIAWIKI_HOST, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
 
-class PlaywrightAutomator {
-  private context: BrowserContext | null = null;
+class PlaywrightMediaWikiAutomation {
+  private readonly browserContext: Promise<BrowserContext>;
 
-  private async ensureContext() {
-    if (!this.context) {
-      const browser = await chromium.launch();
-      this.context = await browser.newContext({
-        ignoreHTTPSErrors: true
-      });
-    }
+  constructor() {
+    this.browserContext = PlaywrightMediaWikiAutomation.setContext();
   }
 
-  async startPage() {
-    await this.ensureContext();
-    if (!this.context) {
-      throw new Error('Context not properly initialized');
-    }
-    const page = await this.context.newPage();
-    return page;
-  }
-
-  async importPage(articleId: string, exportData: string) {
-    const page = await this.startPage();
-
+  private static async setContext(): Promise<BrowserContext> {
     try {
-      // Automate Login
-      const usernameField = '#wpName1';
-      const passwordField = '#wpPassword1';
-      const loginButton = '#wpLoginAttempt';
-      if (!this.context) {
-        throw new Error('Context not properly initialized');
-      }
+      const browser = await chromium.launch();
+      const context = await browser.newContext({ ignoreHTTPSErrors: true });
+      const page = await context.newPage();
       await page.goto(
         `${MEDIAWIKI_HOST}/w/index.php?title=Special:UserLogin&returnto=Special:Import`,
         { waitUntil: 'networkidle' }
       );
-      await page.fill(usernameField, MW_ADMIN_USERNAME!);
-      await page.fill(passwordField, MW_ADMIN_PASSWORD!);
-      await page.click(loginButton);
 
-      // Automate Import
-      const submitButton = 'button[value^="Upload file"]';
-      const fileChooserButton = '#ooui-php-2';
-      const textBoxInterwikiprefix = '#ooui-php-3';
-
-      await page.locator(fileChooserButton).setInputFiles([
-        {
-          name: `${articleId}.xml`,
-          mimeType: 'application/xml',
-          buffer: Buffer.from(exportData, 'utf-8')
-        }
-      ]);
-
-      await page.fill(textBoxInterwikiprefix, ' ');
-      await page.click(submitButton, { timeout: 10 * 60 * 1000 }); // 10 Minutes
-      await page.waitForLoadState('networkidle');
-    } catch (error) {
-      logger.error('Error during page import:', error);
-    } finally {
+      await page.fill('#wpName1', MW_ADMIN_USERNAME!);
+      await page.fill('#wpPassword1', MW_ADMIN_PASSWORD!);
+      await page.click('#wpLoginAttempt');
       await page.close();
+      return context;
+    } catch (error) {
+      logger.error('Error when setting browser context', error);
+      throw error;
     }
   }
 
-  async getDiffHtml(
+  private async getBrowserContext(): Promise<BrowserContext> {
+    await this.browserContext;
+    return this.browserContext;
+  }
+
+  private async getPageInContext(): Promise<Page> {
+    const page = await (await this.getBrowserContext()).newPage();
+    return page;
+  }
+
+  /**
+   * Imports an article to Mediawiki.
+   * @param articleId - The ID of the article.
+   * @param exportData - The export data in XML format.
+   */
+  async importMediaWikiPage(
+    articleId: string,
+    exportData: string
+  ): Promise<void> {
+    const page = await this.getPageInContext();
+
+    await page.goto(`${MEDIAWIKI_HOST}/w/index.php?title=Special:Import`, {
+      waitUntil: 'networkidle'
+    });
+
+    await page.locator('#ooui-php-2').setInputFiles([
+      {
+        name: `${articleId}.xml`,
+        mimeType: 'application/xml',
+        buffer: Buffer.from(exportData, 'utf-8')
+      }
+    ]);
+
+    await page.fill('#ooui-php-3', ' ');
+    await page.click('button[value^="Upload file"]', {
+      timeout: 10 * 60 * 1000
+    }); // 10 Minutes
+    await page.waitForLoadState('networkidle');
+    await page.close();
+  }
+
+  /**
+   * Gets the HTML content of the visual diff between two revisions of a MediaWiki article.
+   * @param articleId - The ID of the article.
+   * @param originalRevid - The revision ID of the original version.
+   * @param latestRevid - The revision ID of the latest version.
+   * @returns The HTML content of the visual diff.
+   */
+  async getMediaWikiDiffHtml(
     articleId: string,
     originalRevid: string,
     latestRevid: string
-  ) {
-    const page = await this.startPage();
+  ): Promise<string> {
+    const page = await this.getPageInContext();
 
-    try {
-      await page.goto(
-        `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
-        { waitUntil: 'networkidle' }
-      );
-      const diffPage = await page.$eval(
-        '.ve-init-mw-diffPage-diff',
-        (el) => el.outerHTML
-      );
-      return diffPage;
-    } catch (error) {
-      logger.error('Error during Diffing:', error);
-      return '';
-    } finally {
-      await page.close();
-    }
+    await page.goto(
+      `${MEDIAWIKI_HOST}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      { waitUntil: 'networkidle' }
+    );
+
+    const diffPage = await page.$eval(
+      '.ve-init-mw-diffPage-diff',
+      (el) => el.outerHTML
+    );
+    await page.close();
+
+    return diffPage;
   }
 }
 
-const Automator = new PlaywrightAutomator();
+const MediaWikiAutomator = new PlaywrightMediaWikiAutomation();
 
-export default Automator;
+export default MediaWikiAutomator;

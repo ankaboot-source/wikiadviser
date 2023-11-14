@@ -687,18 +687,19 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 	}
 	/* Custom WikiAdviser */
 	// On "Save Changes", update changes
-	const wikiadviserApiHost = "https://api.wikiadviser.io";
-	const urlParams = new URLSearchParams(window.location.search);
-	const permissionId = urlParams.get("permissionid");
-	const articleId = this.getPageName();
-	if (permissionId) {
-	fetch(`${wikiadviserApiHost}/article/changes`, {
-		method: "PUT",
-		headers: {
-		"Content-Type": "application/json",
-		},
-		body: JSON.stringify({ articleId , permissionId }),
-	})
+	const isIframe =  window.location !== window.parent.location;
+	if (isIframe) {
+		window.parent.postMessage('updateChanges', '*');
+	} else {
+		const wikiadviserApiHost = "https://api.wikiadviser.io";
+		const articleId = this.getPageName();
+		fetch(`${wikiadviserApiHost}/article/changes`, {
+			method: "PUT",
+			headers: {
+			"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ articleId }),
+		})
 	}
 	/* End Custom WikiAdviser */
 };

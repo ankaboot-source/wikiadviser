@@ -44,6 +44,7 @@
       v-show="buttonToggle === 'edit'"
       :article="article"
       class="col-grow q-mr-md rounded-borders borders bg-secondary"
+      @switch-tab-emit="onSwitchTabEmitChange"
     />
 
     <template v-if="buttonToggle === 'view'">
@@ -205,6 +206,10 @@ watch(
   },
   { immediate: true }
 );
+
+const onSwitchTabEmitChange = (tab: string) => {
+  buttonToggle.value = tab;
+};
 </script>
 
 <style>

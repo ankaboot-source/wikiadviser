@@ -1,10 +1,10 @@
-wikiadviser.io {
-	redir https://app.wikiadviser.io
+{$WIKIADVISER_ROOT_DOMAIN} {
+	redir https://{$WIKIADVISER_FRONTEND_DOMAIN}
 
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
-app.wikiadviser.io {
+{$WIKIADVISER_FRONTEND_DOMAIN} {
 	root * /usr/share/caddy/html
 	encode gzip
 	try_files {path} /index.html
@@ -13,9 +13,10 @@ app.wikiadviser.io {
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }
 
-api.wikiadviser.io {
+{$WIKIADVISER_BACKEND_DOMAIN} {
 	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
 	request_body {
 		max_size 10MB
 	}
 }
+

@@ -21,7 +21,8 @@ class PlaywrightMediaWikiAutomation {
 
     if (!MediawikiHost || !MediawikiAdminPassword || !MediawikiAdminUsername) {
       throw new Error(
-        'Incomplete instantiation: Please provide valid values for MediawikiHost, MediawikiAdminPassword, and MediawikiAdminUsername.');
+        'Incomplete instantiation: Please provide valid values for MediawikiHost, MediawikiAdminPassword, and MediawikiAdminUsername.'
+      );
     }
 
     PlaywrightMediaWikiAutomation.instance = this;

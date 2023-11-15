@@ -1,7 +1,7 @@
 import { BrowserContext, chromium, Page } from 'playwright';
 import logger from '../logger';
 
-const { MEDIAWIKI_HOST, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
+const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
 
 class PlaywrightMediaWikiAutomation {
   private static instance: PlaywrightMediaWikiAutomation | null;
@@ -105,7 +105,6 @@ class PlaywrightMediaWikiAutomation {
     latestRevid: string
   ): Promise<string> {
     const page = await this.getPageInContext();
-
     await page.goto(
       `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
@@ -123,7 +122,7 @@ class PlaywrightMediaWikiAutomation {
 
 const MediaWikiAutomator = new PlaywrightMediaWikiAutomation(
   // TODO: Remove string type when Zod is implemented
-  MEDIAWIKI_HOST as string,
+  MEDIAWIKI_ENDPOINT as string,
   MW_ADMIN_USERNAME as string,
   MW_ADMIN_PASSWORD as string
 );

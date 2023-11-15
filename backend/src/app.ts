@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import express, { json } from 'express';
-import cookieParser from 'cookie-parser';
 import {
   deleteArticleMW,
   importNewArticle,
@@ -19,9 +19,9 @@ import {
   updateChange
 } from './helpers/supabaseHelper';
 import logger from './logger';
+import authorizationMiddlware from './middleware/auth';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
-import authorizationMiddlware from './middleware/auth';
 
 const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
 
@@ -43,8 +43,10 @@ app.use(authorizationMiddlware);
 
 app.put('/article/changes', async (req, res) => {
   try {
-    const { articleId, permissionId } = req.body;
-    await updateChanges(articleId, permissionId);
+    const { articleId } = req.body;
+    const { user } = res.locals;
+
+    await updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
     res.status(200).json({ message: 'Updating changes succeeded.' });
@@ -181,7 +183,7 @@ app.get('/authenticate', async (req, res) => {
     const forwardedUri = req.headers['x-forwarded-uri'];
     const forwardedMethod = req.headers['x-forwarded-method'];
 
-    const articleIdRegEx = /^\/w(?:iki)?\/([0-9a-f-]{36})([?/]|$)/i;
+    const articleIdRegEx = /^\/w\/index.php\/([0-9a-f-]{36})([?/]|$)/i;
     const allowedPrefixRegEx =
       /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import https from 'https';
 import logger from '../logger';
-import Automator from './PlaywrightHelper';
+import MediaWikiAutomator from './PlaywrightHelper';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
@@ -14,24 +14,9 @@ api.defaults.httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
-function extractCookies(setCookieHeaders: any) {
-  const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
-    const cookieKeyValue = header.split(';')[0];
-    const [key, value] = cookieKeyValue.split('=');
-    acc[key.trim()] = value.trim();
-    return acc;
-  }, {});
-
-  return cookies;
-}
 function setCookies(response: any) {
   const setCookieHeaders = response.headers['set-cookie'];
-  const cookies = extractCookies(setCookieHeaders);
-  const cookieHeader = Object.entries(cookies)
-    .map(([key, value]) => `${key}=${value}`)
-    .join('; ');
-  // We set a cookie header for upcoming requests
-  api.defaults.headers.Cookie = cookieHeader;
+  api.defaults.headers.Cookie = setCookieHeaders;
 }
 
 async function loginAndGetCsrf() {
@@ -113,13 +98,10 @@ export async function deleteArticleMW(articleId: string) {
   logout(csrftoken);
 }
 
-export async function importNewArticle(
-  articleId: string,
+async function exportArticleData(
   title: string,
-  language = 'en'
-): Promise<void> {
-  // Export
-  logger.info(`Exporting file  ${title}`);
+  language: string
+): Promise<string> {
   const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
     params: {
       title: 'Special:Export',
@@ -130,54 +112,74 @@ export async function importNewArticle(
     },
     responseType: 'stream'
   });
-  let exportData = '';
-  exportResponse.data.on('data', (chunk: string) => {
-    exportData += chunk;
-  });
-  await new Promise<void>((resolve, reject) => {
-    exportResponse.data.on('end', async () => {
+
+  return new Promise<string>((resolve, reject) => {
+    let exportData = '';
+    exportResponse.data.on('data', (chunk: string) => {
+      exportData += chunk;
+    });
+
+    exportResponse.data.on('end', () => {
       // Add missing </base> into the file. (Exported files from proxies only)
       exportData = exportData.replace(
         '\n    <generator>',
         '</base>\n    <generator>'
       );
-      logger.info(`Succesfuly exported file ${title}`);
-      logger.info(`Importing into our instance file ${title}`);
-
-      await Automator.importPage(articleId, exportData);
-
-      logger.info(`Succesfuly imported file ${title}`);
-
-      // Login
-      const csrftoken = await loginAndGetCsrf();
-      // Rename
-      logger.info(`Renaming Article ${title} to its corresponding id`);
-      const renameResponse = await api.post(
-        '',
-        {
-          action: 'move',
-          from: title,
-          to: articleId,
-          noredirect: true,
-          token: csrftoken,
-          format: 'json'
-        },
-        {
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          }
-        }
-      );
-      logger.info(renameResponse.data);
-      // Logout
-      logout(csrftoken);
-      resolve();
+      resolve(exportData);
     });
 
     exportResponse.data.on('error', (error: Error) => {
       reject(error);
     });
   });
+}
+
+async function renameArticle(title: string, articleId: string): Promise<void> {
+  const csrftoken = await loginAndGetCsrf();
+
+  logger.info(`Renaming Article ${title} to its corresponding id`);
+
+  await api.post(
+    '',
+    {
+      action: 'move',
+      from: title,
+      to: articleId,
+      noredirect: true,
+      token: csrftoken,
+      format: 'json'
+    },
+    {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }
+  );
+  logout(csrftoken);
+}
+
+export async function importNewArticle(
+  articleId: string,
+  title: string,
+  language = 'en'
+): Promise<void> {
+  try {
+    // Export
+    logger.info(`Exporting file ${title}`);
+    const exportData = await exportArticleData(title, language);
+    logger.info(`Successfully exported file ${title}`);
+
+    // Import
+    logger.info(`Importing into our instance file ${title}`);
+    await MediaWikiAutomator.importMediaWikiPage(articleId, exportData);
+    logger.info(`Successfully imported file ${title}`);
+
+    // Rename
+    await renameArticle(title, articleId);
+  } catch (error) {
+    logger.error(`Error importing article ${title}`, error);
+    throw error;
+  }
 }
 
 async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
@@ -195,7 +197,7 @@ async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
   return response.data.query.pages[0].revisions[0].revid;
 }
 
-export async function updateChanges(articleId: string, permissionId: string) {
+export async function updateChanges(articleId: string, userId: string) {
   const originalRevid = await getRevisionId(articleId, 'newer');
   const latestRevid = await getRevisionId(articleId, 'older');
 
@@ -203,7 +205,7 @@ export async function updateChanges(articleId: string, permissionId: string) {
     { originalRevid, latestRevid },
     'Getting the Diff HTML of Revids:'
   );
-  const diffPage = await Automator.getDiffHtml(
+  const diffPage = await MediaWikiAutomator.getMediaWikiDiffHtml(
     articleId,
     originalRevid,
     latestRevid
@@ -212,7 +214,7 @@ export async function updateChanges(articleId: string, permissionId: string) {
   const { changesToUpsert, htmlContent } = await refineArticleChanges(
     articleId,
     diffPage,
-    permissionId
+    userId
   );
 
   await upsertChanges(changesToUpsert);

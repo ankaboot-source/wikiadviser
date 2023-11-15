@@ -5,8 +5,12 @@ import MediaWikiAutomator from './PlaywrightHelper';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const { MEDIAWIKI_ENDPOINT, WIKIPEDIA_PROXY, MW_BOT_USERNAME, MW_BOT_PASSWORD } =
-  process.env;
+const {
+  MEDIAWIKI_ENDPOINT,
+  WIKIPEDIA_PROXY,
+  MW_BOT_USERNAME,
+  MW_BOT_PASSWORD
+} = process.env;
 
 const api = axios.create({ baseURL: `${MEDIAWIKI_ENDPOINT}/w/api.php` });
 // Use to bypass https validation

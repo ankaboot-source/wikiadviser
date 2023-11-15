@@ -1,7 +1,8 @@
 import { BrowserContext, chromium, Page } from 'playwright';
 import logger from '../logger';
 
-const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } = process.env;
+const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
+  process.env;
 
 class PlaywrightMediaWikiAutomation {
   private static instance: PlaywrightMediaWikiAutomation | null;

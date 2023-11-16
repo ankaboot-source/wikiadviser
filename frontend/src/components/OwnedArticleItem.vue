@@ -39,11 +39,7 @@
                 icon="translate"
               >
                 <q-icon name="translate" class="q-mr-xs" />
-                {{
-                  wikipediaLanguages.find(
-                    (option) => article.language === option.lang
-                  )?.label
-                }}
+                {{ language() }}
               </q-badge>
             </div>
           </div>
@@ -130,7 +126,7 @@ const dateTimeFormat = new Intl.DateTimeFormat(userLocale, { hour: 'numeric' });
 // Check if the locale prefers 12-hour format based on hourCycle
 const hourCycle = dateTimeFormat.resolvedOptions().hourCycle;
 const user12H = hourCycle === 'h12' || hourCycle === 'h11';
-console.log(props.article);
+
 function gotoArticle(articleId: string) {
   router.push({
     name: 'article',
@@ -178,5 +174,11 @@ async function removeArticle(articleId: string, articleTitle: string) {
       });
     }
   }
+}
+
+function language() {
+  return wikipediaLanguages.find(
+    (option) => props.article.language === option.lang
+  )?.label;
 }
 </script>

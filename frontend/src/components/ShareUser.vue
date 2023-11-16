@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const roleModel = ref({
-  label: UserRole[props.user.role],
+  label: props.user.role.charAt(0).toUpperCase() + props.user.role.slice(1),
   value: props.user.role,
 });
 const roleOptions = [

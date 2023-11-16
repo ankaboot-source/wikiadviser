@@ -17,7 +17,6 @@
  * @constructor
  * @param {Object} [config] Config options
  */
-/* eslint-disable */
 ve.ui.MWSaveDialog = function VeUiMwSaveDialog( config ) {
 	// Parent constructor
 	ve.ui.MWSaveDialog.super.call( this, config );
@@ -137,9 +136,7 @@ ve.ui.MWSaveDialog.static.actions = [
  * @param {jQuery.Promise} visualDiffGeneratorPromise Visual diff promise
  * @param {HTMLDocument} [baseDoc] Base document against which to normalise links when rendering visualDiff
  */
-
 ve.ui.MWSaveDialog.prototype.setDiffAndReview = function ( wikitextDiffPromise, visualDiffGeneratorPromise, baseDoc ) {
-	
 	var dialog = this;
 
 	this.clearDiff();
@@ -171,6 +168,7 @@ ve.ui.MWSaveDialog.prototype.setDiffAndReview = function ( wikitextDiffPromise, 
 			return createDiffElement( visualDiffGenerator() );
 		} );
 	};
+
 	this.baseDoc = baseDoc;
 
 	// Wikitext diff
@@ -215,7 +213,8 @@ ve.ui.MWSaveDialog.prototype.showPreview = function ( response ) {
 			$( '<em>' ).append( response )
 		);
 	} else {
-		var data = response.parse;
+		var data = response.parse,
+			config = mw.config.get( 'wgVisualEditor' );
 
 		mw.config.set( data.jsconfigvars );
 		mw.loader.using( ( data.modules || [] ).concat( data.modulestyles || [] ) );
@@ -228,9 +227,13 @@ ve.ui.MWSaveDialog.prototype.showPreview = function ( response ) {
 			// * mw-content-ltr
 			// * mw-content-rtl
 			// eslint-disable-next-line no-jquery/no-html
-			$( '<div>' ).addClass( 'mw-content-' + mw.config.get( 'wgVisualEditor' ).pageLanguageDir ).html(
-				data.text
-			),
+			$( '<div>' )
+				.addClass( 'mw-content-' + config.pageLanguageDir )
+				.attr( {
+					lang: config.pageLanguageCode,
+					dir: config.pageLanguageDir
+				} )
+				.html( data.text ),
 			data.categorieshtml
 		);
 
@@ -726,7 +729,6 @@ ve.ui.MWSaveDialog.prototype.updateReviewMode = function () {
 					dialog.diffElement = diffElement;
 					dialog.$reviewVisualDiff.empty().append( diffElement.$element );
 					dialog.positionDiffElement();
-					console.log('dialog',dialog);
 				} );
 			}
 			return;

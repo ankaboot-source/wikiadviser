@@ -13,9 +13,11 @@
 			"Jdforrester",
 			"Kanashimi",
 			"Kkairri",
+			"Kokage si",
 			"LaMagiaaa",
 			"Linuxmetel",
 			"Los688",
+			"Marine-Blue",
 			"MathXplore",
 			"Mirinano",
 			"Miya",
@@ -25,6 +27,7 @@
 			"Plover-Y",
 			"RYOUMA1117",
 			"Rxy",
+			"Ryoya3",
 			"Shirayuki",
 			"SkyDaisy9",
 			"Sou0012",
@@ -41,9 +44,7 @@
 			"Yusuke1109",
 			"しぃ",
 			"ネイ",
-			"Ryoya3",
-			"Marine-Blue",
-			"Kokage si"
+			"春春眠眠"
 		]
 	},
 	"collabpad-doctitle": "CollabPad: $1",
@@ -199,6 +200,7 @@
 	"visualeditor-dialog-transclusion-add-param-placeholder": "パラメータ名",
 	"visualeditor-dialog-transclusion-add-param-save": "追加",
 	"visualeditor-dialog-transclusion-add-template": "テンプレートを追加",
+	"visualeditor-dialog-transclusion-add-template-button": "テンプレートを追加",
 	"visualeditor-dialog-transclusion-add-template-save": "追加",
 	"visualeditor-dialog-transclusion-add-undocumented-param": "文書化されていないパラメータの追加",
 	"visualeditor-dialog-transclusion-back-confirmation-prompt": "検索に戻りますか？ 変更内容は保存されず、元に戻すことはできません。",
@@ -230,7 +232,6 @@
 	"visualeditor-dialog-transclusion-param-selection-aria-description": "パラメータを追加または削除するには、スペースを押します。パラメータの追加は Enter キーを押して直後にその値を編集します。すでに選択してあるパラメータの値を編集するには、Enter キーを押します。",
 	"visualeditor-dialog-transclusion-param-selection-aria-label": "$1のパラメータ",
 	"visualeditor-dialog-transclusion-param-undocumented": "（文書化されていないパラメーター）",
-	"visualeditor-dialog-transclusion-placeholder": "テンプレートの追加",
 	"visualeditor-dialog-transclusion-placeholder-input-placeholder": "テンプレートを検索",
 	"visualeditor-dialog-transclusion-required-parameter": "必須のパラメーター",
 	"visualeditor-dialog-transclusion-required-parameter-description": "このフィールドは必須です。",
@@ -238,7 +239,7 @@
 	"visualeditor-dialog-transclusion-required-parameter-dialog-ok": "続行",
 	"visualeditor-dialog-transclusion-required-parameter-dialog-title": "必須の{{PLURAL:$1|フィールド}}が不足しています",
 	"visualeditor-dialog-transclusion-required-parameter-is-blank": "{{PLURAL:$2|フィールド項目}} $1件を指定していませんが、本当に続行しますか?",
-	"visualeditor-dialog-transclusion-see-template": "利用者が作成したテンプレートは解説文書に不備があるかもしれません。こちらの[[$2|テンプレートのページ]]に追加情報がありかもしれません。",
+	"visualeditor-dialog-transclusion-see-template": "利用者が作成したテンプレートは解説文書に不備があるかもしれません。こちらの[[$2|テンプレートのページ]]に追加情報があるかもしれません。",
 	"visualeditor-dialog-transclusion-title-insert-template": "テンプレートを追加",
 	"visualeditor-dialog-transclusion-title-insert-known-template": "挿入: $1",
 	"visualeditor-dialog-transclusion-title-edit-known-template": "編集：$1",
@@ -400,6 +401,6 @@
 	"visualeditor-wikitext-warning": "ビジュアルエディターを使用中です。[[{{MediaWiki:visualeditor-wikitext-warning-link}}|ウィキテキスト]]はここでは使用できません。スイッチボタンをクリックすることで、編集内容を保持したままいつでもソース編集に切り替えられます。",
 	"visualeditor-wikitext-warning-title": "ウィキテキスト記法を検出しました",
 	"visualeditor-wikitextconvert-title": "書式をウィキテキストに変換しますか?",
-	"visualeditor-wikitextconvert-message": "あなたは豊富な書式が含まれている内容を貼り付けました。ウィキテキストに変換したいと思っていますか。",
+	"visualeditor-wikitextconvert-message": "あなたは書式付きの内容を貼り付けました。この書式をウィキテキストに変換しますか?",
 	"visualeditor-wikitextconvert-convert": "ウィキテキストに変換する"
 }

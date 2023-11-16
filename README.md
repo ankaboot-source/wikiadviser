@@ -78,9 +78,9 @@
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js
 
-  Into your MediaWiki instance http://localhost/wiki/MediaWiki: Common.css and Common.js
+  Into your MediaWiki instance http://localhost/w/index.php/MediaWiki: Common.css and Common.js
 
-- Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
+- Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 
 - <details>
     <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it (Prod only)</summary>

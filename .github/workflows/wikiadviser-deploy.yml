@@ -105,3 +105,31 @@ jobs:
             cp -rf $folder_path/$visual_editor_folder_name $canasta_path/extensions/$visual_editor_folder_name
 
             cd $canasta_path; docker compose up -d
+  
+  deploy-visual-editor-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy VisualEditor
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key:  ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+        script: |
+          wikiadviser_path="/home/wiki-user/wikiadviser"
+          visual_editor_folder_name="MyVisualEditor"
+          visual_editor_branch="update-VisualEditor"
+          extensions_path="/var/www/html/extensions/"
+
+          # Check if the folder exists
+          if [ -d "$wikiadviser_path" ]; then
+              echo "wikiadviser exists..."
+              cd $wikiadviser_path
+              git pull origin $visual_editor_branch
+          else
+              echo "wikiadviser doesn't exist, Cloning Repo..."
+              git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+              cd $wikiadviser_path
+              git checkout $visual_editor_branch
+          fi
+          cd; cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/html/w/extensions/

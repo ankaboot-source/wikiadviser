@@ -32,6 +32,19 @@
                   hour12: user12H,
                 })
               }}
+              <q-badge
+                text-color="light-blue-10"
+                color="light-blue-1"
+                class="q-mt-s"
+                icon="translate"
+              >
+                <q-icon name="translate" class="q-mr-xs" />
+                {{
+                  wikipediaLanguages.find(
+                    (option) => article.language === option.lang
+                  )?.label
+                }}
+              </q-badge>
             </div>
           </div>
         </div>
@@ -99,8 +112,8 @@ import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-
-defineProps<{
+import wikipediaLanguages from 'src/data/wikipediaLanguages';
+const props = defineProps<{
   article: Article;
 }>();
 
@@ -117,7 +130,7 @@ const dateTimeFormat = new Intl.DateTimeFormat(userLocale, { hour: 'numeric' });
 // Check if the locale prefers 12-hour format based on hourCycle
 const hourCycle = dateTimeFormat.resolvedOptions().hourCycle;
 const user12H = hourCycle === 'h12' || hourCycle === 'h11';
-
+console.log(props.article);
 function gotoArticle(articleId: string) {
   router.push({
     name: 'article',

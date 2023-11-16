@@ -43,6 +43,7 @@ class PlaywrightMediaWikiAutomation {
 
       await page.fill('#wpName1', this.MediawikiAdminUsername);
       await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+      await page.click('#wpRemember');
       await page.click('#wpLoginAttempt');
       await page.close();
       return context;
@@ -69,13 +70,17 @@ class PlaywrightMediaWikiAutomation {
    */
   async importMediaWikiPage(
     articleId: string,
-    exportData: string
+    exportData: string,
+    language: string
   ): Promise<void> {
     const page = await this.getPageInContext();
 
-    await page.goto(`${this.MediawikiHost}/w/index.php?title=Special:Import`, {
-      waitUntil: 'networkidle'
-    });
+    await page.goto(
+      `${this.MediawikiHost}/w/index.php?title=Special:Import&uselang=${language}`,
+      {
+        waitUntil: 'networkidle'
+      }
+    );
 
     await page.locator('#ooui-php-2').setInputFiles([
       {
@@ -86,7 +91,7 @@ class PlaywrightMediaWikiAutomation {
     ]);
 
     await page.fill('#ooui-php-3', ' ');
-    await page.click('button[value^="Upload file"]', {
+    await page.click('#ooui-php-21 button[type=submit]', {
       timeout: 10 * 60 * 1000
     }); // 10 Minutes
     await page.waitForLoadState('networkidle');

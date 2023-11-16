@@ -125,7 +125,7 @@ app.post('/article', async (req, res) => {
     'New article title received'
   );
 
-  const articleId = await insertArticle(title, userId, description);
+  const articleId = await insertArticle(title, userId, language, description);
   try {
     await importNewArticle(articleId, title, language);
 

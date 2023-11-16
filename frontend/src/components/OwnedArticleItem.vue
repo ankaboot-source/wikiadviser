@@ -39,7 +39,7 @@
                 icon="translate"
               >
                 <q-icon name="translate" class="q-mr-xs" />
-                {{ language() }}
+                {{ language }}
               </q-badge>
             </div>
           </div>
@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
@@ -176,9 +176,9 @@ async function removeArticle(articleId: string, articleTitle: string) {
   }
 }
 
-function language() {
-  return wikipediaLanguages.find(
-    (option) => props.article.language === option.lang
-  )?.label;
-}
+const language = computed(
+  () =>
+    wikipediaLanguages.find((option) => props.article.language === option.lang)
+      ?.label
+);
 </script>

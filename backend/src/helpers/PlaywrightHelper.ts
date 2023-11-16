@@ -43,7 +43,6 @@ class PlaywrightMediaWikiAutomation {
 
       await page.fill('#wpName1', this.MediawikiAdminUsername);
       await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-      await page.click('#wpRemember');
       await page.click('#wpLoginAttempt');
       await page.close();
       return context;

@@ -118,7 +118,7 @@ jobs:
         script: |
           wikiadviser_path="/home/wiki-user/wikiadviser"
           visual_editor_folder_name="MyVisualEditor"
-          extensions_path="/var/www/html/w/extensions/"
+          extensions_path="/var/www/wiki-demo/w/extensions/"
 
           # Check if the folder exists
           if [ -d "$wikiadviser_path" ]; then

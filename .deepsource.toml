@@ -3,7 +3,6 @@ version = 1
 exclude_patterns = [
   "mediawiki/**",
   "MyVisualEditor/**",
-  "MyPureVisualEditor/**",
   "frontend/public/**",
   "node_modules/"
 ]

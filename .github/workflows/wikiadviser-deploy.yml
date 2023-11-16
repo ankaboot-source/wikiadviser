@@ -118,18 +118,15 @@ jobs:
         script: |
           wikiadviser_path="/home/wiki-user/wikiadviser"
           visual_editor_folder_name="MyVisualEditor"
-          visual_editor_branch="update-VisualEditor"
-          extensions_path="/var/www/html/extensions/"
+          extensions_path="/var/www/html/w/extensions/"
 
           # Check if the folder exists
           if [ -d "$wikiadviser_path" ]; then
               echo "wikiadviser exists..."
               cd $wikiadviser_path
-              git pull origin $visual_editor_branch
+              git pull
           else
               echo "wikiadviser doesn't exist, Cloning Repo..."
               git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
-              cd $wikiadviser_path
-              git checkout $visual_editor_branch
           fi
-          cd; cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/html/w/extensions/
+          cp -r $wikiadviser_path/$visual_editor_folder_name $extensions_path

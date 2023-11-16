@@ -60,10 +60,6 @@ async function loginAndGetCsrf() {
     }
   });
   const { csrftoken } = csrfResponse.data.query.tokens;
-
-  if (csrftoken === '+\\') {
-    throw Error('Could not get CSRF token');
-  }
   return csrftoken;
 }
 

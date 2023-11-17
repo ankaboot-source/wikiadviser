@@ -18,7 +18,7 @@
               text-color="light-blue-10"
               color="light-blue-1"
               class="q-mt-s"
-              :label="UserRole[article.role]"
+              :label="UserRoleLabels.get(article.role)"
             />
             <div v-if="article.created_at" class="text-weight-light on-right">
               Imported on
@@ -95,7 +95,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
-import { Article, UserRole } from 'src/types';
+import { Article, UserRole, UserRoleLabels } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';

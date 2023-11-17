@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, UserRole } from 'src/types';
+import { User, UserRole, UserRoleLabels } from 'src/types';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const roleModel = ref({
-  label: props.user.role.charAt(0).toUpperCase() + props.user.role.slice(1),
+  label: UserRoleLabels.get(props.user.role),
   value: props.user.role,
 });
 const roleOptions = [

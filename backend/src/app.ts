@@ -179,6 +179,10 @@ app.delete('/article', async (req, res) => {
 
 app.get('/authenticate', async (req, res) => {
   try {
+    logger.info({
+      message: 'Authenticating:',
+      headers: req.headers
+    });
     const { user } = res.locals;
     const forwardedUri = req.headers['x-forwarded-uri'];
     const forwardedMethod = req.headers['x-forwarded-method'];

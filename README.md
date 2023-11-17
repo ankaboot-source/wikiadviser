@@ -5,10 +5,11 @@
 ### Setup MediaWiki
 
 - <details>
-   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (expand for mor details).</summary>
+   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (We will be setting 2 environments: `Dev` and `Demo`).</summary>
     
     - Install Caddy
     - Install Apache2
+    - Install PHP, PHP mmodule and additional PHP packages required by MediaWiki ```apt install php libapache2-mod-php php-mbstring php-mysql php-xml```
     - If you are willing to use local DataBase, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
     - Don't forget to start all the services above!
     - Configure your database: 

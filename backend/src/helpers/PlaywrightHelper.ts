@@ -53,19 +53,17 @@ class PlaywrightMediaWikiAutomation {
         (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
       );
 
-    if (!hasExpired) {
-      return page;
+    if (hasExpired) {
+      await page.goto(
+        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
+        { waitUntil: 'networkidle' }
+      );
+
+      await page.fill('#wpName1', this.MediawikiAdminUsername);
+      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+      await page.click('#wpRemember');
+      await page.click('#wpLoginAttempt');
     }
-
-    await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
-      { waitUntil: 'networkidle' }
-    );
-
-    await page.fill('#wpName1', this.MediawikiAdminUsername);
-    await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-    await page.click('#wpRemember');
-    await page.click('#wpLoginAttempt');
 
     return page;
   }

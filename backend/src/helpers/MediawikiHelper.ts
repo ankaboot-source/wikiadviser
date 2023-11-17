@@ -50,7 +50,7 @@ async function loginAndGetCsrf() {
     );
   }
 
-  const cookie = loginResponse.headers['set-cookie']?.pop();
+  const cookie = loginResponse.headers['set-cookie']?.join('; ');
 
   if (typeof cookie !== 'string') {
     throw new Error('Type mismatch: set-cookie is not string');
@@ -68,6 +68,11 @@ async function loginAndGetCsrf() {
   });
 
   const { csrftoken } = data.query.tokens;
+
+  if (csrftoken === '+\\') {
+    throw new Error('Failed to get csrftoken');
+  }
+
   return csrftoken;
 }
 

@@ -76,36 +76,6 @@ jobs:
             # Remove unused images/containers/volumes
             docker system prune -f
 
-  deploy-visual-editor:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy VisualEditor
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ vars.MEDIAWIKI_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_MEDIAWIKI }}
-          username: ${{ secrets.WIKI_USERNAME }}
-          script: |
-            folder_path="/home/wiki-user/wikiadviser"
-            canasta_path="/home/wiki-user/canasta"
-            visual_editor_folder_name="MyVisualEditor"
-
-            # Check if the folder exists
-            if [ -d "$folder_path" ]; then
-                echo "wikiadviser exists..."
-                cd $folder_path
-                git pull
-            else
-                echo "wikiadviser doesn't exist, Cloning Repo..."
-                git clone git@github.com:ankaboot-source/wikiadviser.git $folder_path
-            fi
-
-            cd $canasta_path; docker compose down
-            rm -rf $canasta_path/extensions/$visual_editor_folder_name
-            cp -rf $folder_path/$visual_editor_folder_name $canasta_path/extensions/$visual_editor_folder_name
-
-            cd $canasta_path; docker compose up -d
-  
   deploy-visual-editor-demo:
     runs-on: ubuntu-latest
     steps:

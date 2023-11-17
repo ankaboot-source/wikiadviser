@@ -60,6 +60,9 @@
       'versioned' => 63072000,
       'unversioned' => 63072000
     ];
+    
+    # Open external links in a new tab
+    $wgExternalLinkTarget = '_blank';
   ```
 
   </details>

@@ -33,7 +33,7 @@ class PlaywrightMediaWikiAutomation {
 
   private static async setContext(): Promise<BrowserContext> {
     try {
-      const browser = await chromium.launch({ headless: false });
+      const browser = await chromium.launch();
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       return context;
     } catch (error) {
@@ -51,7 +51,7 @@ class PlaywrightMediaWikiAutomation {
       (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
     );
 
-    if (hasExpired) {
+    if (!hasExpired) {
       return page;
     }
 
@@ -62,6 +62,7 @@ class PlaywrightMediaWikiAutomation {
 
     await page.fill('#wpName1', this.MediawikiAdminUsername);
     await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+    await page.click('#wpRemember');
     await page.click('#wpLoginAttempt');
 
     return page;

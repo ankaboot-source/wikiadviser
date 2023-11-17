@@ -165,7 +165,7 @@ async function renameArticle(title: string, articleId: string): Promise<void> {
 export async function importNewArticle(
   articleId: string,
   title: string,
-  language = 'en'
+  language: string
 ): Promise<void> {
   try {
     // Export
@@ -175,7 +175,11 @@ export async function importNewArticle(
 
     // Import
     logger.info(`Importing into our instance file ${title}`);
-    await MediaWikiAutomator.importMediaWikiPage(articleId, exportData);
+    await MediaWikiAutomator.importMediaWikiPage(
+      articleId,
+      exportData,
+      language
+    );
     logger.info(`Successfully imported file ${title}`);
 
     // Rename

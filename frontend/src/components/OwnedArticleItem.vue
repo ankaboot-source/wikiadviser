@@ -32,6 +32,15 @@
                   hour12: user12H,
                 })
               }}
+              <q-badge
+                text-color="light-blue-10"
+                color="light-blue-1"
+                class="q-mt-s"
+                icon="translate"
+              >
+                <q-icon name="translate" class="q-mr-xs" />
+                {{ language }}
+              </q-badge>
             </div>
           </div>
         </div>
@@ -92,15 +101,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-
-defineProps<{
+import wikipediaLanguages from 'src/data/wikipediaLanguages';
+const props = defineProps<{
   article: Article;
 }>();
 
@@ -166,4 +175,10 @@ async function removeArticle(articleId: string, articleTitle: string) {
     }
   }
 }
+
+const language = computed(
+  () =>
+    wikipediaLanguages.find((option) => props.article.language === option.lang)
+      ?.label
+);
 </script>

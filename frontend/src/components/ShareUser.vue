@@ -9,7 +9,7 @@
     </q-item-section>
     <q-select
       v-model="roleModel"
-      class="q-ma-sm"
+      class="q-ma-sm text-capitalize"
       :options="roleOptions"
       dense
       :disable="!ownerPermission || props.user.role === UserRole.Owner"
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, UserRole, UserRoleLabels } from 'src/types';
+import { User, UserRole } from 'src/types';
 import { ref } from 'vue';
 
 const props = defineProps<{
@@ -44,7 +44,7 @@ const props = defineProps<{
 }>();
 
 const roleModel = ref({
-  label: UserRoleLabels.get(props.user.role),
+  label: props.user.role,
   value: props.user.role,
 });
 const roleOptions = [

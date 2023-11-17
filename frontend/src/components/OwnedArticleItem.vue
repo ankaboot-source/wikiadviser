@@ -148,7 +148,13 @@ async function removeArticle(articleId: string, articleTitle: string) {
       color: 'positive',
     });
     const { data } = await supabase.auth.getSession();
-    await articlesStore.fetchArticles(data.session!.user.id);
+    const user = data.session?.user;
+
+    if (!user) {
+      throw new Error('User is not logged in.');
+    }
+
+    await articlesStore.fetchArticles(user.id);
   } catch (error) {
     $q.loading.hide();
     if (error instanceof Error) {

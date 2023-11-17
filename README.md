@@ -164,7 +164,6 @@
   
   $wgShowExceptionDetails = true;
   $wgExternalLinkTarget = '_blank';
-
   ```
   - Finally, run some maintenance scripts, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
     

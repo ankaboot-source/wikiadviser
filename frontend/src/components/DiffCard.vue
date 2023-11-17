@@ -95,10 +95,8 @@ function setTabindexForElements(selector: string, tabindexValue: string) {
     element.setAttribute('tabindex', tabindexValue);
 
     if (tabindexValue === '-1') {
-      // If link, Prevent visitng it
-      element.addEventListener('click', (event) => {
-        event.preventDefault();
-      });
+      // Open links in a new tab
+      element.setAttribute('target', '_blank');
     }
 
     if (tabindexValue === '0') {

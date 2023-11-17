@@ -1,4 +1,4 @@
-import { BrowserContext, chromium, Page } from 'playwright';
+import { BrowserContext, Cookie, chromium, Page } from 'playwright';
 import logger from '../logger';
 
 const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
@@ -28,23 +28,13 @@ class PlaywrightMediaWikiAutomation {
 
     PlaywrightMediaWikiAutomation.instance = this;
 
-    this.browserContext = this.setContext();
+    this.browserContext = PlaywrightMediaWikiAutomation.setContext();
   }
 
-  private async setContext(): Promise<BrowserContext> {
+  private static async setContext(): Promise<BrowserContext> {
     try {
       const browser = await chromium.launch();
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
-      const page = await context.newPage();
-      await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
-        { waitUntil: 'networkidle' }
-      );
-
-      await page.fill('#wpName1', this.MediawikiAdminUsername);
-      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-      await page.click('#wpLoginAttempt');
-      await page.close();
       return context;
     } catch (error) {
       logger.error('Error when setting browser context', error);
@@ -52,13 +42,29 @@ class PlaywrightMediaWikiAutomation {
     }
   }
 
-  private async getBrowserContext(): Promise<BrowserContext> {
-    await this.browserContext;
-    return this.browserContext;
-  }
-
   private async getPageInContext(): Promise<Page> {
-    const page = await (await this.getBrowserContext()).newPage();
+    const page = await (await this.browserContext).newPage();
+
+    // Check if the session cookie exists and has not expired
+    const sessionCookie = await (await this.browserContext).cookies();
+    const hasExpired = sessionCookie.some(
+      (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
+    );
+
+    if (!hasExpired) {
+      return page;
+    }
+
+    await page.goto(
+      `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
+      { waitUntil: 'networkidle' }
+    );
+
+    await page.fill('#wpName1', this.MediawikiAdminUsername);
+    await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+    await page.click('#wpRemember');
+    await page.click('#wpLoginAttempt');
+
     return page;
   }
 

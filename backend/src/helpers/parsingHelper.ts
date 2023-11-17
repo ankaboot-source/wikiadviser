@@ -202,3 +202,36 @@ export async function getChangesAndParsedContent(articleId: string) {
   }
   return null;
 }
+
+/**
+ * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
+ * @param {string} exportData - The exported data of the article.
+ * @returns {string} - The processed article data.
+ */
+export function processExportedArticle(
+  exportData: string,
+  sourceLanguage: string
+): string {
+  // Add missing </base> into the file. (Exported files from proxies only)
+  let processedData = exportData.replace(
+    '\n    <generator>',
+    '</base>\n    <generator>'
+  );
+
+  // Externalize article sources to wikipedia
+  const pageStartIndex = processedData.indexOf('<page>');
+  const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
+  const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
+
+  const updatedPageContent = pageContent.replace(
+    /\[\[([^\]]*)\]\]/g,
+    `[[wikipedia:${sourceLanguage}:$1|$1]]`
+  );
+
+  processedData =
+    processedData.substring(0, pageStartIndex) +
+    updatedPageContent +
+    processedData.substring(pageEndIndex);
+
+  return processedData;
+}

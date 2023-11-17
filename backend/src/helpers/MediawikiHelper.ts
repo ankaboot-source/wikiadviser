@@ -2,29 +2,20 @@ import axios from 'axios';
 import https from 'https';
 import logger from '../logger';
 import MediaWikiAutomator from './PlaywrightHelper';
-import { refineArticleChanges } from './parsingHelper';
+import { processExportedArticle, refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const {
-  MEDIAWIKI_ENDPOINT,
-  WIKIPEDIA_PROXY,
-  MW_BOT_USERNAME,
-  MW_BOT_PASSWORD
-} = process.env;
+const mediaWikiApi = axios.create();
 
-const api = axios.create({ baseURL: `${MEDIAWIKI_ENDPOINT}/w/api.php` });
-// Use to bypass https validation
-api.defaults.httpsAgent = new https.Agent({
+mediaWikiApi.defaults.baseURL = `${process.env.MEDIAWIKI_ENDPOINT}/w/api.php`;
+mediaWikiApi.defaults.httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });
 
-function setCookies(response: any) {
-  const setCookieHeaders = response.headers['set-cookie'];
-  api.defaults.headers.Cookie = setCookieHeaders;
-}
+const { MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } = process.env;
 
 async function loginAndGetCsrf() {
-  const loginTokenResponse = await api.get('', {
+  const tokenResponse = await mediaWikiApi.get('', {
     params: {
       action: 'query',
       meta: 'tokens',
@@ -32,10 +23,8 @@ async function loginAndGetCsrf() {
       format: 'json'
     }
   });
-  const { logintoken } = loginTokenResponse.data.query.tokens;
-  setCookies(loginTokenResponse);
-
-  const loginResponse = await api.post(
+  const { logintoken } = tokenResponse.data.query.tokens;
+  const loginResponse = await mediaWikiApi.post(
     '',
     {
       action: 'login',
@@ -46,25 +35,44 @@ async function loginAndGetCsrf() {
     },
     {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Cookie: tokenResponse.headers['set-cookie']
       }
     }
   );
-  setCookies(loginResponse);
 
-  const csrfResponse = await api.get('', {
+  const { login: loginstatus } = loginResponse.data;
+
+  if (loginstatus.result !== 'Success') {
+    throw new Error(
+      loginstatus.reason ??
+        `Failed to login to mediawiki as Bot:${MW_BOT_USERNAME}`
+    );
+  }
+
+  const cookie = loginResponse.headers['set-cookie']?.pop();
+
+  if (typeof cookie !== 'string') {
+    throw new Error('Type mismatch: set-cookie is not string');
+  }
+
+  // Assign session to the current axios instance
+  mediaWikiApi.defaults.headers.Cookie = cookie;
+
+  const { data } = await mediaWikiApi.get('', {
     params: {
       action: 'query',
       meta: 'tokens',
       format: 'json'
     }
   });
-  const { csrftoken } = csrfResponse.data.query.tokens;
+
+  const { csrftoken } = data.query.tokens;
   return csrftoken;
 }
 
 async function logout(csrftoken: string) {
-  const logoutResponse = await api.post(
+  const { data } = await mediaWikiApi.post(
     '',
     {
       action: 'logout',
@@ -77,13 +85,18 @@ async function logout(csrftoken: string) {
       }
     }
   );
-  logger.info({ Logout: logoutResponse.status });
+
+  const { error } = data;
+
+  if (error) {
+    throw new Error(error.info);
+  }
 }
 
 export async function deleteArticleMW(articleId: string) {
   const csrftoken = await loginAndGetCsrf();
 
-  const deleteResponse = await api.post(
+  const { data } = await mediaWikiApi.post(
     '',
     {
       action: 'delete',
@@ -97,8 +110,12 @@ export async function deleteArticleMW(articleId: string) {
       }
     }
   );
-  logger.info(deleteResponse.data);
 
+  if (data.error) {
+    logger.error(`Failed to delete article: ${data.error.info}`);
+    logout(csrftoken);
+    throw new Error(`Failed to delete article with id ${articleId}`);
+  }
   logout(csrftoken);
 }
 
@@ -124,11 +141,7 @@ async function exportArticleData(
     });
 
     exportResponse.data.on('end', () => {
-      // Add missing </base> into the file. (Exported files from proxies only)
-      exportData = exportData.replace(
-        '\n    <generator>',
-        '</base>\n    <generator>'
-      );
+      exportData = processExportedArticle(exportData, language);
       resolve(exportData);
     });
 
@@ -141,9 +154,11 @@ async function exportArticleData(
 async function renameArticle(title: string, articleId: string): Promise<void> {
   const csrftoken = await loginAndGetCsrf();
 
-  logger.info(`Renaming Article ${title} to its corresponding id`);
+  logger.info(
+    `Renaming Article ${title} to its corresponding id: ${articleId}`
+  );
 
-  await api.post(
+  const { data } = await mediaWikiApi.post(
     '',
     {
       action: 'move',
@@ -159,6 +174,12 @@ async function renameArticle(title: string, articleId: string): Promise<void> {
       }
     }
   );
+
+  if (data.error) {
+    logger.error(`Failed to rename article: ${data.error.info}`);
+    logout(csrftoken);
+    throw new Error(`Failed to rename article with id ${articleId}`);
+  }
   logout(csrftoken);
 }
 
@@ -191,7 +212,7 @@ export async function importNewArticle(
 }
 
 async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
-  const response = await api.get('', {
+  const response = await mediaWikiApi.get('', {
     params: {
       action: 'query',
       prop: 'revisions',
@@ -209,10 +230,10 @@ export async function updateChanges(articleId: string, userId: string) {
   const originalRevid = await getRevisionId(articleId, 'newer');
   const latestRevid = await getRevisionId(articleId, 'older');
 
-  logger.info(
-    { originalRevid, latestRevid },
-    'Getting the Diff HTML of Revids:'
-  );
+  logger.info('Getting the Diff HTML of Revids:', {
+    originalRevid,
+    latestRevid
+  });
   const diffPage = await MediaWikiAutomator.getMediaWikiDiffHtml(
     articleId,
     originalRevid,

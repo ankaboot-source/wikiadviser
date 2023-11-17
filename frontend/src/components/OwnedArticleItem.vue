@@ -17,8 +17,8 @@
             <q-badge
               text-color="light-blue-10"
               color="light-blue-1"
-              class="q-mt-s"
-              :label="UserRole[article.role]"
+              class="q-mt-s text-capitalize"
+              :label="article.role"
             />
             <div v-if="article.created_at" class="text-weight-light on-right">
               Imported on
@@ -157,7 +157,13 @@ async function removeArticle(articleId: string, articleTitle: string) {
       color: 'positive',
     });
     const { data } = await supabase.auth.getSession();
-    await articlesStore.fetchArticles(data.session!.user.id);
+    const user = data.session?.user;
+
+    if (!user) {
+      throw new Error('User is not logged in.');
+    }
+
+    await articlesStore.fetchArticles(user.id);
   } catch (error) {
     $q.loading.hide();
     if (error instanceof Error) {

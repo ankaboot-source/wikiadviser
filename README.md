@@ -8,17 +8,19 @@
    <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (expand for mor details).</summary>
     
     - Install Caddy
-    - Install Apache
-    - If you are willing to use local DataBase, install one of these supported DataBase systems: ###MariaDB, ###PostgreSQL, ###SQLite or ###MySQL, it's recommended to use managed Database for better security and performance.
+    - Install Apache2
+    - If you are willing to use local DataBase, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
     - Don't forget to start all the services above!
     - Configure your database: 
+    
     - Login ```sudo mysql -u root -p```: 
       
     ``` 
       CREATE DATABASE my_wiki;
       CREATE USER 'wikiuser'@'localhost' IDENTIFIED BY 'password';
       GRANT ALL PRIVILEGES ON my_wiki.* TO 'wikiuser'@'localhost' WITH GRANT OPTION;
-    ``` 
+    ```
+    
     - Configure Apache2 to listen on port 8080 for demo instance, 8081 for dev instance by adding the following lines to ```/etc/apache2/ports.conf``` : 
 
     ```
@@ -26,7 +28,7 @@
       Listen 127.0.0.1:8081
     ```
 
-    - Next create two folders wiki-dev and wiki-demo under ```/var/www``` and add new sites configuration file under ```/etc/apache2/sites-available/000-wikidev.conf```
+    - Next, create two folders wiki-dev and wiki-demo under ```/var/www``` and add new sites configuration file under ```/etc/apache2/sites-available/000-wikidev.conf```
 
     ```
     <VirtualHost *:8081>
@@ -48,11 +50,12 @@
     </VirtualHost>
     ```
     
-    - Restart Apache2 service!
+    - Restart Apache2 service !
     - Install MediaWiki from the [official download page](https://www.mediawiki.org/wiki/Download)
     - Extract the file in the following paths ```/var/www/wiki-dev``` and ```/var/www/wiki-demo``` 
     - rename the folders using ```mv``` command to ```w```
     - Setup Caddy by editing ```/etc/caddy/Caddyfile```:
+      
       
     ```
     https://wiki-dev.wikiadviser.io {
@@ -86,14 +89,14 @@
     }
     
    ```
-    - Add <code>robots.txt</code> to <code>/etc/caddy</code>.
+    - Add <code>robots.txt</code> to <code>/etc/caddy</code>, will be called in the above Caddyfile.
 
    ```
      User-agent: *
      Disallow: /
    ```
    
-    - Retsart Caddy service!
+    - Retsart Caddy service !
     </details>
 
 
@@ -162,7 +165,7 @@
   $wgExternalLinkTarget = '_blank';
 
   ```
-  - Finally, run some maintenance scripts [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
+  - Finally, run some maintenance scripts, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
     
     ```
     php maintenance/run.php ./maintenance/update.php

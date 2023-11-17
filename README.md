@@ -5,7 +5,7 @@
 ### Setup MediaWiki
 
 - <details>
-   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (We will be setting 2 environments: `Dev` and `Demo`).</summary>
+   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (We will be setting 2 environments: Dev and Demo).</summary>
     
     - Install Caddy
     - Install Apache2
@@ -14,7 +14,7 @@
     - Don't forget to start all the services above!
     - Configure your database: 
     
-    - Login ```sudo mysql -u root -p```: 
+    - Login ```sudo mysql -u root```: 
       
     ``` 
       CREATE DATABASE my_wiki;

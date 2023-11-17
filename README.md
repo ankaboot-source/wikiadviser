@@ -2,68 +2,167 @@
 
 ## Pre-requisites
 
-### Setup MediaWiki / Canasta
-
-- You need to have a running mediawiki instance. We recommend to use the canasta distribution for ease of configuration. You can follow [these steps](https://canasta.wiki/setup/#create-new-wiki) for a fast setup.
-
-- You also need to have `MyVisualEditor` in the extensions folder of mediawiki (Either through a volume mount or a copy).
+### Setup MediaWiki
 
 - <details>
-    <summary>Add these settings at the end of <code>LocalSettings.php</code></summary>
+   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (expand for mor details).</summary>
+    - Install Caddy
+    - Install Apache
+    - If you are willing to use local DataBase, install one of these supported DataBase systems: **MariaDB**, **PostgreSQL**, **SQLite** or **MySQL**, it's recommended to use managed DB for better security and performance.
+    - Don't forget to start all the services above!
+    - Configure your database: 
+    - Login ```sudo mariadb -u root -p```: 
+      
+    ``` 
+      CREATE DATABASE my_wiki;
+      CREATE USER 'wikiuser'@'localhost' IDENTIFIED BY 'password';
+      GRANT ALL PRIVILEGES ON my_wiki.* TO 'wikiuser'@'localhost' WITH GRANT OPTION;
+    ``` 
+    - Configure Apache2 to listen on port 8080 for demo instance, 8081 for dev instance by adding the following lines to ```/etc/apache2/ports.conf``` : 
 
-  ```php
-    $wgDefaultSkin = "vector-2022";
+    ```
+      Listen 127.0.0.1:8080
+      Listen 127.0.0.1:8081
+    ```
 
-    wfLoadExtension( 'MyVisualEditor' );
+    - Next create two folders wiki-dev and wiki-demo under ```/var/www``` and add new sites configuration file under ```/etc/apache2/sites-available/000-wikidev.conf```
 
-    $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
+    ```
+    <VirtualHost *:8081>
+	         ServerAdmin webmaster@localhost
+	         DocumentRoot /var/www/wiki-dev
+             ErrorLog ${APACHE_LOG_DIR}/error.log
+	         CustomLog ${APACHE_LOG_DIR}/access.log combined
+    </VirtualHost>
+    ```
 
-    wfLoadExtension( 'UniversalLanguageSelector' );
+    - ```/etc/apache2/sites-available/000-wikidemo.conf```
 
-    /* Templates & Modules */
-    // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
-    // https://www.mediawiki.org/wiki/Help:Templates
+    ```
+    <VirtualHost *:8080>
+	         ServerAdmin webmaster@localhost
+	         DocumentRoot /var/www/wiki-demo
+             ErrorLog ${APACHE_LOG_DIR}/error.log
+	         CustomLog ${APACHE_LOG_DIR}/access.log combined
+    </VirtualHost>
+    ```
+    - Restart Apache2 service!
+    - Install MediaWiki from the [official download page](https://www.mediawiki.org/wiki/Download)
+    - Extract the file in the following paths ```/var/www/wiki-dev``` and ```/var/www/wiki-demo``` 
+    - rename the folders using ```mv``` command to ```w```
+    - Setup Caddy by editing ```/etc/caddy/Caddyfile```:
+    ```
+    https://wiki-dev.wikiadviser.io {
+            log {
+              output file /var/log/caddy/access-dev.log {
+                  roll_size 10MiB
+                  roll_keep 10
+                  roll_keep_for 24h
+              }
+            }
+            rewrite /robots.txt ./robots.txt # Disable search engine indexing
+            reverse_proxy localhost:8081
+     }
+     #### for Demo/Prod
+     https://wiki-demo.wikiadviser.io {
+            log {
+              output file /var/log/caddy/access-demo.log {
+                  roll_size 10MiB
+                  roll_keep 10
+                  roll_keep_for 24h
+              }
+            }
+            forward_auth https://api.wikiadviser.io {
+                header_up Host {upstream_hostport}
+                header_up X-Real-IP {remote_host}
+                uri /authenticate
+                copy_headers X-User X-Client-IP X-Forwarded-Uri
+            }
+            rewrite /robots.txt ./robots.txt # Disable search engine indexing
+            reverse_proxy localhost:8080
+    }
+   ```
+    - Add <code>robots.txt</code> to <code>/etc/caddy</code>.
 
-    wfLoadExtension( 'ParserFunctions' );
-    $wgPFEnableStringFunctions = true;
+   ```
+     User-agent: *
+     Disallow: /
+   ```
+    - Retsart Caddy service!
+    </details>
 
-    wfLoadExtension( 'Scribunto' );
-    $wgScribuntoDefaultEngine = 'luastandalone';
-    $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
-    $wgScribuntoEngineConf['luastandalone']['memoryLimit'] = 838860800; // 800M
-    $wgMemoryLimit = '800M';
-    $wgMaxShellFileSize = 838860800; // 800M
-    $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
 
-    wfLoadExtension( 'TemplateStyles' );
-    wfLoadExtension( 'InputBox' );
-    wfLoadExtension( 'TemplateData' );
-    wfLoadExtension( 'SyntaxHighlight_GeSHi' );
+- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc.. in the extensions folder of mediawiki ```/var/www/wiki-dev/w/extensions```,```/var/www/wiki-demo/w/extensions```, each extension has its official install documentation provided by mediawiki, please follow it to install you required extension.
 
-    $wgUseInstantCommons = true;
+- <details>
+    <summary>Add these settings at the end of <code>LocalSettings.php</code> in the root folder of your mediawiki instance (this file is generated when you access to mediawiki instance for the first time)</summary>
 
-    wfLoadExtension( 'Cite' );
-    wfLoadExtension( 'PageForms' );
-
-    /* Mediawiki Performance tuning */
-    // https://www.mediawiki.org/wiki/Manual:Performance_tuning
-    // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
-
-    // Cache & Lifetime (2 years)
-    $wgMainCacheType = CACHE_ACCEL;
-    $wgMessageCacheType = CACHE_ACCEL;
-    $wgParserCacheType = CACHE_DB;
-
-    $wgParserCacheExpireTime = 63072000;
-    $wgRevisionCacheExpiry = 63072000;
-    $wgResourceLoaderMaxage = [
-      'versioned' => 63072000,
-      'unversioned' => 63072000
-    ];
-    
-    # Open external links in a new tab
-    $wgExternalLinkTarget = '_blank';
   ```
+  $wgDefaultSkin = "vector-2022";
+  wfLoadExtension( 'MyVisualEditor' );
+  $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
+  wfLoadExtension( 'UniversalLanguageSelector' );
+
+  /* Templates & Modules */
+  // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
+  // https://www.mediawiki.org/wiki/Help:Templates
+
+  wfLoadExtension( 'ParserFunctions' );
+  $wgPFEnableStringFunctions = true;
+
+  wfLoadExtension( 'Scribunto' );
+  $wgScribuntoDefaultEngine = 'luastandalone';
+  $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
+  $wgScribuntoEngineConf['luastandalone']['memoryLimit'] = 838860800; // 800M
+  $wgMemoryLimit = '800M';
+  $wgMaxShellFileSize = 838860800; // 800M
+  $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
+
+  wfLoadExtension( 'TemplateStyles' );
+  wfLoadExtension( 'InputBox' );
+  wfLoadExtension( 'TemplateData' );
+  wfLoadExtension( 'SyntaxHighlight_GeSHi' );
+
+  $wgUseInstantCommons = true;
+
+  wfLoadExtension( 'Cite' );
+  wfLoadExtension( 'PageForms' );
+
+  /* Mediawiki Performance tuning */
+  // https://www.mediawiki.org/wiki/Manual:Performance_tuning
+  // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
+
+  // Cache & Lifetime (2 years)
+  $wgMainCacheType = CACHE_ACCEL;
+  $wgMessageCacheType = CACHE_ACCEL;
+  $wgParserCacheType = CACHE_DB;
+
+  $wgParserCacheExpireTime = 63072000;
+  $wgRevisionCacheExpiry = 63072000;
+  $wgResourceLoaderMaxage = [
+  'versioned' => 63072000,
+  'unversioned' => 63072000
+  ];
+
+  wfLoadExtension( 'WikibaseRepository', "$IP/extensions/Wikibase/extension-repo.json" );
+  require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
+  require_once "$IP/extensions/Wikibase/repo/config/Wikibase.example.php";
+
+  wfLoadExtension( 'WikibaseClient', "$IP/extensions/Wikibase/extension-client.json" );
+  require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
+  require_once "$IP/extensions/Wikibase/client/config/WikibaseClient.example.php";
+  $wgWBRepoSettings['allowEntityImport'] = true;
+  
+  $wgShowExceptionDetails = true;
+  $wgExternalLinkTarget = '_blank';
+  ```
+  - Finally, run some maintenance scripts [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
+    ```
+    php maintenance/run.php ./maintenance/update.php
+    php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
+    php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
+    php maintenance/run.php ./maintenance/populateInterwiki.php
+    ```
 
   </details>
 
@@ -81,42 +180,9 @@
   - https://en.wikipedia.org/wiki/MediaWiki:Common.css
   - https://en.wikipedia.org/wiki/MediaWiki:Common.js
 
-  Into your MediaWiki instance http://localhost/wiki/MediaWiki: Common.css and Common.js
+  Into your MediaWiki instance http://localhost/w/index.php/MediaWiki: Common.css and Common.js
 
-- Create a Bot user on `http://localhost/wiki/Special:BotPasswords`
-
-- <details>
-    <summary>Add <code>robots.txt</code> to <code>./config</code> and configure Caddy to use it (Prod only)</summary>
-
-  ```txt
-  User-agent: *
-  Disallow: /
-  ```
-
-  ```caddy
-  # Caddyfile
-  {$MW_SITE_FQDN} {
-      log {
-            output file /var/log/caddy/access.log {
-                roll_size 10MiB
-                roll_keep 10
-                roll_keep_for 24h
-            }
-      }
-
-      forward_auth https://api.wikiadviser.io {
-          header_up Host {upstream_hostport}
-          header_up X-Real-IP {remote_host}
-          uri /authenticate
-          copy_headers X-User X-Client-IP X-Forwarded-Uri
-      }
-
-      rewrite /robots.txt ./robots.txt # Disable search engine indexing
-      reverse_proxy varnish:80
-  }
-  ```
-
-  </details>
+- Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 
 ### Supabase
 
@@ -164,5 +230,4 @@ docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build -
 
 ## Important links and references
 
-- [Canasta official documentation](https://canasta.wiki/)
 - [Mediawiki API documentation](https://www.mediawiki.org/wiki/API:Main_page)

@@ -4,12 +4,13 @@ import { Change } from '../types';
 export async function insertArticle(
   title: string,
   userId: string,
+  language: string,
   description?: string
 ): Promise<string> {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')
-    .insert({ title, description })
+    .insert({ title, description, language })
     .select();
   if (articlesError) {
     throw new Error(articlesError.message);

@@ -4,6 +4,9 @@
 	"private": true,
 	"description": "Build tools for the VisualEditor-MediaWiki extension.",
 	"scripts": {
+		"eslint": "eslint --cache --ext .js,.json .",
+		"eslint-fix": "eslint --cache --ext .js,.json --fix .",
+		"api-testing": "mocha --timeout 0 --parallel --recursive tests/api-testing",
 		"test": "grunt test",
 		"doc": "jsduck",
 		"postdoc": "grunt copy:jsduck",
@@ -17,8 +20,8 @@
 		"@wdio/local-runner": "7.16.13",
 		"@wdio/mocha-framework": "7.16.13",
 		"@wdio/spec-reporter": "7.16.13",
-		"eslint-config-wikimedia": "0.22.1",
-		"grunt": "1.5.3",
+		"eslint-config-wikimedia": "0.24.0",
+		"grunt": "1.6.1",
 		"grunt-banana-checker": "0.10.0",
 		"grunt-contrib-copy": "1.0.0",
 		"grunt-contrib-watch": "1.1.0",
@@ -29,13 +32,10 @@
 		"grunt-tyops": "0.1.0",
 		"jimp": "0.13.0",
 		"mocha": "5.2.0",
+		"api-testing": "1.5.0",
 		"selenium-webdriver": "3.6.0",
 		"stringify-object": "3.2.2",
-		"stylelint-config-wikimedia": "0.13.0",
-		"wdio-mediawiki": "2.1.0",
-		"webdriverio": "7.16.13"
-	},
-	"dependencies": {
-		"axios": "^1.4.0"
+		"stylelint-config-wikimedia": "0.14.0",
+		"wdio-mediawiki": "2.1.0"
 	}
 }

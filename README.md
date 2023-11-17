@@ -6,12 +6,13 @@
 
 - <details>
    <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (expand for mor details).</summary>
+    
     - Install Caddy
     - Install Apache
-    - If you are willing to use local DataBase, install one of these supported DataBase systems: **MariaDB**, **PostgreSQL**, **SQLite** or **MySQL**, it's recommended to use managed DB for better security and performance.
+    - If you are willing to use local DataBase, install one of these supported DataBase systems: ###MariaDB, ###PostgreSQL, ###SQLite or ###MySQL, it's recommended to use managed Database for better security and performance.
     - Don't forget to start all the services above!
     - Configure your database: 
-    - Login ```sudo mariadb -u root -p```: 
+    - Login ```sudo mysql -u root -p```: 
       
     ``` 
       CREATE DATABASE my_wiki;
@@ -31,7 +32,7 @@
     <VirtualHost *:8081>
 	         ServerAdmin webmaster@localhost
 	         DocumentRoot /var/www/wiki-dev
-             ErrorLog ${APACHE_LOG_DIR}/error.log
+                 ErrorLog ${APACHE_LOG_DIR}/error.log
 	         CustomLog ${APACHE_LOG_DIR}/access.log combined
     </VirtualHost>
     ```
@@ -42,15 +43,17 @@
     <VirtualHost *:8080>
 	         ServerAdmin webmaster@localhost
 	         DocumentRoot /var/www/wiki-demo
-             ErrorLog ${APACHE_LOG_DIR}/error.log
+                 ErrorLog ${APACHE_LOG_DIR}/error.log
 	         CustomLog ${APACHE_LOG_DIR}/access.log combined
     </VirtualHost>
     ```
+    
     - Restart Apache2 service!
     - Install MediaWiki from the [official download page](https://www.mediawiki.org/wiki/Download)
     - Extract the file in the following paths ```/var/www/wiki-dev``` and ```/var/www/wiki-demo``` 
     - rename the folders using ```mv``` command to ```w```
     - Setup Caddy by editing ```/etc/caddy/Caddyfile```:
+      
     ```
     https://wiki-dev.wikiadviser.io {
             log {
@@ -81,6 +84,7 @@
             rewrite /robots.txt ./robots.txt # Disable search engine indexing
             reverse_proxy localhost:8080
     }
+    
    ```
     - Add <code>robots.txt</code> to <code>/etc/caddy</code>.
 
@@ -88,11 +92,12 @@
      User-agent: *
      Disallow: /
    ```
+   
     - Retsart Caddy service!
     </details>
 
 
-- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc.. in the extensions folder of mediawiki ```/var/www/wiki-dev/w/extensions```,```/var/www/wiki-demo/w/extensions```, each extension has its official install documentation provided by mediawiki, please follow it to install you required extension.
+- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc.. in the extensions folder of mediawiki ```/var/www/wiki-dev/w/extensions```,```/var/www/wiki-demo/w/extensions```, each extension has its official install documentation provided by mediawiki, please follow it to install your required extension.
 
 - <details>
     <summary>Add these settings at the end of <code>LocalSettings.php</code> in the root folder of your mediawiki instance (this file is generated when you access to mediawiki instance for the first time)</summary>
@@ -158,6 +163,7 @@
 
   ```
   - Finally, run some maintenance scripts [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
+    
     ```
     php maintenance/run.php ./maintenance/update.php
     php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php

@@ -33,7 +33,7 @@ class PlaywrightMediaWikiAutomation {
 
   private static async setContext(): Promise<BrowserContext> {
     try {
-      const browser = await chromium.launch();
+      const browser = await chromium.launch({ headless: false });
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       return context;
     } catch (error) {
@@ -47,9 +47,11 @@ class PlaywrightMediaWikiAutomation {
 
     // Check if the session cookie exists and has not expired
     const sessionCookie = await (await this.browserContext).cookies();
-    const hasExpired = sessionCookie.some(
-      (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
-    );
+    const hasExpired =
+      sessionCookie.length === 0 ||
+      sessionCookie.some(
+        (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
+      );
 
     if (!hasExpired) {
       return page;

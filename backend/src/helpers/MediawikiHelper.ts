@@ -13,6 +13,30 @@ mediaWikiApi.defaults.httpsAgent = new https.Agent({
 });
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } = process.env;
+function extractCookies(setCookieHeaders: any) {
+  const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
+    const cookieKeyValue = header.split(';')[0];
+    const [key, value] = cookieKeyValue.split('=');
+    acc[key.trim()] = value.trim();
+    return acc;
+  }, {});
+
+  return cookies;
+}
+function setCookies(response: any) {
+  const setCookieHeaders = response.headers['set-cookie'];
+  const cookies = extractCookies(setCookieHeaders);
+  const cookieHeader = Object.entries(cookies)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('; ');
+
+  if (typeof cookieHeader !== 'string') {
+    throw new Error('Type mismatch: set-cookie is not string');
+  }
+
+  // Assign session to the current axios instance
+  mediaWikiApi.defaults.headers.Cookie = cookieHeader;
+}
 
 async function loginAndGetCsrf() {
   const tokenResponse = await mediaWikiApi.get('', {
@@ -24,6 +48,8 @@ async function loginAndGetCsrf() {
     }
   });
   const { logintoken } = tokenResponse.data.query.tokens;
+  setCookies(tokenResponse);
+
   const loginResponse = await mediaWikiApi.post(
     '',
     {
@@ -35,8 +61,7 @@ async function loginAndGetCsrf() {
     },
     {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: tokenResponse.headers['set-cookie']
+        'Content-Type': 'application/x-www-form-urlencoded'
       }
     }
   );
@@ -49,15 +74,7 @@ async function loginAndGetCsrf() {
         `Failed to login to mediawiki as Bot:${MW_BOT_USERNAME}`
     );
   }
-
-  const cookie = loginResponse.headers['set-cookie']?.join('; ');
-
-  if (typeof cookie !== 'string') {
-    throw new Error('Type mismatch: set-cookie is not string');
-  }
-
-  // Assign session to the current axios instance
-  mediaWikiApi.defaults.headers.Cookie = cookie;
+  setCookies(loginResponse);
 
   const { data } = await mediaWikiApi.get('', {
     params: {

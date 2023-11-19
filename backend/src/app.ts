@@ -162,10 +162,11 @@ app.get('/wikipedia/articles', async (req, res) => {
 app.delete('/article', async (req, res) => {
   try {
     const { articleId } = req.body;
-
+    logger.info('Deleting', { articleId });
     await deleteArticleMW(articleId);
     await deleteArticle(articleId);
 
+    logger.info('Deleted article');
     res.status(200).json({ message: 'Deleting article succeeded.' });
   } catch (error) {
     if (error instanceof Error) {
@@ -173,6 +174,7 @@ app.delete('/article', async (req, res) => {
     } else {
       logger.error(error);
     }
+    logger.info('Deleting article');
     res.status(500).json({ message: 'Deleting article failed.' });
   }
 });

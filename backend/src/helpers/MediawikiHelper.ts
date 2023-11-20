@@ -126,8 +126,6 @@ export async function deleteArticleMW(articleId: string) {
     }
   );
 
-  console.log(data);
-
   if (data.error) {
     logger.error(`Failed to delete article: ${data.error.info}`);
     logout(csrftoken);

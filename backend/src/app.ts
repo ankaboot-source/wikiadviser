@@ -23,7 +23,7 @@ import authorizationMiddlware from './middleware/auth';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
 
-const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
+const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 
 const app = express();
 
@@ -192,15 +192,6 @@ app.get('/authenticate', async (req, res) => {
     const articleIdRegEx = /^\/w\/index.php\/([0-9a-f-]{36})([?/]|$)/i;
     const allowedPrefixRegEx =
       /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
-
-    // Authorize requests coming from backend to mediaWiki
-    if (req.headers['x-real-ip'] === WIKIADVISER_API_IP) {
-      logger.info({
-        message: 'Authorized: Request coming from backend',
-        headers: req.headers
-      });
-      return res.sendStatus(200);
-    }
 
     if (!user || !(typeof forwardedUri === 'string')) {
       return res.status(403).json({ message: 'Unauthorized' });

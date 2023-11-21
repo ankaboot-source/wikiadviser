@@ -15,18 +15,6 @@ async function authorizationMiddleware(
   next: NextFunction
 ) {
   try {
-    const { WIKIADVISER_API_IP } = process.env;
-    const clientRemoteAddress = req.header('x-real-ip');
-
-    // Authorize requests coming from backend
-    if (
-      clientRemoteAddress &&
-      WIKIADVISER_API_IP &&
-      clientRemoteAddress === WIKIADVISER_API_IP
-    ) {
-      return next();
-    }
-
     const authHandler = new SupabaseCookieAuthorization(logger);
     const user = await authHandler.verifyCookie(req);
 

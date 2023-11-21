@@ -24,7 +24,7 @@ function extractCookies(setCookieHeaders: any) {
 
   return cookies;
 }
-function setCookies(response: any) {
+function setCookies(response: AxiosResponse) {
   const setCookieHeaders = response.headers['set-cookie'];
   const cookies = extractCookies(setCookieHeaders);
   const cookieHeader = Object.entries(cookies)

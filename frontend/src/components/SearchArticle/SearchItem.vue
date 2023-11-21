@@ -51,15 +51,15 @@ async function itemOnClick() {
     }
 
     // check access
-    const articleExists = articlesStore.articles?.find(
+    const article = articlesStore.articles?.find(
       (article: Article) => article.title === props.item.title
     );
 
-    if (articleExists) {
+    if (article) {
       // GOTO ARTICLE PAGE
       return router.push({
         name: 'article',
-        params: { articleId: articleId.value },
+        params: { articleId: article.article_id },
       });
     }
 

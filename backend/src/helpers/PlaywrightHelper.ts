@@ -33,7 +33,7 @@ class PlaywrightMediaWikiAutomation {
 
   private static async setContext(): Promise<BrowserContext> {
     try {
-      const browser = await chromium.launch();
+      const browser = await chromium.launch({headless: false});
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       return context;
     } catch (error) {
@@ -55,7 +55,7 @@ class PlaywrightMediaWikiAutomation {
 
     if (hasExpired) {
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
+        `${this.MediawikiHost}/w/index.php?title=Spécial:Connexion`,
         { waitUntil: 'networkidle' }
       );
 
@@ -81,7 +81,7 @@ class PlaywrightMediaWikiAutomation {
     const page = await this.getPageInContext();
 
     await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=Special:Import&uselang=${language}`,
+      `${this.MediawikiHost}/w/index.php?title=Spécial:Importer&uselang=${language}`,
       {
         waitUntil: 'networkidle'
       }
@@ -117,7 +117,7 @@ class PlaywrightMediaWikiAutomation {
   ): Promise<string> {
     const page = await this.getPageInContext();
     await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      `${this.MediawikiHost}/w/index.php/Accueil?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
     );
 

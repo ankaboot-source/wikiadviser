@@ -14,21 +14,29 @@ mediaWikiApi.defaults.httpsAgent = new https.Agent({
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } = process.env;
 
-/**
- * Extracts and returns cookies from the 'Set-Cookie' headers in the HTTP response headers.
- *
- * @param headers - The HTTP response headers.
- * @returns A string containing the cookies, or undefined if no cookies are present.
- */
-function getCookies(response: AxiosResponse) {
-  const setCookieHeaders = response.headers['set-cookie'];
-  const cookies = setCookieHeaders?.join('; ');
-
-  if (!cookies) {
-    throw new Error('Failed to get cookies');
-  }
+function extractCookies(setCookieHeaders: any) {
+  const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
+    const cookieKeyValue = header.split(';')[0];
+    const [key, value] = cookieKeyValue.split('=');
+    acc[key.trim()] = value.trim();
+    return acc;
+  }, {});
 
   return cookies;
+}
+function setCookies(response: any) {
+  const setCookieHeaders = response.headers['set-cookie'];
+  const cookies = extractCookies(setCookieHeaders);
+  const cookieHeader = Object.entries(cookies)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('; ');
+
+  if (typeof cookieHeader !== 'string') {
+    throw new Error('Type mismatch: set-cookie is not string');
+  }
+
+  // Assign session to the current axios instance
+  mediaWikiApi.defaults.headers.Cookie = cookieHeader;
 }
 
 async function loginAndGetCsrf() {
@@ -40,6 +48,9 @@ async function loginAndGetCsrf() {
       format: 'json'
     }
   });
+
+  setCookies(tokenResponse);
+
   const { logintoken } = tokenResponse.data.query.tokens;
   const loginResponse = await mediaWikiApi.post(
     '',
@@ -52,8 +63,7 @@ async function loginAndGetCsrf() {
     },
     {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Cookie: getCookies(tokenResponse)
+        'Content-Type': 'application/x-www-form-urlencoded'
       }
     }
   );
@@ -65,6 +75,8 @@ async function loginAndGetCsrf() {
       `Failed to login to mediawiki as Bot: ${loginstatus.reason}`
     );
   }
+
+  setCookies(loginResponse);
 
   const { data } = await mediaWikiApi.get('', {
     params: {
@@ -79,9 +91,6 @@ async function loginAndGetCsrf() {
   if (csrftoken === '+\\') {
     throw new Error('Failed to get csrftoken');
   }
-
-  // Assign session to the current axios instance
-  mediaWikiApi.defaults.headers.Cookie = getCookies(loginResponse);
 
   return csrftoken;
 }

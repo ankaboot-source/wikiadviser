@@ -135,17 +135,9 @@ export async function deleteArticleMW(articleId: string) {
     }
   );
   if (data.error) {
-    logout(csrftoken);
-    if (data.error.code !== 'missingtitle') {
-      // Throw error only when its other than "The page you specified doesn't exist." else log error.
-      throw new Error(
-        `Failed to delete article with id ${articleId}: ${data.error.info}`
-      );
-    } else {
-      logger.error(
-        `Failed to delete article with id ${articleId}: ${data.error.info}`
-      );
-    }
+    logger.error(
+      `Failed to delete article with id ${articleId}: ${data.error.info}`
+    );
   }
   logout(csrftoken);
 }

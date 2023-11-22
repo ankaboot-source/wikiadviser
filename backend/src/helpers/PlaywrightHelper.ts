@@ -33,7 +33,7 @@ class PlaywrightMediaWikiAutomation {
 
   private static async setContext(): Promise<BrowserContext> {
     try {
-      const browser = await chromium.launch({headless: false});
+      const browser = await chromium.launch();
       const context = await browser.newContext({ ignoreHTTPSErrors: true });
       return context;
     } catch (error) {

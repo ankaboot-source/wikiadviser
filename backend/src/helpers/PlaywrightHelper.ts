@@ -1,7 +1,7 @@
 import { BrowserContext, Cookie, chromium, Page } from 'playwright';
 import logger from '../logger';
 
-const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
+const { MEDIAWIKI_INTERNAL_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
 
 class PlaywrightMediaWikiAutomation {
@@ -133,7 +133,7 @@ class PlaywrightMediaWikiAutomation {
 
 const MediaWikiAutomator = new PlaywrightMediaWikiAutomation(
   // TODO: Remove string type when Zod is implemented
-  MEDIAWIKI_ENDPOINT as string,
+  MEDIAWIKI_INTERNAL_ENDPOINT as string,
   MW_ADMIN_USERNAME as string,
   MW_ADMIN_PASSWORD as string
 );

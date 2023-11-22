@@ -7,7 +7,7 @@ import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
 const mediaWikiApi = axios.create();
 
-mediaWikiApi.defaults.baseURL = `${process.env.MEDIAWIKI_ENDPOINT}/w/api.php`;
+mediaWikiApi.defaults.baseURL = `${process.env.MEDIAWIKI_INTERNAL_ENDPOINT}/w/api.php`;
 mediaWikiApi.defaults.httpsAgent = new https.Agent({
   rejectUnauthorized: false
 });

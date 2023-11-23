@@ -6,9 +6,8 @@ import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
+const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikipediaApi = new WikipediaApiInteractor();
-
-const wikiadviserLanguages = ['en', 'fr'];
 const mediaWikiApi: Record<string, AxiosInstance> = {};
 for (const language of wikiadviserLanguages) {
   mediaWikiApi[language] = axios.create({

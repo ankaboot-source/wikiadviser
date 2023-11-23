@@ -49,8 +49,10 @@ class PlaywrightMediaWikiAutomation {
     const sessionCookie = await (await this.browserContext).cookies();
     const hasExpired =
       sessionCookie.length === 0 ||
-      sessionCookie.some(
-        (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
+      sessionCookie.some((c: Cookie) =>
+        c.expires === -1 // Session that never expires
+          ? false
+          : c.expires && new Date(c.expires * 1000) < new Date()
       );
 
     if (hasExpired) {

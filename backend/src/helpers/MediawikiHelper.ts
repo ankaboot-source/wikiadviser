@@ -6,7 +6,7 @@ import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const wikiApi = new WikipediaApiInteractor();
+const wikipediaApi = new WikipediaApiInteractor();
 
 const wikiadviserLanguages = ['en', 'fr'];
 const mediaWikiApi: Record<string, AxiosInstance> = {};
@@ -201,7 +201,7 @@ export async function importNewArticle(
   try {
     // Export
     logger.info(`Exporting file ${title}`);
-    const exportData = await wikiApi.exportArticleData(title, language);
+    const exportData = await wikipediaApi.exportArticleData(title, language);
     logger.info(`Successfully exported file ${title}`);
 
     // Import

@@ -29,7 +29,7 @@ const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
 const app = express();
 
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
-const wikiApi = new WikipediaApiInteractor();
+const wikipediaApi = new WikipediaApiInteractor();
 
 if (SENTRY_DSN) {
   initializeSentry(app, SENTRY_DSN);
@@ -145,7 +145,7 @@ app.get('/wikipedia/articles', async (req, res) => {
   try {
     const term = req.query.term as string;
     const language = req.query.language as string;
-    const response = await wikiApi.getWikipediaArticles(term, language);
+    const response = await wikipediaApi.getWikipediaArticles(term, language);
     logger.info('Getting Wikipedia articles succeeded.');
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',

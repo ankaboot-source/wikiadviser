@@ -79,12 +79,18 @@ const wikipediaLanguages = [
   { label: 'Русский', value: 'ru', description: 'Russkiy', lang: 'ru' },
   { label: 'Հայերեն', value: 'hy', description: 'Hayeren', lang: 'hy' },
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
-] as const;
+];
 
-const wikiadviserLanguages = [
-  { label: 'English', value: 'en', description: 'English', lang: 'en' },
-  { label: 'Français', value: 'fr', description: 'français', lang: 'fr' },
-] as const;
+const wikiadviserLanguagesList = ['en', 'fr'];
+
+const wikiadviserLanguages = wikipediaLanguages
+  .filter((lang) => wikiadviserLanguagesList.includes(lang.value))
+  .map(({ label, value, description, lang }) => ({
+    label,
+    value,
+    description,
+    lang,
+  }));
 
 export type wikiadviserLanguage =
   (typeof wikiadviserLanguages)[number]['value'];

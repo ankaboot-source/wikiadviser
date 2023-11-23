@@ -27,7 +27,7 @@
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { createNewArticle } from 'src/api/supabaseHelper';
-import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
+import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -37,7 +37,7 @@ const $q = useQuasar();
 const router = useRouter();
 const props = defineProps<{
   item: SearchResult;
-  articleLanguage: wikipediaLanguage;
+  articleLanguage: wikiadviserLanguage;
 }>();
 const articlesStore = useArticlesStore();
 const articleId = ref('');

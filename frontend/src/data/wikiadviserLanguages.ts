@@ -81,6 +81,12 @@ const wikipediaLanguages = [
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
 ] as const;
 
-export type wikipediaLanguage = (typeof wikipediaLanguages)[number]['value'];
+const wikiadviserLanguages = [
+  { label: 'English', value: 'en', description: 'English', lang: 'en' },
+  { label: 'Français', value: 'fr', description: 'français', lang: 'fr' },
+] as const;
 
-export default wikipediaLanguages;
+export type wikiadviserLanguage =
+  (typeof wikiadviserLanguages)[number]['value'];
+
+export default wikiadviserLanguages;

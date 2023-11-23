@@ -82,7 +82,7 @@ app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const changes = await getChangesAndParsedContent(articleId);
-    logger.info({ articleId }, 'Parsed Changes recieved');
+    logger.debug(`Getting Parsed Changes for article: ${articleId}`);
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });

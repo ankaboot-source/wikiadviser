@@ -42,6 +42,32 @@ class PlaywrightMediaWikiAutomation {
     }
   }
 
+  private static async setRedirectHandler(page: Page) {
+    return page.route('**', async (route) => {
+      const response = await route.fetch({ maxRedirects: 0 });
+      if (response && response.status() !== 301) {
+        return route.continue();
+      }
+      const originalHeaders = response.headers();
+      const redirectUrl = originalHeaders.location;
+      const modifiedUrl = `${MEDIAWIKI_INTERNAL_ENDPOINT}${
+        new URL(redirectUrl).pathname
+      }`;
+
+      originalHeaders.location = modifiedUrl;
+
+      logger.info(`Intercepted redirect URL: ${redirectUrl}`);
+      logger.info(`Redirecting to ${modifiedUrl}`);
+
+      return route.fulfill({
+        status: 301,
+        headers: {
+          ...originalHeaders
+        }
+      });
+    });
+  }
+
   private async getPageInContext(): Promise<Page> {
     const page = await (await this.browserContext).newPage();
 
@@ -55,9 +81,11 @@ class PlaywrightMediaWikiAutomation {
           : c.expires && new Date(c.expires * 1000) < new Date()
       );
 
+    await PlaywrightMediaWikiAutomation.setRedirectHandler(page);
+
     if (hasExpired) {
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Spécial:Connexion`,
+        `${this.MediawikiHost}/w/index.php?title=special:UserLogin`,
         { waitUntil: 'networkidle' }
       );
 
@@ -77,17 +105,13 @@ class PlaywrightMediaWikiAutomation {
    */
   async importMediaWikiPage(
     articleId: string,
-    exportData: string,
-    language: string
+    exportData: string
   ): Promise<void> {
     const page = await this.getPageInContext();
 
-    await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=Spécial:Importer&uselang=${language}`,
-      {
-        waitUntil: 'networkidle'
-      }
-    );
+    await page.goto(`${this.MediawikiHost}/w/index.php?title=special:Import`, {
+      waitUntil: 'networkidle'
+    });
 
     await page.locator('#ooui-php-2').setInputFiles([
       {
@@ -119,7 +143,7 @@ class PlaywrightMediaWikiAutomation {
   ): Promise<string> {
     const page = await this.getPageInContext();
     await page.goto(
-      `${this.MediawikiHost}/w/index.php/Accueil?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
     );
 

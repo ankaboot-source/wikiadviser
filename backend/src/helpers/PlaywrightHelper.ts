@@ -43,7 +43,7 @@ class PlaywrightMediaWikiAutomation {
   }
 
   private static async setRedirectHandler(page: Page) {
-    return page.route('**', async (route) => {
+    await page.route('**', async (route) => {
       const response = await route.fetch({ maxRedirects: 0 });
       if (response && response.status() !== 301) {
         return route.continue();

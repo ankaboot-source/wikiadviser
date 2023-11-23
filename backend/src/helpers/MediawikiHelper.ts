@@ -1,18 +1,25 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import https from 'https';
 import logger from '../logger';
 import MediaWikiAutomator from './PlaywrightHelper';
-import { processExportedArticle, refineArticleChanges } from './parsingHelper';
+import WikipediaApiInteractor from './WikipediaApiInteractor';
+import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const mediaWikiApi = axios.create();
+const wikiApi = new WikipediaApiInteractor();
 
-mediaWikiApi.defaults.baseURL = `${process.env.MEDIAWIKI_ENDPOINT}/w/api.php`;
-mediaWikiApi.defaults.httpsAgent = new https.Agent({
-  rejectUnauthorized: false
-});
+const wikiadviserLanguages = ['en', 'fr'];
+const mediaWikiApi: Record<string, AxiosInstance> = {};
+for (const language of wikiadviserLanguages) {
+  mediaWikiApi[language] = axios.create({
+    baseURL: `${process.env.MEDIAWIKI_ENDPOINT}/${language}/api.php`,
+    httpsAgent: new https.Agent({
+      rejectUnauthorized: false
+    })
+  });
+}
 
-const { MW_BOT_USERNAME, MW_BOT_PASSWORD, WIKIPEDIA_PROXY } = process.env;
+const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
 function extractCookies(setCookieHeaders: any) {
   const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
@@ -25,7 +32,7 @@ function extractCookies(setCookieHeaders: any) {
   return cookies;
 }
 
-function setCookies(response: any) {
+function setCookies(response: any, language: string) {
   const setCookieHeaders = response.headers['set-cookie'];
   const cookies = extractCookies(setCookieHeaders);
   const cookieHeader = Object.entries(cookies)
@@ -37,10 +44,10 @@ function setCookies(response: any) {
   }
 
   // Assign session to the current axios instance
-  mediaWikiApi.defaults.headers.Cookie = cookieHeader;
+  mediaWikiApi[language].defaults.headers.Cookie = cookieHeader;
 }
 
-async function loginAndGetCsrf() {
+async function loginAndGetCsrf(language: string) {
   const tokenResponse = await mediaWikiApi.get('', {
     params: {
       action: 'query',
@@ -50,9 +57,9 @@ async function loginAndGetCsrf() {
     }
   });
   const { logintoken } = tokenResponse.data.query.tokens;
-  setCookies(tokenResponse);
+  setCookies(tokenResponse, language);
 
-  const loginResponse = await mediaWikiApi.post(
+  const loginResponse = await mediaWikiApi[language].post(
     '',
     {
       action: 'login',
@@ -76,9 +83,9 @@ async function loginAndGetCsrf() {
         `Failed to login to mediawiki as Bot:${MW_BOT_USERNAME}`
     );
   }
-  setCookies(loginResponse);
+  setCookies(loginResponse, language);
 
-  const { data } = await mediaWikiApi.get('', {
+  const { data } = await mediaWikiApi[language].get('', {
     params: {
       action: 'query',
       meta: 'tokens',
@@ -95,8 +102,8 @@ async function loginAndGetCsrf() {
   return csrftoken;
 }
 
-async function logout(csrftoken: string) {
-  const { data } = await mediaWikiApi.post(
+async function logout(csrftoken: string, language: string) {
+  const { data } = await mediaWikiApi[language].post(
     '',
     {
       action: 'logout',
@@ -117,10 +124,10 @@ async function logout(csrftoken: string) {
   }
 }
 
-export async function deleteArticleMW(articleId: string) {
-  const csrftoken = await loginAndGetCsrf();
+export async function deleteArticleMW(articleId: string, language: string) {
+  const csrftoken = await loginAndGetCsrf(language);
 
-  const { data } = await mediaWikiApi.post(
+  const { data } = await mediaWikiApi[language].post(
     '',
     {
       action: 'delete',
@@ -135,7 +142,7 @@ export async function deleteArticleMW(articleId: string) {
     }
   );
   if (data.error) {
-    logout(csrftoken);
+    logout(csrftoken, language);
     if (data.error.code !== 'missingtitle') {
       // Throw error only when its other than "The page you specified doesn't exist." else log error.
       throw new Error(
@@ -147,49 +154,21 @@ export async function deleteArticleMW(articleId: string) {
       );
     }
   }
-  logout(csrftoken);
+  logout(csrftoken, language);
 }
 
-async function exportArticleData(
+async function renameArticle(
   title: string,
+  articleId: string,
   language: string
-): Promise<string> {
-  const exportResponse = await axios.get(`${WIKIPEDIA_PROXY}/w/index.php`, {
-    params: {
-      title: 'Special:Export',
-      pages: title,
-      templates: true,
-      lang: language,
-      curonly: true
-    },
-    responseType: 'stream'
-  });
-
-  return new Promise<string>((resolve, reject) => {
-    let exportData = '';
-    exportResponse.data.on('data', (chunk: string) => {
-      exportData += chunk;
-    });
-
-    exportResponse.data.on('end', () => {
-      exportData = processExportedArticle(exportData, language);
-      resolve(exportData);
-    });
-
-    exportResponse.data.on('error', (error: Error) => {
-      reject(error);
-    });
-  });
-}
-
-async function renameArticle(title: string, articleId: string): Promise<void> {
-  const csrftoken = await loginAndGetCsrf();
+): Promise<void> {
+  const csrftoken = await loginAndGetCsrf(language);
 
   logger.info(
     `Renaming Article ${title} to its corresponding id: ${articleId}`
   );
 
-  const { data } = await mediaWikiApi.post(
+  const { data } = await mediaWikiApi[language].post(
     '',
     {
       action: 'move',
@@ -208,10 +187,10 @@ async function renameArticle(title: string, articleId: string): Promise<void> {
 
   if (data.error) {
     logger.error(`Failed to rename article: ${data.error.info}`);
-    logout(csrftoken);
+    logout(csrftoken, language);
     throw new Error(`Failed to rename article with id ${articleId}`);
   }
-  logout(csrftoken);
+  logout(csrftoken, language);
 }
 
 export async function importNewArticle(
@@ -222,7 +201,7 @@ export async function importNewArticle(
   try {
     // Export
     logger.info(`Exporting file ${title}`);
-    const exportData = await exportArticleData(title, language);
+    const exportData = await wikiApi.exportArticleData(title, language);
     logger.info(`Successfully exported file ${title}`);
 
     // Import
@@ -235,15 +214,19 @@ export async function importNewArticle(
     logger.info(`Successfully imported file ${title}`);
 
     // Rename
-    await renameArticle(title, articleId);
+    await renameArticle(title, articleId, language);
   } catch (error) {
     logger.error(`Error importing article ${title}`, error);
     throw error;
   }
 }
 
-async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
-  const response = await mediaWikiApi.get('', {
+async function getRevisionId(
+  articleId: string,
+  sort: 'older' | 'newer',
+  language: string
+) {
+  const response = await mediaWikiApi[language].get('', {
     params: {
       action: 'query',
       prop: 'revisions',
@@ -257,9 +240,13 @@ async function getRevisionId(articleId: string, sort: 'older' | 'newer') {
   return response.data.query.pages[0].revisions[0].revid;
 }
 
-export async function updateChanges(articleId: string, userId: string) {
-  const originalRevid = await getRevisionId(articleId, 'newer');
-  const latestRevid = await getRevisionId(articleId, 'older');
+export async function updateChanges(
+  articleId: string,
+  userId: string,
+  language: string
+) {
+  const originalRevid = await getRevisionId(articleId, 'newer', language);
+  const latestRevid = await getRevisionId(articleId, 'older', language);
 
   logger.info('Getting the Diff HTML of Revids:', {
     originalRevid,
@@ -268,7 +255,8 @@ export async function updateChanges(articleId: string, userId: string) {
   const diffPage = await MediaWikiAutomator.getMediaWikiDiffHtml(
     articleId,
     originalRevid,
-    latestRevid
+    latestRevid,
+    language
   );
 
   const { changesToUpsert, htmlContent } = await refineArticleChanges(

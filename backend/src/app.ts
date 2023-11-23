@@ -14,6 +14,7 @@ import {
 } from './helpers/parsingHelper';
 import {
   deleteArticle,
+  getArticle,
   hasPermission,
   insertArticle,
   updateChange
@@ -46,7 +47,8 @@ app.put('/article/changes', async (req, res) => {
     const { articleId } = req.body;
     const { user } = res.locals;
 
-    await updateChanges(articleId, user.id);
+    const { language } = await getArticle(articleId);
+    await updateChanges(articleId, user.id, language);
 
     logger.info({ articleId }, 'Updated Changes of article');
     res.status(200).json({ message: 'Updating changes succeeded.' });
@@ -163,7 +165,9 @@ app.delete('/article', async (req, res) => {
   try {
     const { articleId } = req.body;
     logger.info('Deleting', { articleId });
-    await deleteArticleMW(articleId);
+
+    const { language } = await getArticle(articleId);
+    await deleteArticleMW(articleId, language);
     await deleteArticle(articleId);
 
     logger.info('Deleted article');

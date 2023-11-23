@@ -1,4 +1,4 @@
-import { BrowserContext, Cookie, chromium, Page } from 'playwright';
+import { BrowserContext, Cookie, Page, chromium } from 'playwright';
 import logger from '../logger';
 
 const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
@@ -42,7 +42,7 @@ class PlaywrightMediaWikiAutomation {
     }
   }
 
-  private async getPageInContext(): Promise<Page> {
+  private async getPageInContext(language: string): Promise<Page> {
     const page = await (await this.browserContext).newPage();
 
     // Check if the session cookie exists and has not expired
@@ -55,7 +55,7 @@ class PlaywrightMediaWikiAutomation {
 
     if (hasExpired) {
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
+        `${this.MediawikiHost}/${language}/index.php?title=Special:UserLogin`,
         { waitUntil: 'networkidle' }
       );
 
@@ -78,10 +78,10 @@ class PlaywrightMediaWikiAutomation {
     exportData: string,
     language: string
   ): Promise<void> {
-    const page = await this.getPageInContext();
+    const page = await this.getPageInContext(language);
 
     await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=Special:Import&uselang=${language}`,
+      `${this.MediawikiHost}/${language}/index.php?title=Special:Import`,
       {
         waitUntil: 'networkidle'
       }
@@ -113,11 +113,12 @@ class PlaywrightMediaWikiAutomation {
   async getMediaWikiDiffHtml(
     articleId: string,
     originalRevid: string,
-    latestRevid: string
+    latestRevid: string,
+    language: string
   ): Promise<string> {
-    const page = await this.getPageInContext();
+    const page = await this.getPageInContext(language);
     await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      `${this.MediawikiHost}/${language}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
     );
 

@@ -85,7 +85,7 @@ class PlaywrightMediaWikiAutomation {
 
     if (hasExpired) {
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=special:UserLogin`,
+        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
         { waitUntil: 'networkidle' }
       );
 
@@ -109,7 +109,7 @@ class PlaywrightMediaWikiAutomation {
   ): Promise<void> {
     const page = await this.getPageInContext();
 
-    await page.goto(`${this.MediawikiHost}/w/index.php?title=special:Import`, {
+    await page.goto(`${this.MediawikiHost}/w/index.php?title=Special:Import`, {
       waitUntil: 'networkidle'
     });
 

@@ -5,21 +5,28 @@
         <p class="text-h5 text-center merriweather q-pb-xs">
           Welcome to WikiAdviser
         </p>
-        <Auth :socialLayout="'vertical'" :supabaseClient="supabaseClient" :redirectTo="callbackURL" :providerScopes="providerScopes" :appearance="{
-          theme: ThemeSupa
-        }" :providers="['google', 'linkedin', 'azure', 'twitter']" />
+        <Auth
+          :social-layout="'vertical'"
+          :supabase-client="supabaseClient"
+          :redirect-to="callbackURL"
+          :provider-scopes="providerScopes"
+          :appearance="{
+            theme: ThemeSupa,
+          }"
+          :providers="['google', 'linkedin', 'azure', 'twitter']"
+        />
       </q-card-section>
     </q-card-section>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { ThemeSupa } from '@supabase/auth-ui-shared'
-import { Auth } from '@nuxtbase/auth-ui-vue'
+import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { Auth } from '@nuxtbase/auth-ui-vue';
 import supabaseClient from 'src/api/supabase';
 
-const callbackURL = `${location.origin}/auth/callback`
+const callbackURL = `${location.origin}/auth/callback`;
 const providerScopes = {
-  'azure': 'email'
-}
+  azure: 'email',
+};
 </script>

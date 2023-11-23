@@ -120,7 +120,6 @@ async function logout(csrftoken: string) {
 
 export async function deleteArticleMW(articleId: string) {
   const csrftoken = await loginAndGetCsrf();
-
   const { data } = await mediaWikiApi.post(
     '',
     {
@@ -136,7 +135,7 @@ export async function deleteArticleMW(articleId: string) {
     }
   );
   if (data.error) {
-    logout(csrftoken);
+    await logout(csrftoken);
     if (data.error.code !== 'missingtitle') {
       // Throw error only when its other than "The page you specified doesn't exist." else log error.
       throw new Error(
@@ -148,7 +147,7 @@ export async function deleteArticleMW(articleId: string) {
       );
     }
   }
-  logout(csrftoken);
+  await logout(csrftoken);
 }
 
 async function exportArticleData(
@@ -209,10 +208,10 @@ async function renameArticle(title: string, articleId: string): Promise<void> {
 
   if (data.error) {
     logger.error(`Failed to rename article: ${data.error.info}`);
-    logout(csrftoken);
+    await logout(csrftoken);
     throw new Error(`Failed to rename article with id ${articleId}`);
   }
-  logout(csrftoken);
+  await logout(csrftoken);
 }
 
 export async function importNewArticle(
@@ -228,11 +227,7 @@ export async function importNewArticle(
 
     // Import
     logger.info(`Importing into our instance file ${title}`);
-    await MediaWikiAutomator.importMediaWikiPage(
-      articleId,
-      exportData,
-      language
-    );
+    await MediaWikiAutomator.importMediaWikiPage(articleId, exportData);
     logger.info(`Successfully imported file ${title}`);
 
     // Rename

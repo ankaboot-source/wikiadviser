@@ -1,4 +1,10 @@
-const wikipediaLanguages = [
+interface WikipediaLanguage {
+  lable: string;
+  value: string;
+  description?: string;
+  lang: string;
+}
+const wikipediaLanguages: WikipediaLanguage = [
   { label: 'Afrikaans', value: 'af', lang: 'af' },
   { label: 'Polski', value: 'pl', lang: 'pl' },
   { label: 'العربية', value: 'ar', description: 'Al-ʿArabīyah', lang: 'ar' },
@@ -83,16 +89,9 @@ const wikipediaLanguages = [
 
 const wikiadviserLanguagesList = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 
-const wikiadviserLanguages = wikipediaLanguages
-  .filter((lang) => wikiadviserLanguagesList.includes(lang.value))
-  .map(({ label, value, description, lang }) => ({
-    label,
-    value,
-    description,
-    lang,
-  }));
-
-export type wikiadviserLanguage =
-  (typeof wikiadviserLanguages)[number]['value'];
+const wikiadviserLanguages: WikipediaLanguage = wikipediaLanguages.filter(
+  (lang) => wikiadviserLanguagesList.includes(lang.value)
+);
+export type wikiadviserLanguage = (typeof wikiadviserLanguagesList)[number];
 
 export default wikiadviserLanguages;

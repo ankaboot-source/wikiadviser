@@ -10,11 +10,11 @@
     - Install Caddy
     - Install Apache2
     - Install PHP, PHP mmodule and additional PHP packages required by MediaWiki ```apt install php libapache2-mod-php php-mbstring php-mysql php-xml```
-    - If you are willing to use local DataBase, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
+    - If you are willing to use local database, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
     - Don't forget to start all the services above!
-    - Configure your database: 
+    - Configure your databases (you need to create separate databases as many as your wiki instances): 
     
-    - Login ```sudo mysql -u root```: 
+    - Login ```sudo mariadb -u root```: 
       
     ``` 
       CREATE DATABASE my_wiki;
@@ -29,32 +29,42 @@
       Listen 127.0.0.1:8081
     ```
 
-    - Next, create two folders wiki-dev and wiki-demo under ```/var/www``` and add new sites configuration file under ```/etc/apache2/sites-available/000-wikidev.conf```
+    - Next, create two folders wiki-dev and wiki-demo under ```/var/www``` and add new sites configuration file under ```/etc/apache2/sites-available/wiki-dev.conf```
 
     ```
     <VirtualHost *:8081>
 	         ServerAdmin webmaster@localhost
 	         DocumentRoot /var/www/wiki-dev
-                 ErrorLog ${APACHE_LOG_DIR}/error.log
-	         CustomLog ${APACHE_LOG_DIR}/access.log combined
+                 <Directory /var/www/wiki-dev>
+                          Options FollowSymLinks
+                          AllowOverride All
+                          Require all granted
+                 </Directory>
+                 ErrorLog ${APACHE_LOG_DIR}/error.dev.log
+	         CustomLog ${APACHE_LOG_DIR}/access.dev.log combined
     </VirtualHost>
     ```
 
-    - ```/etc/apache2/sites-available/000-wikidemo.conf```
+    - ```/etc/apache2/sites-available/wiki-demo.conf```
 
     ```
     <VirtualHost *:8080>
 	         ServerAdmin webmaster@localhost
 	         DocumentRoot /var/www/wiki-demo
-                 ErrorLog ${APACHE_LOG_DIR}/error.log
-	         CustomLog ${APACHE_LOG_DIR}/access.log combined
+                 <Directory /var/www/wiki-demo>
+                          Options FollowSymLinks
+                          AllowOverride All
+                          Require all granted
+                 </Directory>
+                 ErrorLog ${APACHE_LOG_DIR}/error.demo.log
+	         CustomLog ${APACHE_LOG_DIR}/access.demo.log combined
     </VirtualHost>
     ```
-    
+    - Run the following commands: ```a2ensite wiki-dev.conf``` ```a2ensite wiki-demo.conf```
     - Restart Apache2 service !
     - Install MediaWiki from the [official download page](https://www.mediawiki.org/wiki/Download)
     - Extract the file in the following paths ```/var/www/wiki-dev``` and ```/var/www/wiki-demo``` 
-    - rename the folders using ```mv``` command to ```w```
+    - Rename the mediawiki folder to ```en``` and ```fr``` inside both wiki-demo and wiki-dev (if you need another wiki with different language do the same previous steps within the same folders)
     - Setup Caddy by editing ```/etc/caddy/Caddyfile```:
       
       
@@ -98,13 +108,14 @@
    ```
    
     - Retsart Caddy service !
+    - Open your mediawiki url, first setup will generate you a LocalSettings.php file, add it to the root of your mediawiki installation directory.
     </details>
 
 
-- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc.. in the extensions folder of mediawiki ```/var/www/wiki-dev/w/extensions```,```/var/www/wiki-demo/w/extensions```, each extension has its official install documentation provided by mediawiki, please follow it to install your required extension.
+- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc..., in the extensions folder of mediawiki (for example ```/var/www/wiki-dev/en/extensions```), each extension has its official install documentation provided by mediawiki, please follow it to install your required extension.
 
 - <details>
-    <summary>Add these settings at the end of <code>LocalSettings.php</code> in the root folder of your mediawiki instance (this file is generated when you access to mediawiki instance for the first time)</summary>
+    <summary>Add these settings at the end of <code>LocalSettings.php</code> in the root folder of your mediawiki instance</summary>
 
   ```
   $wgDefaultSkin = "vector-2022";
@@ -155,17 +166,18 @@
 
   wfLoadExtension( 'WikibaseRepository', "$IP/extensions/Wikibase/extension-repo.json" );
   require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
-  require_once "$IP/extensions/Wikibase/repo/config/Wikibase.example.php";
-
+ 
   wfLoadExtension( 'WikibaseClient', "$IP/extensions/Wikibase/extension-client.json" );
   require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
-  require_once "$IP/extensions/Wikibase/client/config/WikibaseClient.example.php";
+  
   $wgWBRepoSettings['allowEntityImport'] = true;
   
   $wgShowExceptionDetails = true;
   $wgExternalLinkTarget = '_blank';
   ```
-  - Finally, run some maintenance scripts, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation#Modify_LocalSettings.php) :
+  - Rename the composer.local.json-sample file in the root of MediaWiki install directory (en/fr) to composer.local.json, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation).
+  - If composer.lock exists delete it and run ```composer install --no-dev```
+  - Finally, run the following maintenance scripts:
     
     ```
     php maintenance/run.php ./maintenance/update.php
@@ -186,13 +198,17 @@
   </details>
 
 - Export/Import the CSS & JS from the source wiki
+  - For english wiki's
+    - https://en.wikipedia.org/wiki/MediaWiki:Common.css
+    - https://en.wikipedia.org/wiki/MediaWiki:Common.js
+  - For french wiki's
+    - https://fr.wikipedia.org/wiki/MediaWiki:Common.css
+    - https://fr.wikipedia.org/wiki/MediaWiki:Common.js
 
-  - https://en.wikipedia.org/wiki/MediaWiki:Common.css
-  - https://en.wikipedia.org/wiki/MediaWiki:Common.js
+  Into your MediaWiki instance http://localhost/(en/fr)/index.php/MediaWiki: Common.css and Common.js
 
-  Into your MediaWiki instance http://localhost/w/index.php/MediaWiki: Common.css and Common.js
-
-- Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
+- Create a Bot user on ```http://localhost/w/index.php/Special:BotPasswords```
+- In some cases VisualEditor fails to open due to large article size, to fix that increase the ```timeout``` in the following file: ```mediawiki/resources/src/mediawiki.api/index.js```
 
 ### Supabase
 

@@ -2,9 +2,7 @@ import * as Sentry from '@sentry/node';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import express, { json } from 'express';
-import mediawikiApiInstances from './api/mediawikiApiInstances';
 import MediawikiClient from './helpers/MediawikiClient';
-import PlaywrightAutomator from './helpers/PlaywrightHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   getArticleParsedContent,
@@ -46,11 +44,7 @@ app.put('/article/changes', async (req, res) => {
     const { user } = res.locals;
 
     const { language } = await getArticle(articleId);
-    const mediawikiApiInstance = mediawikiApiInstances.get(language)!;
-    const mediawiki = new MediawikiClient(
-      mediawikiApiInstance,
-      new PlaywrightAutomator(language)
-    );
+    const mediawiki = new MediawikiClient(language);
     await mediawiki.updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
@@ -132,12 +126,8 @@ app.post('/article', async (req, res) => {
 
   const articleId = await insertArticle(title, userId, language, description);
   try {
-    const mediawikiApiInstance = mediawikiApiInstances.get(language)!;
-    const mediawiki = new MediawikiClient(
-      mediawikiApiInstance,
-      new PlaywrightAutomator(language)
-    );
-    await mediawiki.importNewArticle(articleId, title, language);
+    const mediawiki = new MediawikiClient(language);
+    await mediawiki.importNewArticle(articleId, title);
 
     res
       .status(201)
@@ -175,8 +165,7 @@ app.delete('/article', async (req, res) => {
     logger.info('Deleting', { articleId });
 
     const { language } = await getArticle(articleId);
-    const mediawikiApiInstance = mediawikiApiInstances.get(language)!;
-    const mediawiki = new MediawikiClient(mediawikiApiInstance);
+    const mediawiki = new MediawikiClient(language);
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticle(articleId);
 

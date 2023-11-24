@@ -1,4 +1,5 @@
 import { AxiosInstance } from 'axios';
+import mediawikiApiInstances from '../api/mediawikiApiInstances';
 import logger from '../logger';
 import PlayrightAutomator from './PlaywrightHelper';
 import WikipediaApiInteractor from './WikipediaApiInteractor';
@@ -10,10 +11,11 @@ const wikipediaApi = new WikipediaApiInteractor();
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
 class MediawikiClient {
-  constructor(
-    private readonly mediawikiApiInstance: AxiosInstance,
-    private readonly mediawikiAutomator?: PlayrightAutomator
-  ) {}
+  private readonly mediawikiApiInstance: AxiosInstance;
+
+  constructor(private readonly language: string) {
+    this.mediawikiApiInstance = mediawikiApiInstances.get(this.language)!;
+  }
 
   private static extractCookies(setCookieHeaders: any) {
     const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
@@ -183,20 +185,20 @@ class MediawikiClient {
     this.logout(csrftoken);
   }
 
-  async importNewArticle(
-    articleId: string,
-    title: string,
-    language: string
-  ): Promise<void> {
+  async importNewArticle(articleId: string, title: string): Promise<void> {
     try {
       // Export
       logger.info(`Exporting file ${title}`);
-      const exportData = await wikipediaApi.exportArticleData(title, language);
+      const exportData = await wikipediaApi.exportArticleData(
+        title,
+        this.language
+      );
       logger.info(`Successfully exported file ${title}`);
 
       // Import
       logger.info(`Importing into our instance file ${title}`);
-      await this.mediawikiAutomator!.importMediaWikiPage(articleId, exportData);
+      const mediawikiAutomator = new PlayrightAutomator(this.language);
+      await mediawikiAutomator.importMediaWikiPage(articleId, exportData);
       logger.info(`Successfully imported file ${title}`);
 
       // Rename
@@ -230,7 +232,9 @@ class MediawikiClient {
       originalRevid,
       latestRevid
     });
-    const diffPage = await this.mediawikiAutomator!.getMediaWikiDiffHtml(
+
+    const mediawikiAutomator = new PlayrightAutomator(this.language);
+    const diffPage = await mediawikiAutomator.getMediaWikiDiffHtml(
       articleId,
       originalRevid,
       latestRevid

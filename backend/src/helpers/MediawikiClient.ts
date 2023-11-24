@@ -1,6 +1,6 @@
 import { AxiosInstance } from 'axios';
 import logger from '../logger';
-import MediaWikiAutomator from './PlaywrightHelper';
+import PlayrightAutomator from './PlaywrightHelper';
 import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
@@ -10,7 +10,10 @@ const wikipediaApi = new WikipediaApiInteractor();
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
 class MediawikiClient {
-  constructor(private readonly mediawikiApiInstance: AxiosInstance) {}
+  constructor(
+    private readonly mediawikiApiInstance: AxiosInstance,
+    private readonly mediawikiAutomator?: PlayrightAutomator
+  ) {}
 
   private static extractCookies(setCookieHeaders: any) {
     const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
@@ -193,11 +196,7 @@ class MediawikiClient {
 
       // Import
       logger.info(`Importing into our instance file ${title}`);
-      await MediaWikiAutomator.importMediaWikiPage(
-        articleId,
-        exportData,
-        language
-      );
+      await this.mediawikiAutomator!.importMediaWikiPage(articleId, exportData);
       logger.info(`Successfully imported file ${title}`);
 
       // Rename
@@ -223,7 +222,7 @@ class MediawikiClient {
     return response.data.query.pages[0].revisions[0].revid;
   }
 
-  async updateChanges(articleId: string, userId: string, language: string) {
+  async updateChanges(articleId: string, userId: string) {
     const originalRevid = await this.getRevisionId(articleId, 'newer');
     const latestRevid = await this.getRevisionId(articleId, 'older');
 
@@ -231,11 +230,10 @@ class MediawikiClient {
       originalRevid,
       latestRevid
     });
-    const diffPage = await MediaWikiAutomator.getMediaWikiDiffHtml(
+    const diffPage = await this.mediawikiAutomator!.getMediaWikiDiffHtml(
       articleId,
       originalRevid,
-      latestRevid,
-      language
+      latestRevid
     );
 
     const { changesToUpsert, htmlContent } = await refineArticleChanges(

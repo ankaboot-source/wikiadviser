@@ -81,7 +81,7 @@ import { ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
-import wikiadviserLanguages from 'src/data/wikiadviserLanguages';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();

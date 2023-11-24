@@ -4,7 +4,7 @@ interface WikipediaLanguage {
   description?: string;
   lang: string;
 }
-const wikipediaLanguages: WikipediaLanguage = [
+const wikipediaLanguages: WikipediaLanguage[] = [
   { label: 'Afrikaans', value: 'af', lang: 'af' },
   { label: 'Polski', value: 'pl', lang: 'pl' },
   { label: 'العربية', value: 'ar', description: 'Al-ʿArabīyah', lang: 'ar' },
@@ -89,9 +89,8 @@ const wikipediaLanguages: WikipediaLanguage = [
 
 const wikiadviserLanguagesList = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 
-const wikiadviserLanguages: WikipediaLanguage = wikipediaLanguages.filter(
-  (lang) => wikiadviserLanguagesList.includes(lang.value)
-);
+export const wikiadviserLanguages: WikipediaLanguage =
+  wikipediaLanguages.filter((lang) =>
+    wikiadviserLanguagesList.includes(lang.value)
+  );
 export type wikiadviserLanguage = (typeof wikiadviserLanguagesList)[number];
-
-export default wikiadviserLanguages;

@@ -108,7 +108,7 @@ import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import wikiadviserLanguages from 'src/data/wikiadviserLanguages';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 const props = defineProps<{
   article: Article;
 }>();

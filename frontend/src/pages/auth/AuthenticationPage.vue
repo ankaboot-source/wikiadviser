@@ -15,8 +15,8 @@
             variables: {
               default: {
                 colors: {
-                  brand: '#1976d2',
-                  brandAccent: '#1976d2',
+                  brand: 'hsl(207, 90%, 49%)',
+                  brandAccent: 'hsl(207, 85%, 41%)',
                 },
               },
             },

@@ -88,7 +88,8 @@ jobs:
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
             visual_editor_folder_name="MyVisualEditor"
-            extensions_path="/var/www/wiki-demo/w/extensions/"
+            fr_extensions_path="/var/www/wiki-demo/fr/extensions/"
+            en_extensions_path="/var/www/wiki-demo/en/extensions/"
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
@@ -99,4 +100,5 @@ jobs:
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
-            cp -r $wikiadviser_path/$visual_editor_folder_name $extensions_path
+            cp -r $wikiadviser_path/$visual_editor_folder_name $fr_extensions_path
+            cp -r $wikiadviser_path/$visual_editor_folder_name $en_extensions_path

@@ -6,7 +6,7 @@
           Welcome to WikiAdviser
         </p>
         <Auth
-          :social-layout="'vertical'"
+          social-layout="vertical"
           :supabase-client="supabaseClient"
           :redirect-to="callbackURL"
           :provider-scopes="providerScopes"

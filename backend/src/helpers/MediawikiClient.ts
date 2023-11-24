@@ -1,7 +1,7 @@
 import { AxiosInstance } from 'axios';
 import mediawikiApiInstances from '../api/mediawikiApiInstances';
 import logger from '../logger';
-import PlayrightAutomator from './PlaywrightHelper';
+import PlaywrightAutomator from './PlaywrightHelper';
 import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
@@ -197,8 +197,10 @@ class MediawikiClient {
 
       // Import
       logger.info(`Importing into our instance file ${title}`);
-      const mediawikiAutomator = new PlayrightAutomator(this.language);
-      await mediawikiAutomator.importMediaWikiPage(articleId, exportData);
+      await PlaywrightAutomator.getInstance(this.language).importMediaWikiPage(
+        articleId,
+        exportData
+      );
       logger.info(`Successfully imported file ${title}`);
 
       // Rename
@@ -233,12 +235,9 @@ class MediawikiClient {
       latestRevid
     });
 
-    const mediawikiAutomator = new PlayrightAutomator(this.language);
-    const diffPage = await mediawikiAutomator.getMediaWikiDiffHtml(
-      articleId,
-      originalRevid,
-      latestRevid
-    );
+    const diffPage = await PlaywrightAutomator.getInstance(
+      this.language
+    ).getMediaWikiDiffHtml(articleId, originalRevid, latestRevid);
 
     const { changesToUpsert, htmlContent } = await refineArticleChanges(
       articleId,

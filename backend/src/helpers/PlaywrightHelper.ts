@@ -1,4 +1,4 @@
-import { BrowserContext, Cookie, Page, chromium } from 'playwright';
+import { BrowserContext, Page, chromium } from 'playwright';
 import logger from '../logger';
 
 const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
@@ -15,20 +15,22 @@ class PlaywrightAutomator {
 
   private readonly MediawikiAdminPassword = MW_ADMIN_PASSWORD!;
 
-  private readonly mediawikiBaseURL: string;
+  private mediawikiBaseURL!: string;
 
-  constructor(private readonly language: string) {
-    this.mediawikiBaseURL = `${this.MediawikiHost}/${this.language}`;
+  private language!: string;
 
-    if (PlaywrightAutomator.instance) {
-      throw new Error(
-        'PlaywrightMediaWikiAutomation class cannot be instantiated more than once.'
-      );
-    }
-
-    PlaywrightAutomator.instance = this;
-
+  constructor() {
     this.browserContext = PlaywrightAutomator.setContext();
+  }
+
+  public static getInstance(language: string): PlaywrightAutomator {
+    if (!PlaywrightAutomator.instance) {
+      PlaywrightAutomator.instance = new PlaywrightAutomator();
+    }
+    PlaywrightAutomator.instance.language = language;
+    PlaywrightAutomator.instance.mediawikiBaseURL = `${PlaywrightAutomator.instance.MediawikiHost}/${language}`;
+
+    return PlaywrightAutomator.instance;
   }
 
   private static async setContext(): Promise<BrowserContext> {
@@ -45,25 +47,15 @@ class PlaywrightAutomator {
   private async getPageInContext(): Promise<Page> {
     const page = await (await this.browserContext).newPage();
 
-    // Check if the session cookie exists and has not expired
-    const sessionCookie = await (await this.browserContext).cookies();
-    const hasExpired =
-      sessionCookie.length === 0 ||
-      sessionCookie.some(
-        (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
-      );
+    await page.goto(
+      `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
+      { waitUntil: 'networkidle' }
+    );
 
-    if (hasExpired) {
-      await page.goto(
-        `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
-        { waitUntil: 'networkidle' }
-      );
-
-      await page.fill('#wpName1', this.MediawikiAdminUsername);
-      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-      await page.click('#wpRemember');
-      await page.click('#wpLoginAttempt');
-    }
+    await page.fill('#wpName1', this.MediawikiAdminUsername);
+    await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+    await page.click('#wpRemember');
+    await page.click('#wpLoginAttempt');
 
     return page;
   }

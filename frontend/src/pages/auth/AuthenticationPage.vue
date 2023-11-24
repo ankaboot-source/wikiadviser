@@ -12,6 +12,14 @@
           :provider-scopes="providerScopes"
           :appearance="{
             theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#1976d2',
+                  brandAccent: '#1976d2',
+                },
+              },
+            },
           }"
           :providers="['google', 'azure']"
         />

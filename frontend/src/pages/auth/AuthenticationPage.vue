@@ -13,7 +13,7 @@
           :appearance="{
             theme: ThemeSupa,
           }"
-          :providers="['google', 'linkedin', 'azure', 'twitter']"
+          :providers="['google', 'azure']"
         />
       </q-card-section>
     </q-card-section>

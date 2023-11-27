@@ -9,7 +9,7 @@ class PlaywrightAutomator {
 
   private readonly browserContext: Promise<BrowserContext>;
 
-  private readonly MediawikiHost = MEDIAWIKI_ENDPOINT!;
+  private readonly MediawikiEndpoint = MEDIAWIKI_ENDPOINT!;
 
   private readonly MediawikiAdminUsername = MW_ADMIN_USERNAME!;
 
@@ -28,7 +28,7 @@ class PlaywrightAutomator {
       PlaywrightAutomator.instance = new PlaywrightAutomator();
     }
     PlaywrightAutomator.instance.language = language;
-    PlaywrightAutomator.instance.mediawikiBaseURL = `${PlaywrightAutomator.instance.MediawikiHost}/${language}`;
+    PlaywrightAutomator.instance.mediawikiBaseURL = `${PlaywrightAutomator.instance.MediawikiEndpoint}/${language}`;
 
     return PlaywrightAutomator.instance;
   }

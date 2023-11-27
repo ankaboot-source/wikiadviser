@@ -6,14 +6,14 @@
 
 - <details>
    <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (We will be setting 2 environments: Dev and Demo).</summary>
-    
+   
     - Install Caddy
     - Install Apache2
     - Install PHP, PHP mmodule and additional PHP packages required by MediaWiki ```apt install php libapache2-mod-php php-mbstring php-mysql php-xml```
     - If you are willing to use local database, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
     - Don't forget to start all the services above!
     - Configure your databases (you need to create separate databases as many as your wiki instances): 
-    
+   
     - Login ```sudo mariadb -u root```: 
       
     ``` 
@@ -21,7 +21,7 @@
       CREATE USER 'wikiuser'@'localhost' IDENTIFIED BY 'password';
       GRANT ALL PRIVILEGES ON my_wiki.* TO 'wikiuser'@'localhost' WITH GRANT OPTION;
     ```
-    
+   
     - Configure Apache2 to listen on port 8080 for demo instance, 8081 for dev instance by adding the following lines to ```/etc/apache2/ports.conf``` : 
 
     ```
@@ -89,19 +89,23 @@
                   roll_keep_for 24h
               }
             }
-            forward_auth https://api.wikiadviser.io {
-                header_up Host {upstream_hostport}
-                header_up X-Real-IP {remote_host}
-                uri /authenticate
-                copy_headers X-User X-Client-IP X-Forwarded-Uri
+    
+    	   	@publicip not client_ip private_ranges
+           
+            forward_auth @publicip https://api.wikiadviser.io {
+             header_up Host {upstream_hostport}
+             header_up X-Real-IP {remote_host}
+             uri /authenticate
+             copy_headers X-User X-Client-IP X-Forwarded-Uri
             }
+            
             rewrite /robots.txt ./robots.txt # Disable search engine indexing
             reverse_proxy localhost:8080
     }
     
-   ```
+    ```
     - Add <code>robots.txt</code> to <code>/etc/caddy</code>, will be called in the above Caddyfile.
-
+   
    ```
      User-agent: *
      Disallow: /
@@ -122,14 +126,14 @@
   wfLoadExtension( 'MyVisualEditor' );
   $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
   wfLoadExtension( 'UniversalLanguageSelector' );
-
+    
   /* Templates & Modules */
   // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
   // https://www.mediawiki.org/wiki/Help:Templates
-
+    
   wfLoadExtension( 'ParserFunctions' );
   $wgPFEnableStringFunctions = true;
-
+    
   wfLoadExtension( 'Scribunto' );
   $wgScribuntoDefaultEngine = 'luastandalone';
   $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
@@ -137,36 +141,36 @@
   $wgMemoryLimit = '800M';
   $wgMaxShellFileSize = 838860800; // 800M
   $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
-
+    
   wfLoadExtension( 'TemplateStyles' );
   wfLoadExtension( 'InputBox' );
   wfLoadExtension( 'TemplateData' );
   wfLoadExtension( 'SyntaxHighlight_GeSHi' );
-
+    
   $wgUseInstantCommons = true;
-
+    
   wfLoadExtension( 'Cite' );
   wfLoadExtension( 'PageForms' );
-
+    
   /* Mediawiki Performance tuning */
   // https://www.mediawiki.org/wiki/Manual:Performance_tuning
   // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
-
+    
   // Cache & Lifetime (2 years)
   $wgMainCacheType = CACHE_ACCEL;
   $wgMessageCacheType = CACHE_ACCEL;
   $wgParserCacheType = CACHE_DB;
-
+    
   $wgParserCacheExpireTime = 63072000;
   $wgRevisionCacheExpiry = 63072000;
   $wgResourceLoaderMaxage = [
   'versioned' => 63072000,
   'unversioned' => 63072000
   ];
-
+    
   wfLoadExtension( 'WikibaseRepository', "$IP/extensions/Wikibase/extension-repo.json" );
   require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
- 
+     
   wfLoadExtension( 'WikibaseClient', "$IP/extensions/Wikibase/extension-client.json" );
   require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
   

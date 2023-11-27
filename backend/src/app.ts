@@ -19,6 +19,7 @@ import logger from './logger';
 import authorizationMiddlware from './middleware/auth';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
+import { PlayAutomatorFactory } from './helpers/PlaywrightHelper';
 
 const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 
@@ -45,7 +46,11 @@ app.put('/article/changes', async (req, res) => {
     const { user } = res.locals;
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
@@ -127,7 +132,11 @@ app.post('/article', async (req, res) => {
 
   const articleId = await insertArticle(title, userId, language, description);
   try {
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.importNewArticle(articleId, title);
 
     res
@@ -166,7 +175,11 @@ app.delete('/article', async (req, res) => {
     logger.info('Deleting', { articleId });
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticle(articleId);
 

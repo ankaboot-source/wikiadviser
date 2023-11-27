@@ -1,7 +1,7 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
 import { Article, User, Permission, UserRole, ChangesItem } from 'src/types';
-import { wikipediaLanguage } from 'src/data/wikipediaLanguages';
+import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -36,7 +36,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
 export async function createNewArticle(
   title: string,
   userId: string,
-  language: wikipediaLanguage,
+  language: wikiadviserLanguage,
   description?: string
 ) {
   const response = await api.post('article', {

@@ -21,7 +21,7 @@
           <q-select
             v-model="articleLanguage"
             :option-label="(item) => item.value.toLocaleUpperCase()"
-            :options="wikipediaLanguages"
+            :options="wikiadviserLanguages"
             filled
             dense
             options-dense
@@ -81,7 +81,7 @@ import { ref, watch } from 'vue';
 import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
-import wikipediaLanguages from 'src/data/wikipediaLanguages';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();
@@ -89,7 +89,7 @@ const term = ref('');
 const isSearching = ref(false);
 const searchResults = ref<SearchResult[]>();
 
-const defaultArticleLanguage = wikipediaLanguages.find(
+const defaultArticleLanguage = wikiadviserLanguages.find(
   (option) => window.navigator.language.split('-')[0] === option.lang
 ) || {
   label: 'English',

@@ -1,4 +1,10 @@
-const wikipediaLanguages = [
+interface WikipediaLanguage {
+  lable: string;
+  value: string;
+  description?: string;
+  lang: string;
+}
+const wikipediaLanguages: WikipediaLanguage[] = [
   { label: 'Afrikaans', value: 'af', lang: 'af' },
   { label: 'Polski', value: 'pl', lang: 'pl' },
   { label: 'العربية', value: 'ar', description: 'Al-ʿArabīyah', lang: 'ar' },
@@ -79,8 +85,12 @@ const wikipediaLanguages = [
   { label: 'Русский', value: 'ru', description: 'Russkiy', lang: 'ru' },
   { label: 'Հայերեն', value: 'hy', description: 'Hayeren', lang: 'hy' },
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
-] as const;
+];
 
-export type wikipediaLanguage = (typeof wikipediaLanguages)[number]['value'];
+const wikiadviserLanguagesList = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 
-export default wikipediaLanguages;
+export const wikiadviserLanguages: WikipediaLanguage =
+  wikipediaLanguages.filter((lang) =>
+    wikiadviserLanguagesList.includes(lang.value)
+  );
+export type wikiadviserLanguage = (typeof wikiadviserLanguagesList)[number];

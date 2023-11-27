@@ -5,7 +5,7 @@
       <q-page class="flex">
         <div class="column col">
           <router-view v-if="session" :session="session" />
-          <signin-page v-else />
+          <authentication-page v-else />
         </div>
       </q-page>
     </q-page-container>
@@ -17,7 +17,7 @@ import { Session } from '@supabase/supabase-js';
 import { useMeta } from 'quasar';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
-import SigninPage from 'src/pages/auth/SigninPage.vue';
+import AuthenticationPage from 'src/pages/auth/AuthenticationPage.vue';
 import { onMounted, ref } from 'vue';
 
 const session = ref<Session | null>();

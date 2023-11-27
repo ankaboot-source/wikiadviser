@@ -45,17 +45,25 @@ class PlaywrightAutomator {
   }
 
   private async getPageInContext(): Promise<Page> {
-    const page = await (await this.browserContext).newPage();
-
-    await page.goto(
-      `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
-      { waitUntil: 'networkidle' }
+    const loggedInResponse = await (
+      await this.browserContext
+    ).request.get(
+      `${this.mediawikiBaseURL}/api.php?action=query&meta=userinfo&format=json`
     );
+    const data = await loggedInResponse.json();
+    const isLoggedIn = !!data.query.userinfo.id;
 
-    await page.fill('#wpName1', this.MediawikiAdminUsername);
-    await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-    await page.click('#wpRemember');
-    await page.click('#wpLoginAttempt');
+    const page = await (await this.browserContext).newPage();
+    if (!isLoggedIn) {
+      await page.goto(
+        `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
+        { waitUntil: 'networkidle' }
+      );
+      await page.fill('#wpName1', this.MediawikiAdminUsername);
+      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
+      await page.click('#wpRemember');
+      await page.click('#wpLoginAttempt');
+    }
 
     return page;
   }

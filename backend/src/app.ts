@@ -25,7 +25,8 @@ const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
 const app = express();
 
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
-const wikipediaApi = new WikipediaApiInteractor();
+
+const WikipediaApi = new WikipediaApiInteractor();
 
 if (SENTRY_DSN) {
   initializeSentry(app, SENTRY_DSN);
@@ -44,7 +45,7 @@ app.put('/article/changes', async (req, res) => {
     const { user } = res.locals;
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language);
+    const mediawiki = new MediawikiClient(language, WikipediaApi);
     await mediawiki.updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
@@ -126,7 +127,7 @@ app.post('/article', async (req, res) => {
 
   const articleId = await insertArticle(title, userId, language, description);
   try {
-    const mediawiki = new MediawikiClient(language);
+    const mediawiki = new MediawikiClient(language, WikipediaApi);
     await mediawiki.importNewArticle(articleId, title);
 
     res
@@ -143,7 +144,7 @@ app.get('/wikipedia/articles', async (req, res) => {
   try {
     const term = req.query.term as string;
     const language = req.query.language as string;
-    const response = await wikipediaApi.getWikipediaArticles(term, language);
+    const response = await WikipediaApi.getWikipediaArticles(term, language);
     logger.info('Getting Wikipedia articles succeeded.');
     res.status(200).json({
       message: 'Getting Wikipedia articles succeeded.',
@@ -165,7 +166,7 @@ app.delete('/article', async (req, res) => {
     logger.info('Deleting', { articleId });
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language);
+    const mediawiki = new MediawikiClient(language, WikipediaApi);
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticle(articleId);
 

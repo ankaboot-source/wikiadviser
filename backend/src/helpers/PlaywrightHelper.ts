@@ -4,7 +4,7 @@ import logger from '../logger';
 const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
 
-class PlaywrightAutomator {
+export default class PlaywrightAutomator {
   private static instance: PlaywrightAutomator | null;
 
   private readonly browserContext: Promise<BrowserContext>;
@@ -126,5 +126,3 @@ class PlaywrightAutomator {
     return diffPage;
   }
 }
-
-export default PlaywrightAutomator;

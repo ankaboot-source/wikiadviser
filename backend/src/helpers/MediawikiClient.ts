@@ -6,14 +6,15 @@ import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
 
-const wikipediaApi = new WikipediaApiInteractor();
-
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
 class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
-  constructor(private readonly language: string) {
+  constructor(
+    private readonly language: string,
+    private readonly WikipediaApi: WikipediaApiInteractor
+  ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(this.language)!;
   }
 
@@ -189,7 +190,7 @@ class MediawikiClient {
     try {
       // Export
       logger.info(`Exporting file ${title}`);
-      const exportData = await wikipediaApi.exportArticleData(
+      const exportData = await this.WikipediaApi.exportArticleData(
         title,
         this.language
       );

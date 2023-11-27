@@ -80,6 +80,7 @@ module.exports = configure(function (/* ctx */) {
         WIKIADVISER_API_ENDPOINT: process.env.WIKIADVISER_API_ENDPOINT,
         MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
         WIKIADVISER_ROOT_DOMAIN: process.env.WIKIADVISER_ROOT_DOMAIN,
+        WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

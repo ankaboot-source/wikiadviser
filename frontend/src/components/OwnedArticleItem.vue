@@ -108,7 +108,7 @@ import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import wikipediaLanguages from 'src/data/wikipediaLanguages';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 const props = defineProps<{
   article: Article;
 }>();
@@ -184,7 +184,8 @@ async function removeArticle(articleId: string, articleTitle: string) {
 
 const language = computed(
   () =>
-    wikipediaLanguages.find((option) => props.article.language === option.lang)
-      ?.label
+    wikiadviserLanguages.find(
+      (option) => props.article.language === option.lang
+    )?.label
 );
 </script>

@@ -16,7 +16,7 @@
 }
 
 # Mediawiki
-{$MEDIAIWKI_DEV_ENDPOINT} {
+{$MEDIAWIKI_DEV_ENDPOINT} {
         log {
           output file /var/log/caddy/access-dev.log {
               roll_size 10MiB

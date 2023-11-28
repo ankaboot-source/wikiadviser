@@ -212,7 +212,7 @@ app.get('/authenticate', async (req, res) => {
       `
       ^(favicon.ico|(/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
         '|'
-      )})/(load.php?|(skins|resources)/)));
+      )})/(load.php?|(skins|resources)/)))
       `,
       'i'
     );

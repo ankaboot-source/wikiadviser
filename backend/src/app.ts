@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import express, { json } from 'express';
 import MediawikiClient from './helpers/MediawikiClient';
+import { PlayAutomatorFactory } from './helpers/PlaywrightHelper';
 import WikipediaApiInteractor from './helpers/WikipediaApiInteractor';
 import {
   getArticleParsedContent,
@@ -19,7 +20,6 @@ import logger from './logger';
 import authorizationMiddlware from './middleware/auth';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
-import { PlayAutomatorFactory } from './helpers/PlaywrightHelper';
 
 const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 
@@ -196,6 +196,8 @@ app.delete('/article', async (req, res) => {
   }
 });
 
+const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
+const wikiadviserLanguagesRexex = wikiadviserLanguages.join('|');
 app.get('/authenticate', async (req, res) => {
   try {
     const { user } = res.locals;
@@ -203,17 +205,11 @@ app.get('/authenticate', async (req, res) => {
     const forwardedMethod = req.headers['x-forwarded-method'];
 
     const articleIdRegEx = new RegExp(
-      `^/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
-        '|'
-      )})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      `^/(${wikiadviserLanguagesRexex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
       'i'
     );
     const allowedPrefixRegEx = new RegExp(
-      `
-      ^(favicon.ico|(/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
-        '|'
-      )})/(load.php?|(skins|resources)/)))
-      `,
+      `^(favicon.ico|(/(${wikiadviserLanguagesRexex})/(load.php?|(skins|resources)/)))`,
       'i'
     );
 
@@ -221,12 +217,12 @@ app.get('/authenticate', async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
-    const forwardUriAllowedPrefixes = JSON.parse(
-      process.env.WIKIADVISER_LANGUAGES!
-    ).map((lang: string) => `/${lang}/api.php`);
-    const forwardUriStartsWith = JSON.parse(
-      process.env.WIKIADVISER_LANGUAGES!
-    ).map((lang: string) => `/${lang}/api.php?`);
+    const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
+      (lang: string) => `/${lang}/api.php`
+    );
+    const forwardUriStartsWith = wikiadviserLanguages.map(
+      (lang: string) => `/${lang}/api.php?`
+    );
 
     const hasAllowedPrefixes =
       (forwardedMethod === 'POST' &&

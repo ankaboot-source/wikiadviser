@@ -1,5 +1,5 @@
 interface WikipediaLanguage {
-  lable: string;
+  label: string;
   value: string;
   description?: string;
   lang: string;
@@ -89,7 +89,7 @@ const wikipediaLanguages: WikipediaLanguage[] = [
 
 const wikiadviserLanguagesList = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 
-export const wikiadviserLanguages: WikipediaLanguage =
+export const wikiadviserLanguages: WikipediaLanguage[] =
   wikipediaLanguages.filter((lang) =>
     wikiadviserLanguagesList.includes(lang.value)
   );

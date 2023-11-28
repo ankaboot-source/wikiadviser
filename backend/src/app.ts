@@ -19,8 +19,9 @@ import logger from './logger';
 import authorizationMiddlware from './middleware/auth';
 import corsMiddleware from './middleware/cors';
 import initializeSentry from './middleware/sentry';
+import { PlayAutomatorFactory } from './helpers/PlaywrightHelper';
 
-const { WIKIADVISER_API_PORT, WIKIADVISER_API_IP, SENTRY_DSN } = process.env;
+const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 
 const app = express();
 
@@ -45,7 +46,11 @@ app.put('/article/changes', async (req, res) => {
     const { user } = res.locals;
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
@@ -82,7 +87,7 @@ app.get('/article/changes', async (req, res) => {
   try {
     const articleId = req.query.articleId as string;
     const changes = await getChangesAndParsedContent(articleId);
-    logger.info({ articleId }, 'Parsed Changes recieved');
+    logger.debug(`Getting Parsed Changes for article: ${articleId}`);
     res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', changes });
@@ -127,7 +132,11 @@ app.post('/article', async (req, res) => {
 
   const articleId = await insertArticle(title, userId, language, description);
   try {
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.importNewArticle(articleId, title);
 
     res
@@ -166,7 +175,11 @@ app.delete('/article', async (req, res) => {
     logger.info('Deleting', { articleId });
 
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language, WikipediaApi);
+    const mediawiki = new MediawikiClient(
+      language,
+      WikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticle(articleId);
 
@@ -193,31 +206,44 @@ app.get('/authenticate', async (req, res) => {
     const forwardedUri = req.headers['x-forwarded-uri'];
     const forwardedMethod = req.headers['x-forwarded-method'];
 
-    const articleIdRegEx = /^\/w\/index.php\/([0-9a-f-]{36})([?/]|$)/i;
-    const allowedPrefixRegEx =
-      /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
-
-    // Authorize requests coming from backend to mediaWiki
-    if (req.headers['x-real-ip'] === WIKIADVISER_API_IP) {
-      logger.info({
-        message: 'Authorized: Request coming from backend',
-        headers: req.headers
-      });
-      return res.sendStatus(200);
-    }
+    const articleIdRegEx = new RegExp(
+      `^/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
+        '|'
+      )})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      'i'
+    );
+    const allowedPrefixRegEx = new RegExp(
+      `
+      ^(favicon.ico|(/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
+        '|'
+      )})/(load.php?|(skins|resources)/)));
+      `,
+      'i'
+    );
 
     if (!user || !(typeof forwardedUri === 'string')) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
+    const forwardUriAllowedPrefixes = JSON.parse(
+      process.env.WIKIADVISER_LANGUAGES!
+    ).map((lang: string) => `/${lang}/api.php`);
+    const forwardUriStartsWith = JSON.parse(
+      process.env.WIKIADVISER_LANGUAGES!
+    ).map((lang: string) => `/${lang}/api.php?`);
+
     const hasAllowedPrefixes =
-      (forwardedMethod === 'POST' && forwardedUri === '/w/api.php') ||
+      (forwardedMethod === 'POST' &&
+        forwardUriAllowedPrefixes.any(
+          (prefix: string) => forwardedUri === prefix
+        )) ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
       const isRequestFromVisualEditor =
-        forwardedUri.startsWith('/w/api.php?') &&
-        req.query.action === 'visualeditor';
+        forwardUriStartsWith.any((prefix: string) =>
+          forwardedUri.startsWith(prefix)
+        ) && req.query.action === 'visualeditor';
 
       const articleId = isRequestFromVisualEditor
         ? (req.query.page as string)

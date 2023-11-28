@@ -1,7 +1,7 @@
 import { AxiosInstance } from 'axios';
 import mediawikiApiInstances from '../api/mediawikiApiInstances';
 import logger from '../logger';
-import PlaywrightAutomator from './PlaywrightHelper';
+import { PlaywrightAutomator } from './PlaywrightHelper';
 import WikipediaApiInteractor from './WikipediaApiInteractor';
 import { refineArticleChanges } from './parsingHelper';
 import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
@@ -13,7 +13,8 @@ class MediawikiClient {
 
   constructor(
     private readonly language: string,
-    private readonly WikipediaApi: WikipediaApiInteractor
+    private readonly wikipediaApi: WikipediaApiInteractor,
+    private readonly mediawikiAutomator: PlaywrightAutomator
   ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(this.language)!;
   }
@@ -190,7 +191,7 @@ class MediawikiClient {
     try {
       // Export
       logger.info(`Exporting file ${title}`);
-      const exportData = await this.WikipediaApi.exportArticleData(
+      const exportData = await this.wikipediaApi.exportArticleData(
         title,
         this.language
       );
@@ -198,10 +199,7 @@ class MediawikiClient {
 
       // Import
       logger.info(`Importing into our instance file ${title}`);
-      await PlaywrightAutomator.getInstance(this.language).importMediaWikiPage(
-        articleId,
-        exportData
-      );
+      await this.mediawikiAutomator.importMediaWikiPage(articleId, exportData);
       logger.info(`Successfully imported file ${title}`);
 
       // Rename
@@ -236,9 +234,11 @@ class MediawikiClient {
       latestRevid
     });
 
-    const diffPage = await PlaywrightAutomator.getInstance(
-      this.language
-    ).getMediaWikiDiffHtml(articleId, originalRevid, latestRevid);
+    const diffPage = await this.mediawikiAutomator.getMediaWikiDiffHtml(
+      articleId,
+      originalRevid,
+      latestRevid
+    );
 
     const { changesToUpsert, htmlContent } = await refineArticleChanges(
       articleId,

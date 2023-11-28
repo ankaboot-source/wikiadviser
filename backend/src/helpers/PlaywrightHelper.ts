@@ -1,59 +1,32 @@
 import { BrowserContext, Page, chromium } from 'playwright';
-import logger from '../logger';
 
-const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
+const { MEDIAWIKI_INTERNAL_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
 
-export default class PlaywrightAutomator {
-  private static instance: PlaywrightAutomator | null;
+export class PlaywrightAutomator {
+  private mediawikiBaseURL: string;
 
-  private readonly browserContext: Promise<BrowserContext>;
-
-  private readonly MediawikiEndpoint = MEDIAWIKI_ENDPOINT!;
+  private readonly MediawikiEndpoint = MEDIAWIKI_INTERNAL_ENDPOINT!;
 
   private readonly MediawikiAdminUsername = MW_ADMIN_USERNAME!;
 
   private readonly MediawikiAdminPassword = MW_ADMIN_PASSWORD!;
 
-  private mediawikiBaseURL!: string;
-
-  private language!: string;
-
-  constructor() {
-    this.browserContext = PlaywrightAutomator.setContext();
-  }
-
-  public static getInstance(language: string): PlaywrightAutomator {
-    if (!PlaywrightAutomator.instance) {
-      PlaywrightAutomator.instance = new PlaywrightAutomator();
-    }
-    PlaywrightAutomator.instance.language = language;
-    PlaywrightAutomator.instance.mediawikiBaseURL = `${PlaywrightAutomator.instance.MediawikiEndpoint}/${language}`;
-
-    return PlaywrightAutomator.instance;
-  }
-
-  private static async setContext(): Promise<BrowserContext> {
-    try {
-      const browser = await chromium.launch();
-      const context = await browser.newContext({ ignoreHTTPSErrors: true });
-      return context;
-    } catch (error) {
-      logger.error('Error when setting browser context', error);
-      throw error;
-    }
+  constructor(
+    private readonly browserContext: BrowserContext,
+    private readonly language: string
+  ) {
+    this.mediawikiBaseURL = `${this.MediawikiEndpoint}/${this.language}`;
   }
 
   private async getPageInContext(): Promise<Page> {
-    const loggedInResponse = await (
-      await this.browserContext
-    ).request.get(
+    const loggedInResponse = await this.browserContext.request.get(
       `${this.mediawikiBaseURL}/api.php?action=query&meta=userinfo&format=json`
     );
     const data = await loggedInResponse.json();
     const isLoggedIn = !!data.query.userinfo.id;
+    const page = await this.browserContext.newPage();
 
-    const page = await (await this.browserContext).newPage();
     if (!isLoggedIn) {
       await page.goto(
         `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
@@ -126,3 +99,12 @@ export default class PlaywrightAutomator {
     return diffPage;
   }
 }
+
+const browser = (async () =>
+  (await chromium.launch({ headless: false })).newContext())();
+
+export const PlayAutomatorFactory = async (language: string) => {
+  const context = await browser;
+  const playAutomator = new PlaywrightAutomator(context, language);
+  return playAutomator;
+};

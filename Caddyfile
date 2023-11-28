@@ -1,3 +1,4 @@
+# Wikiadviser
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
 	root * /usr/share/caddy/html
 	encode gzip
@@ -12,5 +13,62 @@
 	request_body {
 		max_size 10MB
 	}
+}
+
+# Mediawiki
+{$MEDIAWIKI_DEV_ENDPOINT} {
+        log {
+          output file /var/log/caddy/access-dev.log {
+              roll_size 10MiB
+              roll_keep 10
+              roll_keep_for 24h
+          }
+        }
+        rewrite /robots.txt ./robots.txt # Disable search engine indexing
+        reverse_proxy wiki:8081
+}
+
+{$MEDIAWIKI_DEMO_ENDPOINT} {
+        log {
+          output file /var/log/caddy/access-demo.log {
+              roll_size 10MiB
+              roll_keep 10
+              roll_keep_for 24h
+          }
+        }
+
+        @publicip not client_ip private_ranges
+       
+        forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
+          header_up Host {upstream_hostport}
+          header_up X-Real-IP {remote_host}
+          uri /authenticate
+          copy_headers X-User X-Client-IP X-Forwarded-Uri
+        }
+
+        rewrite /robots.txt ./robots.txt # Disable search engine indexing
+        reverse_proxy wiki:8080
+}
+
+{$MEDIAWIKI_PROD_ENDPOINT} {
+        log {
+          output file /var/log/caddy/access-prod.log {
+              roll_size 10MiB
+              roll_keep 10
+              roll_keep_for 24h
+          }
+        }
+        
+        @publicip not client_ip private_ranges
+
+        forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
+          header_up Host {upstream_hostport}
+          header_up X-Real-IP {remote_host}
+          uri /authenticate
+          copy_headers X-User X-Client-IP X-Forwarded-Uri
+        }
+
+        rewrite /robots.txt ./robots.txt # Disable search engine indexing
+        reverse_proxy wiki:8082
 }
 

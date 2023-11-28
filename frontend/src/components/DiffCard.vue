@@ -75,7 +75,6 @@ import { copyToClipboard, useQuasar } from 'quasar';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
 import 'src/css/styles/diff.scss';
-import 'src/css/styles/index.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, UserRole } from 'src/types';
@@ -88,6 +87,13 @@ const props = defineProps<{
   role: UserRole;
   editorPermission: boolean | null;
 }>();
+
+// There is an error when passing a variable into import()
+if (props.article.language === 'fr') {
+  import('src/css/styles/fr-common.css');
+} else if (props.article.language === 'en') {
+  import('src/css/styles/en-common.css');
+}
 
 function setTabindexForElements(selector: string, tabindexValue: string) {
   const elements = document.querySelectorAll(selector);
@@ -318,7 +324,7 @@ b {
 
 .ve-ui-diffElement,
 [data-id] {
-  font-family: merriweahter;
+  font-family: sans-serif;
 }
 
 .q-list [data-id] {

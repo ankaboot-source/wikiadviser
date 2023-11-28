@@ -212,21 +212,38 @@ app.get('/authenticate', async (req, res) => {
       )})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
       'i'
     );
-    const allowedPrefixRegEx =
-      /^(favicon.ico|(\/(load\.php\?|(skins|resources)\/)))/i;
+    const allowedPrefixRegEx = new RegExp(
+      `
+      ^(favicon.ico|(/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
+        '|'
+      )})/(load.php?|(skins|resources)/)));
+      `,
+      'i'
+    );
 
     if (!user || !(typeof forwardedUri === 'string')) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
+    const forwardUriAllowedPrefixes = JSON.parse(
+      process.env.WIKIADVISER_LANGUAGES!
+    ).map((lang: string) => `/${lang}/api.php`);
+    const forwardUriStartsWith = JSON.parse(
+      process.env.WIKIADVISER_LANGUAGES!
+    ).map((lang: string) => `/${lang}/api.php?`);
+
     const hasAllowedPrefixes =
-      (forwardedMethod === 'POST' && forwardedUri === '/api.php') ||
+      (forwardedMethod === 'POST' &&
+        forwardUriAllowedPrefixes.any(
+          (prefix: string) => forwardedUri === prefix
+        )) ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
       const isRequestFromVisualEditor =
-        forwardedUri.startsWith('/api.php?') &&
-        req.query.action === 'visualeditor';
+        forwardUriStartsWith.any((prefix: string) =>
+          forwardedUri.startsWith(prefix)
+        ) && req.query.action === 'visualeditor';
 
       const articleId = isRequestFromVisualEditor
         ? (req.query.page as string)

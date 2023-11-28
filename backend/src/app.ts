@@ -198,10 +198,6 @@ app.delete('/article', async (req, res) => {
 
 app.get('/authenticate', async (req, res) => {
   try {
-    logger.info({
-      message: 'Authenticating:',
-      headers: req.headers
-    });
     const { user } = res.locals;
     const forwardedUri = req.headers['x-forwarded-uri'];
     const forwardedMethod = req.headers['x-forwarded-method'];
@@ -234,14 +230,14 @@ app.get('/authenticate', async (req, res) => {
 
     const hasAllowedPrefixes =
       (forwardedMethod === 'POST' &&
-        forwardUriAllowedPrefixes.any(
+        forwardUriAllowedPrefixes.some(
           (prefix: string) => forwardedUri === prefix
         )) ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
       const isRequestFromVisualEditor =
-        forwardUriStartsWith.any((prefix: string) =>
+        forwardUriStartsWith.some((prefix: string) =>
           forwardedUri.startsWith(prefix)
         ) && req.query.action === 'visualeditor';
 

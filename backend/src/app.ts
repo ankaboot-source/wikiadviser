@@ -207,25 +207,25 @@ app.get('/authenticate', async (req, res) => {
     const forwardedMethod = req.headers['x-forwarded-method'];
 
     const articleIdRegEx = new RegExp(
-      `^/w/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
+      `^/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
         '|'
       )})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
       'i'
     );
     const allowedPrefixRegEx =
-      /^(favicon.ico|(\/w\/(load\.php\?|(skins|resources)\/)))/i;
+      /^(favicon.ico|(\/(load\.php\?|(skins|resources)\/)))/i;
 
     if (!user || !(typeof forwardedUri === 'string')) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
 
     const hasAllowedPrefixes =
-      (forwardedMethod === 'POST' && forwardedUri === '/w/api.php') ||
+      (forwardedMethod === 'POST' && forwardedUri === '/api.php') ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
       const isRequestFromVisualEditor =
-        forwardedUri.startsWith('/w/api.php?') &&
+        forwardedUri.startsWith('/api.php?') &&
         req.query.action === 'visualeditor';
 
       const articleId = isRequestFromVisualEditor

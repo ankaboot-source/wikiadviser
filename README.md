@@ -90,7 +90,10 @@
               }
             }
     
-    	   	  @publicip not client_ip private_ranges
+    	   	  @publicip {
+              not client_ip private_ranges
+              not client_ip WIKI_ADVISER_BACKEND_IP
+            }
             forward_auth @publicip https://api.wikiadviser.io {
               header_up Host {upstream_hostport}
               header_up X-Real-IP {remote_host}

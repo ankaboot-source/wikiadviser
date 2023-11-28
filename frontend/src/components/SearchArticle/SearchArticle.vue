@@ -89,13 +89,11 @@ const term = ref('');
 const isSearching = ref(false);
 const searchResults = ref<SearchResult[]>();
 
-const defaultArticleLanguage = wikiadviserLanguages.find(
-  (option) => window.navigator.language.split('-')[0] === option.lang
-) || {
-  label: 'English',
-  value: 'en',
-  description: 'English',
-};
+const defaultArticleLanguage =
+  wikiadviserLanguages.find(
+    (option) => window.navigator.language.split('-')[0] === option.lang
+  ) || wikiadviserLanguages[0];
+
 const articleLanguage = ref(defaultArticleLanguage);
 
 watch([term, articleLanguage], async ([term]) => {

@@ -205,7 +205,7 @@ app.get('/authenticate', async (req, res) => {
     const articleIdRegEx = new RegExp(
       `^/(${JSON.parse(process.env.WIKIADVISER_LANGUAGES!).join(
         '|'
-      )})/index.php/([0-9a-f-]{1,36})(?.*|/|$))`,
+      )})/index.php/([0-9a-f-]{1,36})(?.*|/|$)`,
       'i'
     );
     const allowedPrefixRegEx = new RegExp(

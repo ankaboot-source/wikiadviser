@@ -1,6 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import { WikipediaSearchResult } from '../types';
 import WikipediaInteractor from './WikipediaInteractor';
+import { processExportedArticle } from './parsingHelper';
 
 export default class WikipediaApiInteractor implements WikipediaInteractor {
   private wpProxy: string;
@@ -14,7 +15,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
 
   private static searchResultsLimit = 10;
 
-  async getWikipediaArticles(term: string, language = 'en') {
+  async getWikipediaArticles(term: string, language: string) {
     const response = await this.api.get('', {
       params: {
         action: 'query',
@@ -61,5 +62,34 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
       }
     }
     return results;
+  }
+
+  async exportArticleData(title: string, language: string): Promise<string> {
+    const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
+      params: {
+        title: 'Special:Export',
+        pages: title,
+        templates: true,
+        lang: language,
+        curonly: true
+      },
+      responseType: 'stream'
+    });
+
+    return new Promise<string>((resolve, reject) => {
+      let exportData = '';
+      exportResponse.data.on('data', (chunk: string) => {
+        exportData += chunk;
+      });
+
+      exportResponse.data.on('end', () => {
+        exportData = processExportedArticle(exportData, language);
+        resolve(exportData);
+      });
+
+      exportResponse.data.on('error', (error: Error) => {
+        reject(error);
+      });
+    });
   }
 }

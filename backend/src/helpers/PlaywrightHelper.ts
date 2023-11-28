@@ -1,34 +1,36 @@
-import { BrowserContext, Cookie, chromium, Page } from 'playwright';
+import { BrowserContext, Page, chromium } from 'playwright';
 import logger from '../logger';
 
 const { MEDIAWIKI_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
 
-class PlaywrightMediaWikiAutomation {
-  private static instance: PlaywrightMediaWikiAutomation | null;
+export default class PlaywrightAutomator {
+  private static instance: PlaywrightAutomator | null;
 
   private readonly browserContext: Promise<BrowserContext>;
 
-  constructor(
-    private readonly MediawikiHost: string,
-    private readonly MediawikiAdminUsername: string,
-    private readonly MediawikiAdminPassword: string
-  ) {
-    if (PlaywrightMediaWikiAutomation.instance) {
-      throw new Error(
-        'PlaywrightMediaWikiAutomation class cannot be instantiated more than once.'
-      );
+  private readonly MediawikiEndpoint = MEDIAWIKI_ENDPOINT!;
+
+  private readonly MediawikiAdminUsername = MW_ADMIN_USERNAME!;
+
+  private readonly MediawikiAdminPassword = MW_ADMIN_PASSWORD!;
+
+  private mediawikiBaseURL!: string;
+
+  private language!: string;
+
+  constructor() {
+    this.browserContext = PlaywrightAutomator.setContext();
+  }
+
+  public static getInstance(language: string): PlaywrightAutomator {
+    if (!PlaywrightAutomator.instance) {
+      PlaywrightAutomator.instance = new PlaywrightAutomator();
     }
+    PlaywrightAutomator.instance.language = language;
+    PlaywrightAutomator.instance.mediawikiBaseURL = `${PlaywrightAutomator.instance.MediawikiEndpoint}/${language}`;
 
-    if (!MediawikiHost || !MediawikiAdminPassword || !MediawikiAdminUsername) {
-      throw new Error(
-        'Incomplete instantiation: Please provide valid values for MediawikiHost, MediawikiAdminPassword, and MediawikiAdminUsername.'
-      );
-    }
-
-    PlaywrightMediaWikiAutomation.instance = this;
-
-    this.browserContext = PlaywrightMediaWikiAutomation.setContext();
+    return PlaywrightAutomator.instance;
   }
 
   private static async setContext(): Promise<BrowserContext> {
@@ -43,22 +45,20 @@ class PlaywrightMediaWikiAutomation {
   }
 
   private async getPageInContext(): Promise<Page> {
+    const loggedInResponse = await (
+      await this.browserContext
+    ).request.get(
+      `${this.mediawikiBaseURL}/api.php?action=query&meta=userinfo&format=json`
+    );
+    const data = await loggedInResponse.json();
+    const isLoggedIn = !!data.query.userinfo.id;
+
     const page = await (await this.browserContext).newPage();
-
-    // Check if the session cookie exists and has not expired
-    const sessionCookie = await (await this.browserContext).cookies();
-    const hasExpired =
-      sessionCookie.length === 0 ||
-      sessionCookie.some(
-        (c: Cookie) => c.expires && new Date(c.expires * 1000) < new Date()
-      );
-
-    if (hasExpired) {
+    if (!isLoggedIn) {
       await page.goto(
-        `${this.MediawikiHost}/w/index.php?title=Special:UserLogin`,
+        `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
         { waitUntil: 'networkidle' }
       );
-
       await page.fill('#wpName1', this.MediawikiAdminUsername);
       await page.fill('#wpPassword1', this.MediawikiAdminPassword);
       await page.click('#wpRemember');
@@ -75,17 +75,13 @@ class PlaywrightMediaWikiAutomation {
    */
   async importMediaWikiPage(
     articleId: string,
-    exportData: string,
-    language: string
+    exportData: string
   ): Promise<void> {
     const page = await this.getPageInContext();
 
-    await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=Special:Import&uselang=${language}`,
-      {
-        waitUntil: 'networkidle'
-      }
-    );
+    await page.goto(`${this.mediawikiBaseURL}/index.php?title=Special:Import`, {
+      waitUntil: 'networkidle'
+    });
 
     await page.locator('#ooui-php-2').setInputFiles([
       {
@@ -117,7 +113,7 @@ class PlaywrightMediaWikiAutomation {
   ): Promise<string> {
     const page = await this.getPageInContext();
     await page.goto(
-      `${this.MediawikiHost}/w/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
+      `${this.mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
     );
 
@@ -130,12 +126,3 @@ class PlaywrightMediaWikiAutomation {
     return diffPage;
   }
 }
-
-const MediaWikiAutomator = new PlaywrightMediaWikiAutomation(
-  // TODO: Remove string type when Zod is implemented
-  MEDIAWIKI_ENDPOINT as string,
-  MW_ADMIN_USERNAME as string,
-  MW_ADMIN_PASSWORD as string
-);
-
-export default MediaWikiAutomator;

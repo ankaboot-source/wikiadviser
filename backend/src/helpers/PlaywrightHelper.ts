@@ -101,7 +101,7 @@ export class PlaywrightAutomator {
 }
 
 const browser = (async () =>
-  (await chromium.launch({ headless: false })).newContext())();
+  (await chromium.launch()).newContext())();
 
 export const PlayAutomatorFactory = async (language: string) => {
   const context = await browser;

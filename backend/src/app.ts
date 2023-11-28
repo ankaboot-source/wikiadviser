@@ -197,7 +197,7 @@ app.delete('/article', async (req, res) => {
 });
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
-const wikiadviserLanguagesRexex = wikiadviserLanguages.join('|');
+const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
 app.get('/authenticate', async (req, res) => {
   try {
     const { user } = res.locals;
@@ -205,11 +205,11 @@ app.get('/authenticate', async (req, res) => {
     const forwardedMethod = req.headers['x-forwarded-method'];
 
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRexex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
       'i'
     );
     const allowedPrefixRegEx = new RegExp(
-      `^(favicon.ico|(/(${wikiadviserLanguagesRexex})/(load.php?|(skins|resources)/)))`,
+      `^(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php?|(skins|resources)/)))`,
       'i'
     );
 

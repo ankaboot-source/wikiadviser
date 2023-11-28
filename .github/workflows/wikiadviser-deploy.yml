@@ -66,7 +66,7 @@ jobs:
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env
-            echo "WIKIADVISER_DEMO_ENDPOINT=$MEDIAWIKI_DEMO_ENDPOINT" >> $wikiadviser_path/.env
+            echo "MEDIAWIKI_DEMO_ENDPOINT=$MEDIAWIKI_DEMO_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_IP=$WIKIADVISER_API_IP" >> $wikiadviser_path/.env
             echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env         

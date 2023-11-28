@@ -243,7 +243,7 @@ app.get('/authenticate', async (req, res) => {
 
       const articleId = isRequestFromVisualEditor
         ? (req.query.page as string)
-        : forwardedUri.match(articleIdRegEx)?.[1];
+        : forwardedUri.match(articleIdRegEx)?.[2];
 
       const permission = articleId
         ? await hasPermission(articleId, user.id)

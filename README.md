@@ -90,13 +90,12 @@
               }
             }
     
-    	   	@publicip not client_ip private_ranges
-           
+    	   	  @publicip not client_ip private_ranges
             forward_auth @publicip https://api.wikiadviser.io {
-             header_up Host {upstream_hostport}
-             header_up X-Real-IP {remote_host}
-             uri /authenticate
-             copy_headers X-User X-Client-IP X-Forwarded-Uri
+              header_up Host {upstream_hostport}
+              header_up X-Real-IP {remote_host}
+              uri /authenticate
+              copy_headers X-User X-Client-IP X-Forwarded-Uri
             }
             
             rewrite /robots.txt ./robots.txt # Disable search engine indexing

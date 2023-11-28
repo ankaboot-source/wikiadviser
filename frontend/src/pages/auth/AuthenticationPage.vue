@@ -20,7 +20,7 @@
                 },
                 fontSizes: {
                   baseBodySize: '15px',
-                }
+                },
               },
             },
           }"

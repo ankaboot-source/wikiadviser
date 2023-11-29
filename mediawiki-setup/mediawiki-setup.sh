@@ -7,6 +7,16 @@ export DEBIAN_FRONTEND=noninteractive
 environments=("dev" "demo" "prod")
 user="wiki-user"
 
+############Add new languages down below (DB related)##############
+languages=("en" "fr")
+en_databases=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
+fr_databases=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
+en_users=("$en_db_dev_user" "$en_db_demo_user" "$en_db_prod_user")
+fr_users=("$fr_db_dev_user" "$fr_db_demo_user" "$fr_db_prod_user")
+en_passwords=("$en_db_dev_pwd" "$en_db_demo_pwd" "$en_db_prod_pwd")
+fr_passwords=("$fr_db_dev_pwd" "$fr_db_demo_pwd" "$fr_db_prod_pwd")
+###################################################################
+
 # Installation
 apt update && apt upgrade
 # Apache2
@@ -33,39 +43,31 @@ EOF
 systemctl enable mariadb
 systemctl start mariadb
 
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE dev_wiki_en;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$en_db_dev_user'@'localhost' IDENTIFIED BY '$en_db_dev_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON dev_wiki_en.* TO '$en_db_dev_user'@'localhost' WITH GRANT OPTION;"
+for ((i=0; i<${#en_databases[@]}; i++)) ;
+do
+    for lang in "${languages[@]}"; do
+        db_name="${lang}_databases[i]"
+        eval db_name=\${$db_name}
+        user_name="${lang}_users[i]"
+        eval user_name=\${$user_name}
+        user_pwd="${lang}_passwords[i]"
+        eval user_pwd=\${$user_pwd}
 
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE dev_wiki_fr;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$fr_db_dev_user'@'localhost' IDENTIFIED BY '$fr_db_dev_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON dev_wiki_fr.* TO '$fr_db_dev_user'@'localhost' WITH GRANT OPTION;"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE demo_wiki_en;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$en_db_demo_user'@'localhost' IDENTIFIED BY '$en_db_demo_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON demo_wiki_en.* TO '$en_db_dev_user'@'localhost' WITH GRANT OPTION;"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE demo_wiki_fr;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$fr_db_demo_user'@'localhost' IDENTIFIED BY '$fr_db_demo_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON demo_wiki_fr.* TO '$fr_db_demo_user'@'localhost' WITH GRANT OPTION;"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE prod_wiki_en;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$en_db_prod_user'@'localhost' IDENTIFIED BY '$en_db_prod_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON demo_wiki_en.* TO '$en_db_dev_user'@'localhost' WITH GRANT OPTION;"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE DATABASE prod_wiki_fr;"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "CREATE USER '$fr_db_prod_user'@'localhost' IDENTIFIED BY '$fr_db_prod_pwd';"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "GRANT ALL PRIVILEGES ON prod_wiki_fr.* TO '$fr_db_prod_user'@'localhost' WITH GRANT OPTION;"
+        mariadb -u root -e "CREATE DATABASE $db_name;"
+        mariadb -u root -e "CREATE USER '$user_name'@'localhost' IDENTIFIED BY '$user_pwd';"
+        mariadb -u root -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$user_name'@'localhost' WITH GRANT OPTION;"
+   done
+done
 
 # Import database dumps
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use dev_wiki_en; source /home/'$user'/directory/en-wiki-dump.sql"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use dev_wiki_fr; source /home/'$user'/directory/fr-wiki-dump.sql"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use demo_wiki_en; source /home/'$user'/directory/en-wiki-dump.sql"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use demo_wiki_fr; source /home/'$user'/directory/fr-wiki-dump.sql"
-
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use prod_wiki_en; source /home/'$user'/directory/en-wiki-dump.sql"
-mariadb -u root -p$MARIADB_ROOT_PWD -e "use prod_wiki_fr; source /home/'$user'/directory/fr-wiki-dump.sql"
+for ((i=0; i<${#en_databases[@]}; i++))
+do
+    for lang in "${languages[@]}"; do
+        db_name="${lang}_databases[i]"
+        eval db_name=\${$db_name}
+        mariadb -u root  -e "use $db_name; source /home/'$user'/directory/$lang-wiki-dump.sql"
+    done
+done
 
 # Install Mediawiki source code
 for environment in "${environments[@]}"; do

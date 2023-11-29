@@ -15,7 +15,7 @@
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
-import { ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
@@ -50,10 +50,17 @@ async function loadingChanges() {
     });
   }
 }
-
-window.addEventListener('message', async (event) => {
+async function handleUpdateChanges(event: MessageEvent) {
   if (event.data === 'updateChanges') {
     await loadingChanges();
   }
+}
+
+onMounted(() => {
+  window.addEventListener('message', handleUpdateChanges);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('message', handleUpdateChanges);
 });
 </script>

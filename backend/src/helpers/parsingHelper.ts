@@ -225,7 +225,15 @@ export function processExportedArticle(
 
   const updatedPageContent = pageContent.replace(
     /\[\[([^\]]*)\]\]/g,
-    `[[wikipedia:${sourceLanguage}:$1|$1]]`
+    (_, capturedContent) => {
+      const lastIndex = capturedContent.lastIndexOf('|');
+      const pageTitle =
+        lastIndex !== -1
+          ? capturedContent.substring(lastIndex + 1)
+          : capturedContent;
+
+      return `[[wikipedia:${sourceLanguage}:${pageTitle}|${pageTitle}]]`;
+    }
   );
 
   processedData =

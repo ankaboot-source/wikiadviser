@@ -13,9 +13,9 @@
           :appearance="{
             theme: ThemeSupa,
             style: {
-              message:{
+              message: {
                 fontSize: '15px',
-              }
+              },
             },
             variables: {
               default: {
@@ -48,8 +48,8 @@ onMounted(() => {
   // Replaces Azure name & logo with Microsoft.
   const signInButton = Array.from(
     document.querySelectorAll('.supabase-auth-ui_ui-button')
-    ).find((button) => button.textContent === 'Sign in with Azure');
-    
+  ).find((button) => button.textContent === 'Sign in with Azure');
+
   if (signInButton) {
     signInButton.innerHTML = `
       <svg 

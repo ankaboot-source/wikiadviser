@@ -58,7 +58,7 @@ onMounted(() => {
           viewBox="0 0 30 30"
           width="21px"
           height="21px"
-          style="margin-left: 16px;"
+          style="margin-left: 17px;"
         >
           <path fill="#f3f3f3" d="M0 0h23v23H0z"/>
           <path fill="#f35325" d="M1 1h10v10H1z"/>

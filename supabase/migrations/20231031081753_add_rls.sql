@@ -8,7 +8,7 @@ ALTER TABLE permissions
 
 -- Security definer function to retrieve all data from the permissions table for a specific article_id
 CREATE SCHEMA private;
-CREATE OR REPLACE FUNCTION private.get_all_permissions_by_article_id(article_id uuid)
+CREATE OR REPLACE FUNCTION private.get_all_permissions_by_article_id(articleid uuid)
 RETURNS SETOF permissions
 LANGUAGE SQL
 SECURITY DEFINER
@@ -17,7 +17,7 @@ STABLE
 AS $$
   SELECT *
   FROM permissions p
-  WHERE p.article_id = article_id;
+  WHERE p.article_id = articleid;
 $$;
 
 -- RLS for TABLE articles --

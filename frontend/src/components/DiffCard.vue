@@ -175,7 +175,7 @@ async function copyShareLinkToClipboard() {
   });
 }
 
-const viewButton = { label: 'View', value: 'view', icon: 'visibility' };
+const viewButton = { label: 'Review', value: 'view', icon: 'thumbs_up_down' };
 const editButton = {
   label: 'Edit',
   value: 'edit',

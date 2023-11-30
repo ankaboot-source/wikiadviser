@@ -3,22 +3,43 @@
 # This script is for first test on a local machine where we suppose we have 6 different LocalSettings.php file
 # you should be logged in as root user to run this script with no problems
 
+###################################################################
+###############################VARS################################
+
 export DEBIAN_FRONTEND=noninteractive
 environments=("dev" "demo" "prod")
+project_dir=("wiki-dev" "wiki-demo" "wiki-prod")
+dev_port="8081"
+demo_port="8080"
+prod_port="8082"
+PRIVATE_IP="$PRIVATE_IP"
 user="wiki-user"
+CONF_DIR="/home/$user/wikiadviser/mediawiki-setup"
+
+#########################LocalSettings.php Related#####################
+SERVER_ENDPOINT=("https://wiki-dev.wikiadviser.io" "https://wiki-demo.wikiadviser.io" "https://wiki-prod.wikiadviser.io")
+URL_PATH=("/en" "/fr")
+LocalSettings_languages=("en" "fr")
+EN_DB_NAME=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
+FR_DB_NAME=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
+EN_DB_USER=("$EN_DB_DEV_USER" "$EN_DB_DEMO_USER" "$EN_DB_PROD_USER")
+FR_DB_USER=("$FR_DB_DEV_USER" "$FR_DB_DEMO_USER" "$FR_DB_PROD_USER")
+EN_DB_PASSWORD=("$EN_DB_DEV_PWD" "$EN_DB_DEMO_PWD" "$EN_DB_PROD_PWD")
+FR_DB_PASSWORD=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
 
 ############Add new languages down below (DB related)##############
 languages=("en" "fr")
 en_databases=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
 fr_databases=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
-en_users=("$en_db_dev_user" "$en_db_demo_user" "$en_db_prod_user")
-fr_users=("$fr_db_dev_user" "$fr_db_demo_user" "$fr_db_prod_user")
-en_passwords=("$en_db_dev_pwd" "$en_db_demo_pwd" "$en_db_prod_pwd")
-fr_passwords=("$fr_db_dev_pwd" "$fr_db_demo_pwd" "$fr_db_prod_pwd")
+en_users=("$EN_DB_DEV_USER" "$EN_DB_DEMO_USER" "$EN_DB_PROD_USER")
+fr_users=("$FR_DB_DEV_USER" "$FR_DB_DEMO_USER" "$FR_DB_PROD_USER")
+en_passwords=("$EN_DB_DEV_PWD" "$EN_DB_DEMO_PWD" "$EN_DB_PROD_PWD")
+fr_passwords=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
+###################################################################
 ###################################################################
 
 # Installation
-apt update && apt upgrade
+apt -y update && apt -y upgrade
 # Apache2
 apt install -y apache2
 systemctl enable apache2
@@ -69,6 +90,7 @@ do
     done
 done
 
+# Mediawiki Setup
 # Install Mediawiki source code
 for environment in "${environments[@]}"; do
     mkdir -p "/var/www/wiki-$environment"
@@ -78,82 +100,90 @@ curl -O https://releases.wikimedia.org/mediawiki/1.40/mediawiki-1.40.1.tar.gz
 tar -xf mediawiki-1.40.1.tar.gz
 
 for environment in "${environments[@]}"; do
-    cp -r mediawiki-1.40.1 /var/www/wiki-$environment/en
-    cp -r mediawiki-1.40.1 /var/www/wiki-$environment/fr
+    for lang in "${languages[@]}"; do
+        cp -r mediawiki-1.40.1 /var/www/wiki-$environment/$lang
+    done
 done
 
+#LocalSettings.php 
+SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[0]}" DB_USER="${EN_DB_USER[0]}" DB_PASSWORD="${EN_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[0]}" DB_USER="${FR_DB_USER[0]}" DB_PASSWORD="${FR_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_fr.php
+
+SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[1]}" DB_USER="${EN_DB_USER[1]}" DB_PASSWORD="${EN_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[1]}" DB_USER="${FR_DB_USER[1]}" DB_PASSWORD="${FR_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_fr.php
+
+SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[2]}" DB_USER="${EN_DB_USER[2]}" DB_PASSWORD="${EN_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[2]}" DB_USER="${FR_DB_USER[2]}" DB_PASSWORD="${FR_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_fr.php
+
 for environment in "${environments[@]}"; do
-    cp LocalSettings_"$environment"_en.php /var/www/wiki-$environment/en
-    cp LocalSettings_"$environment"_fr.php /var/www/wiki-$environment/fr
+    for lang in "${languages[@]}"; do
+        cp $CONF_DIR/LocalSettings_"$environment"_"$lang".php /var/www/wiki-$environment/$lang
+    done
 done
 
 # Install extensions
 # MyVisualEditor
-for environment in "${environments[@]}"; do
-    cp -r /home/$user/wikiadviser/MyVisualEditor /var/www/wiki-$environment/en/extensions/
-    cp -r /home/$user/wikiadviser/MyVisualEditor /var/www/wiki-$environment/fr/extensions/
+for environment in "${environments[@]}"; 
+    for lang in "${languages[@]}"; do
+        cp -r /home/$user/wikiadviser/MyVisualEditor /var/www/wiki-$environment/$lang/extensions/
+    done
 done
 
 # PageForms
 wget  https://github.com/wikimedia/mediawiki-extensions-PageForms/archive/5.6.3.zip
 for environment in "${environments[@]}"; do
-    unzip 5.6.3.zip -d /var/www/wiki-$environment/en/extensions/
-    unzip 5.6.3.zip -d /var/www/wiki-$environment/fr/extensions/
-    mv /var/www/wiki-$environment/fr/extensions/mediawiki-extensions-PageForms-5.6.3/ /var/www/wiki-$environment/en/extensions/PageForms
-    mv /var/www/wiki-$environment/fr/extensions/mediawiki-extensions-PageForms-5.6.3/ /var/www/wiki-$environment/fr/extensions/PageForms
+    for lang in "${languages[@]}"; do
+        unzip 5.6.3.zip -d /var/www/wiki-$environment/$lang/extensions/
+        mv /var/www/wiki-$environment/$lang/extensions/mediawiki-extensions-PageForms-5.6.3/ /var/www/wiki-$environment/$lang/extensions/PageForms
+    done
 done
 
 # TemplateStyle
 wget https://extdist.wmflabs.org/dist/extensions/TemplateStyles-REL1_40-9699f28.tar.gz
 for environment in "${environments[@]}"; do
-    tar -xzf TemplateStyles-REL1_40-9699f28.tar.gz -C /var/www/wiki-$environment/en/extensions/
-    tar -xzf TemplateStyles-REL1_40-9699f28.tar.gz -C /var/www/wiki-$environment/fr/extensions/
+    for lang in "${languages[@]}"; do
+        tar -xzf TemplateStyles-REL1_40-9699f28.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
 done
 
 # UniversalLanguageSelector
 wget https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_40-51ea41a.tar.gz
 for environment in "${environments[@]}"; do
-    tar -xzf UniversalLanguageSelector-REL1_40-51ea41a.tar.gz -C /var/www/wiki-$environment/en/extensions/
-    tar -xzf UniversalLanguageSelector-REL1_40-51ea41a.tar.gz -C /var/www/wiki-$environment/fr/extensions/
+    for lang in "${languages[@]}"; do
+        tar -xzf UniversalLanguageSelector-REL1_40-51ea41a.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
 done
 
 # Wikibase
 wget https://extdist.wmflabs.org/dist/extensions/Wikibase-REL1_40-4e1296d.tar.gz
 for environment in "${environments[@]}"; do
-    tar -xzf Wikibase-REL1_40-4e1296d.tar.gz -C /var/www/wiki-$environment/en/extensions/
-    tar -xzf Wikibase-REL1_40-4e1296d.tar.gz -C /var/www/wiki-$environment/fr/extensions/
+    for lang in "${languages[@]}"; do
+        tar -xzf Wikibase-REL1_40-4e1296d.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
 done
 
 for environment in "${environments[@]}"; do
-    cd /var/www/wiki-$environment/en/
-    mv composer.local.json-sample composer.local.json
-    composer install --no-dev
-    php maintenance/run.php ./maintenance/update.php
-    php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
-    php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
-    php maintenance/run.php ./maintenance/populateInterwiki.php
-done
-
-for environment in "${environments[@]}"; do
-    cd /var/www/wiki-$environment/fr/
-    mv composer.local.json-sample composer.local.json
-    composer install --no-dev
-    php maintenance/run.php ./maintenance/update.php
-    php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
-    php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
-    php maintenance/run.php ./maintenance/populateInterwiki.php
+    for lang in "${languages[@]}"; do
+        cd /var/www/wiki-$environment/$lang/
+        mv composer.local.json-sample composer.local.json
+        composer install --no-dev
+        php maintenance/run.php ./maintenance/update.php
+        php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
+        php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
+        php maintenance/run.php ./maintenance/populateInterwiki.php
+    done
 done
 
 # Apache2 setup
 mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
-cp ports.conf /etc/apache/ports.conf
+envsubst < /home/$user/wikiadviser/mediawiki-setup/ports.conf > /etc/apache/ports.conf
+cd $CONF_DIR
+export WIKI_PORT=$dev_port WIKI_PROJECT_DIRECTORY=${project_dir[0]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-dev.conf
+export WIKI_PORT=$demo_port WIKI_PROJECT_DIRECTORY=${project_dir[1]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-demo.conf
+export WIKI_PORT=$prod_port WIKI_PROJECT_DIRECTORY=${project_dir[2]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-prod.conf
+cd
 for environment in "${environments[@]}"; do
-    cp wiki-$environment /etc/apache2/sites-available/wiki-$environment.conf
+    cp $CONF_DIR/wiki-$environment.conf /etc/apache2/sites-available/wiki-$environment.conf
     a2ensite wiki-$environment.conf
 done
 systemctl reload apache2 && systemctl restart apache2
-
-# Caddy Setup
-cp Caddyfile /etc/caddy/Caddyfile
-cp robots.txt /etc/caddy/robots.txt
-systemctl restart caddy

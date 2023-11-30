@@ -15,7 +15,7 @@
 	}
 }
 
- Mediawiki
+# Mediawiki
 {$MEDIAWIKI_DEV_ENDPOINT} {
         log {
           output file /var/log/caddy/access-dev.log {

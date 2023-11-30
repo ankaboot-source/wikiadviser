@@ -2,7 +2,7 @@
   <q-page class="q-pa-xl d-flex flex-center">
     <q-card-section class="row justify-center q-pt-lg">
       <q-card-section>
-        <p class="text-h5 text-center merriweather q-pb-xs">
+        <p class="text-h5 text-center merriweather q-pb-md">
           Welcome to WikiAdviser
         </p>
         <Auth
@@ -12,14 +12,16 @@
           :provider-scopes="providerScopes"
           :appearance="{
             theme: ThemeSupa,
+            style: {
+              message: {
+                fontSize: '15px',
+              },
+            },
             variables: {
               default: {
                 colors: {
                   brand: 'hsl(207, 90%, 49%)',
                   brandAccent: 'hsl(207, 85%, 41%)',
-                },
-                fontSizes: {
-                  baseBodySize: '15px',
                 },
               },
             },
@@ -49,10 +51,7 @@ onMounted(() => {
   ).find((button) => button.textContent === 'Sign in with Azure');
 
   if (signInButton) {
-    const newSignInButton = document.createElement('button');
-    newSignInButton.className =
-      'supabase-auth-ui_ui-button c-bOcPnF c-bOcPnF-iwjZXY-color-default';
-    newSignInButton.innerHTML = `
+    signInButton.innerHTML = `
       <svg 
         xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 30 30"
@@ -68,7 +67,6 @@ onMounted(() => {
         </svg>
         Sign in with Microsoft
       `;
-    signInButton.parentNode?.replaceChild(newSignInButton, signInButton);
   }
 });
 </script>

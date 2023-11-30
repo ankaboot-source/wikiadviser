@@ -203,15 +203,31 @@ export async function getChangesAndParsedContent(articleId: string) {
   return null;
 }
 
+function escapeHTML(html: string) {
+  const lookup = {
+    '&': '&amp;',
+    '"': '&quot;',
+    "'": '&apos;',
+    '<': '&lt;',
+    '>': '&gt;'
+  };
+  return html.replace(
+    /[&"'<>]/g,
+    (character) => lookup[character as keyof typeof lookup]
+  );
+}
+
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
  * @returns {string} - The processed article data.
  */
-export function processExportedArticle(
+export async function processExportedArticle(
   exportData: string,
-  sourceLanguage: string
-): string {
+  sourceLanguage: string,
+  title: string,
+  getWikipediaHTML: (title: string, language: string) => Promise<string>
+): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
   let processedData = exportData.replace(
     '\n    <generator>',
@@ -223,10 +239,27 @@ export function processExportedArticle(
   const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
-  const updatedPageContent = pageContent.replace(
+  let updatedPageContent = pageContent.replace(
     /\[\[([^\]]*)\]\]/g,
     `[[wikipedia:${sourceLanguage}:$1|$1]]`
   );
+
+  // Replace Wikidata infoboxes with HTML
+  if (sourceLanguage === 'fr') {
+    if (pageContent.match(/{{Infobox[\s\S]*?}}/)) {
+      const articleXML = await getWikipediaHTML(title, sourceLanguage);
+      const $ = load(articleXML, { xmlMode: true });
+      const infoboxHTML = escapeHTML(
+        `<html>${$.html('.infobox_v3, .infobox_v2')}</html>`
+      );
+      if (infoboxHTML?.includes('wikidata')) {
+        updatedPageContent = pageContent.replace(
+          /{{Infobox[\s\S]*?}}/,
+          infoboxHTML
+        );
+      }
+    }
+  }
 
   processedData =
     processedData.substring(0, pageStartIndex) +

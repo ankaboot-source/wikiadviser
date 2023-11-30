@@ -224,7 +224,7 @@ export function processExportedArticle(
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
   const updatedPageContent = pageContent.replace(
-    /\[\[([^\]]*)\]\]/g,
+    /\[\[(?!File:)([^\]]*)\]\]/g,
     (_, capturedContent) => {
       const lastIndex = capturedContent.lastIndexOf('|');
       const pageTitle =

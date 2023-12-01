@@ -225,9 +225,8 @@ export function processExportedArticle(
 
   const updatedPageContent = pageContent.replace(
     /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
-    (_, page, preview) => {
-      return `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`;
-    }
+    (_, page, preview) =>
+      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
 
   processedData =

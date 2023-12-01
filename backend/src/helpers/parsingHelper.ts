@@ -227,16 +227,9 @@ export async function processExportedArticle(
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
   let updatedPageContent = pageContent.replace(
-    /\[\[(?!File:)([^\]]*)\]\]/g,
-    (_, capturedContent) => {
-      const lastIndex = capturedContent.lastIndexOf('|');
-      const pageTitle =
-        lastIndex !== -1
-          ? capturedContent.substring(lastIndex + 1)
-          : capturedContent;
-
-      return `[[wikipedia:${sourceLanguage}:${pageTitle}|${pageTitle}]]`;
-    }
+    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
+    (_, page, preview) =>
+      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
 
   // Replace Wikidata infoboxes with HTML

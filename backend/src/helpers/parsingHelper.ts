@@ -254,7 +254,7 @@ export async function processExportedArticle(
 
   // Replace Wikidata infoboxes with HTML
   if (sourceLanguage === 'fr') {
-    if (pageContent.match(/{{Infobox[\s\S]*?}}/)) {
+    if (/{{Infobox[\s\S]*?}}/.test(pageContent)) {
       const articleXML = await getWikipediaHTML(title, sourceLanguage);
       const $ = load(articleXML);
 

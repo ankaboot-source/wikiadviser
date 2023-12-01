@@ -52,7 +52,9 @@ async function itemOnClick() {
 
     // check access
     const article = articlesStore.articles?.find(
-      (article: Article) => article.title === props.item.title
+      (article: Article) =>
+        article.title === props.item.title &&
+        article.language === props.articleLanguage
     );
 
     if (article) {

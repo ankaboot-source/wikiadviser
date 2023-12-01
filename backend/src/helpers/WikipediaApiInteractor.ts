@@ -74,6 +74,9 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
       }
     });
     const htmlString = response.data.parse.text['*'];
+    if (!htmlString) {
+      throw Error('Could not get article HTML');
+    }
     return htmlString;
   }
 

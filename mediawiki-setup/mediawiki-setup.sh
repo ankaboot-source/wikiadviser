@@ -19,7 +19,7 @@ CONF_DIR="/home/$user/wikiadviser/mediawiki-setup"
 #########################LocalSettings.php Related#####################
 SERVER_ENDPOINT=("https://wiki-dev.wikiadviser.io" "https://wiki-demo.wikiadviser.io" "https://wiki-prod.wikiadviser.io")
 URL_PATH=("/en" "/fr")
-LocalSettings_languages=("en" "fr")
+LOCALSETTINGS_LANGUAGES=("en" "fr")
 EN_DB_NAME=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
 FR_DB_NAME=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
 EN_DB_USER=("$EN_DB_DEV_USER" "$EN_DB_DEMO_USER" "$EN_DB_PROD_USER")
@@ -38,8 +38,40 @@ fr_passwords=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
 ###################################################################
 ###################################################################
 
-# Installation
+# Server Setup 
+# User
+adduser --disabled-password --home /home/$user --gecos "" $user
+usermod -a -G sudo $user
+echo "$user:$MEDIAWIKI_SUDO_PWD" | chpasswd
+
+# Set SSH keys for root and $user
+# Adding SSH to root user required to allow downloading wikiadviser repo within the server,
+# keys will be removed in the next few lines.
+mkdir -p /home/$user/.ssh
+cp /root/.ssh/authorized_keys /home/$user/.ssh
+# root
+echo "$SSH_PUBLIC_MEDIAWIKI" > /root/.ssh/id_rsa.pub
+echo "$SSH_PRIVATE_MEDIAWIKI" > /root/.ssh/id_rsa
+echo "$SSH_KNOWN_HOSTS_MEDIAWIKI" > /root/.ssh/known_hosts
+# $user
+echo "$SSH_PUBLIC_MEDIAWIKI" > /home/$user/.ssh/id_rsa.pub
+echo "$SSH_PRIVATE_MEDIAWIKI" > /home/$user/.ssh/id_rsa
+echo "$SSH_KNOWN_HOSTS_MEDIAWIKI" > /home/$user/.ssh/known_hosts
+cat /home/$user/.ssh/id_rsa.pub >> /home/$user/.ssh/authorized_keys #for github deploy
+chmod 600 /home/$user/.ssh/id_rsa
+chown -R $user:$user /home/$user/.ssh
+
+############# Installation #############################
 apt -y update && apt -y upgrade
+
+# Wikiadviser GitHub Repo
+git clone git@github.com:ankaboot-source/wikiadviser.git /home/$user/wikiadviser
+
+# Remove SSH KEYS from root user
+rm -rf /root/.ssh/id_rsa.pub
+rm -rf /root/.ssh/id_rsa
+rm -rf  /root/.ssh/known_hosts
+
 # Apache2
 apt install -y apache2
 systemctl enable apache2
@@ -105,15 +137,15 @@ for environment in "${environments[@]}"; do
     done
 done
 
-#LocalSettings.php 
-SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[0]}" DB_USER="${EN_DB_USER[0]}" DB_PASSWORD="${EN_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[0]}" DB_USER="${FR_DB_USER[0]}" DB_PASSWORD="${FR_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_fr.php
+# LocalSettings.php 
+SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[0]}" DB_USER="${EN_DB_USER[0]}" DB_PASSWORD="${EN_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[0]}" DB_USER="${FR_DB_USER[0]}" DB_PASSWORD="${FR_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_fr.php
 
-SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[1]}" DB_USER="${EN_DB_USER[1]}" DB_PASSWORD="${EN_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[1]}" DB_USER="${FR_DB_USER[1]}" DB_PASSWORD="${FR_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_fr.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[1]}" DB_USER="${EN_DB_USER[1]}" DB_PASSWORD="${EN_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[1]}" DB_USER="${FR_DB_USER[1]}" DB_PASSWORD="${FR_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_fr.php
 
-SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LocalSettings_languages[0]}" DB_NAME="${EN_DB_NAME[2]}" DB_USER="${EN_DB_USER[2]}" DB_PASSWORD="${EN_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LocalSettings_languages[1]}" DB_NAME="${FR_DB_NAME[2]}" DB_USER="${FR_DB_USER[2]}" DB_PASSWORD="${FR_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_fr.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[2]}" DB_USER="${EN_DB_USER[2]}" DB_PASSWORD="${EN_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_en.php
+SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[2]}" DB_USER="${FR_DB_USER[2]}" DB_PASSWORD="${FR_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_fr.php
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
@@ -121,7 +153,7 @@ for environment in "${environments[@]}"; do
     done
 done
 
-# Install extensions
+# Extensions install
 # MyVisualEditor
 for environment in "${environments[@]}"; 
     for lang in "${languages[@]}"; do

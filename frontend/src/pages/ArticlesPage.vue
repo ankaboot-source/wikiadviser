@@ -1,7 +1,10 @@
 <template>
   <div class="col q-panel q-py-lg">
     <div class="row justify-center">
-      <q-card class="q-pa-sm column" flat style="width: 80vw">
+      <q-card v-if="loading" class="q-pa-lg" flat style="width: 80vw">
+        <!-- Loading state content -->
+      </q-card>
+      <q-card v-else class="q-pa-sm column" flat style="width: 80vw">
         <q-card-section v-if="articles?.length" class="row">
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
@@ -102,15 +105,20 @@ import { Article } from 'src/types';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 
-const term = ref('');
-const showNewArticleDialog = ref(false);
 const articlesStore = useArticlesStore();
+
+const term = ref('');
+const loading = ref(true);
+const showNewArticleDialog = ref(false);
+
 const articles = computed(() => articlesStore.articles);
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
   await articlesStore.fetchArticles(data.session!.user.id);
+  loading.value = false;
 });
+
 const articlesFiltered = computed(() => {
   const trimmedTerm = term.value.trim();
   if (!trimmedTerm) {

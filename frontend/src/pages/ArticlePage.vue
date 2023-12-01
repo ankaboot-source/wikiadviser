@@ -1,6 +1,9 @@
 <template>
   <template v-if="article">
-    <div class="q-panel scroll col">
+    <div v-if="loading">
+      <!-- Loading state content -->
+    </div>
+    <div v-else class="q-panel scroll col">
       <div class="row justify-evenly q-pa-sm">
         <diff-list
           :role="role"
@@ -36,17 +39,24 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 const route = useRoute();
 const router = useRouter();
+const articlesStore = useArticlesStore();
+
 const { params } = route;
 
-const articleId = ref('');
-const role = ref<UserRole>(UserRole.Viewer);
-const article = ref<Article>();
 const users = ref();
+
+const article = ref<Article>();
+const articleId = ref('');
+
+const role = ref<UserRole>(UserRole.Viewer);
 const editorPermission = ref<boolean | null>(null);
+
 const changesList = ref<ChangesItem[]>([]);
 const changesContent = ref<string | null>(null);
+
+const loading = ref(true);
+
 let pollTimer: number;
-const articlesStore = useArticlesStore();
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
@@ -81,6 +91,7 @@ onBeforeMount(async () => {
   pollTimer = window.setInterval(async () => {
     await fetchChanges();
   }, 2000);
+  loading.value = false;
 });
 
 async function fetchChanges() {

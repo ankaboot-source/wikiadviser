@@ -267,13 +267,13 @@ export async function processExportedArticle(
         // Replace image source within the infobox
         infobox
           .find('img')
-          .attr('src', (_, val) =>
-            val?.replace(/^\/media/, 'https://upload.wikimedia.org')
+          .attr('src', (_, src) =>
+            src?.replace(/^\/media/, 'https://upload.wikimedia.org')
           );
 
         const infoboxEscaped = escapeHTML(`<html>${$.html(infobox)}</html>`);
 
-        updatedPageContent = pageContent.replace(
+        updatedPageContent = updatedPageContent.replace(
           /{{Infobox[\s\S]*?}}/,
           infoboxEscaped
         );

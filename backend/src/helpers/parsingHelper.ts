@@ -224,15 +224,9 @@ export function processExportedArticle(
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
   const updatedPageContent = pageContent.replace(
-    /\[\[(?!File:)([^\]]*)\]\]/g,
-    (_, capturedContent) => {
-      const lastIndex = capturedContent.lastIndexOf('|');
-      const pageTitle =
-        lastIndex !== -1
-          ? capturedContent.substring(lastIndex + 1)
-          : capturedContent;
-
-      return `[[wikipedia:${sourceLanguage}:${pageTitle}|${pageTitle}]]`;
+    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
+    (_, page, preview) => {
+      return `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`;
     }
   );
 

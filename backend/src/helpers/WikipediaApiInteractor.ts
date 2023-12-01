@@ -64,6 +64,22 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     return results;
   }
 
+  async getWikipediaHTML(title: string, language: string) {
+    const response = await this.api.get('', {
+      params: {
+        action: 'parse',
+        format: 'json',
+        page: title,
+        lang: language
+      }
+    });
+    const htmlString = response.data.parse.text['*'];
+    if (!htmlString) {
+      throw Error('Could not get article HTML');
+    }
+    return htmlString;
+  }
+
   async exportArticleData(title: string, language: string): Promise<string> {
     const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
       params: {
@@ -82,8 +98,13 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         exportData += chunk;
       });
 
-      exportResponse.data.on('end', () => {
-        exportData = processExportedArticle(exportData, language);
+      exportResponse.data.on('end', async () => {
+        exportData = await processExportedArticle(
+          exportData,
+          language,
+          title,
+          this.getWikipediaHTML.bind(this)
+        );
         resolve(exportData);
       });
 

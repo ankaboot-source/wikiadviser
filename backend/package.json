@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "html-entities": "^2.4.0",
     "pino": "^8.14.1",
     "pino-pretty": "^10.0.0",
     "playwright": "^1.37.1"

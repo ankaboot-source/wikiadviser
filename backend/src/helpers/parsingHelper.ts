@@ -1,4 +1,5 @@
 import { load } from 'cheerio';
+import { encode } from 'html-entities';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getArticle, getChanges } from './supabaseHelper';
 
@@ -208,10 +209,12 @@ export async function getChangesAndParsedContent(articleId: string) {
  * @param {string} exportData - The exported data of the article.
  * @returns {string} - The processed article data.
  */
-export function processExportedArticle(
+export async function processExportedArticle(
   exportData: string,
-  sourceLanguage: string
-): string {
+  sourceLanguage: string,
+  title: string,
+  getWikipediaHTML: (title: string, language: string) => Promise<string>
+): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
   let processedData = exportData.replace(
     '\n    <generator>',
@@ -223,11 +226,42 @@ export function processExportedArticle(
   const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
-  const updatedPageContent = pageContent.replace(
+  let updatedPageContent = pageContent.replace(
     /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
       `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
+
+  // Replace Wikidata infoboxes with HTML
+  if (sourceLanguage === 'fr') {
+    if (/{{Infobox[\s\S]*?}}/.test(pageContent)) {
+      const articleXML = await getWikipediaHTML(title, sourceLanguage);
+      const $ = load(articleXML);
+
+      const infobox = $('.infobox_v3, .infobox_v2');
+
+      if (infobox.html()?.includes('wikidata')) {
+        // Remove unnecessary elements within the infobox
+        infobox.find('.wikidata-linkback, .navbar').remove();
+
+        // Replace image source within the infobox
+        infobox
+          .find('img')
+          .attr('src', (_, src) =>
+            src?.replace(/^\/media/, 'https://upload.wikimedia.org')
+          );
+
+        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
+          level: 'xml'
+        });
+
+        updatedPageContent = updatedPageContent.replace(
+          /{{Infobox[\s\S]*?}}/,
+          infoboxEscaped
+        );
+      }
+    }
+  }
 
   processedData =
     processedData.substring(0, pageStartIndex) +

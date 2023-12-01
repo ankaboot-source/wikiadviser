@@ -180,6 +180,8 @@
 
   $wgShowExceptionDetails = true;
   $wgExternalLinkTarget = '_blank';
+
+  $wgRawHtml = true;
   ```
 
   - Rename the composer.local.json-sample file in the root of MediaWiki install directory (en/fr) to composer.local.json, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation).

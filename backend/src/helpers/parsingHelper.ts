@@ -1,4 +1,5 @@
 import { load } from 'cheerio';
+import { encode } from 'html-entities';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getArticle, getChanges } from './supabaseHelper';
 
@@ -203,20 +204,6 @@ export async function getChangesAndParsedContent(articleId: string) {
   return null;
 }
 
-function escapeHTML(html: string) {
-  const lookup = {
-    '&': '&amp;',
-    '"': '&quot;',
-    "'": '&apos;',
-    '<': '&lt;',
-    '>': '&gt;'
-  };
-  return html.replace(
-    /[&"'<>]/g,
-    (character) => lookup[character as keyof typeof lookup]
-  );
-}
-
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
@@ -271,7 +258,9 @@ export async function processExportedArticle(
             src?.replace(/^\/media/, 'https://upload.wikimedia.org')
           );
 
-        const infoboxEscaped = escapeHTML(`<html>${$.html(infobox)}</html>`);
+        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
+          level: 'xml'
+        });
 
         updatedPageContent = updatedPageContent.replace(
           /{{Infobox[\s\S]*?}}/,

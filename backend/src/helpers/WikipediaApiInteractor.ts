@@ -73,8 +73,8 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         lang: language
       }
     });
-    const xmlString = response.data.parse.text['*'];
-    return xmlString;
+    const htmlString = response.data.parse.text['*'];
+    return htmlString;
   }
 
   async exportArticleData(title: string, language: string): Promise<string> {

@@ -256,14 +256,26 @@ export async function processExportedArticle(
   if (sourceLanguage === 'fr') {
     if (pageContent.match(/{{Infobox[\s\S]*?}}/)) {
       const articleXML = await getWikipediaHTML(title, sourceLanguage);
-      const $ = load(articleXML, { xmlMode: true });
-      const infoboxHTML = escapeHTML(
-        `<html>${$.html('.infobox_v3, .infobox_v2')}</html>`
-      );
-      if (infoboxHTML?.includes('wikidata')) {
+      const $ = load(articleXML);
+
+      const infobox = $('.infobox_v3, .infobox_v2');
+
+      if (infobox.html()?.includes('wikidata')) {
+        // Remove unnecessary elements within the infobox
+        infobox.find('.wikidata-linkback, .navbar').remove();
+
+        // Replace image source within the infobox
+        infobox
+          .find('img')
+          .attr('src', (_, val) =>
+            val?.replace(/^\/media/, 'https://upload.wikimedia.org')
+          );
+
+        const infoboxEscaped = escapeHTML(`<html>${$.html(infobox)}</html>`);
+
         updatedPageContent = pageContent.replace(
           /{{Infobox[\s\S]*?}}/,
-          infoboxHTML
+          infoboxEscaped
         );
       }
     }

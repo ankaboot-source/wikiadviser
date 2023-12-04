@@ -7,7 +7,6 @@
 ###############################VARS################################
 
 export DEBIAN_FRONTEND=noninteractive
-environments=("dev" "demo" "prod")
 project_dir=("wiki-dev" "wiki-demo" "wiki-prod")
 dev_port="8081"
 demo_port="8080"
@@ -15,8 +14,15 @@ prod_port="8082"
 PRIVATE_IP="$PRIVATE_IP"
 user="wiki-user"
 CONF_DIR="/home/$user/wikiadviser/mediawiki-setup"
-languages=$LANGUAGES #(Update the list in GitHub Secrets)
-environments=$DATABASE_ENV
+languages=("${LANGUAGES[@]}") # Add the list of languages to GitHub Secrets
+environments=("${DATABASE_ENV[@]}") # Add the list of environments to GitHub Secrets
+mediawiki_version=("${MEDIAWIKI_VERSION[@]]}") # Add mediawiki version to Github Secrets MEDIAWIKI_VERSION=("1.40" "1.40.1") ##1.40 release version ##1.40.1 file version
+extension_version=${mediawiki_version[0]//./_} # Convert 1.40 => 1_40
+PageForms_version="$PAGEFORMS_VERSION" # Unlike other extensions you need to add this variable to Github Secrets since it not same way of download, please choose PageForms Version according to your mediawiki version!
+TemplateStyle_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "TemplateStyles-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+ULS_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "UniversalLanguageSelector-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
+
 ###################################################################
 ###################################################################
 
@@ -101,8 +107,8 @@ for environment in "${environments[@]}"; do
     mkdir -p "/var/www/wiki-"$environment""
 done
 
-curl -O https://releases.wikimedia.org/mediawiki/1.40/mediawiki-1.40.1.tar.gz
-tar -xf mediawiki-1.40.1.tar.gz
+curl -O https://releases.wikimedia.org/mediawiki/"${mediawiki_version[0]}"/mediawiki-"${mediawiki_version[1]}".tar.gz
+tar -xf mediawiki-"${mediawiki_version[1]}".tar.gz
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
@@ -137,16 +143,16 @@ for environment in "${environments[@]}";
 done
 
 # PageForms
-wget  https://github.com/wikimedia/mediawiki-extensions-PageForms/archive/5.6.3.zip
+wget  https://github.com/wikimedia/mediawiki-extensions-PageForms/archive/$PageForms_version.zip
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        unzip 5.6.3.zip -d /var/www/wiki-$environment/$lang/extensions/
-        mv /var/www/wiki-$environment/$lang/extensions/mediawiki-extensions-PageForms-5.6.3/ /var/www/wiki-$environment/$lang/extensions/PageForms
+        unzip $PageForms_version.zip -d /var/www/wiki-$environment/$lang/extensions/
+        mv /var/www/wiki-$environment/$lang/extensions/mediawiki-extensions-PageForms-$PageForms_version/ /var/www/wiki-$environment/$lang/extensions/PageForms
     done
 done
 
 # TemplateStyle
-wget https://extdist.wmflabs.org/dist/extensions/TemplateStyles-REL1_40-9699f28.tar.gz
+wget https://extdist.wmflabs.org/dist/extensions/TemplateStyles-REL$extension_version-$TemplateStyle_version.tar.gz
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf TemplateStyles-REL1_40-9699f28.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
@@ -154,7 +160,7 @@ for environment in "${environments[@]}"; do
 done
 
 # UniversalLanguageSelector
-wget https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL1_40-51ea41a.tar.gz
+wget https://extdist.wmflabs.org/dist/extensions/UniversalLanguageSelector-REL$extension_version-$ULS_version.tar.gz
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf UniversalLanguageSelector-REL1_40-51ea41a.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
@@ -162,7 +168,7 @@ for environment in "${environments[@]}"; do
 done
 
 # Wikibase
-wget https://extdist.wmflabs.org/dist/extensions/Wikibase-REL1_40-4e1296d.tar.gz
+wget https://extdist.wmflabs.org/dist/extensions/Wikibase-REL$extension_version-$Wikibase_version.tar.gz
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf Wikibase-REL1_40-4e1296d.tar.gz -C /var/www/wiki-$environment/$lang/extensions/

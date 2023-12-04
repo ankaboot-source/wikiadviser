@@ -1,5 +1,6 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
+import logger from '../logger';
 import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getArticle, getChanges } from './supabaseHelper';
 
@@ -265,10 +266,26 @@ export async function processExportedArticle(
         });
         infoboxesEscaped.push(infoboxEscaped);
       }
-      updatedPageContent = updatedPageContent.replace(
+
+      let somethingUnexpectedHappend = false;
+      const infoboxUpdatedContent = updatedPageContent.replace(
         /{{Infobox[\s\S]*?}}/g,
-        () => infoboxesEscaped.shift() ?? ''
+        () => {
+          const escapedInfobox = infoboxesEscaped.shift();
+          if (!escapedInfobox) {
+            somethingUnexpectedHappend = true;
+            return '';
+          }
+          return escapedInfobox;
+        }
       );
+      if (!somethingUnexpectedHappend) {
+        updatedPageContent = infoboxUpdatedContent;
+      } else {
+        logger.error(
+          `Unexpected error while processing infoboxes in article: ${title}`
+        );
+      }
     }
   }
 

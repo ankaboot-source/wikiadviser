@@ -28,13 +28,8 @@ EN_DB_PASSWORD=("$EN_DB_DEV_PWD" "$EN_DB_DEMO_PWD" "$EN_DB_PROD_PWD")
 FR_DB_PASSWORD=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
 
 ############Add new languages down below (DB related)##############
-languages=("en" "fr")
-en_databases=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
-fr_databases=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
-en_users=("$EN_DB_DEV_USER" "$EN_DB_DEMO_USER" "$EN_DB_PROD_USER")
-fr_users=("$FR_DB_DEV_USER" "$FR_DB_DEMO_USER" "$FR_DB_PROD_USER")
-en_passwords=("$EN_DB_DEV_PWD" "$EN_DB_DEMO_PWD" "$EN_DB_PROD_PWD")
-fr_passwords=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
+languages=$LANGUAGES
+dbs_env=$DATABASE_ENV
 ###################################################################
 ###################################################################
 
@@ -96,29 +91,20 @@ EOF
 systemctl enable mariadb
 systemctl start mariadb
 
-for ((i=0; i<${#en_databases[@]}; i++)) ;
+for lang in "${languages[@]}"; do
 do
-    for lang in "${languages[@]}"; do
-        db_name="${lang}_databases[i]"
-        eval db_name=\${$db_name}
-        user_name="${lang}_users[i]"
-        eval user_name=\${$user_name}
-        user_pwd="${lang}_passwords[i]"
-        eval user_pwd=\${$user_pwd}
-
-        mariadb -u root -e "CREATE DATABASE $db_name;"
-        mariadb -u root -e "CREATE USER '$user_name'@'localhost' IDENTIFIED BY '$user_pwd';"
-        mariadb -u root -e "GRANT ALL PRIVILEGES ON $db_name.* TO '$user_name'@'localhost' WITH GRANT OPTION;"
+    for db in "${dbs_env[@]}"; do
+        mariadb -u root -e "CREATE DATABASE "$lang"_wiki_"$db";"
+        mariadb -u root -e "CREATE USER '"$lang"_wiki_"$db"'@'localhost' IDENTIFIED BY '"$lang"_wiki_"$db"';"
+        mariadb -u root -e "GRANT ALL PRIVILEGES ON "$lang"_wiki_"$db".* TO '"$lang"_wiki_"$db"'@'localhost' WITH GRANT OPTION;"
    done
 done
 
 # Import database dumps
-for ((i=0; i<${#en_databases[@]}; i++))
+for lang in "${languages[@]}"; do
 do
-    for lang in "${languages[@]}"; do
-        db_name="${lang}_databases[i]"
-        eval db_name=\${$db_name}
-        mariadb -u root  -e "use $db_name; source /home/'$user'/directory/$lang-wiki-dump.sql"
+    for db in "${dbs_env[@]}"; do
+        mariadb -u root  -e "use "$lang"_wiki_"$db"; source /home/'$user'/directory/$lang-wiki-dump.sql"
     done
 done
 

@@ -16,7 +16,7 @@
       <q-btn-dropdown
         v-if="session"
         icon="person"
-        :label="username"
+        :label="email"
         no-caps
         unelevated
       >
@@ -40,7 +40,7 @@ import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 const session = ref<Session | null>();
-const username = ref('');
+const email = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
@@ -60,7 +60,7 @@ onMounted(async () => {
   session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
-    username.value = session.value?.user.user_metadata.username;
+    email.value = session.value?.user.email as string;
   });
 });
 

@@ -25,7 +25,6 @@ export async function getUsers(articleId: string): Promise<User[]> {
   }
 
   const users = permissionsData.map((permission: any) => ({
-    username: permission.users.raw_user_meta_data.username,
     email: permission.users.email,
     role: permission.role,
     permissionId: permission.id,

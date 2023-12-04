@@ -9,7 +9,7 @@
       <q-list bordered separator>
         <share-user
           v-for="user in users"
-          :key="user.username"
+          :key="user.email"
           :user="user"
           :role="role"
           @permission-emit="onPermissionChange"

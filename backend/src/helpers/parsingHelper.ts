@@ -267,7 +267,7 @@ export async function processExportedArticle(
       }
       updatedPageContent = updatedPageContent.replace(
         /{{Infobox[\s\S]*?}}/g,
-        () => infoboxesEscaped.shift() || ''
+        () => infoboxesEscaped.shift() ?? ''
       );
     }
   }

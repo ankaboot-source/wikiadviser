@@ -211,6 +211,64 @@ function generateOuterMostSelectors(classes: string[]) {
     .join(', ');
 }
 
+async function replaceWikiDataHtml(
+  updatedPageContent: string,
+  title: string,
+  sourceLanguage: string,
+  getWikipediaHTML: (title: string, language: string) => Promise<string>
+) {
+  if (/{{Infobox[\s\S]*?}}/.test(updatedPageContent)) {
+    const articleXML = await getWikipediaHTML(title, sourceLanguage);
+    const $ = load(articleXML);
+    const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
+    const infoboxes = $(generateOuterMostSelectors(infoboxClasses));
+    if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
+      // Remove unnecessary elements within the infobox
+      infoboxes.find('.wikidata-linkback, .navbar').remove();
+      // Replace image source within the infobox
+      infoboxes
+        .find('img')
+        .attr('src', (_, src) =>
+          src?.replace(/^\/media/, 'https://upload.wikimedia.org')
+        );
+
+      const infoboxesEscaped: string[] = [];
+      for (const infobox of infoboxes) {
+        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
+          level: 'xml'
+        });
+        infoboxesEscaped.push(infoboxEscaped);
+      }
+      let somethingUnexpectedHappend = false;
+      const infoboxUpdatedContent = updatedPageContent.replace(
+        /{{Infobox[\s\S]*?}}/g,
+        () => {
+          const escapedInfobox = infoboxesEscaped.shift();
+          if (!escapedInfobox) {
+            somethingUnexpectedHappend = true;
+            return '';
+          }
+          return escapedInfobox;
+        }
+      );
+      if (!somethingUnexpectedHappend) {
+        return infoboxUpdatedContent;
+      }
+      logger.error(
+        `Unexpected error while processing infoboxes in article: ${title}`
+      );
+    }
+  }
+  return updatedPageContent;
+}
+
+function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
+  return pageContent.replace(
+    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
+    (_, page, preview) =>
+      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
+  );
+}
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
@@ -233,61 +291,13 @@ export async function processExportedArticle(
   const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
-  let updatedPageContent = pageContent.replace(
-    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
-    (_, page, preview) =>
-      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
+  let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
+  updatedPageContent = await replaceWikiDataHtml(
+    updatedPageContent,
+    title,
+    sourceLanguage,
+    getWikipediaHTML
   );
-
-  // Replace Wikidata infoboxes with HTML
-  if (/{{Infobox[\s\S]*?}}/.test(pageContent)) {
-    const articleXML = await getWikipediaHTML(title, sourceLanguage);
-    const $ = load(articleXML);
-
-    const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
-
-    const infoboxes = $(generateOuterMostSelectors(infoboxClasses));
-
-    if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
-      // Remove unnecessary elements within the infobox
-      infoboxes.find('.wikidata-linkback, .navbar').remove();
-
-      // Replace image source within the infobox
-      infoboxes
-        .find('img')
-        .attr('src', (_, src) =>
-          src?.replace(/^\/media/, 'https://upload.wikimedia.org')
-        );
-
-      const infoboxesEscaped: string[] = [];
-      for (const infobox of infoboxes) {
-        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
-          level: 'xml'
-        });
-        infoboxesEscaped.push(infoboxEscaped);
-      }
-
-      let somethingUnexpectedHappend = false;
-      const infoboxUpdatedContent = updatedPageContent.replace(
-        /{{Infobox[\s\S]*?}}/g,
-        () => {
-          const escapedInfobox = infoboxesEscaped.shift();
-          if (!escapedInfobox) {
-            somethingUnexpectedHappend = true;
-            return '';
-          }
-          return escapedInfobox;
-        }
-      );
-      if (!somethingUnexpectedHappend) {
-        updatedPageContent = infoboxUpdatedContent;
-      } else {
-        logger.error(
-          `Unexpected error while processing infoboxes in article: ${title}`
-        );
-      }
-    }
-  }
 
   processedData =
     processedData.substring(0, pageStartIndex) +

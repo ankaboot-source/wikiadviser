@@ -204,6 +204,12 @@ export async function getChangesAndParsedContent(articleId: string) {
   return null;
 }
 
+function generateOuterMostSelectors(classes: string[]) {
+  return classes
+    .map((className) => `${className}:not(${className} *)`)
+    .join(', ');
+}
+
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
@@ -237,26 +243,31 @@ export async function processExportedArticle(
     const articleXML = await getWikipediaHTML(title, sourceLanguage);
     const $ = load(articleXML);
 
-    const infobox = $('.infobox, .infobox_v3, .infobox_v2').first();
+    const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
-    if (infobox.html()?.includes('wikidata')) {
+    const infoboxes = $(generateOuterMostSelectors(infoboxClasses));
+
+    if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
       // Remove unnecessary elements within the infobox
-      infobox.find('.wikidata-linkback, .navbar').remove();
+      infoboxes.find('.wikidata-linkback, .navbar').remove();
 
       // Replace image source within the infobox
-      infobox
+      infoboxes
         .find('img')
         .attr('src', (_, src) =>
           src?.replace(/^\/media/, 'https://upload.wikimedia.org')
         );
 
-      const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
-        level: 'xml'
-      });
-
+      const infoboxesEscaped: string[] = [];
+      for (const infobox of infoboxes) {
+        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
+          level: 'xml'
+        });
+        infoboxesEscaped.push(infoboxEscaped);
+      }
       updatedPageContent = updatedPageContent.replace(
-        /{{Infobox[\s\S]*?}}/,
-        infoboxEscaped
+        /{{Infobox[\s\S]*?}}/g,
+        () => infoboxesEscaped.shift() || ''
       );
     }
   }

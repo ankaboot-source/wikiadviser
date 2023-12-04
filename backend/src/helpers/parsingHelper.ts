@@ -233,33 +233,31 @@ export async function processExportedArticle(
   );
 
   // Replace Wikidata infoboxes with HTML
-  if (sourceLanguage === 'fr') {
-    if (/{{Infobox[\s\S]*?}}/.test(pageContent)) {
-      const articleXML = await getWikipediaHTML(title, sourceLanguage);
-      const $ = load(articleXML);
+  if (/{{Infobox[\s\S]*?}}/.test(pageContent)) {
+    const articleXML = await getWikipediaHTML(title, sourceLanguage);
+    const $ = load(articleXML);
 
-      const infobox = $('.infobox_v3, .infobox_v2');
+    const infobox = $('.infobox, .infobox_v3, .infobox_v2').first();
 
-      if (infobox.html()?.includes('wikidata')) {
-        // Remove unnecessary elements within the infobox
-        infobox.find('.wikidata-linkback, .navbar').remove();
+    if (infobox.html()?.includes('wikidata')) {
+      // Remove unnecessary elements within the infobox
+      infobox.find('.wikidata-linkback, .navbar').remove();
 
-        // Replace image source within the infobox
-        infobox
-          .find('img')
-          .attr('src', (_, src) =>
-            src?.replace(/^\/media/, 'https://upload.wikimedia.org')
-          );
-
-        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
-          level: 'xml'
-        });
-
-        updatedPageContent = updatedPageContent.replace(
-          /{{Infobox[\s\S]*?}}/,
-          infoboxEscaped
+      // Replace image source within the infobox
+      infobox
+        .find('img')
+        .attr('src', (_, src) =>
+          src?.replace(/^\/media/, 'https://upload.wikimedia.org')
         );
-      }
+
+      const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
+        level: 'xml'
+      });
+
+      updatedPageContent = updatedPageContent.replace(
+        /{{Infobox[\s\S]*?}}/,
+        infoboxEscaped
+      );
     }
   }
 

@@ -4,7 +4,10 @@ export type ChangesItem = {
   status: 0 | 1 | 2;
   type_of_edit: 0 | 1 | 2;
   description: string;
-  users: { raw_user_meta_data: { username: string } };
+  user: {
+    id: string;
+    email: string;
+  };
   created_at: string;
   comments: Comment[];
   index: number | null;
@@ -17,7 +20,6 @@ export type SearchResult = {
 };
 
 export type User = {
-  username: string;
   email: string;
   role: UserRole;
   permissionId: string;
@@ -36,7 +38,10 @@ export type Article = {
 export type Comment = {
   content: string;
   created_at: Date;
-  users: { raw_user_meta_data: { username: string } };
+  user: {
+    id: string;
+    email: string;
+  };
 };
 
 export enum UserRole {

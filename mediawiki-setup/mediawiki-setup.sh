@@ -15,21 +15,8 @@ prod_port="8082"
 PRIVATE_IP="$PRIVATE_IP"
 user="wiki-user"
 CONF_DIR="/home/$user/wikiadviser/mediawiki-setup"
-
-#########################LocalSettings.php Related#####################
-SERVER_ENDPOINT=("https://wiki-dev.wikiadviser.io" "https://wiki-demo.wikiadviser.io" "https://wiki-prod.wikiadviser.io")
-URL_PATH=("/en" "/fr")
-LOCALSETTINGS_LANGUAGES=("en" "fr")
-EN_DB_NAME=("dev_wiki_en" "demo_wiki_en" "prod_wiki_en")
-FR_DB_NAME=("dev_wiki_fr" "demo_wiki_fr" "prod_wiki_fr")
-EN_DB_USER=("$EN_DB_DEV_USER" "$EN_DB_DEMO_USER" "$EN_DB_PROD_USER")
-FR_DB_USER=("$FR_DB_DEV_USER" "$FR_DB_DEMO_USER" "$FR_DB_PROD_USER")
-EN_DB_PASSWORD=("$EN_DB_DEV_PWD" "$EN_DB_DEMO_PWD" "$EN_DB_PROD_PWD")
-FR_DB_PASSWORD=("$FR_DB_DEV_PWD" "$FR_DB_DEMO_PWD" "$FR_DB_PROD_PWD")
-
-############Add new languages down below (DB related)##############
-languages=$LANGUAGES
-dbs_env=$DATABASE_ENV
+languages=$LANGUAGES #(Update the list in GitHub Secrets)
+environments=$DATABASE_ENV
 ###################################################################
 ###################################################################
 
@@ -93,25 +80,25 @@ systemctl start mariadb
 
 for lang in "${languages[@]}"; do
 do
-    for db in "${dbs_env[@]}"; do
-        mariadb -u root -e "CREATE DATABASE "$lang"_wiki_"$db";"
-        mariadb -u root -e "CREATE USER '"$lang"_wiki_"$db"'@'localhost' IDENTIFIED BY '"$lang"_wiki_"$db"';"
-        mariadb -u root -e "GRANT ALL PRIVILEGES ON "$lang"_wiki_"$db".* TO '"$lang"_wiki_"$db"'@'localhost' WITH GRANT OPTION;"
+    for env in "${environments[@]}"; do
+        mariadb -u root -e "CREATE DATABASE "$lang"_wiki_"$env";"
+        mariadb -u root -e "CREATE USER '"$lang"_wiki_"$env"'@'localhost' IDENTIFIED BY '"$lang"_wiki_"$env"';"
+        mariadb -u root -e "GRANT ALL PRIVILEGES ON "$lang"_wiki_"$env".* TO '"$lang"_wiki_"$env"'@'localhost' WITH GRANT OPTION;"
    done
 done
 
 # Import database dumps
 for lang in "${languages[@]}"; do
 do
-    for db in "${dbs_env[@]}"; do
-        mariadb -u root  -e "use "$lang"_wiki_"$db"; source /home/'$user'/directory/$lang-wiki-dump.sql"
+    for env in "${environments[@]}"; do
+        mariadb -u root  -e "use "$lang"_wiki_"$env"; source /home/"$user"/directory/"$lang"-wiki-dump.sql"
     done
 done
 
 # Mediawiki Setup
 # Install Mediawiki source code
 for environment in "${environments[@]}"; do
-    mkdir -p "/var/www/wiki-$environment"
+    mkdir -p "/var/www/wiki-"$environment""
 done
 
 curl -O https://releases.wikimedia.org/mediawiki/1.40/mediawiki-1.40.1.tar.gz
@@ -119,23 +106,25 @@ tar -xf mediawiki-1.40.1.tar.gz
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cp -r mediawiki-1.40.1 /var/www/wiki-$environment/$lang
+        cp -r mediawiki-1.40.1 /var/www/wiki-"$environment"/"$lang"
     done
 done
 
-# LocalSettings.php 
-SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[0]}" DB_USER="${EN_DB_USER[0]}" DB_PASSWORD="${EN_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[0]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[0]}" DB_USER="${FR_DB_USER[0]}" DB_PASSWORD="${FR_DB_PASSWORD[0]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_dev_fr.php
+for envs in "${environments[@]}"; do
 
-SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[1]}" DB_USER="${EN_DB_USER[1]}" DB_PASSWORD="${EN_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[1]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[1]}" DB_USER="${FR_DB_USER[1]}" DB_PASSWORD="${FR_DB_PASSWORD[1]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_demo_fr.php
-
-SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[0]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[0]}" DB_NAME="${EN_DB_NAME[2]}" DB_USER="${EN_DB_USER[2]}" DB_PASSWORD="${EN_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_en.php
-SERVER_ENDPOINT="${SERVER_ENDPOINT[2]}" URL_PATH="${URL_PATH[1]}" LANGUAGE="${LOCALSETTINGS_LANGUAGES[1]}" DB_NAME="${FR_DB_NAME[2]}" DB_USER="${FR_DB_USER[2]}" DB_PASSWORD="${FR_DB_PASSWORD[2]}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > $CONF_DIR/LocalSettings_prod_fr.php
+    for lang in "${languages[@]}"; do
+        if [ "$envs" = "prod" ]
+        then
+             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$envs"_wiki_"$lang"" DB_USER=""$envs"_wiki_"$lang"" DB_PASSWORD=""$envs"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
+        else
+             SERVER_ENDPOINT="https://wiki-"$envs".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$envs"_wiki_"$lang"" DB_USER=""$envs"_wiki_"$lang"" DB_PASSWORD=""$envs"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_"$envs"_"$lang".php
+        fi
+    done
+done
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cp $CONF_DIR/LocalSettings_"$environment"_"$lang".php /var/www/wiki-$environment/$lang
+        cp $CONF_DIR/LocalSettings_"$environment"_"$lang".php /var/www/wiki-"$environment"/"$lang"
     done
 done
 

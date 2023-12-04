@@ -9,6 +9,11 @@ const routes: RouteRecordRaw[] = [
     component: () => null,
   },
   {
+    path: '/auth/update_password',
+    name: 'update password',
+    component: () => import('pages/auth/UpdatePasswordPage.vue'),
+  },
+  {
     path: '/articles',
     alias: '/',
     name: 'articles',

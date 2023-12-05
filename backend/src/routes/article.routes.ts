@@ -1,0 +1,32 @@
+import { Router } from 'express';
+import {
+  createArticle,
+  getParsedArticle,
+  deleteArticle,
+  getArticleChanges,
+  updateArticleChanges,
+  hasPermissions
+} from '../controllers/article.controller';
+
+const articleRouter = Router();
+
+articleRouter.post('/article', createArticle);
+articleRouter.get(
+  '/article/:id',
+  hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
+  getParsedArticle
+);
+articleRouter.delete('/article/:id', hasPermissions(['owner']), deleteArticle);
+
+articleRouter.get(
+  '/article/:id/changes',
+  hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
+  getArticleChanges
+);
+articleRouter.put(
+  '/article/:id/changes',
+  hasPermissions(['owner', 'editor']),
+  updateArticleChanges
+);
+
+export default articleRouter;

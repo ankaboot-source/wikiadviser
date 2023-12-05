@@ -150,7 +150,7 @@ export async function removeChanges(permissionId: string) {
   }
 }
 
-export async function deleteArticle(articleId: string) {
+export async function deleteArticleDB(articleId: string) {
   const { error: supabaseDeleteError } = await supabase
     .from('articles')
     .delete()
@@ -161,13 +161,13 @@ export async function deleteArticle(articleId: string) {
   }
 }
 
-export async function hasPermission(articleId: string, userId: string) {
-  const { error } = await supabase
+export async function getUserPermission(articleId: string, userId: string) {
+  const { data } = await supabase
     .from('permissions')
     .select()
     .eq('user_id', userId)
     .eq('article_id', articleId)
     .single();
 
-  return !error;
+  return data?.role;
 }

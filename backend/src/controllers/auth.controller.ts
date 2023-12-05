@@ -1,0 +1,82 @@
+import { Request, Response } from 'express';
+import { getUserPermission } from '../helpers/supabaseHelper';
+import logger from '../logger';
+
+const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
+const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
+
+/**
+ * Restricts access to MediaWiki endpoints based on user permissions and request details.
+ *
+ * @param {Request} req - The Express request object.
+ * @param {Response} res - The Express response object.
+ */
+export default async function restrictMediawikiAccess(
+  req: Request,
+  res: Response
+) {
+  const forwardedUri = req.headers['x-forwarded-uri'];
+  const forwardedMethod = req.headers['x-forwarded-method'];
+  const { user } = res.locals;
+
+  try {
+    const articleIdRegEx = new RegExp(
+      `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      'i'
+    );
+    const allowedPrefixRegEx = new RegExp(
+      `^(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php?|(skins|resources)/)))`,
+      'i'
+    );
+
+    if (!user || !(typeof forwardedUri === 'string')) {
+      return res
+        .status(403)
+        .send('This user is not authorized to access to this content');
+    }
+
+    const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
+      (lang: string) => `/${lang}/api.php`
+    );
+    const forwardUriStartsWith = wikiadviserLanguages.map(
+      (lang: string) => `/${lang}/api.php?`
+    );
+
+    const hasAllowedPrefixes =
+      (forwardedMethod === 'POST' &&
+        forwardUriAllowedPrefixes.some(
+          (prefix: string) => forwardedUri === prefix
+        )) ||
+      forwardedUri.match(allowedPrefixRegEx);
+
+    if (!hasAllowedPrefixes) {
+      const isRequestFromVisualEditor =
+        forwardUriStartsWith.some((prefix: string) =>
+          forwardedUri.startsWith(prefix)
+        ) && req.query.action === 'visualeditor';
+
+      const articleId = isRequestFromVisualEditor
+        ? (req.query.page as string)
+        : forwardedUri.match(articleIdRegEx)?.[2];
+
+      const permission = articleId
+        ? await getUserPermission(articleId, user.id)
+        : null;
+
+      if (!permission) {
+        return res
+          .status(403)
+          .send('This user is not authorized to access to this content');
+      }
+    }
+    return res.sendStatus(200);
+  } catch (error) {
+    let message = 'Something unexpected happened!';
+
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    logger.error({ error, headers: req.headers });
+    return res.status(500).json({ message });
+  }
+}

@@ -278,12 +278,19 @@ export async function processExportedArticle(
   exportData: string,
   sourceLanguage: string,
   title: string,
+  articleId: string,
   getWikipediaHTML: (title: string, language: string) => Promise<string>
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
   let processedData = exportData.replace(
     '\n    <generator>',
     '</base>\n    <generator>'
+  );
+
+  // Rename article
+  processedData = processedData.replace(
+    /<title>(.*?)<\/title>/s,
+    `<title>${articleId}</title>`
   );
 
   // Externalize article sources to wikipedia

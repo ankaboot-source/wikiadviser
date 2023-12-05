@@ -80,7 +80,11 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     return htmlString;
   }
 
-  async exportArticleData(title: string, language: string): Promise<string> {
+  async exportArticleData(
+    title: string,
+    articleId: string,
+    language: string
+  ): Promise<string> {
     const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
       params: {
         title: 'Special:Export',
@@ -103,6 +107,7 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
           exportData,
           language,
           title,
+          articleId,
           this.getWikipediaHTML.bind(this)
         );
         resolve(exportData);

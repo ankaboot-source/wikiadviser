@@ -155,44 +155,13 @@ class MediawikiClient {
     this.logout(csrftoken);
   }
 
-  private async renameArticle(title: string, articleId: string): Promise<void> {
-    const csrftoken = await this.loginAndGetCsrf();
-
-    logger.info(
-      `Renaming Article ${title} to its corresponding id: ${articleId}`
-    );
-
-    const { data } = await this.mediawikiApiInstance.post(
-      '',
-      {
-        action: 'move',
-        from: title,
-        to: articleId,
-        noredirect: true,
-        token: csrftoken,
-        format: 'json'
-      },
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
-
-    if (data.error) {
-      logger.error(`Failed to rename article: ${data.error.info}`);
-      this.logout(csrftoken);
-      throw new Error(`Failed to rename article with id ${articleId}`);
-    }
-    this.logout(csrftoken);
-  }
-
   async importNewArticle(articleId: string, title: string): Promise<void> {
     try {
       // Export
       logger.info(`Exporting file ${title}`);
       const exportData = await this.wikipediaApi.exportArticleData(
         title,
+        articleId,
         this.language
       );
       logger.info(`Successfully exported file ${title}`);
@@ -201,9 +170,6 @@ class MediawikiClient {
       logger.info(`Importing into our instance file ${title}`);
       await this.mediawikiAutomator.importMediaWikiPage(articleId, exportData);
       logger.info(`Successfully imported file ${title}`);
-
-      // Rename
-      await this.renameArticle(title, articleId);
     } catch (error) {
       logger.error(`Error importing article ${title}`, error);
       throw error;

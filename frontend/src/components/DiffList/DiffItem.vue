@@ -39,7 +39,7 @@
       <q-item-section caption top side lines="2">
         <span class="text-black">
           <q-avatar size="sm" icon="person" color="accent" />
-          {{ props.item?.users.raw_user_meta_data.username }}</span
+          {{ props.item?.user.email }}</span
         >
         <span style="size: 0.5rem">
           {{ new Date(props.item?.created_at).toLocaleTimeString() }} <br />
@@ -96,20 +96,16 @@
         >
           <template v-for="comment in item.comments" :key="comment.id">
             <q-chat-message
-              :name="comment.users.raw_user_meta_data.username"
+              :name="comment.user.email"
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
-              :sent="comment.users.raw_user_meta_data.username == username"
+              :sent="comment.user.email == email"
               :avatar="
-                comment.users.raw_user_meta_data.username == username
+                comment.user.email == email
                   ? 'https://cdn.quasar.dev/img/avatar2.jpg'
                   : 'https://cdn.quasar.dev/img/avatar1.jpg'
               "
-              :bg-color="
-                comment.users.raw_user_meta_data.username == username
-                  ? 'green'
-                  : 'accent'
-              "
+              :bg-color="comment.user.email == email ? 'green' : 'accent'"
             />
           </template>
         </q-scroll-area>
@@ -193,7 +189,7 @@ const props = defineProps<{
 }>();
 const expanded = ref(false);
 const session = ref<Session | null>();
-const username = ref('');
+const email = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
@@ -211,7 +207,7 @@ onMounted(async () => {
   session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
-    username.value = session.value?.user.user_metadata.username;
+    email.value = session.value?.user.email as string;
     userId.value = session.value?.user.id as string;
   });
 });

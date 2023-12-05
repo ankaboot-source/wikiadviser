@@ -4,7 +4,6 @@
       <q-avatar size="md" icon="person" color="accent" />
     </q-item-section>
     <q-item-section>
-      <q-item-label>{{ props.user.username }}</q-item-label>
       <q-item-label caption>{{ props.user.email }}</q-item-label>
     </q-item-section>
     <q-select

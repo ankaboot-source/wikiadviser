@@ -3,9 +3,10 @@
     <q-card-section class="row justify-center q-pt-lg">
       <q-card-section>
         <p class="text-h5 text-center merriweather q-pb-md">
-          Welcome to WikiAdviser
+          {{ message }}
         </p>
         <Auth
+          v-model:view="authView"
           social-layout="vertical"
           :supabase-client="supabaseClient"
           :redirect-to="callbackURL"
@@ -34,15 +35,37 @@
 </template>
 
 <script setup lang="ts">
-import { ThemeSupa } from '@supabase/auth-ui-shared';
+import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
 import { Auth } from '@nuxtbase/auth-ui-vue';
 import supabaseClient from 'src/api/supabase';
-import { onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
-const callbackURL = `${location.origin}/auth/callback`;
 const providerScopes = {
   azure: 'email',
 };
+
+const authView = ref<ViewType>('sign_in');
+
+const callbackURL = computed(() => {
+  return authView.value === 'forgotten_password'
+    ? `${location.origin}/auth/update_password`
+    : `${location.origin}/auth/callback`;
+});
+
+const message = computed(() => {
+  switch (authView.value) {
+    case 'sign_in':
+      return 'Welcome back to WikiAdviser';
+
+    case 'sign_up':
+      return 'Create your account';
+
+    case 'forgotten_password':
+      return 'Reset your password';
+    default:
+      return 'Welcome to WikiAdviser';
+  }
+});
 
 onMounted(() => {
   // Replaces Azure name & logo with Microsoft.

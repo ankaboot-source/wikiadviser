@@ -128,7 +128,7 @@ export async function refineArticleChanges(
       ) {
         // Update the change INDEX
         changeId = change.id;
-        const { index, users, comments, ...baseChange } = change;
+        const { index, user, comments, ...baseChange } = change;
         changesToUpsert.push({
           ...baseChange,
           index: changeIndex

@@ -2,7 +2,7 @@
 
 ## MediaWiki
 
-To set up MediaWiki locallay, you must follow these [steps](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/README.md).
+To set up MediaWiki locallay, you must follow these [steps](https://github.com/ankaboot-source/wikiadviser/mediawiki-setup/README.md).
 
 ## Pre-requisites
 

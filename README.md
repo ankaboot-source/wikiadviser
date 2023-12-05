@@ -11,13 +11,19 @@ To set up MediaWiki locallay, you must follow these [steps](https://github.com/a
 
 ## Setup the project
 
-After installing Docker and NodeJS, we need to install the dependencies of the project by running this command.
+After installing Docker and NodeJS, we need to install the dependencies that the project requires from the system by running this command:
 
 ```sh
 sudo npx playwright install-deps
 ```
 
-When we finish installing dependencies, we need to start Supabase by running this command.
+and also install project dependencies by running this command:
+
+```sh
+npm run install-deps
+```
+
+When we finish installing dependencies, we need to start Supabase by running this command:
 
 ```sh
 # If you want to use Supabase locally
@@ -39,7 +45,7 @@ anon key: {your_anon_key}
 service_role key: {your_service_role_key}
 ```
 
-So you must save it on file because we needed it late.
+So you must save it on file because we needed it later.
 
 Copy `.env.example` in frontend and backend to `.env` and update the missing variables according to the file that we saved recently.
 

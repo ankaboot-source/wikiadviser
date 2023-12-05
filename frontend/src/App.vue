@@ -17,7 +17,7 @@ import { Session } from '@supabase/supabase-js';
 import { useMeta } from 'quasar';
 import supabase from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
-import AuthenticationPage from 'src/pages/auth/AuthenticationPage.vue';
+import AuthenticationPage from 'src/pages/auth/AuthPage.vue';
 import { onMounted, ref } from 'vue';
 
 const session = ref<Session | null>();

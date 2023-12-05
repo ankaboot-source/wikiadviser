@@ -1,9 +1,5 @@
 # Wikiadviser
 
-## MediaWiki
-
-To set up MediaWiki locallay, you must follow these [steps](https://github.com/ankaboot-source/wikiadviser/mediawiki-setup/README.md).
-
 ## Pre-requisites
 
 - [Install Docker](https://docs.docker.com/engine/install)

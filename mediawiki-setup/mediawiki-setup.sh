@@ -65,6 +65,20 @@ apt install -y apache2
 systemctl enable apache2
 systemctl start apache2
 
+# Apache2 setup
+mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
+envsubst < /home/$user/wikiadviser/mediawiki-setup/ports.conf > /etc/apache/ports.conf
+cd $CONF_DIR
+export WIKI_PORT=$dev_port WIKI_PROJECT_DIRECTORY=${project_dir[0]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-dev.conf
+export WIKI_PORT=$demo_port WIKI_PROJECT_DIRECTORY=${project_dir[1]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-demo.conf
+export WIKI_PORT=$prod_port WIKI_PROJECT_DIRECTORY=${project_dir[2]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-prod.conf
+cd
+for environment in "${environments[@]}"; do
+    cp $CONF_DIR/wiki-$environment.conf /etc/apache2/sites-available/wiki-$environment.conf
+    a2ensite wiki-$environment.conf
+done
+systemctl reload apache2 && systemctl restart apache2
+
 # PHP
 apt install -y php libapache2-mod-php php-mbstring php-mysql php-xml
 
@@ -72,7 +86,27 @@ apt install -y php libapache2-mod-php php-mbstring php-mysql php-xml
 apt install -y mariadb-server
 
 # Setup DB
-# Script equivalent of mysql_secure_installation
+systemctl enable mariadb
+systemctl start mariadb
+
+for lang in "${languages[@]}"; do
+do
+    for env in "${environments[@]}"; do
+        mariadb -u root -e "CREATE DATABASE "$env"_wiki_"$lang";"
+        mariadb -u root -e "CREATE USER '"$env"_wiki_"$lang"'@'localhost' IDENTIFIED BY '"$env"_wiki_"$lang"';"
+        mariadb -u root -e "GRANT ALL PRIVILEGES ON "$env"_wiki_"$lang".* TO '"$env"_wiki_"$lang"'@'localhost' WITH GRANT OPTION;"
+   done
+done
+
+# Import database dumps
+for lang in "${languages[@]}"; do
+do
+    for env in "${environments[@]}"; do
+        mariadb -u root  -e "use "$env"_wiki_"$lang"; source /home/"$user"/directory/"$lang"-wiki-dump.sql"
+    done
+done
+
+# Script equivalent to mysql_secure_installation
 mysql -u root <<-EOF
 UPDATE mysql.user SET Password=PASSWORD('$MARIADB_ROOT_PWD') WHERE User='root';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
@@ -81,56 +115,40 @@ DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';
 FLUSH PRIVILEGES;
 EOF
 
-systemctl enable mariadb
-systemctl start mariadb
-
-for lang in "${languages[@]}"; do
-do
-    for env in "${environments[@]}"; do
-        mariadb -u root -e "CREATE DATABASE "$lang"_wiki_"$env";"
-        mariadb -u root -e "CREATE USER '"$lang"_wiki_"$env"'@'localhost' IDENTIFIED BY '"$lang"_wiki_"$env"';"
-        mariadb -u root -e "GRANT ALL PRIVILEGES ON "$lang"_wiki_"$env".* TO '"$lang"_wiki_"$env"'@'localhost' WITH GRANT OPTION;"
-   done
-done
-
-# Import database dumps
-for lang in "${languages[@]}"; do
-do
-    for env in "${environments[@]}"; do
-        mariadb -u root  -e "use "$lang"_wiki_"$env"; source /home/"$user"/directory/"$lang"-wiki-dump.sql"
-    done
-done
-
 # Mediawiki Setup
 # Install Mediawiki source code
 for environment in "${environments[@]}"; do
     mkdir -p "/var/www/wiki-"$environment""
+    chown $user:$user /var/www/wiki-"$environment"
 done
+
+##login as the user created
+su $user
 
 curl -O https://releases.wikimedia.org/mediawiki/"${mediawiki_version[0]}"/mediawiki-"${mediawiki_version[1]}".tar.gz
 tar -xf mediawiki-"${mediawiki_version[1]}".tar.gz
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cp -r mediawiki-1.40.1 /var/www/wiki-"$environment"/"$lang"
+        cp -r mediawiki-"${mediawiki_version[1]}" /var/www/wiki-"$environment"/"$lang"
     done
 done
 
-for envs in "${environments[@]}"; do
+for env in "${environments[@]}"; do
 
     for lang in "${languages[@]}"; do
-        if [ "$envs" = "prod" ]
+        if [ "$env" = "prod" ]
         then
-             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$envs"_wiki_"$lang"" DB_USER=""$envs"_wiki_"$lang"" DB_PASSWORD=""$envs"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
+             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
         else
-             SERVER_ENDPOINT="https://wiki-"$envs".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$envs"_wiki_"$lang"" DB_USER=""$envs"_wiki_"$lang"" DB_PASSWORD=""$envs"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_"$envs"_"$lang".php
+             SERVER_ENDPOINT="https://wiki-"$env".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_"$env"_"$lang".php
         fi
     done
 done
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cp $CONF_DIR/LocalSettings_"$environment"_"$lang".php /var/www/wiki-"$environment"/"$lang"
+        cp $CONF_DIR/LocalSettings_"$environment"_"$lang".php /var/www/wiki-"$environment"/"$lang"/LocalSettings.php
     done
 done
 
@@ -179,24 +197,10 @@ for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/$lang/
         mv composer.local.json-sample composer.local.json
-        composer install --no-dev
+        composer install --no-dev --no-interaction
         php maintenance/run.php ./maintenance/update.php
         php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
         php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
         php maintenance/run.php ./maintenance/populateInterwiki.php
     done
 done
-
-# Apache2 setup
-mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
-envsubst < /home/$user/wikiadviser/mediawiki-setup/ports.conf > /etc/apache/ports.conf
-cd $CONF_DIR
-export WIKI_PORT=$dev_port WIKI_PROJECT_DIRECTORY=${project_dir[0]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-dev.conf
-export WIKI_PORT=$demo_port WIKI_PROJECT_DIRECTORY=${project_dir[1]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-demo.conf
-export WIKI_PORT=$prod_port WIKI_PROJECT_DIRECTORY=${project_dir[2]} && envsubst '${WIKI_PORT},${WIKI_PROJECT_DIRECTORY}' < wiki-site.conf > wiki-prod.conf
-cd
-for environment in "${environments[@]}"; do
-    cp $CONF_DIR/wiki-$environment.conf /etc/apache2/sites-available/wiki-$environment.conf
-    a2ensite wiki-$environment.conf
-done
-systemctl reload apache2 && systemctl restart apache2

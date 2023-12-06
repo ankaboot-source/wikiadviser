@@ -1,11 +1,8 @@
 #!/bin/sh
 # A script that sets up mediawiki multi-environment instances
-# This script is for first test on a local machine where we suppose we have 6 different LocalSettings.php file
-# you should be logged in as root user to run this script with no problems
 
 ###################################################################
 ###############################VARS################################
-
 export DEBIAN_FRONTEND=noninteractive
 project_dir=("wiki-dev" "wiki-demo" "wiki-prod")
 dev_port="8081"
@@ -22,7 +19,10 @@ PageForms_version="$PAGEFORMS_VERSION" # Unlike other extensions you need to add
 TemplateStyle_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "TemplateStyles-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 ULS_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "UniversalLanguageSelector-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL$extension_release-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
-
+fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
+fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
+en_dump_token_demo="$EN_DUMP_TOKEN_DEMO"
+en_dump_token_prod="$EN_DUMP_TOKEN_PROD"
 ###################################################################
 ###################################################################
 
@@ -99,16 +99,31 @@ do
 done
 
 # Import database dumps
+wget "$fr_dump_token_demo" -O /home/"$user"/fr-wiki-dump.sql
+wget "$fr_dump_token_prod" -O /home/"$user"/fr-wiki-dump-prod.sql
+wget "$en_dump_token_demo" -O /home/"$user"/en-wiki-dump.sql
+wget "$en_dump_token_prod" -O /home/"$user"/en-wiki-dump-prod.sql
+
 for lang in "${languages[@]}"; do
 do
     for env in "${environments[@]}"; do
-        mariadb -u root  -e "use "$env"_wiki_"$lang"; source /home/"$user"/directory/"$lang"-wiki-dump.sql"
+        if [ "$env" = "prod" ]
+        then
+            mariadb -u root  -e "use "$env"_wiki_"$lang"; source /home/"$user"/"$lang"-wiki-dump-prod.sql"
+        else
+            mariadb -u root  -e "use "$env"_wiki_"$lang"; source /home/"$user"/"$lang"-wiki-dump.sql"
+        fi
     done
 done
 
+for lang in "${languages[@]}"; do
+    rm -f $lang-wiki-*
+done;
+ 
+
 # Script equivalent to mysql_secure_installation
 mysql -u root <<-EOF
-UPDATE mysql.user SET Password=PASSWORD('$MARIADB_ROOT_PWD') WHERE User='root';
+UPDATE mysql.user SET Password=PASSWORD('"$MARIADB_ROOT_PWD"') WHERE User='root';
 DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
 DELETE FROM mysql.user WHERE User='';
 DELETE FROM mysql.db WHERE Db='test' OR Db='test_%';

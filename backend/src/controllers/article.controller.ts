@@ -8,8 +8,8 @@ import {
   getUserPermission,
   insertArticle
 } from '../helpers/supabaseHelper';
-import MediawikiClient from '../services/mediawiki/MediawikiClient';
-import { PlayAutomatorFactory } from '../services/mediawiki/MediawikiAutomator';
+import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
+import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
 
 /**

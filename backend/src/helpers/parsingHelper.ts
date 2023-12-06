@@ -22,11 +22,16 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
     if (
       !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
     ) {
-      const { index, users, comments, ...baseChange } = change;
-
       changesToUpsert.push({
-        ...baseChange,
-        index: null
+        index: null,
+        id: change.id,
+        status: change.status,
+        content: change.content,
+        article_id: change.article_id,
+        created_at: change.created_at,
+        description: change.description,
+        type_of_edit: change.type_of_edit,
+        contributor_id: change.contributor_id
       });
     }
   }
@@ -136,10 +141,17 @@ export async function refineArticleChanges(
       ) {
         // Update the change INDEX
         changeId = change.id;
-        const { index, user, comments, ...baseChange } = change;
+
         changesToUpsert.push({
-          ...baseChange,
-          index: changeIndex
+          id: change.id,
+          index: changeIndex,
+          status: change.status,
+          content: change.content,
+          article_id: change.article_id,
+          created_at: change.created_at,
+          description: change.description,
+          type_of_edit: change.type_of_edit,
+          contributor_id: change.contributor_id
         });
         changeIndex += 1;
         break;

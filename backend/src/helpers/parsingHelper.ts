@@ -43,10 +43,10 @@ export async function refineArticleChanges(
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
-      if (!$element?.text()?.trim()) {
+      if (!$element.prop('innerText')?.trim()) {
         $element.remove();
         return;
-      } // If element is empty of text Destroy it
+      } // If element is empty of innerText Destroy it
       const diffAction: string = $element.data('diff-action') as string;
       const list: string[] = [];
 

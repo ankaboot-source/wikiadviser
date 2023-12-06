@@ -45,9 +45,15 @@ anon key: {your_anon_key}
 service_role key: {your_service_role_key}
 ```
 
-So you must save it on file because we need it later.
+So you must save it on file because some of the Supabase credentials will be used later in `.env` files. .
 
 Copy `.env.example` in frontend and backend to `.env` and update the missing variables according to the file that we saved recently.
+
+```env
+SUPABASE_PROJECT_URL={your_supabase_api_url}
+SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
+...
+```
 
 ## Running the Project
 

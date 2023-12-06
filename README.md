@@ -45,7 +45,7 @@ anon key: {your_anon_key}
 service_role key: {your_service_role_key}
 ```
 
-So you must save it on file because we needed it later.
+So you must save it on file because we need it later.
 
 Copy `.env.example` in frontend and backend to `.env` and update the missing variables according to the file that we saved recently.
 

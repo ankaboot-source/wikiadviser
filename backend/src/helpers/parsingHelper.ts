@@ -169,7 +169,7 @@ export async function refineArticleChanges(
   return { changesToUpsert, htmlContent };
 }
 
-export async function parseArticle(article: Article, changes: Change[]) {
+export function parseArticle(article: Article, changes: Change[]) {
   const content = article.current_html_content;
 
   if (!content) {
@@ -191,7 +191,7 @@ export async function parseArticle(article: Article, changes: Change[]) {
   return jQuery.html();
 }
 
-export async function ParseChanges(changes: Change[]) {
+export function ParseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
       const jQuery = load(change.content);

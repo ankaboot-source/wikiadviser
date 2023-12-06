@@ -223,6 +223,11 @@ b {
 }
 
 /* Data diff: */
+/* Structural Change*/
+[data-diff-action='structural-change'] {
+  border: 3px solid rgba(109, 169, 247, 0.65) !important;
+}
+
 /* Change */
 [data-diff-action='change'],
 [data-diff-action='change-insert'] {

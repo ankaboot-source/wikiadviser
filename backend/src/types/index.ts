@@ -3,7 +3,7 @@ export type Change = {
   content?: string;
   status?: 0 | 1 | 2;
   description?: string;
-  type_of_edit?: 0 | 1 | 2;
+  type_of_edit?: 0 | 1 | 2 | 3;
   index?: number | null;
   article_id?: string;
   contributor_id?: string;
@@ -27,5 +27,6 @@ export type WikipediaSearchResult = {
 export enum TypeOfEditDictionary {
   change = 0,
   insert = 1,
-  remove = 2
+  remove = 2,
+  'structural-change' = 3
 }

@@ -43,6 +43,7 @@ export async function refineArticleChanges(
   $("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = $(element);
+      if (!$element?.text()?.trim()) return; // If element is empty of text return
       const diffAction: string = $element.data('diff-action') as string;
       const list: string[] = [];
 
@@ -78,6 +79,9 @@ export async function refineArticleChanges(
           // Remove the last element
           $nextElement.remove();
         }
+      }
+      if (diffAction === 'structural-change') {
+        typeOfEdit = 'structural-change';
       }
 
       // Remove data-diff-id & data-parsoid Attributes
@@ -117,7 +121,8 @@ export async function refineArticleChanges(
     const typeOfEdit = $element.attr('data-type-of-edit') as
       | 'change'
       | 'insert'
-      | 'remove';
+      | 'remove'
+      | 'structural-change';
 
     for (const change of changes) {
       const $changeContent = load(change.content, null, false);

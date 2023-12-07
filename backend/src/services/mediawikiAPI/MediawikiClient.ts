@@ -1,20 +1,23 @@
 import { AxiosInstance } from 'axios';
-import mediawikiApiInstances from '../api/mediawikiApiInstances';
-import logger from '../logger';
-import { PlaywrightAutomator } from './PlaywrightHelper';
-import WikipediaApiInteractor from './WikipediaApiInteractor';
-import { refineArticleChanges } from './parsingHelper';
-import { updateCurrentHtmlContent, upsertChanges } from './supabaseHelper';
+import mediawikiApiInstances from '../../api/mediawikiApiInstances';
+import logger from '../../logger';
+import { MediawikiAutomator } from './MediawikiAutomator';
+import { WikipediaApi } from '../wikipedia/WikipediaApi';
+import { refineArticleChanges } from '../../helpers/parsingHelper';
+import {
+  updateCurrentHtmlContent,
+  upsertChanges
+} from '../../helpers/supabaseHelper';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
-class MediawikiClient {
+export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
   constructor(
     private readonly language: string,
-    private readonly wikipediaApi: WikipediaApiInteractor,
-    private readonly mediawikiAutomator: PlaywrightAutomator
+    private readonly wikipediaApi: WikipediaApi,
+    private readonly mediawikiAutomator: MediawikiAutomator
   ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(this.language)!;
   }
@@ -216,5 +219,3 @@ class MediawikiClient {
     await updateCurrentHtmlContent(articleId, htmlContent);
   }
 }
-
-export default MediawikiClient;

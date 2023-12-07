@@ -130,20 +130,12 @@ export async function updatePermission(
   await Promise.all(updatedPermissionsPromises);
 }
 export async function getArticleParsedContent(articleId: string) {
-  const response = await api.get('article/parsedContent', {
-    params: {
-      articleId,
-    },
-  });
+  const response = await api.get(`article/${articleId}`);
   return response.data.content;
 }
 
 export async function getChanges(articleId: string): Promise<ChangesItem[]> {
-  const response = await api.get('article/changes', {
-    params: {
-      articleId,
-    },
-  });
+  const response = await api.get(`article/${articleId}/changes`);
   return response.data.changes;
 }
 
@@ -188,20 +180,14 @@ export async function deletePermission(permissionId: string) {
 }
 
 export async function deleteArticle(articleId: string) {
-  const apiResponse = await api.delete('article', {
-    data: {
-      articleId,
-    },
-  });
+  const apiResponse = await api.delete(`article/${articleId}`);
   if (apiResponse.status !== 200) {
     throw new Error('Failed to delete article from API.');
   }
 }
 
 export async function updateChanges(articleId: string) {
-  const apiResponse = await api.put('/article/changes', {
-    articleId,
-  });
+  const apiResponse = await api.put(`/article/${articleId}/changes`);
   if (apiResponse.status !== 200) {
     throw new Error('Failed to update changes from API.');
   }

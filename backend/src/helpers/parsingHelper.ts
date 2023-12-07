@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
 import logger from '../logger';
-import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
-import { getArticle, getChanges } from './supabaseHelper';
+import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
+import { getChanges } from './supabaseHelper';
 
 function addPermissionDataToChanges(
   changesToInsert: Change[],
@@ -22,11 +22,16 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
     if (
       !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
     ) {
-      const { index, users, comments, ...baseChange } = change;
-
       changesToUpsert.push({
-        ...baseChange,
-        index: null
+        index: null,
+        id: change.id,
+        status: change.status,
+        content: change.content,
+        article_id: change.article_id,
+        created_at: change.created_at,
+        description: change.description,
+        type_of_edit: change.type_of_edit,
+        contributor_id: change.contributor_id
       });
     }
   }
@@ -136,10 +141,17 @@ export async function refineArticleChanges(
       ) {
         // Update the change INDEX
         changeId = change.id;
-        const { index, user, comments, ...baseChange } = change;
+
         changesToUpsert.push({
-          ...baseChange,
-          index: changeIndex
+          id: change.id,
+          index: changeIndex,
+          status: change.status,
+          content: change.content,
+          article_id: change.article_id,
+          created_at: change.created_at,
+          description: change.description,
+          type_of_edit: change.type_of_edit,
+          contributor_id: change.contributor_id
         });
         changeIndex += 1;
         break;
@@ -177,40 +189,42 @@ export async function refineArticleChanges(
   return { changesToUpsert, htmlContent };
 }
 
-export async function getArticleParsedContent(articleId: string) {
-  const article = await getArticle(articleId);
-  const changes = await getChanges(articleId);
-  const content: string = article.current_html_content;
-  if (content !== undefined && content !== null) {
-    const $ = load(content);
-    // Add more data
-    $('[data-id]').each((index, element) => {
-      const $element = $(element);
-      $element.attr('data-type-of-edit', changes[index].type_of_edit);
-      $element.attr('data-status', changes[index].status);
-      $element.attr('data-index', changes[index].index);
-      $element.attr('data-id', changes[index].id);
-    });
-    return $.html();
+export function parseArticle(article: Article, changes: Change[]) {
+  const content = article.current_html_content;
+
+  if (!content) {
+    return null;
   }
-  return null;
+
+  const jQuery = load(content);
+  jQuery('[data-id]').each((index, element) => {
+    // Add more data
+    const jQueryelement = jQuery(element);
+    jQueryelement.attr(
+      'data-type-of-edit',
+      String(changes[index].type_of_edit)
+    );
+    jQueryelement.attr('data-status', String(changes[index].status));
+    jQueryelement.attr('data-index', String(changes[index].index));
+    jQueryelement.attr('data-id', changes[index].id);
+  });
+  return jQuery.html();
 }
 
-export async function getChangesAndParsedContent(articleId: string) {
-  const changes = await getChanges(articleId);
-  if (changes !== undefined && changes !== null) {
-    for (const change of changes) {
-      const $ = load(change.content);
-      $('[data-id]').each((index, element) => {
-        const $element = $(element);
-        $element.attr('data-type-of-edit', change.type_of_edit);
-        $element.attr('data-status', change.status);
+export function ParseChanges(changes: Change[]) {
+  const parsedChanges = changes.map((change) => {
+    if (change.content) {
+      const jQuery = load(change.content);
+      jQuery('[data-id]').each((_, element) => {
+        const jQueryelement = jQuery(element);
+        jQueryelement.attr('data-type-of-edit', String(change.type_of_edit));
+        jQueryelement.attr('data-status', String(change.status));
       });
-      change.content = $.html();
     }
-    return changes;
-  }
-  return null;
+    return change;
+  });
+
+  return parsedChanges;
 }
 
 function generateOuterMostSelectors(classes: string[]) {

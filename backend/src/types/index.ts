@@ -10,6 +10,10 @@ export type Change = {
   created_at?: string;
 };
 
+export interface Article {
+  current_html_content: string;
+}
+
 export interface ChildNodeData extends ChildNode {
   data?: string;
 }

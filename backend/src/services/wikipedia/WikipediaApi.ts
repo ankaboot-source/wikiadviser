@@ -1,9 +1,9 @@
 import axios, { AxiosInstance } from 'axios';
-import { WikipediaSearchResult } from '../types';
+import { WikipediaSearchResult } from '../../types';
 import WikipediaInteractor from './WikipediaInteractor';
-import { processExportedArticle } from './parsingHelper';
+import { processExportedArticle } from '../../helpers/parsingHelper';
 
-export default class WikipediaApiInteractor implements WikipediaInteractor {
+export class WikipediaApi implements WikipediaInteractor {
   private wpProxy: string;
 
   private api: AxiosInstance;
@@ -25,10 +25,10 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
         ppprop: 'displaytitle',
         piprop: 'thumbnail',
         pithumbsize: 60,
-        pilimit: WikipediaApiInteractor.searchResultsLimit,
+        pilimit: WikipediaApi.searchResultsLimit,
         gpssearch: term,
         gpsnamespace: 0,
-        gpslimit: WikipediaApiInteractor.searchResultsLimit,
+        gpslimit: WikipediaApi.searchResultsLimit,
         origin: '*',
         lang: language
       }
@@ -119,3 +119,6 @@ export default class WikipediaApiInteractor implements WikipediaInteractor {
     });
   }
 }
+
+const wikipediaApi = new WikipediaApi();
+export default wikipediaApi;

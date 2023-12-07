@@ -716,12 +716,11 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 	} else {
 		const wikiadviserApiHost = "https://api.wikiadviser.io";
 		const articleId = this.getPageName();
-		fetch(`${wikiadviserApiHost}/article/changes`, {
+		fetch(`${wikiadviserApiHost}/article/${articleId}/changes`, {
 			method: "PUT",
 			headers: {
 			"Content-Type": "application/json",
 			},
-			body: JSON.stringify({ articleId }),
 		})
 	}
 	/* End Custom WikiAdviser */

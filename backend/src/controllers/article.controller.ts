@@ -18,7 +18,11 @@ import wikipediaApi from '../services/wikipedia/WikipediaApi';
  * @param req - The Express request object.
  * @param res - The Express response object.
  */
-export async function createArticle(req: Request, res: Response) {
+export async function createArticle(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
   const articleId = await insertArticle(title, user.id, language, description);
@@ -30,19 +34,12 @@ export async function createArticle(req: Request, res: Response) {
     );
     await mediawiki.importNewArticle(articleId, title);
 
-    res
+    return res
       .status(201)
       .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error) {
-    let message = 'Getting article changes failed.';
     await deleteArticleDB(articleId);
-    if (error instanceof Error) {
-      message = error.message;
-      logger.error(error.message);
-    } else {
-      logger.error(error);
-    }
-    res.status(500).json({ message });
+    return next(error);
   }
 }
 
@@ -52,25 +49,22 @@ export async function createArticle(req: Request, res: Response) {
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
  */
-export async function getParsedArticle(req: Request, res: Response) {
+export async function getParsedArticle(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { id: articleId } = req.params;
   try {
     const article = await getArticle(articleId);
     const changes = await getChanges(articleId);
     const content = await parseArticle(article, changes);
     logger.info({ articleId }, 'Get Parsed Article');
-    res
+    return res
       .status(200)
       .json({ message: 'Getting article changes succeeded.', content });
   } catch (error) {
-    let message = 'Getting article changes failed.';
-    if (error instanceof Error) {
-      message = error.message;
-      logger.error(error.message);
-    } else {
-      logger.error(error);
-    }
-    res.status(500).json({ message });
+    return next(error);
   }
 }
 
@@ -80,7 +74,11 @@ export async function getParsedArticle(req: Request, res: Response) {
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
  */
-export async function deleteArticle(req: Request, res: Response) {
+export async function deleteArticle(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { id: articleId } = req.params;
   try {
     const { language } = await getArticle(articleId);
@@ -91,16 +89,9 @@ export async function deleteArticle(req: Request, res: Response) {
     );
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticleDB(articleId);
-    res.status(200).json({ message: `Article ${articleId} deleted` });
+    return res.status(200).json({ message: `Article ${articleId} deleted` });
   } catch (error) {
-    let message = 'Deleting article failed.';
-    if (error instanceof Error) {
-      message = error.message;
-      logger.error(error.message);
-    } else {
-      logger.error(error);
-    }
-    res.status(500).json({ message });
+    return next(error);
   }
 }
 
@@ -110,25 +101,22 @@ export async function deleteArticle(req: Request, res: Response) {
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
  */
-export async function getArticleChanges(req: Request, res: Response) {
+export async function getArticleChanges(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { id: articleId } = req.params;
   try {
     const changes = await getChanges(articleId);
     const Articlechanges = await ParseChanges(changes);
     logger.debug(`Getting Parsed Changes for article: ${articleId}`);
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Getting article changes succeeded.',
       changes: Articlechanges
     });
   } catch (error) {
-    let message = 'Getting article changes failed.';
-    if (error instanceof Error) {
-      message = error.message;
-      logger.error(error.message);
-    } else {
-      logger.error(error);
-    }
-    res.status(500).json({ message });
+    return next(error);
   }
 }
 
@@ -138,7 +126,11 @@ export async function getArticleChanges(req: Request, res: Response) {
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
  */
-export async function updateArticleChanges(req: Request, res: Response) {
+export async function updateArticleChanges(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
   const { user } = res.locals;
   const { id: articleId } = req.params;
   try {
@@ -151,16 +143,9 @@ export async function updateArticleChanges(req: Request, res: Response) {
     await mediawiki.updateChanges(articleId, user.id);
 
     logger.info({ articleId }, 'Updated Changes of article');
-    res.status(200).json({ message: 'Updating changes succeeded.' });
+    return res.status(200).json({ message: 'Updating changes succeeded.' });
   } catch (error) {
-    let message = 'Updating changes failed.';
-    if (error instanceof Error) {
-      message = error.message;
-      logger.error(error.message);
-    } else {
-      logger.error(error);
-    }
-    res.status(500).json({ message });
+    return next(error);
   }
 }
 
@@ -175,14 +160,22 @@ export const hasPermissions =
   async (req: Request, res: Response, next: NextFunction) => {
     const { user } = res.locals;
     const { id: articleId } = req.params;
+    try {
+      const permission = await getUserPermission(articleId, user.id);
+      const grantedPermissions = permissions.includes(permission);
 
-    const permission = await getUserPermission(articleId, user.id);
-    const grantedPermissions = permissions.includes(permission);
-
-    if (grantedPermissions) {
-      return next();
+      if (grantedPermissions) {
+        return next();
+      }
+      return res
+        .status(403)
+        .json({ message: 'User does not have required permissions' });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Something unexpected has occurred try later';
+      logger.error(message);
+      return res.status(500).json({ message });
     }
-    return res
-      .status(403)
-      .json({ message: 'User does not have required permissions' });
   };

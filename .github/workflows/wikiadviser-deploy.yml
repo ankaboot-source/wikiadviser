@@ -117,5 +117,6 @@ jobs:
             cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
 
             # Run update.php in Maintenance Folder
+            # https://www.mediawiki.org/wiki/Manual:Update.php
             cd /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/maintenance/
             php update.php --quick

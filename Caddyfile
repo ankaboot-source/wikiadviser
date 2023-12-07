@@ -25,9 +25,7 @@
           }
         }
         header {
-          if {>X-Frame-Options} {
-            -X-Frame-Options
-          }
+          -X-Frame-Options
         }
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8081
@@ -51,10 +49,8 @@
           copy_headers X-User X-Client-IP X-Forwarded-Uri
         }
         header {
-          if {>X-Frame-Options} {
-            -X-Frame-Options
-            +Content-Security-Policy frame-ancestors 'https://*.wikiadviser.io';
-          }
+          -X-Frame-Options
+          +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
         }
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8080
@@ -77,10 +73,8 @@
           copy_headers X-User X-Client-IP X-Forwarded-Uri
         }
         header {
-          if {>X-Frame-Options} {
-            -X-Frame-Options
-            +Content-Security-Policy frame-ancestors 'https://*.wikiadviser.io';
-          }
+          -X-Frame-Options
+          +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
         }
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8082

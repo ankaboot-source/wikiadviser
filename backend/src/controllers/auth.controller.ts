@@ -1,6 +1,5 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { getUserPermission } from '../helpers/supabaseHelper';
-import logger from '../logger';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -13,7 +12,8 @@ const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
  */
 export default async function restrictMediawikiAccess(
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction
 ) {
   const forwardedUri = req.headers['x-forwarded-uri'];
   const forwardedMethod = req.headers['x-forwarded-method'];
@@ -71,12 +71,6 @@ export default async function restrictMediawikiAccess(
     }
     return res.sendStatus(200);
   } catch (error) {
-    let message = 'Something unexpected happened!';
-
-    if (error instanceof Error) {
-      message = error.message;
-    }
-    logger.error({ error, headers: req.headers });
-    return res.status(500).json({ message });
+    return next(error);
   }
 }

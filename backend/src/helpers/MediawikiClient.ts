@@ -209,7 +209,8 @@ class MediawikiClient {
     const { changesToUpsert, htmlContent } = await refineArticleChanges(
       articleId,
       diffPage,
-      userId
+      userId,
+      latestRevid
     );
 
     await upsertChanges(changesToUpsert);

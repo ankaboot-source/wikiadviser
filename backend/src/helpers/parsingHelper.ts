@@ -7,12 +7,14 @@ import { getArticle, getChanges } from './supabaseHelper';
 function addPermissionDataToChanges(
   changesToInsert: Change[],
   articleId: string,
-  userId: string
+  userId: string,
+  revision: number
 ) {
   for (const change of changesToInsert) {
     if (!change.id) {
       change.article_id = articleId;
       change.contributor_id = userId;
+      change.revision = revision;
     }
   }
 }
@@ -35,7 +37,8 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
 export async function refineArticleChanges(
   articleId: string,
   html: string,
-  userId: string
+  userId: string,
+  revision: number
 ) {
   const $ = load(html);
   let changeid = -1;
@@ -154,7 +157,8 @@ export async function refineArticleChanges(
         status: 0,
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
-        index: changeIndex
+        index: changeIndex,
+        revision
       });
       changeIndex += 1;
     }
@@ -167,9 +171,9 @@ export async function refineArticleChanges(
 
   unindexUnassignedChanges(changesToUpsert, changes);
 
-  // Add 'article_id' and 'contributor_id' properties to changeToinsert
+  // Add 'article_id', 'contributor_id', 'revision' properties to changeToinsert
   if (changesToInsert) {
-    addPermissionDataToChanges(changesToInsert, articleId, userId);
+    addPermissionDataToChanges(changesToInsert, articleId, userId, revision);
     changesToUpsert.push(...changesToInsert);
   }
 

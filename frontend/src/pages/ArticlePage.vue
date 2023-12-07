@@ -96,7 +96,7 @@ onBeforeMount(async () => {
 
 async function fetchChanges() {
   try {
-    const updatedChangesList = await getChanges(articleId.value);
+    const updatedChangesList = (await getChanges(articleId.value)) ?? [];
 
     if (
       JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)

@@ -3,7 +3,7 @@ import { BrowserContext, Page, chromium } from 'playwright';
 const { MEDIAWIKI_INTERNAL_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
 
-export class PlaywrightAutomator {
+export class MediawikiAutomator {
   private mediawikiBaseURL: string;
 
   private readonly MediawikiEndpoint = MEDIAWIKI_INTERNAL_ENDPOINT!;
@@ -104,6 +104,6 @@ const browser = (async () => (await chromium.launch()).newContext())();
 
 export const PlayAutomatorFactory = async (language: string) => {
   const context = await browser;
-  const playAutomator = new PlaywrightAutomator(context, language);
+  const playAutomator = new MediawikiAutomator(context, language);
   return playAutomator;
 };

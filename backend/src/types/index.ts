@@ -11,6 +11,10 @@ export type Change = {
   revision?: number;
 };
 
+export interface Article {
+  current_html_content: string;
+}
+
 export interface ChildNodeData extends ChildNode {
   data?: string;
 }

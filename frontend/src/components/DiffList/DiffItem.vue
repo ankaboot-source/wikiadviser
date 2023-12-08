@@ -23,12 +23,8 @@
             </q-tooltip>
           </q-avatar>
         </q-item-label>
-
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-          <div
-            @click="preventLinkVisit($event)"
-            v-html="props.item?.content"
-          ></div>
+          <div @click="preventLinkVisit($event)" v-html="previewItem"></div>
         </q-item-label>
         <q-item-label v-if="!expanded" caption lines="2">
           <div>
@@ -175,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole } from 'src/types';
 import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
@@ -210,6 +206,13 @@ onMounted(async () => {
     email.value = session.value?.user.email as string;
     userId.value = session.value?.user.id as string;
   });
+});
+
+const previewItem = computed(() => {
+  const content = document.createElement('div');
+  content.innerHTML = props.item.content;
+  const isTable = content.querySelector('table') !== null;
+  return isTable ? 'Table or Infobox has changed...' : `${props.item.content}`;
 });
 
 async function handleComment() {

@@ -210,17 +210,21 @@ onMounted(async () => {
 });
 
 const previewItem = computed(() => {
+  const { item } = props;
+
   const content = document.createElement('div');
-  content.innerHTML = props.item.content;
+  content.innerHTML = item.content;
+
   const isTable = content.querySelector('table') !== null;
   const isImage = !isTable && content.querySelector('img') !== null;
+  const description = item.description.length ? item.description : null;
 
   if (isTable) {
-    return 'Modifications to a Table or Infobox..';
+    return description ?? 'Modifications to a Table or Infobox..';
   }
 
   if (isImage) {
-    return 'Modification to an image..';
+    return description ?? 'Modifications containing an image..';
   }
   return `${props.item.content}`;
 });
@@ -232,7 +236,9 @@ async function handleComment() {
   }
 }
 
-const description = ref(props.item?.description);
+const description = ref(
+  props.item?.description !== previewItem.value ? props.item?.description : ''
+);
 
 enum Status {
   AwaitingReviewerApproval = 0,

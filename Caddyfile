@@ -45,7 +45,7 @@
         forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
           header_up Host {upstream_hostport}
           header_up X-Real-IP {remote_host}
-          uri /authenticate
+          uri /auth/mediawiki
           copy_headers X-User X-Client-IP X-Forwarded-Uri
         }
         header {
@@ -69,7 +69,7 @@
         forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
           header_up Host {upstream_hostport}
           header_up X-Real-IP {remote_host}
-          uri /authenticate
+          uri /auth/mediawiki
           copy_headers X-User X-Client-IP X-Forwarded-Uri
         }
         header {

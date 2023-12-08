@@ -33,7 +33,8 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
         created_at: change.created_at,
         description: change.description,
         type_of_edit: change.type_of_edit,
-        contributor_id: change.contributor_id
+        contributor_id: change.contributor_id,
+        revision: change.revision
       });
     }
   }
@@ -154,7 +155,8 @@ export async function refineArticleChanges(
           created_at: change.created_at,
           description: change.description,
           type_of_edit: change.type_of_edit,
-          contributor_id: change.contributor_id
+          contributor_id: change.contributor_id,
+          revision: change.revision
         });
         changeIndex += 1;
         break;

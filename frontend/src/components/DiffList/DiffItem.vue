@@ -177,6 +177,7 @@ import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { is } from 'quasar';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -212,7 +213,16 @@ const previewItem = computed(() => {
   const content = document.createElement('div');
   content.innerHTML = props.item.content;
   const isTable = content.querySelector('table') !== null;
-  return isTable ? 'Table or Infobox has changed...' : `${props.item.content}`;
+  const isImage = !isTable && content.querySelector('img') !== null;
+
+  if (isTable) {
+    return 'Modifications to a Table or Infobox..';
+  }
+
+  if (isImage) {
+    return 'Modification to an image..';
+  }
+  return `${props.item.content}`;
 });
 
 async function handleComment() {

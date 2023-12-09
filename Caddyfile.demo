@@ -55,6 +55,8 @@
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8080
 }
+<<<<<<< HEAD:Caddyfile.demo
+=======
 
 {$MEDIAWIKI_PROD_ENDPOINT} {
         log {
@@ -79,3 +81,4 @@
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8082
 }
+>>>>>>> fd3c336444f54b2aa58d30bb7fc00794cf1464d7:Caddyfile

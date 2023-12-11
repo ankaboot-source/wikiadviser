@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
+import { processExportedArticle } from '../../helpers/parsingHelper';
 import { WikipediaSearchResult } from '../../types';
 import WikipediaInteractor from './WikipediaInteractor';
-import { processExportedArticle } from '../../helpers/parsingHelper';
 
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy: string;
@@ -40,7 +40,10 @@ export class WikipediaApi implements WikipediaInteractor {
     // Handling missing thumbnail's host condition
     if (wpSearchedArticles) {
       for (const article in wpSearchedArticles) {
-        if (Object.prototype.hasOwnProperty.call(wpSearchedArticles, article)) {
+        if (
+          Object.prototype.hasOwnProperty.call(wpSearchedArticles, article) &&
+          !wpSearchedArticles[article].title.includes(':')
+        ) {
           const currentArticle = wpSearchedArticles[article];
           const {
             title,

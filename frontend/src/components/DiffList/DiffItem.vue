@@ -273,6 +273,11 @@ async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
 }
 
+function scrollToItem(smooth: boolean) {
+  const behavior = smooth ? 'smooth' : 'auto';
+  expansionItem.value.$el.scrollIntoView({ behavior });
+}
+
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -290,11 +295,6 @@ watch(
     }
   }
 );
-
-function scrollToItem(smooth: boolean) {
-  const behavior = smooth ? 'smooth' : 'auto';
-  expansionItem.value.$el.scrollIntoView({ behavior });
-}
 
 function setHovered(value: string) {
   store.hoveredChangeId = value;

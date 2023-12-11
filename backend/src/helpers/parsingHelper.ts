@@ -37,6 +37,13 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
   }
 }
 
+function strikeThrough(text: string) {
+  return text
+    .split('')
+    .map((char) => `${char}\u0336 `)
+    .join('');
+}
+
 export async function refineArticleChanges(
   articleId: string,
   html: string,
@@ -90,6 +97,30 @@ export async function refineArticleChanges(
       }
       if (diffAction === 'structural-change') {
         typeOfEdit = 'structural-change';
+
+        const listItems = $('.ve-ui-diffElement-sidebar >')
+          .children()
+          .eq((changeid += 1))
+          .children()
+          .children();
+        listItems.each((i, elem) => {
+          let description = '';
+          $(elem)
+            .find('del')
+            .replaceWith(function () {
+              return strikeThrough($(this).text());
+            });
+
+          $(elem)
+            .find('li')
+            .each((ulElemIndex, ulElem) => {
+              description = description.concat(`- ${$(ulElem).text()}\n`);
+            });
+
+          description = description || $(elem).text();
+
+          list.push(description);
+        });
       }
 
       // Remove data-diff-id & data-parsoid Attributes
@@ -101,7 +132,7 @@ export async function refineArticleChanges(
       });
 
       // Add the description and the type of edit and update the element.
-      $wrapElement.attr('data-description', list.join(' '));
+      $wrapElement.attr('data-description', list.join('\n'));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
 
       $element.replaceWith($wrapElement);

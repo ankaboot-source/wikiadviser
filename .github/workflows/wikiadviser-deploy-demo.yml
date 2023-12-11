@@ -36,7 +36,7 @@ jobs:
             # Remove unused images/containers/volumes
             docker system prune -f
 
-deploy-visual-editor-demo:
+  deploy-visual-editor-demo:
     runs-on: ubuntu-latest
     strategy:
       matrix:

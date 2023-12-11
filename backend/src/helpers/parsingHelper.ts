@@ -37,10 +37,10 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
   }
 }
 
-function strikeThrough(text: string) {
+function createStrikethroughText(text: string) {
   return text
     .split('')
-    .map((char) => `${char}\u0336 `)
+    .map((char) => `${char}\u0336`)
     .join('');
 }
 
@@ -108,7 +108,7 @@ export async function refineArticleChanges(
           $(elem)
             .find('del')
             .replaceWith(function () {
-              return strikeThrough($(this).text());
+              return `${createStrikethroughText($(this).text())} `;
             });
 
           $(elem)

@@ -239,7 +239,7 @@ async function replaceWikiDataHtml(
   sourceLanguage: string,
   getWikipediaHTML: (title: string, language: string) => Promise<string>
 ) {
-  if (/{{Infobox[\s\S]*?}}/.test(updatedPageContent)) {
+  if (/{{(Infobox|Taxobox)[\s\S]*?}}/.test(updatedPageContent)) {
     const articleXML = await getWikipediaHTML(title, sourceLanguage);
     const $ = load(articleXML);
     const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
@@ -263,7 +263,7 @@ async function replaceWikiDataHtml(
       }
       let somethingUnexpectedHappend = false;
       const infoboxUpdatedContent = updatedPageContent.replace(
-        /{{Infobox[\s\S]*?}}/g,
+        /{{(Infobox|Taxobox)[\s\S]*?}}/g,
         () => {
           const escapedInfobox = infoboxesEscaped.shift();
           if (!escapedInfobox) {

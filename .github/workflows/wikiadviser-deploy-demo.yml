@@ -10,7 +10,6 @@ jobs:
     steps:
       - name: Deploy Wikiadviser Demo
         uses: appleboy/ssh-action@master
-        env:          
         with:
           host: ${{ vars.WIKIADVISER_DEMO_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}

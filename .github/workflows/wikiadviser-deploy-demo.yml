@@ -15,7 +15,6 @@ jobs:
           host: ${{ vars.WIKIADVISER_DEMO_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs:
           script: |
             wikiadviser_path="/home/wikiadviser-user/wikiadviser"
             env_path="/home/wikiadviser-user/wikiadviser-env/.env"

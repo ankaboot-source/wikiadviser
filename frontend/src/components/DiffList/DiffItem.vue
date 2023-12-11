@@ -10,7 +10,7 @@
     @mouseleave="setHovered('')"
   >
     <template #header>
-      <q-item-section class="text-body1">
+      <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
             :color="statusDictionary.get(props.item?.status)!.color"
@@ -46,11 +46,18 @@
     <q-separator />
 
     <q-item-section>
-      <div class="q-pa-md">
+      <div class="q-pt-md q-pr-md q-pb-md">
         <div
-          class="text-left text-body1"
+          v-if="props.item.type_of_edit === 3"
+          class="row justify-center"
           @click="preventLinkVisit($event)"
-          v-html="props.item?.content"
+          v-html="props.item.content"
+        ></div>
+        <div
+          v-else
+          class="q-pl-md text-left text-body-2"
+          @click="preventLinkVisit($event)"
+          v-html="props.item.content"
         ></div>
       </div>
     </q-item-section>
@@ -173,7 +180,6 @@ import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { is } from 'quasar';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -209,19 +215,21 @@ const previewItem = computed(() => {
   const { item } = props;
 
   const content = document.createElement('div');
+
+  if (item.description.length > 0) {
+    return item.description;
+  }
+
+  if (item.type_of_edit === 3) {
+    return 'Modifications to infobox or table';
+  }
+
   content.innerHTML = item.content;
 
-  const isTable = content.querySelector('table') !== null;
-  const isImage = !isTable && content.querySelector('img') !== null;
-  const description = item.description.length ? item.description : null;
-
-  if (isTable) {
-    return description ?? 'Modifications to a Table or Infobox..';
+  if (content.querySelector('img') !== null) {
+    return 'Modifications to an image';
   }
 
-  if (isImage) {
-    return description ?? 'Modifications containing an image..';
-  }
   return `${props.item.content}`;
 });
 

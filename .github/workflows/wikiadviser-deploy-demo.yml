@@ -1,0 +1,75 @@
+name: Deploy Demo
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-wikiadviser:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Wikiadviser Demo
+        uses: appleboy/ssh-action@master
+        env:          
+        with:
+          host: ${{ vars.WIKIADVISER_DEMO_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
+          username: ${{ secrets.WIKIADVISER_USERNAME }}
+          envs:
+          script: |
+            wikiadviser_path="/home/wikiadviser-user/wikiadviser"
+            env_path="/home/wikiadviser-user/wikiadviser-env/.env"
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+
+            cd $wikiadviser_path; docker compose -f docker-compose.demo.yml down; git pull
+            cp $env_path $wikiadviser_path
+            docker compose --env-file .env -f docker-compose.demo.yml up -d \
+              --build \
+              --force-recreate
+
+            # Remove unused images/containers/volumes
+            docker system prune -f
+
+deploy-visual-editor-demo:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lang: [fr, en]
+        env: [dev, demo]
+    steps:
+      - name: Deploy VisualEditor
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+          script: |
+            wikiadviser_path="/home/wiki-user/wikiadviser"
+            visual_editor_folder_name="MyVisualEditor"
+            extensions_base_path="/var/www/wiki-${{ matrix.env }}"
+            
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+            
+            # Copy Visual Editor to Extensions
+            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
+
+            # Run update.php in Maintenance Folder
+            # https://www.mediawiki.org/wiki/Manual:Update.php
+            cd /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/maintenance/
+            php update.php --quick

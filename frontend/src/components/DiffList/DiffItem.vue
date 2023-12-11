@@ -26,11 +26,6 @@
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
           <div @click="preventLinkVisit($event)" v-html="previewItem"></div>
         </q-item-label>
-        <q-item-label v-if="!expanded" caption lines="2">
-          <div>
-            {{ description }}
-          </div>
-        </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">
         <span class="text-black">
@@ -238,9 +233,7 @@ async function handleComment() {
   }
 }
 
-const description = ref(
-  props.item?.description !== previewItem.value ? props.item?.description : ''
-);
+const description = ref(props.item?.description);
 
 enum Status {
   AwaitingReviewerApproval = 0,

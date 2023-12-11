@@ -55,30 +55,3 @@
         rewrite /robots.txt ./robots.txt # Disable search engine indexing
         reverse_proxy wiki:8080
 }
-<<<<<<< HEAD:Caddyfile.demo
-=======
-
-{$MEDIAWIKI_PROD_ENDPOINT} {
-        log {
-          output file /var/log/caddy/access-prod.log {
-              roll_size 10MiB
-              roll_keep 10
-              roll_keep_for 24h
-          }
-        }
-        
-        @publicip not client_ip private_ranges
-        forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
-          header_up Host {upstream_hostport}
-          header_up X-Real-IP {remote_host}
-          uri /auth/mediawiki
-          copy_headers X-User X-Client-IP X-Forwarded-Uri
-        }
-        header {
-          -X-Frame-Options
-          +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
-        }
-        rewrite /robots.txt ./robots.txt # Disable search engine indexing
-        reverse_proxy wiki:8082
-}
->>>>>>> fd3c336444f54b2aa58d30bb7fc00794cf1464d7:Caddyfile

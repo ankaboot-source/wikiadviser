@@ -86,11 +86,7 @@ jobs:
     strategy:
       matrix:
         lang: [fr, en]
-<<<<<<< HEAD:.github/workflows/wikiadviser-deploy-prod.yml
         env: [prod]
-=======
-        env: [dev, demo]
->>>>>>> fd3c336444f54b2aa58d30bb7fc00794cf1464d7:.github/workflows/wikiadviser-deploy.yml
     steps:
       - name: Deploy VisualEditor
         uses: appleboy/ssh-action@master

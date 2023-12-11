@@ -214,8 +214,6 @@ onMounted(async () => {
 const previewItem = computed(() => {
   const { item } = props;
 
-  const content = document.createElement('div');
-
   if (item.description.length > 0) {
     return item.description;
   }
@@ -224,9 +222,9 @@ const previewItem = computed(() => {
     return 'Modifications to infobox or table';
   }
 
-  content.innerHTML = item.content;
+  const contentDoc = new DOMParser().parseFromString(item.content, 'text/html');
 
-  if (content.querySelector('img') !== null) {
+  if (contentDoc.querySelector('img') !== null) {
     return 'Modifications to an image';
   }
 

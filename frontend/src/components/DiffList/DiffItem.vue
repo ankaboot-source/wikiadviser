@@ -31,9 +31,8 @@
           ></div>
         </q-item-label>
         <q-item-label v-if="!expanded" caption lines="2">
-          <div>
-            {{ description }}
-          </div>
+          {{ description }}
+          <q-tooltip>{{ description }}</q-tooltip>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">

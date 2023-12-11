@@ -1,7 +1,7 @@
 {
   "name": "frontend-quasar",
   "version": "0.0.1",
-  "description": "A Quasar Project",
+  "description": "WikiAdviser description",
   "productName": "WikiAdviser",
   "author": "Jaafoura <mehdi.jaafourag@gmail.com>",
   "private": true,

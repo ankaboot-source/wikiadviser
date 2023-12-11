@@ -37,7 +37,7 @@ export class WikipediaApi implements WikipediaInteractor {
     const wpSearchedArticles = response.data?.query?.pages;
     const results: WikipediaSearchResult[] = [];
 
-    // Handling missing thumbnail's host condition
+    // Hide utility pages (Having ":") & Handling missing thumbnail's host condition
     if (wpSearchedArticles) {
       for (const article in wpSearchedArticles) {
         if (

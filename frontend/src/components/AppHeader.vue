@@ -20,13 +20,18 @@
         no-caps
         unelevated
       >
-        <q-item clickable @click="signOut">
+        <q-item clickable @click="settings">
           <q-item-section avatar>
-            <q-icon name="logout" />
+            <q-icon name="settings" />
           </q-item-section>
-          <q-item-section>Sign Out</q-item-section>
+          <q-item-section>User settings</q-item-section>
         </q-item>
       </q-btn-dropdown>
+      <q-item clickable @click="signOut">
+        <q-item-section avatar>
+          <q-icon name="logout" />
+        </q-item-section>
+      </q-item>
     </q-toolbar>
   </q-header>
 </template>
@@ -35,10 +40,11 @@ import supabase from 'src/api/supabase';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 
+const router = useRouter();
 const session = ref<Session | null>();
 const email = ref('');
 const $q = useQuasar();
@@ -63,6 +69,12 @@ onMounted(async () => {
     email.value = session.value?.user.email as string;
   });
 });
+
+function settings() {
+  router.push({
+    path: "/settings"
+  });
+}
 
 async function signOut() {
   try {

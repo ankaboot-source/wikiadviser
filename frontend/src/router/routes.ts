@@ -9,6 +9,10 @@ const routes: RouteRecordRaw[] = [
     component: () => null,
   },
   {
+    path: "/settings",
+    component: () => import("pages/UserSettingsPage.vue"),
+  },
+  {
     path: '/auth/update_password',
     name: 'update password',
     component: () => import('pages/auth/UpdatePasswordPage.vue'),

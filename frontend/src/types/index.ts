@@ -2,7 +2,7 @@ export type ChangesItem = {
   id: string;
   content: string;
   status: 0 | 1 | 2;
-  type_of_edit: 0 | 1 | 2;
+  type_of_edit: 0 | 1 | 2 | 3;
   description: string;
   user: {
     id: string;

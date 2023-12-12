@@ -10,7 +10,7 @@
     @mouseleave="setHovered('')"
   >
     <template #header>
-      <q-item-section class="text-body1">
+      <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
             :color="statusDictionary.get(props.item?.status)!.color"
@@ -23,16 +23,8 @@
             </q-tooltip>
           </q-avatar>
         </q-item-label>
-
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-          <div
-            @click="preventLinkVisit($event)"
-            v-html="props.item?.content"
-          ></div>
-        </q-item-label>
-        <q-item-label v-if="!expanded" caption lines="2">
-          {{ description }}
-          <q-tooltip>{{ description }}</q-tooltip>
+          <div @click="preventLinkVisit($event)" v-html="previewItem"></div>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">
@@ -49,11 +41,18 @@
     <q-separator />
 
     <q-item-section>
-      <div class="q-pa-md">
+      <div class="q-pt-md q-pr-md q-pb-md">
         <div
-          class="text-left text-body1"
+          v-if="props.item.type_of_edit === 3"
+          class="row justify-center"
           @click="preventLinkVisit($event)"
-          v-html="props.item?.content"
+          v-html="props.item.content"
+        ></div>
+        <div
+          v-else
+          class="q-pl-md text-left text-body-2"
+          @click="preventLinkVisit($event)"
+          v-html="props.item.content"
         ></div>
       </div>
     </q-item-section>
@@ -170,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole } from 'src/types';
 import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
@@ -205,6 +204,26 @@ onMounted(async () => {
     email.value = session.value?.user.email as string;
     userId.value = session.value?.user.id as string;
   });
+});
+
+const previewItem = computed(() => {
+  const { item } = props;
+
+  if (item.description.length > 0) {
+    return item.description;
+  }
+
+  if (item.type_of_edit === 3) {
+    return 'Modifications to infobox or table';
+  }
+
+  const contentDoc = new DOMParser().parseFromString(item.content, 'text/html');
+
+  if (contentDoc.querySelector('img') !== null) {
+    return 'Modifications to an image';
+  }
+
+  return `${props.item.content}`;
 });
 
 async function handleComment() {

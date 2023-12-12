@@ -24,7 +24,8 @@
           </q-avatar>
         </q-item-label>
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-          <div @click="preventLinkVisit($event)" v-html="previewItem"></div>
+          <div @click="preventLinkVisit($event)" v-html="previewItem" />
+          <q-tooltip>{{ description || previewItem }}</q-tooltip>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">

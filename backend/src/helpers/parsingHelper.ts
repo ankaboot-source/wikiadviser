@@ -108,7 +108,7 @@ export async function refineArticleChanges(
           $(elem)
             .find('del')
             .replaceWith(function () {
-              return `${createStrikethroughText($(this).text())} `;
+              return `${createStrikethroughText($(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
             });
 
           $(elem)

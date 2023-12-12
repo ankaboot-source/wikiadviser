@@ -20,13 +20,12 @@
         no-caps
         unelevated
       >
-        <q-item clickable @click="signOut">
-          <q-item-section avatar>
-            <q-icon name="logout" />
-          </q-item-section>
-          <q-item-section>Sign Out</q-item-section>
-        </q-item>
       </q-btn-dropdown>
+      <q-item clickable @click="signOut">
+        <q-item-section avatar>
+          <q-icon name="logout" />
+        </q-item-section>
+      </q-item>
     </q-toolbar>
   </q-header>
 </template>

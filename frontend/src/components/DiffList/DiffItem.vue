@@ -99,11 +99,7 @@
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
-              :avatar="
-                comment.user.email == email
-                  ? 'https://cdn.quasar.dev/img/avatar2.jpg'
-                  : 'https://cdn.quasar.dev/img/avatar1.jpg'
-              "
+              :avatar="comment.user.picture"
               :bg-color="comment.user.email == email ? 'green' : 'accent'"
             />
           </template>

@@ -24,7 +24,10 @@
           </q-avatar>
         </q-item-label>
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-          <div @click="preventLinkVisit($event)" v-html="previewItem"></div>
+          <div @click="preventLinkVisit($event)" v-html="previewItem" />
+          <q-tooltip v-if="previewDescription">
+            {{ previewDescription }}
+          </q-tooltip>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">
@@ -206,7 +209,7 @@ onMounted(async () => {
   });
 });
 
-const previewItem = computed(() => {
+const previewDescription = computed(() => {
   const { item } = props;
 
   if (item.description.length > 0) {
@@ -218,12 +221,17 @@ const previewItem = computed(() => {
   }
 
   const contentDoc = new DOMParser().parseFromString(item.content, 'text/html');
-
   if (contentDoc.querySelector('img') !== null) {
     return 'Modifications to an image';
   }
 
-  return `${props.item.content}`;
+  return '';
+});
+
+const previewItem = computed(() => {
+  return previewDescription.value
+    ? previewDescription.value
+    : `${props.item.content}`;
 });
 
 async function handleComment() {
@@ -288,6 +296,11 @@ async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
 }
 
+function scrollToItem(smooth: boolean) {
+  const behavior = smooth ? 'smooth' : 'auto';
+  expansionItem.value.$el.scrollIntoView({ behavior });
+}
+
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -305,11 +318,6 @@ watch(
     }
   }
 );
-
-function scrollToItem(smooth: boolean) {
-  const behavior = smooth ? 'smooth' : 'auto';
-  expansionItem.value.$el.scrollIntoView({ behavior });
-}
 
 function setHovered(value: string) {
   store.hoveredChangeId = value;

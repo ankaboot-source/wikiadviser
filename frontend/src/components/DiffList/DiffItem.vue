@@ -25,7 +25,9 @@
         </q-item-label>
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
           <div @click="preventLinkVisit($event)" v-html="previewItem" />
-          <q-tooltip>{{ description || previewItem }}</q-tooltip>
+          <q-tooltip v-if="previewDescription">
+            {{ previewDescription }}
+          </q-tooltip>
         </q-item-label>
       </q-item-section>
       <q-item-section caption top side lines="2">
@@ -207,7 +209,7 @@ onMounted(async () => {
   });
 });
 
-const previewItem = computed(() => {
+const previewDescription = computed(() => {
   const { item } = props;
 
   if (item.description.length > 0) {
@@ -219,12 +221,17 @@ const previewItem = computed(() => {
   }
 
   const contentDoc = new DOMParser().parseFromString(item.content, 'text/html');
-
   if (contentDoc.querySelector('img') !== null) {
     return 'Modifications to an image';
   }
 
-  return `${props.item.content}`;
+  return '';
+});
+
+const previewItem = computed(() => {
+  return previewDescription.value
+    ? previewDescription.value
+    : `${props.item.content}`;
 });
 
 async function handleComment() {

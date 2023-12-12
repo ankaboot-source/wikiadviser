@@ -21,7 +21,7 @@
         unelevated
       >
       </q-btn-dropdown>
-      <q-item clickable @click="signOut">
+      <q-item v-if="session" clickable @click="signOut">
         <q-item-section avatar>
           <q-icon name="logout" />
         </q-item-section>

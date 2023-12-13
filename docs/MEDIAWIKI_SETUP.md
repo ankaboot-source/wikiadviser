@@ -237,6 +237,12 @@
 
     /* to hide footer */
     .mw-footer-container { display:none!important; }
+
+    /* Login, Create account */
+    .vector-header-end { display:none!important; }
+
+    /* Menu */
+    .vector-main-menu-landmark { display:none!important; }
     ```
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js

@@ -210,7 +210,7 @@
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.css
     - Add CSS rules:
-```css
+    ```css
     /* to hide the discussion tab */
     #ca-talk { display:none!important; }
 
@@ -234,7 +234,7 @@
 
     /* to hide footer */
     .mw-footer-container { display:none!important; }
-```
+    ```
 
   Into your MediaWiki instances
 `http://localhost/(language)/index.php/MediaWiki`

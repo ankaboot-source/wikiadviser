@@ -22,13 +22,7 @@
         unelevated
       >
       </q-btn>
-      <q-btn
-        v-if="session"
-        @click="signOut"
-        icon="logout" 
-        no-caps
-        unelevated
-      >
+      <q-btn v-if="session" @click="signOut" icon="logout" no-caps unelevated>
       </q-btn>
     </q-toolbar>
   </q-header>
@@ -44,7 +38,7 @@ import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import UserSettings from "src/components/UserSettings.vue";
+import UserSettings from 'src/components/UserSettings.vue';
 
 const session = ref<Session | null>();
 const email = ref('');

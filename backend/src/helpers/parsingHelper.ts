@@ -38,6 +38,13 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
   }
 }
 
+function createStrikethroughText(text: string) {
+  return text
+    .split('')
+    .map((char) => `${char}\u0336`)
+    .join('');
+}
+
 export async function refineArticleChanges(
   articleId: string,
   html: string,
@@ -92,6 +99,30 @@ export async function refineArticleChanges(
       }
       if (diffAction === 'structural-change') {
         typeOfEdit = 'structural-change';
+
+        const listItems = $('.ve-ui-diffElement-sidebar >')
+          .children()
+          .eq((changeid += 1))
+          .children()
+          .children();
+        listItems.each((i, elem) => {
+          let description = '';
+          $(elem)
+            .find('del')
+            .replaceWith(function () {
+              return `${createStrikethroughText($(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
+            });
+
+          $(elem)
+            .find('li')
+            .each((ulElemIndex, ulElem) => {
+              description = description.concat(`- ${$(ulElem).text()}\n`);
+            });
+
+          description = description || $(elem).text();
+
+          list.push(description);
+        });
       }
 
       // Remove data-diff-id & data-parsoid Attributes
@@ -103,7 +134,7 @@ export async function refineArticleChanges(
       });
 
       // Add the description and the type of edit and update the element.
-      $wrapElement.attr('data-description', list.join(' '));
+      $wrapElement.attr('data-description', list.join('\n'));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
 
       $element.replaceWith($wrapElement);
@@ -243,7 +274,7 @@ async function replaceWikiDataHtml(
   sourceLanguage: string,
   getWikipediaHTML: (title: string, language: string) => Promise<string>
 ) {
-  if (/{{Infobox[\s\S]*?}}/.test(updatedPageContent)) {
+  if (/{{(Infobox|Taxobox)[\s\S]*?}}/.test(updatedPageContent)) {
     const articleXML = await getWikipediaHTML(title, sourceLanguage);
     const $ = load(articleXML);
     const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
@@ -267,7 +298,7 @@ async function replaceWikiDataHtml(
       }
       let somethingUnexpectedHappend = false;
       const infoboxUpdatedContent = updatedPageContent.replace(
-        /{{Infobox[\s\S]*?}}/g,
+        /{{(Infobox|Taxobox)[\s\S]*?}}/g,
         () => {
           const escapedInfobox = infoboxesEscaped.shift();
           if (!escapedInfobox) {

@@ -3,7 +3,7 @@
   <div v-else class="q-pa-xl row justify-center text-center">
     <div>
       <div class="text-h6">
-        Treating the new changes of “{{ props.article.title }}”
+        Processing the new changes of “{{ props.article.title }}”
       </div>
       <QSpinnerGrid class="q-my-xl self-center" color="primary" size="140" />
       <div class="text-body1">Please wait…</div>

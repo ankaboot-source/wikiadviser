@@ -1,0 +1,41 @@
+# Wikiadviser
+{$WIKIADVISER_FRONTEND_ENDPOINT} {
+	root * /usr/share/caddy/html
+	encode gzip
+	try_files {path} /index.html
+	file_server
+
+	rewrite /robots.txt ./robots.txt # Disable search engine indexing
+}
+
+{$WIKIADVISER_API_ENDPOINT} {
+	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
+	request_body {
+		max_size 10MB
+	}
+}
+
+# Mediawiki
+{$MEDIAWIKI_PROD_ENDPOINT} {
+        log {
+          output file /var/log/caddy/access-prod.log {
+              roll_size 10MiB
+              roll_keep 10
+              roll_keep_for 24h
+          }
+        }
+        
+        @publicip not client_ip private_ranges
+        forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
+          header_up Host {upstream_hostport}
+          header_up X-Real-IP {remote_host}
+          uri /auth/mediawiki
+          copy_headers X-User X-Client-IP X-Forwarded-Uri
+        }
+        header {
+          -X-Frame-Options
+          +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
+        }
+        rewrite /robots.txt ./robots.txt # Disable search engine indexing
+        reverse_proxy wiki:8082
+}

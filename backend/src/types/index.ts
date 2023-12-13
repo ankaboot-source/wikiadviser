@@ -31,3 +31,7 @@ export enum TypeOfEditDictionary {
   remove = 2,
   'structural-change' = 3
 }
+
+export interface ErrorResponse {
+  message: string;
+}

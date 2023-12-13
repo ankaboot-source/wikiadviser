@@ -9,6 +9,7 @@ import initializeSentry from './middleware/sentry';
 import articleRouter from './routes/article.routes';
 import wikipediaRouter from './routes/wikipedia.routes';
 import authRouter from './routes/auth.routes';
+import errorHandler from './middleware/errorHandler';
 
 const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
@@ -33,6 +34,8 @@ app.use(wikipediaRouter);
 if (SENTRY_DSN) {
   app.use(Sentry.Handlers.errorHandler());
 }
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   logger.info(`Server listening on port ${port}`);

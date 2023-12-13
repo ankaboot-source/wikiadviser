@@ -17,9 +17,18 @@
             <q-badge
               text-color="light-blue-10"
               color="light-blue-1"
-              class="q-mt-s text-capitalize"
+              class="q-mr-sm text-capitalize"
               :label="article.role"
             />
+            <q-badge
+              text-color="light-blue-10"
+              color="light-blue-1"
+              class="text-capitalize"
+              icon="translate"
+            >
+              <q-icon name="translate" class="q-mr-xs" />
+              {{ language }}
+            </q-badge>
             <div v-if="article.created_at" class="text-weight-light on-right">
               Imported on
               {{
@@ -32,15 +41,6 @@
                   hour12: user12H,
                 })
               }}
-              <q-badge
-                text-color="light-blue-10"
-                color="light-blue-1"
-                class="q-mt-s"
-                icon="translate"
-              >
-                <q-icon name="translate" class="q-mr-xs" />
-                {{ language }}
-              </q-badge>
             </div>
           </div>
         </div>

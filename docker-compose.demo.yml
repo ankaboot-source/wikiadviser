@@ -17,7 +17,7 @@ services:
     container_name: wikiadviser-caddy
     volumes:
       - caddy-data:/data
-      - ./Caddyfile.prod:/etc/caddy/Caddyfile:ro
+      - ./Caddyfile.demo:/etc/caddy/Caddyfile:ro
       - ./robots.txt:/etc/caddy/robots.txt:ro
     build:
       context: frontend

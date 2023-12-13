@@ -10,12 +10,12 @@ jobs:
   deploy-monitoring-wikiadviser:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy monitoring wikiadviser
+      - name: Deploy monitoring wikiadviser demo
         uses: appleboy/ssh-action@master
         env:
           LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
         with:
-          host: ${{ vars.WIKIADVISER_HOST }}
+          host: ${{ vars.WIKIADVISER_DEMO_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
           envs: LOKI_ENDPOINT
@@ -33,7 +33,35 @@ jobs:
             # pull changes         
             cd $wikiadviser_path/monitoring-agent; docker compose down; git pull;
             export LOKI_ENDPOINT
-            envsubst < ./promtail-config.yaml.conf > ./promtail-config.yaml
+            envsubst < promtail-config.yaml.conf > promtail-config.yaml
+
+            # Start monitoring exporters 
+            docker compose up -d;
+
+      - name: Deploy monitoring wikiadviser prod
+        uses: appleboy/ssh-action@master
+        env:
+          LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
+        with:
+          host: ${{ vars.WIKIADVISER_PROD_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER_PROD }}
+          username: ${{ secrets.SSH_USERNAME_WIKIADVISER_PROD }}
+          envs: LOKI_ENDPOINT
+          script: |
+            wikiadviser_path="/home/wikiadviser-prod/wikiadviser"
+
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+
+            # pull changes         
+            cd $wikiadviser_path/monitoring-agent; docker compose down; git pull;
+            export LOKI_ENDPOINT
+            envsubst < promtail-config.yaml.conf > promtail-config.yaml
 
             # Start monitoring exporters 
             docker compose up -d;
@@ -47,9 +75,9 @@ jobs:
         env:
           LOKI_ENDPOINT: ${{ vars.LOKI_ENDPOINT }}
         with:
-          host: ${{ vars.MEDIAWIKI_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_MEDIAWIKI }}
-          username: ${{ secrets.WIKI_USERNAME }}
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
           envs: LOKI_ENDPOINT
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
@@ -65,7 +93,7 @@ jobs:
             # pull changes         
             cd $wikiadviser_path/monitoring-agent; docker compose down; git pull;
             export LOKI_ENDPOINT
-            envsubst < ./promtail-config.yaml.conf > ./promtail-config.yaml
+            envsubst < promtail-config.yaml.conf > promtail-config.yaml
 
             # Start monitoring exporters 
             docker compose up -d;

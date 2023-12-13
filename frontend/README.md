@@ -1,6 +1,6 @@
 # Quasar App (frontend-quasar)
 
-A Quasar Project
+WikiAdviser
 
 ## Install the dependencies
 

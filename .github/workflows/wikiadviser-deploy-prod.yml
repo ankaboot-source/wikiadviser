@@ -1,14 +1,14 @@
-name: Deploy
+name: Deploy Prod
 on:
   push:
-    branches: [main]
+    branches: [release]
   workflow_dispatch:
 
 jobs:
   deploy-wikiadviser:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy Wikiadviser
+      - name: Deploy Wikiadviser Prod
         uses: appleboy/ssh-action@master
         env:
           SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROJECT_URL }}
@@ -17,8 +17,6 @@ jobs:
           WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
           WIKIADVISER_ROOT_DOMAIN: ${{ vars.WIKIADVISER_ROOT_DOMAIN }}
           WIKIADVISER_API_PORT: ${{ vars.WIKIADVISER_API_PORT }}
-          MEDIAWIKI_DEV_ENDPOINT: ${{ vars.MEDIAWIKI_DEV_ENDPOINT }}
-          MEDIAWIKI_DEMO_ENDPOINT: ${{ vars.MEDIAWIKI_DEMO_ENDPOINT }}
           MEDIAWIKI_PROD_ENDPOINT: ${{ vars.MEDIAWIKI_PROD_ENDPOINT }}
           WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
           WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT }}
@@ -35,12 +33,12 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
         with:
-          host: ${{ vars.WIKIADVISER_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
-          username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs: MEDIAWIKI_DEV_ENDPOINT,MEDIAWIKI_DEMO_ENDPOINT,MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_ROOT_DOMAIN,SENTRY_DSN,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES
+          host: ${{ vars.WIKIADVISER_PROD_HOST }}
+          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER_PROD }}
+          username: ${{ secrets.SSH_USERNAME_WIKIADVISER_PROD }}
+          envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_ROOT_DOMAIN,SENTRY_DSN,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES
           script: |
-            wikiadviser_path="/home/wikiadviser-user/wikiadviser"
+            wikiadviser_path="/home/wikiadviser-prod/wikiadviser"
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
@@ -68,8 +66,6 @@ jobs:
             echo "WIKIADVISER_ROOT_DOMAIN=$WIKIADVISER_ROOT_DOMAIN" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
-            echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env
-            echo "MEDIAWIKI_DEMO_ENDPOINT=$MEDIAWIKI_DEMO_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
             
             echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env         
@@ -87,6 +83,10 @@ jobs:
 
   deploy-visual-editor-demo:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lang: [fr, en]
+        env: [prod]
     steps:
       - name: Deploy VisualEditor
         uses: appleboy/ssh-action@master
@@ -97,9 +97,8 @@ jobs:
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
             visual_editor_folder_name="MyVisualEditor"
-            fr_extensions_path="/var/www/wiki-demo/fr/extensions/"
-            en_extensions_path="/var/www/wiki-demo/en/extensions/"
-
+            extensions_base_path="/var/www/wiki-${{ matrix.env }}"
+            
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
@@ -109,5 +108,11 @@ jobs:
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
-            cp -r $wikiadviser_path/$visual_editor_folder_name $fr_extensions_path
-            cp -r $wikiadviser_path/$visual_editor_folder_name $en_extensions_path
+            
+            # Copy Visual Editor to Extensions
+            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
+
+            # Run update.php in Maintenance Folder
+            # https://www.mediawiki.org/wiki/Manual:Update.php
+            cd /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/maintenance/
+            php update.php --quick

@@ -42,6 +42,7 @@ export type Comment = {
   user: {
     id: string;
     email: string;
+    picture: string;
   };
 };
 

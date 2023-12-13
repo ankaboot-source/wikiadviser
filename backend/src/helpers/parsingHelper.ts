@@ -7,14 +7,12 @@ import { getChanges } from './supabaseHelper';
 function addPermissionDataToChanges(
   changesToInsert: Change[],
   articleId: string,
-  userId: string,
-  revision: number
+  userId: string
 ) {
   for (const change of changesToInsert) {
     if (!change.id) {
       change.article_id = articleId;
       change.contributor_id = userId;
-      change.revision = revision;
     }
   }
 }
@@ -185,9 +183,9 @@ export async function refineArticleChanges(
 
   unindexUnassignedChanges(changesToUpsert, changes);
 
-  // Add 'article_id', 'contributor_id', 'revision' properties to changeToinsert
+  // Add 'article_id', 'contributor_id' properties to changeToinsert
   if (changesToInsert) {
-    addPermissionDataToChanges(changesToInsert, articleId, userId, revision);
+    addPermissionDataToChanges(changesToInsert, articleId, userId);
     changesToUpsert.push(...changesToInsert);
   }
 

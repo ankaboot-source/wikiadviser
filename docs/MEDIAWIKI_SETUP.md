@@ -211,33 +211,35 @@
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.css
     - Add CSS rules:
 ```css
-/* to hide the discussion tab */
-#ca-talk { display:none!important; }
+  /* to hide the discussion tab */
+  #ca-talk { display:none!important; }
 
-/* to hide the "View History" tab */
-#ca-history { display:none!important; }
+  /* to hide the "View History" tab */
+  #ca-history { display:none!important; }
 
-/* to hide the "Add languages" menu. */
-.vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang { display:none!important; }
+  /* to hide the "Add languages" menu. */
+  .vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang { display:none!important; }
 
-/* to hide "Notice" button */
-.oo-ui-widget.oo-ui-widget-enabled.oo-ui-iconElement.oo-ui-tool-with-icon.oo-ui-tool.oo-ui-tool-name-notices.oo-ui-popupTool.ve-ui-mwPopupTool { display:none!important; }
+  /* to hide "Notice" button */
+  .oo-ui-widget.oo-ui-widget-enabled.oo-ui-iconElement.oo-ui-tool-with-icon.oo-ui-tool.oo-ui-tool-name-notices.oo-ui-popupTool.ve-ui-mwPopupTool { display:none!important; }
 
-/* to hide 'Notice" popup */
-.oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top:nth-child(2) { display:none!important; }
+  /* to hide 'Notice" popup */
+  .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top:nth-child(2) { display:none!important; }
 
-/* to hide "Read the user guide & Leave feedback about this software" list items */
-.oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(1), .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(3) { display:none!important; }
+  /* to hide "Read the user guide & Leave feedback about this software" list items */
+  .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(1), .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(3) { display:none!important; }
 
-/* to hide "Warning to log in" in edit source */
-.mw-message-box-warning.mw-anon-edit-warning.mw-message-box { display:none!important; }
+  /* to hide "Warning to log in" in edit source */
+  .mw-message-box-warning.mw-anon-edit-warning.mw-message-box { display:none!important; }
 
-/* to hide footer */
-.mw-footer-container { display:none!important; }
+  /* to hide footer */
+  .mw-footer-container { display:none!important; }
 ```
-  - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
-  Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
+  Into your MediaWiki instances
+`http://localhost/(language)/index.php/MediaWiki`
+`https://wiki-dev.wikiadviser.io/(language)/index.php/MediaWiki:Common.css`
+`https://wiki-demo.wikiadviser.io/(language)/index.php/MediaWiki:Common.css`
 
 - Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`

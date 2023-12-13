@@ -232,6 +232,9 @@
     /* to hide "Warning to log in" in edit source */
     .mw-message-box-warning.mw-anon-edit-warning.mw-message-box { display:none!important; }
 
+    /* to hide "Search bar" in edit source */
+    .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box { display:none!important; }
+
     /* to hide footer */
     .mw-footer-container { display:none!important; }
     ```

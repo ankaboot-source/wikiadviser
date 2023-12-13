@@ -236,10 +236,9 @@
     .mw-footer-container { display:none!important; }
     ```
 
-  Into your MediaWiki instances
-`http://localhost/(language)/index.php/MediaWiki`
-`https://wiki-dev.wikiadviser.io/(language)/index.php/MediaWiki:Common.css`
-`https://wiki-demo.wikiadviser.io/(language)/index.php/MediaWiki:Common.css`
+  - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
+
+  Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
 
 - Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`

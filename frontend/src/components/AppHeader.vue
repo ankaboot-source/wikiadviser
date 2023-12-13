@@ -16,8 +16,7 @@
       <q-btn
         v-if="session"
         icon="person"
-        clickable
-        @click="settings"
+        @click="showSettingsDialog = !showSettingsDialog"
         :label="email"
         no-caps
         unelevated
@@ -25,7 +24,6 @@
       </q-btn>
       <q-btn
         v-if="session"
-        clickable
         @click="signOut"
         icon="logout" 
         no-caps
@@ -34,23 +32,27 @@
       </q-btn>
     </q-toolbar>
   </q-header>
+  <q-dialog v-model="showSettingsDialog">
+    <user-settings></user-settings>
+  </q-dialog>
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import { Session } from '@supabase/supabase-js';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import UserSettings from "src/components/UserSettings.vue";
 
-const router = useRouter();
 const session = ref<Session | null>();
 const email = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
+let showSettingsDialog = ref(false);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -69,12 +71,6 @@ onMounted(async () => {
     email.value = session.value?.user.email as string;
   });
 });
-
-function settings() {
-  router.push({
-    path: "/settings"
-  });
-}
 
 async function signOut() {
   try {

@@ -13,19 +13,13 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn
-        v-if="session"
-        icon="person"
-        :label="email"
-        no-caps
-        unelevated
-      >
+      <q-btn v-if="session" icon="person" :label="email" no-caps unelevated>
       </q-btn>
       <q-btn
         v-if="session"
         clickable
         @click="signOut"
-        icon="logout" 
+        icon="logout"
         no-caps
         unelevated
       >

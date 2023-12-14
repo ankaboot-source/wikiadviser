@@ -19,7 +19,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 ## Uncomment this to disable output compression
 # $wgDisableOutputCompression = true;
 
-$wgSitename = "wikiadviser";
+$wgSitename = "WikiAdviser";
 $wgMetaNamespace = "Wikiadviser";
 
 ## The URL base path to the directory containing the wiki;
@@ -39,8 +39,8 @@ $wgResourceBasePath = $wgScriptPath;
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
 $wgLogos = [
-	'1x' => "$wgResourceBasePath/resources/assets/change-your-logo.svg",
-	'icon' => "$wgResourceBasePath/resources/assets/change-your-logo.svg",
+	'1x' => "/home/wikiadviser-user/wikiadviser/docs/LOGO.png",
+	'icon' => "/home/wikiadviser-user/wikiadviser/docs/favicon.ico",
 ];
 
 ## UPO means: this is also a user preference option

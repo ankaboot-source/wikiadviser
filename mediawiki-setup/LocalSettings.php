@@ -44,8 +44,9 @@ $wgResourceBasePath is where your mediawiki instance is installed.
 */
 $wgLogos = [
 	'1x' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
-	'icon' => "$wgResourceBasePath/resources/assets/icons/favicon.ico",
+	'icon' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
 ];
+$wgFavicon = "$wgResourceBasePath/resources/assets/icons/favicon.ico";
 
 ## UPO means: this is also a user preference option
 

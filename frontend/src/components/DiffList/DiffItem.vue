@@ -3,8 +3,8 @@
     ref="expansionItem"
     v-model="expanded"
     :class="{ highlighted: highlighted }"
-    style="background-color: white; border-radius: 4px"
-    class="q-mb-md q-mx-sm borders"
+    style="background-color: white"
+    class="q-mb-md q-mx-sm borders rounded-borders"
     @after-show="scrollToItem(!store.selectedChangeId)"
     @mouseenter="setHovered(props.item.id)"
     @mouseleave="setHovered('')"
@@ -29,16 +29,6 @@
             {{ previewDescription }}
           </q-tooltip>
         </q-item-label>
-      </q-item-section>
-      <q-item-section caption top side lines="2">
-        <span class="text-black">
-          <q-avatar size="sm" icon="person" color="accent" />
-          {{ props.item?.user.email }}</span
-        >
-        <span style="size: 0.5rem">
-          {{ new Date(props.item?.created_at).toLocaleTimeString() }} <br />
-          {{ new Date(props.item?.created_at).toLocaleDateString() }}
-        </span>
       </q-item-section>
     </template>
     <q-separator />

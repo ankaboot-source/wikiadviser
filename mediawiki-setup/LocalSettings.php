@@ -38,9 +38,13 @@ $wgResourceBasePath = $wgScriptPath;
 
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
+/* 
+Copy the repo's `docs/icons` folder into mediawiki's `$wgResourceBasePath/resources/assets`
+$wgResourceBasePath is where your mediawiki instance is installed. 
+*/
 $wgLogos = [
-	'1x' => "/home/wikiadviser-user/wikiadviser/docs/LOGO.png",
-	'icon' => "/home/wikiadviser-user/wikiadviser/docs/favicon.ico",
+	'1x' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
+	'icon' => "$wgResourceBasePath/resources/assets/icons/favicon.ico",
 ];
 
 ## UPO means: this is also a user preference option

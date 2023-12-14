@@ -13,20 +13,17 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn-dropdown
+      <q-btn v-if="session" icon="person" :label="email" no-caps unelevated>
+      </q-btn>
+      <q-btn
         v-if="session"
-        icon="person"
-        :label="email"
+        clickable
+        @click="signOut"
+        icon="logout"
         no-caps
         unelevated
       >
-        <q-item clickable @click="signOut">
-          <q-item-section avatar>
-            <q-icon name="logout" />
-          </q-item-section>
-          <q-item-section>Sign Out</q-item-section>
-        </q-item>
-      </q-btn-dropdown>
+      </q-btn>
     </q-toolbar>
   </q-header>
 </template>

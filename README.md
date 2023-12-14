@@ -2,7 +2,7 @@
 
 ## MediaWiki
 
-To set up MediaWiki locallay, you must follow these [steps](https://github.com/ankaboot-source/wikiadviser/tree/main/docs/MEDIAWIKI_SETUP.md).
+To set up MediaWiki locallay, you must follow these [steps](/mediawiki-setup/MEDIAWIKI_SETUP.md).
 
 ## Pre-requisites
 
@@ -35,14 +35,14 @@ npx supabase start
 After running this command, you get this result when shell finishes setup.
 
 ```yml
-API URL: {your_api_url}
-GraphQL URL: {your_graphql_url}
-DB URL: {your_db_url}
-Studio URL: {your_studio_url}
-Inbucket URL: {your_studio_url}
-JWT secret: {your_secret_jwt}
-anon key: {your_anon_key}
-service_role key: {your_service_role_key}
+API URL: { your_api_url }
+GraphQL URL: { your_graphql_url }
+DB URL: { your_db_url }
+Studio URL: { your_studio_url }
+Inbucket URL: { your_studio_url }
+JWT secret: { your_secret_jwt }
+anon key: { your_anon_key }
+service_role key: { your_service_role_key }
 ```
 
 So you must save it on file because some of the Supabase credentials will be used later in `.env` files.
@@ -66,3 +66,7 @@ npm run dev:backend
 # to start the frontend
 npm run dev:frontend
 ```
+
+## For more information
+
+Refer to [documentation's folder](./docs/) and [notes](./docs/NOTES.md).

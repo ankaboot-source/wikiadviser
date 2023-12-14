@@ -120,82 +120,9 @@
 
 - You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc..., in the extensions folder of mediawiki (for example `/var/www/wiki-dev/en/extensions`), each extension has its official install documentation provided by mediawiki, please follow it to install your required extension.
 
-- <details>
-    <summary>Add these settings at the end of <code>LocalSettings.php</code> in the root folder of your mediawiki instance</summary>
+- Copy the repository's `docs/icons` folder into mediawiki's `(mediawiki root folder)/resources/assets` to set our icon in the mediawiki instance.
 
-  ```
-  $wgDefaultSkin = "vector-2022";
-  wfLoadExtension( 'MyVisualEditor' );
-  $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
-  wfLoadExtension( 'UniversalLanguageSelector' );
-
-  /* Templates & Modules */
-  // https://www.mediawiki.org/wiki/Manual:Importing_Wikipedia_infoboxes_tutorial
-  // https://www.mediawiki.org/wiki/Help:Templates
-
-  wfLoadExtension( 'ParserFunctions' );
-  $wgPFEnableStringFunctions = true;
-
-  wfLoadExtension( 'Scribunto' );
-  $wgScribuntoDefaultEngine = 'luastandalone';
-  $wgScribuntoEngineConf['luastandalone']['cpuLimit'] = 60; // 1 minute
-  $wgScribuntoEngineConf['luastandalone']['memoryLimit'] = 838860800; // 800M
-  $wgMemoryLimit = '800M';
-  $wgMaxShellFileSize = 838860800; // 800M
-  $wgMaxShellTime = 10 * 60 * 1000; // 10 minutes
-
-  wfLoadExtension( 'TemplateStyles' );
-  wfLoadExtension( 'InputBox' );
-  wfLoadExtension( 'TemplateData' );
-  wfLoadExtension( 'SyntaxHighlight_GeSHi' );
-
-  $wgUseInstantCommons = true;
-
-  wfLoadExtension( 'Cite' );
-  wfLoadExtension( 'PageForms' );
-
-  /* Mediawiki Performance tuning */
-  // https://www.mediawiki.org/wiki/Manual:Performance_tuning
-  // https://www.mediawiki.org/wiki/User:Ilmari_Karonen/Performance_tuning
-
-  // Cache & Lifetime (2 years)
-  $wgMainCacheType = CACHE_ACCEL;
-  $wgMessageCacheType = CACHE_ACCEL;
-  $wgParserCacheType = CACHE_DB;
-
-  $wgParserCacheExpireTime = 63072000;
-  $wgRevisionCacheExpiry = 63072000;
-  $wgResourceLoaderMaxage = [
-  'versioned' => 63072000,
-  'unversioned' => 63072000
-  ];
-
-  wfLoadExtension( 'WikibaseRepository', "$IP/extensions/Wikibase/extension-repo.json" );
-  require_once "$IP/extensions/Wikibase/repo/ExampleSettings.php";
-
-  wfLoadExtension( 'WikibaseClient', "$IP/extensions/Wikibase/extension-client.json" );
-  require_once "$IP/extensions/Wikibase/client/ExampleSettings.php";
-
-  $wgWBRepoSettings['allowEntityImport'] = true;
-
-  $wgShowExceptionDetails = true;
-  $wgExternalLinkTarget = '_blank';
-
-  $wgRawHtml = true;
-  ```
-
-  - Rename the composer.local.json-sample file in the root of MediaWiki install directory (en/fr) to composer.local.json, [for more info check](https://www.mediawiki.org/wiki/Wikibase/Installation).
-  - If composer.lock exists delete it and run `composer install --no-dev`
-  - Finally, run the following maintenance scripts:
-
-    ```
-    php maintenance/run.php ./maintenance/update.php
-    php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
-    php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
-    php maintenance/run.php ./maintenance/populateInterwiki.php
-    ```
-
-  </details>
+- Replace <code>LocalSettings.php</code> in the root folder of your mediawiki instance with [LocalSettings.php](./LocalSettings.php)
 
 - <details>
     <summary>Modify settings of <code>default.vcl</code></summary>
@@ -209,41 +136,74 @@
 - Export/Import the CSS & JS from the source wiki depeding on language
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.css
-    - Add CSS rules:
-    ```css
-    /* to hide the discussion tab */
-    #ca-talk { display:none!important; }
 
-    /* to hide the "View History" tab */
-    #ca-history { display:none!important; }
+    - <details> <summary> Add CSS rules: </summary>
 
-    /* to hide the "Add languages" menu. */
-    .vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang { display:none!important; }
+      ```css
+      /* to hide the discussion tab */
+      #ca-talk {
+        display: none !important;
+      }
 
-    /* to hide "Notice" button */
-    .oo-ui-widget.oo-ui-widget-enabled.oo-ui-iconElement.oo-ui-tool-with-icon.oo-ui-tool.oo-ui-tool-name-notices.oo-ui-popupTool.ve-ui-mwPopupTool { display:none!important; }
+      /* to hide the "View History" tab */
+      #ca-history {
+        display: none !important;
+      }
 
-    /* to hide 'Notice" popup */
-    .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top:nth-child(2) { display:none!important; }
+      /* to hide the "Add languages" menu. */
+      .vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang {
+        display: none !important;
+      }
 
-    /* to hide "Read the user guide & Leave feedback about this software" list items */
-    .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(1), .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(3) { display:none!important; }
+      /* to hide "Notice" button */
+      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-iconElement.oo-ui-tool-with-icon.oo-ui-tool.oo-ui-tool-name-notices.oo-ui-popupTool.ve-ui-mwPopupTool {
+        display: none !important;
+      }
 
-    /* to hide "Warning to log in" in edit source */
-    .mw-message-box-warning.mw-anon-edit-warning.mw-message-box { display:none!important; }
+      /* to hide 'Notice" popup */
+      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top:nth-child(
+          2
+        ) {
+        display: none !important;
+      }
 
-    /* to hide "Search bar" in edit source */
-    .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box { display:none!important; }
+      /* to hide "Read the user guide & Leave feedback about this software" list items */
+      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(
+          1
+        ),
+      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(
+          3
+        ) {
+        display: none !important;
+      }
 
-    /* to hide footer */
-    .mw-footer-container { display:none!important; }
+      /* to hide "Warning to log in" in edit source */
+      .mw-message-box-warning.mw-anon-edit-warning.mw-message-box {
+        display: none !important;
+      }
 
-    /* Login, Create account */
-    .vector-header-end { display:none!important; }
+      /* to hide "Search bar" in edit source */
+      .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
+        display: none !important;
+      }
 
-    /* Menu */
-    .vector-main-menu-landmark { display:none!important; }
-    ```
+      /* to hide footer */
+      .mw-footer-container {
+        display: none !important;
+      }
+
+      /* Login, Create account */
+      .vector-header-end {
+        display: none !important;
+      }
+
+      /* Menu */
+      .vector-main-menu-landmark {
+        display: none !important;
+      }
+      ```
+
+      </details>
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
@@ -282,4 +242,3 @@ In both `/frontend` and `/backend` directory
 ```sh
 docker-compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build --force-recreate -d
 ```
-

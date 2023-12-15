@@ -3,7 +3,11 @@
     <q-toolbar>
       <q-toolbar-title>
         <q-breadcrumbs class="merriweather">
-          <q-breadcrumbs-el label="WikiAdviser" icon="public" to="/" />
+          <q-breadcrumbs-el
+            label="WikiAdviser"
+            icon="img:/icons/favicon-32x32.png"
+            to="/"
+          />
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
@@ -24,10 +28,10 @@
       <q-btn
         v-if="supabaseUser"
         clickable
-        @click="signOut"
         icon="logout"
         no-caps
         unelevated
+        @click="signOut"
       >
       </q-btn>
     </q-toolbar>
@@ -61,7 +65,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    supabaseUser.value = null
+    supabaseUser.value = null;
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

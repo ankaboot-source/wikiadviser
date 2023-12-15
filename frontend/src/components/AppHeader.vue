@@ -61,6 +61,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
+    supabaseUser.value = null
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

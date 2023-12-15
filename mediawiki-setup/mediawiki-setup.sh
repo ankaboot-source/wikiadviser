@@ -143,11 +143,19 @@ su $user
 curl -O https://releases.wikimedia.org/mediawiki/"${mediawiki_version[0]}"/mediawiki-"${mediawiki_version[1]}".tar.gz
 tar -xf mediawiki-"${mediawiki_version[1]}".tar.gz
 
+##Create mediawiki instances
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cp -r mediawiki-"${mediawiki_version[1]}" /var/www/wiki-"$environment"/"$lang"
     done
 done
+
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        cp ""$CONF_DIR"/icons" -r  "/var/www/wiki-"$environment"/"$lang"/resources/assets"
+    done
+done
+
 
 for env in "${environments[@]}"; do
 

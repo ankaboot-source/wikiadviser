@@ -13,16 +13,10 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated>
-        <q-avatar size="xs">
-          <img :src="supabaseUser?.user_metadata.picture" />
-        </q-avatar>
-        <q-text class="q-pl-sm">
-          {{ supabaseUser.email }}
-        </q-text>
+      <q-btn v-if="session" icon="person" :label="email" no-caps unelevated>
       </q-btn>
       <q-btn
-        v-if="supabaseUser"
+        v-if="session"
         clickable
         @click="signOut"
         icon="logout"
@@ -35,19 +29,19 @@
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSupabaseUser } from '@nuxtbase/auth-ui-vue';
 
+const session = ref<Session | null>();
+const email = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
-
-const { supabaseUser } = useSupabaseUser(supabase);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -56,6 +50,15 @@ watch([useRoute(), articles], ([newRoute]) => {
   } else {
     article.value = null;
   }
+});
+
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  session.value = data.session;
+  supabase.auth.onAuthStateChange((_, _session) => {
+    session.value = _session;
+    email.value = session.value?.user.email as string;
+  });
 });
 
 async function signOut() {

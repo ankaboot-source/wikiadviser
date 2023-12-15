@@ -1,7 +1,9 @@
 <template>
   <q-item v-show="!removed" bordered>
     <q-item-section avatar>
-      <q-avatar size="md" icon="person" color="accent" />
+      <q-avatar size="md">
+        <img :src="user.picture" />
+      </q-avatar>
     </q-item-section>
     <q-item-section>
       <q-item-label caption>{{ props.user.email }}</q-item-label>

@@ -116,7 +116,7 @@ export async function getChanges(articleId: string) {
       index,
       article_id,
       contributor_id,
-      user: users(id, email), 
+      user: users(id, email, picture: raw_user_meta_data->>"picture"), 
       comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture"))
       `
     )

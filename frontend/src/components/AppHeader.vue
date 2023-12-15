@@ -75,7 +75,7 @@ async function signOut() {
 
 function settings() {
   router.push({
-    path: "/settings"
+    path: '/settings',
   });
 }
 </script>

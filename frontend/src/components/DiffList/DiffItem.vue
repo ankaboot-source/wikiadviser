@@ -32,9 +32,11 @@
       </q-item-section>
       <q-item-section caption top side lines="2">
         <span class="text-black">
-          <q-avatar size="sm" icon="person" color="accent" />
-          {{ props.item?.user.email }}</span
-        >
+          <q-avatar size="sm">
+            <img :src="props.item?.user.picture" />
+          </q-avatar>
+          {{ props.item?.user.email }}
+        </span>
         <span style="size: 0.5rem">
           {{ new Date(props.item?.created_at).toLocaleTimeString() }} <br />
           {{ new Date(props.item?.created_at).toLocaleDateString() }}

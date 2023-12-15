@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-pb-sm">Validate Changes</div>
+    <div class="text-h6 q-px-sm q-pb-sm">Validate Changes</div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
@@ -9,10 +9,27 @@
         :role="role"
       />
 
+      <!-- Reviewed changes -->
+      <q-expansion-item
+        v-if="indexedChanges.find((item) => item.status !== 0)"
+        class="bg-accent"
+        label="Reviewed changes"
+      >
+        <q-list>
+          <diff-item
+            v-for="item in indexedChanges.filter((item) => item.status !== 0)"
+            :key="item.id"
+            :item="item"
+            :role="role"
+          />
+        </q-list>
+        <q-separator />
+      </q-expansion-item>
+
       <!-- Old (Unindexed) Changes -->
       <q-expansion-item
         v-if="unindexedChanges.length"
-        class="q-mb-md q-mx-sm borders bg-accent rounded-borders"
+        class="bg-accent"
         label="Old changes"
       >
         <q-list>
@@ -23,6 +40,7 @@
             :role="role"
           />
         </q-list>
+        <q-separator />
       </q-expansion-item>
     </q-scroll-area>
     <template v-else>

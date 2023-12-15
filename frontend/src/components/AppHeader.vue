@@ -3,7 +3,11 @@
     <q-toolbar>
       <q-toolbar-title>
         <q-breadcrumbs class="merriweather">
-          <q-breadcrumbs-el label="WikiAdviser" icon="public" to="/" />
+          <q-breadcrumbs-el
+            label="WikiAdviser"
+            icon="img:/icons/favicon-32x32.png"
+            to="/"
+          />
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
@@ -13,38 +17,41 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn-dropdown
-        v-if="session"
-        icon="person"
-        :label="email"
+      <q-btn v-if="supabaseUser" no-caps unelevated>
+        <q-avatar size="xs">
+          <img :src="supabaseUser?.user_metadata.picture" />
+        </q-avatar>
+        <q-text class="q-pl-sm">
+          {{ supabaseUser.email }}
+        </q-text>
+      </q-btn>
+      <q-btn
+        v-if="supabaseUser"
+        clickable
+        icon="logout"
         no-caps
         unelevated
+        @click="signOut"
       >
-        <q-item clickable @click="signOut">
-          <q-item-section avatar>
-            <q-icon name="logout" />
-          </q-item-section>
-          <q-item-section>Sign Out</q-item-section>
-        </q-item>
-      </q-btn-dropdown>
+      </q-btn>
     </q-toolbar>
   </q-header>
 </template>
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import { Session } from '@supabase/supabase-js';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useSupabaseUser } from '@nuxtbase/auth-ui-vue';
 
-const session = ref<Session | null>();
-const email = ref('');
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
+
+const { supabaseUser } = useSupabaseUser(supabase);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -55,18 +62,10 @@ watch([useRoute(), articles], ([newRoute]) => {
   }
 });
 
-onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  session.value = data.session;
-  supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
-  });
-});
-
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
+    supabaseUser.value = null;
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

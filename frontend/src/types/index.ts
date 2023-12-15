@@ -7,6 +7,7 @@ export type ChangesItem = {
   user: {
     id: string;
     email: string;
+    picture: string;
   };
   created_at: string;
   comments: Comment[];
@@ -21,6 +22,7 @@ export type SearchResult = {
 };
 
 export type User = {
+  picture: string;
   email: string;
   role: UserRole;
   permissionId: string;

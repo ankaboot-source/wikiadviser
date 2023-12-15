@@ -41,14 +41,13 @@ import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSupabaseUser } from '@nuxtbase/auth-ui-vue';
-import supabaseClient from 'src/api/supabase';
 
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const { supabaseUser } = useSupabaseUser(supabaseClient);
+const { supabaseUser } = useSupabaseUser(supabase);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;

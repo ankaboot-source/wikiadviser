@@ -16,7 +16,7 @@
             </q-tooltip>
           </q-badge>
           {{
-            `${new Date(
+            `Revision of ${new Date(
               revision.items[0]?.created_at
             ).toLocaleDateString()} at ${new Date(
               revision.items[0]?.created_at
@@ -51,10 +51,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import { ChangesItem, UserRole } from 'src/types';
-import { _ } from 'app/dist/spa/assets/plugin-vue_export-helper.21dcd24c';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 
 const props = defineProps<{
   role: UserRole;
@@ -69,4 +69,18 @@ const props = defineProps<{
 const expanded = ref(true);
 
 const description = 'Revision summary';
+
+const store = useSelectedChangeStore();
+watch(
+  () => store.selectedChangeId,
+  (selectedChangeId) => {
+    if (selectedChangeId === '') {
+      return;
+    }
+
+    expanded.value = props.revision.awaiting.some(
+      (item) => item.id === selectedChangeId
+    );
+  }
+);
 </script>

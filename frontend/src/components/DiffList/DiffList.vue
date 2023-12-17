@@ -12,6 +12,7 @@
       <!-- Reviewed changes -->
       <q-expansion-item
         v-if="indexedChanges.find((item) => item.status !== 0)"
+        v-model="expanded"
         class="bg-accent"
         label="Reviewed changes"
       >
@@ -56,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import RevisionItem from './RevisionItem.vue';
 import { ChangesItem, UserRole } from 'src/types';
@@ -105,5 +106,24 @@ const groupedIndexedChanges = computed(() => {
 console.log(groupedIndexedChanges.value);
 const unindexedChanges = computed(() =>
   props.changesList.filter((item) => item.index === null)
+);
+
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+
+const expanded = ref(false);
+
+const store = useSelectedChangeStore();
+
+watch(
+  () => store.selectedChangeId,
+  (selectedChangeId) => {
+    if (selectedChangeId === '') {
+      return;
+    }
+
+    expanded.value = indexedChanges.value.some(
+      (item) => item.status !== 0 && item.id === selectedChangeId
+    );
+  }
 );
 </script>

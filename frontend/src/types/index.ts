@@ -13,6 +13,7 @@ export type ChangesItem = {
   comments: Comment[];
   index: number | null;
   revision: number;
+  archived: boolean;
 };
 
 export type SearchResult = {

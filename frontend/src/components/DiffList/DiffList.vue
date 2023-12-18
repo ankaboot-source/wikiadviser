@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-sm q-pb-sm">Validate Changes</div>
+    <div class="text-h6 q-px-sm q-pb-sm">Awaiting reviewal</div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
@@ -9,22 +9,22 @@
         :role="role"
       />
 
-      <!-- Reviewed changes -->
+      <!-- Archived changes -->
       <q-expansion-item
-        v-if="indexedChanges.find((item) => item.status !== 0)"
+        v-if="archivedChanges.length"
         v-model="expanded"
         class="bg-accent"
-        label="Reviewed changes"
+        label="Archived changes"
+        icon="archive"
       >
         <q-list>
           <diff-item
-            v-for="item in indexedChanges.filter((item) => item.status !== 0)"
+            v-for="item in archivedChanges"
             :key="item.id"
             :item="item"
             :role="role"
           />
         </q-list>
-        <q-separator />
       </q-expansion-item>
 
       <!-- Old (Unindexed) Changes -->
@@ -57,10 +57,13 @@
 </template>
 
 <script setup lang="ts">
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { ChangesItem, UserRole } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import RevisionItem from './RevisionItem.vue';
-import { ChangesItem, UserRole } from 'src/types';
+
+const store = useSelectedChangeStore();
 
 const props = defineProps<{
   role: UserRole;
@@ -68,7 +71,7 @@ const props = defineProps<{
 }>();
 
 const indexedChanges = computed(() =>
-  props.changesList.filter((item) => item.index !== null)
+  props.changesList.filter((item) => item.index !== null && !item.archived)
 );
 const groupedIndexedChanges = computed(() => {
   const grouped = new Map<
@@ -76,8 +79,6 @@ const groupedIndexedChanges = computed(() => {
     {
       revision: number;
       items: ChangesItem[];
-      reviewed: ChangesItem[];
-      awaiting: ChangesItem[];
     }
   >();
 
@@ -87,32 +88,24 @@ const groupedIndexedChanges = computed(() => {
       grouped.set(revision, {
         revision,
         items: [],
-        reviewed: [],
-        awaiting: [],
       });
     }
 
     grouped.get(revision)?.items.push(item);
-    if (item.status !== 0) {
-      grouped.get(revision)?.reviewed.push(item);
-    } else {
-      grouped.get(revision)?.awaiting.push(item);
-    }
   });
 
   return Array.from(grouped.values()).sort((a, b) => b.revision - a.revision);
 });
 
 console.log(groupedIndexedChanges.value);
+const archivedChanges = computed(() =>
+  props.changesList.filter((item) => item.archived)
+);
 const unindexedChanges = computed(() =>
   props.changesList.filter((item) => item.index === null)
 );
 
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-
 const expanded = ref(false);
-
-const store = useSelectedChangeStore();
 
 watch(
   () => store.selectedChangeId,

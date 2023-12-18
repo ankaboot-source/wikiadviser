@@ -1,5 +1,5 @@
 <template>
-  <q-expansion-item v-if="revision.awaiting.length" v-model="expanded">
+  <q-expansion-item v-if="revision.items.length" v-model="expanded">
     <template #header>
       <q-item-section class="text-body">
         <q-item-label>
@@ -8,11 +8,11 @@
             text-color="black"
             color="yellow-8"
             class="q-mt-s text-capitalize"
-            :label="revision.awaiting.length"
+            :label="revision.items.length"
             size="sm"
           >
             <q-tooltip>
-              {{ revision.awaiting.length }} changes awaiting reviewal
+              {{ revision.items.length }} changes awaiting reviewal
             </q-tooltip>
           </q-badge>
           {{
@@ -39,7 +39,7 @@
 
       <q-list>
         <diff-item
-          v-for="item in revision.awaiting"
+          v-for="item in revision.items"
           :key="item.id"
           :item="item"
           :role="role"
@@ -58,12 +58,9 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 
 const props = defineProps<{
   role: UserRole;
-  changesList: ChangesItem[];
   revision: {
     revision: number;
     items: ChangesItem[];
-    reviewed: ChangesItem[];
-    awaiting: ChangesItem[];
   };
 }>();
 const expanded = ref(true);
@@ -78,7 +75,7 @@ watch(
       return;
     }
 
-    expanded.value = props.revision.awaiting.some(
+    expanded.value = props.revision.items.some(
       (item) => item.id === selectedChangeId
     );
   }

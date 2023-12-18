@@ -136,11 +136,7 @@
     </q-item-section>
     <q-separator />
 
-    <!-- User: Reviewer Only -->
-    <q-item-section
-      v-if="reviewerPermission && !viewerPermission && !props.item.status"
-      class="bg-accent"
-    >
+    <q-item-section class="bg-accent">
       <div class="row q-ma-md">
         <q-btn
           no-caps
@@ -151,25 +147,43 @@
           @click="expanded = false"
         />
         <q-space />
-        <q-btn
-          class="q-mr-sm"
-          no-caps
-          icon="thumb_down"
-          color="red-1"
-          text-color="red-10"
-          label="Reject"
-          unelevated
-          @click="handleReview(Status.EditRejected)"
-        />
-        <q-btn
-          no-caps
-          icon="thumb_up"
-          color="green-1"
-          text-color="green-10"
-          label="Approve"
-          unelevated
-          @click="handleReview(Status.EditApproved)"
-        />
+        <!-- User: Reviewer Only -->
+        <template
+          v-if="reviewerPermission && !viewerPermission && !props.item.status"
+        >
+          <q-btn
+            class="q-mr-sm"
+            no-caps
+            icon="thumb_down"
+            color="red-1"
+            text-color="red-10"
+            label="Reject"
+            unelevated
+            @click="handleReview(Status.EditRejected)"
+          />
+          <q-btn
+            no-caps
+            icon="thumb_up"
+            color="green-1"
+            text-color="green-10"
+            label="Approve"
+            unelevated
+            @click="handleReview(Status.EditApproved)"
+          />
+        </template>
+        <template
+          v-if="reviewerPermission && !viewerPermission && props.item.status"
+        >
+          <q-btn
+            no-caps
+            :icon="archiveButton"
+            outline
+            color="blue-grey-10"
+            class="bg-white text-capitalize"
+            :label="archiveButton"
+            @click="archiveChange(!isArchived)"
+          />
+        </template>
       </div>
     </q-item-section>
   </q-expansion-item>
@@ -298,6 +312,15 @@ async function handleReview(Status: Status) {
 
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
+}
+
+const isArchived = computed(() => props.item.archived);
+const archiveButton = computed(() => {
+  return isArchived.value ? 'unarchive' : 'archive';
+});
+console.log(archiveButton.value);
+async function archiveChange(archived = true) {
+  await updateChange(props.item.id, undefined, undefined, archived);
 }
 
 function scrollToItem(smooth: boolean) {

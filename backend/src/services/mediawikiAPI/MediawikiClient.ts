@@ -1,13 +1,14 @@
 import { AxiosInstance } from 'axios';
 import mediawikiApiInstances from '../../api/mediawikiApiInstances';
-import logger from '../../logger';
-import { MediawikiAutomator } from './MediawikiAutomator';
-import { WikipediaApi } from '../wikipedia/WikipediaApi';
 import { refineArticleChanges } from '../../helpers/parsingHelper';
 import {
+  insertRevision,
   updateCurrentHtmlContent,
   upsertChanges
 } from '../../helpers/supabaseHelper';
+import logger from '../../logger';
+import { WikipediaApi } from '../wikipedia/WikipediaApi';
+import { MediawikiAutomator } from './MediawikiAutomator';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
@@ -179,7 +180,7 @@ export default class MediawikiClient {
     }
   }
 
-  private async getRevisionId(articleId: string, sort: 'older' | 'newer') {
+  private async getRevisionData(articleId: string, sort: 'older' | 'newer') {
     const response = await this.mediawikiApiInstance.get('', {
       params: {
         action: 'query',
@@ -191,17 +192,25 @@ export default class MediawikiClient {
         formatversion: 2
       }
     });
-    return response.data.query.pages[0].revisions[0].revid;
+    return response.data.query.pages[0].revisions[0];
   }
 
   async updateChanges(articleId: string, userId: string) {
-    const originalRevid = await this.getRevisionId(articleId, 'newer');
-    const latestRevid = await this.getRevisionId(articleId, 'older');
+    const { revid: originalRevid } = await this.getRevisionData(
+      articleId,
+      'newer'
+    );
+    const { revid: latestRevid, comment: summary } = await this.getRevisionData(
+      articleId,
+      'older'
+    );
 
     logger.info('Getting the Diff HTML of Revids:', {
       originalRevid,
       latestRevid
     });
+
+    const revisionId = await insertRevision(articleId, latestRevid, summary);
 
     const diffPage = await this.mediawikiAutomator.getMediaWikiDiffHtml(
       articleId,
@@ -213,7 +222,7 @@ export default class MediawikiClient {
       articleId,
       diffPage,
       userId,
-      latestRevid
+      revisionId
     );
 
     await upsertChanges(changesToUpsert);

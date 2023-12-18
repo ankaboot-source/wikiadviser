@@ -116,7 +116,7 @@ export async function getChanges(articleId: string) {
       index,
       article_id,
       contributor_id,
-      revision,
+      revision_id,
       archived,
       user: users(id, email, picture: raw_user_meta_data->>"picture"), 
       comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture"))
@@ -172,4 +172,21 @@ export async function getUserPermission(articleId: string, userId: string) {
     .single();
 
   return data?.role;
+}
+
+export async function insertRevision(
+  article_id: string,
+  revid: string,
+  summary: string
+) {
+  const { data: revisionsData, error: revisionsError } = await supabase
+    .from('revisions')
+    .insert({ article_id, revid, summary })
+    .select();
+  if (revisionsError) {
+    throw new Error(revisionsError.message);
+  }
+  const revisionId = revisionsData[0].id;
+
+  return revisionId;
 }

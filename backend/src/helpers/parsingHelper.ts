@@ -32,7 +32,7 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
         description: change.description,
         type_of_edit: change.type_of_edit,
         contributor_id: change.contributor_id,
-        revision: change.revision
+        revision_id: change.revision_id
       });
     }
   }
@@ -49,7 +49,7 @@ export async function refineArticleChanges(
   articleId: string,
   html: string,
   userId: string,
-  revision: number
+  revision_id: number
 ) {
   const $ = load(html);
   let changeid = -1;
@@ -185,7 +185,7 @@ export async function refineArticleChanges(
           description: change.description,
           type_of_edit: change.type_of_edit,
           contributor_id: change.contributor_id,
-          revision: change.revision
+          revision_id: change.revision_id
         });
         changeIndex += 1;
         break;
@@ -201,7 +201,7 @@ export async function refineArticleChanges(
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
         index: changeIndex,
-        revision
+        revision_id
       });
       changeIndex += 1;
     }

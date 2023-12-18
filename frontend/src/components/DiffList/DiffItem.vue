@@ -318,7 +318,7 @@ const isArchived = computed(() => props.item.archived);
 const archiveButton = computed(() => {
   return isArchived.value ? 'unarchive' : 'archive';
 });
-console.log(archiveButton.value);
+
 async function archiveChange(archived = true) {
   await updateChange(props.item.id, undefined, undefined, archived);
 }

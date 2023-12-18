@@ -45,12 +45,14 @@
       </q-expansion-item>
     </q-scroll-area>
     <template v-else>
-      <div class="q-py-sm text-body1 text-weight-medium">
-        There are currently no changes
-      </div>
-      <div class="q-pb-sm text-body2">
-        Easily navigate through changes using the changes tab once the article
-        has been edited.
+      <div class="q-pl-sm q-py-sm">
+        <div class="q-pb-sm text-body1 text-weight-medium">
+          There are currently no changes
+        </div>
+        <div class="text-body2">
+          Easily navigate through changes using the changes tab once the article
+          has been edited.
+        </div>
       </div>
     </template>
   </div>

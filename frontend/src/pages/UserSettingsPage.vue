@@ -3,7 +3,7 @@ import supabase from 'src/api/supabase';
 import { Session } from '@supabase/supabase-js';
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { deleteArticle, deleteUser } from 'src/api/supabaseHelper';
+import { deleteUser } from 'src/api/supabaseHelper';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 
@@ -16,7 +16,7 @@ const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 function removeImage() {
-  console.log('remove');
+  // TODO: 
 }
 
 function back() {
@@ -59,9 +59,13 @@ async function removeUser() {
       icon: 'check',
       color: 'positive',
     });
-    document.cookie =
-      'yourCookieName=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    document.cookie = '';
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    articlesStore.resetArticles();
     // showDeleteDialog.value = !showDeleteDialog.value;
+
+    document.location.href = '/';
   } catch (error) {
     $q.loading.hide();
     if (error instanceof Error) {
@@ -129,8 +133,7 @@ async function removeUser() {
     <q-dialog v-model="showDeleteDialog">
       <q-card class="column fit" style="max-width: 50vw; max-height: 20vh" flat>
         <h6 style="margin: 1.25rem 1rem">
-          ⚠️ Deleting your account is permanent. You will lose all your mining
-          data.
+          ⚠️ Deleting your account is permanent. You will lose all your data.
         </h6>
         <hr />
         <div

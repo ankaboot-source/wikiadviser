@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { deleteArticleDB, getUserPermission } from '../helpers/supabaseHelper';
+import { deleteArticleDB, getArticlesByUser, getUserPermission } from '../helpers/supabaseHelper';
 import supabase from '../api/supabase';
 import { User } from '@supabase/supabase-js';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
@@ -87,33 +87,7 @@ export async function deleteUser(
 ) {
   try {
     const { id } = req.params;
-    const { data: articleData, error: articleError } = await supabase
-      .from('permissions')
-      .select(
-        `
-      id,
-      article_id,
-      role,
-      articles(title,description,created_at,language)
-      `
-      )
-      .eq('user_id', id as string)
-      .eq('role', 'owner');
-    if (articleError) {
-      throw new Error(articleError.message);
-    }
-
-    const articles: any[] = articleData
-      .filter((article) => article.role !== null)
-      .map((article: any) => ({
-        article_id: article.article_id,
-        title: article.articles.title,
-        description: article.articles.description,
-        permission_id: article.id,
-        role: article.role,
-        language: article.articles.language,
-        created_at: new Date(article.articles.created_at)
-      }));
+    const articles = await getArticlesByUser(id);
 
     for (let article of articles) {
       const mediawiki = new MediawikiClient(
@@ -125,6 +99,8 @@ export async function deleteUser(
       await deleteArticleDB(article.article_id);
     }
     await supabase.auth.admin.deleteUser(id as string);
+
+    next({});
   } catch (error) {
     return next(error);
   }

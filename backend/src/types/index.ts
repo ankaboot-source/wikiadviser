@@ -34,3 +34,13 @@ export enum TypeOfEditDictionary {
 export interface ErrorResponse {
   message: string;
 }
+
+export type ArticleData = {
+  article_id: any;
+  title: string;
+  description: string;
+  permission_id: string;
+  role: string;
+  language: string;
+  created_at: string;
+}

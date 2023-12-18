@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { Change } from '../types';
+import { ArticleData, Change } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -170,4 +170,33 @@ export async function getUserPermission(articleId: string, userId: string) {
     .single();
 
   return data?.role;
+}
+
+export async function getArticlesByUser(userId: string): Promise<ArticleData[]> {
+  const { data, error } = await supabase
+    .from('permissions')
+    .select(`
+    id,
+    article_id,
+    role,
+    articles(title, description, created_at, language)
+    `)
+    .eq('user_id', userId)
+    .eq('role', 'owner');
+
+  if (error) { throw new Error(error.message); }
+
+  const articles: any[] = data
+    .filter((article) => article.role !== null)
+    .map((article: any) => ({
+      article_id: article.article_id,
+      title: article.articles.title,
+      description: article.articles.description,
+      permission_id: article.id,
+      role: article.role,
+      language: article.articles.language,
+      created_at: new Date(article.articles.created_at)
+    }));
+
+  return articles;
 }

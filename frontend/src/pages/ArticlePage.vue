@@ -58,6 +58,24 @@ const loading = ref(true);
 
 let pollTimer: number;
 
+async function fetchChanges() {
+  try {
+    const updatedChangesList = (await getChanges(articleId.value)) ?? [];
+
+    if (
+      JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)
+    ) {
+      changesList.value = updatedChangesList;
+      changesContent.value = await getArticleParsedContent(articleId.value);
+    }
+    if (!changesList.value.length) {
+      changesContent.value = '';
+    }
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
   // Access the article id parameter from the route's params object
@@ -93,24 +111,6 @@ onBeforeMount(async () => {
   }, 2000);
   loading.value = false;
 });
-
-async function fetchChanges() {
-  try {
-    const updatedChangesList = (await getChanges(articleId.value)) ?? [];
-
-    if (
-      JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)
-    ) {
-      changesList.value = updatedChangesList;
-      changesContent.value = await getArticleParsedContent(articleId.value);
-    }
-    if (!changesList.value.length) {
-      changesContent.value = '';
-    }
-  } catch (error) {
-    console.error(error);
-  }
-}
 
 onBeforeUnmount(() => {
   clearInterval(pollTimer);

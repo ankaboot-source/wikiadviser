@@ -58,7 +58,7 @@ export async function getParsedArticle(
   try {
     const article = await getArticle(articleId);
     const changes = await getChanges(articleId);
-    const content = await parseArticle(article, changes);
+    const content = parseArticle(article, changes);
     logger.info({ articleId }, 'Get Parsed Article');
     return res
       .status(200)

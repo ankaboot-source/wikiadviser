@@ -224,7 +224,7 @@ export async function refineArticleChanges(
   return { changesToUpsert, htmlContent };
 }
 
-export async function parseArticle(article: Article, changes: Change[]) {
+export function parseArticle(article: Article, changes: Change[]) {
   const content = article.current_html_content;
 
   if (!content) {

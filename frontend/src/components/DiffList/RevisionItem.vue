@@ -25,8 +25,7 @@
         </q-item-label>
 
         <q-item-label v-if="!expanded" caption lines="2">
-          <q-tooltip>{{ summary }}</q-tooltip>
-          {{ summary }}
+          {{ summary }} <q-tooltip>{{ summary }}</q-tooltip>
         </q-item-label>
       </q-item-section>
     </template>
@@ -34,10 +33,16 @@
     <!-- Current Changes -->
     <q-list>
       <q-input
+        v-if="summary"
         v-model="summary"
         type="textarea"
+        dense
+        readonly
+        borderless
         label="Summary"
-        class="textarea__limit_height q-mx-sm"
+        class="textarea__limit_height q-mx-lg q-mb-sm"
+        @click.stop
+        @keypress.stop
       />
       <q-list>
         <diff-item
@@ -87,6 +92,6 @@ watch(
 </script>
 <style>
 .textarea__limit_height textarea.q-field__native {
-  max-height: 4rem !important;
+  height: 1rem;
 }
 </style>

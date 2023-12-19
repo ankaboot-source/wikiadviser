@@ -11,7 +11,7 @@ export default function errorHandler(
   const code = res.statusCode ?? 401;
 
   const response: ErrorResponse = {
-    message: error.message 
+    message: error.message
   };
 
   logger.error(error.message, error);

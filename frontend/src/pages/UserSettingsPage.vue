@@ -16,7 +16,7 @@ const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 function removeImage() {
-  // TODO: 
+  // TODO:
 }
 
 function back() {
@@ -31,9 +31,9 @@ onMounted(async () => {
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
     email.value = session.value?.user.email as string;
-    picture.value = session.value?.user.user_metadata.picture
-      ? session.value?.user.user_metadata.picture
-      : `https://ui-avatars.com/api/${email.value}/300/random/fff/1`;
+    picture.value =
+      session.value?.user.user_metadata.picture ??
+      `https://ui-avatars.com/api/${email.value}/300/random/fff/1`;
   });
 });
 
@@ -101,12 +101,7 @@ async function removeUser() {
     <br />
     <q-btn
       unelevated
-      style="
-        width: 300px;
-        font-size: 1.25rem;
-        background-color: #c10015;
-        color: #fff;
-      "
+      class="xl-btn"
       icon="no_photography"
       label="remove image"
       @click="removeImage"
@@ -120,12 +115,7 @@ async function removeUser() {
     </p>
     <q-btn
       unelevated
-      style="
-        width: 300px;
-        font-size: 1.25rem;
-        background-color: #c10015;
-        color: #fff;
-      "
+      class="xl-btn"
       icon="delete"
       label="delete account"
       @click="showDeleteDialog = !showDeleteDialog"
@@ -142,18 +132,13 @@ async function removeUser() {
           <q-btn
             outline
             unelevated
-            style="width: 110px; font-size: 1.25rem; margin-right: 1rem"
+            class="lg-btn mr-4"
             label="Cancel"
             @click="showDeleteDialog = !showDeleteDialog"
           />
           <q-btn
             unelevated
-            style="
-              width: 110px;
-              font-size: 1.25rem;
-              background-color: #c10015;
-              color: #fff;
-            "
+            class="lg-btn remove-btn"
             label="Delete"
             @click="removeUser"
           />
@@ -184,5 +169,26 @@ p {
 
 img {
   width: 300px;
+}
+
+.xl-btn {
+  width: 300px;
+  font-size: 1.25rem;
+  background-color: #c10015;
+  color: #fff;
+}
+
+.lg-btn {
+  width: 110px;
+  font-size: 1.25rem;
+}
+
+.mr-4 {
+  margin-right: 1rem;
+}
+
+.remove-btn {
+  background-color: #c10015;
+  color: #fff;
 }
 </style>

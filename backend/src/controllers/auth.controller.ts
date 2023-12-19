@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import { deleteArticleDB, getArticlesByUser, getUserPermission } from '../helpers/supabaseHelper';
+import {
+  deleteArticleDB,
+  getArticlesByUser,
+  getUserPermission
+} from '../helpers/supabaseHelper';
 import supabase from '../api/supabase';
-import { User } from '@supabase/supabase-js';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';

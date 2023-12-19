@@ -12,7 +12,11 @@ export type ChangesItem = {
   created_at: string;
   comments: Comment[];
   index: number | null;
-  revision: number;
+  revision_id: string;
+  revision: {
+    revid: number;
+    summary: string;
+  };
   archived: boolean;
 };
 

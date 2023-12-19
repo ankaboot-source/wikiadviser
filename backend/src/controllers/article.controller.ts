@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { parseArticle, ParseChanges } from '../helpers/parsingHelper';
-import logger from '../logger';
+import { ParseChanges, parseArticle } from '../helpers/parsingHelper';
 import {
   deleteArticleDB,
   getArticle,
@@ -8,8 +7,9 @@ import {
   getUserPermission,
   insertArticle
 } from '../helpers/supabaseHelper';
-import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
+import logger from '../logger';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
+import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
 
 /**
@@ -109,7 +109,7 @@ export async function getArticleChanges(
   const { id: articleId } = req.params;
   try {
     const changes = await getChanges(articleId);
-    const Articlechanges = await ParseChanges(changes);
+    const Articlechanges = ParseChanges(changes);
     logger.debug(`Getting Parsed Changes for article: ${articleId}`);
     return res.status(200).json({
       message: 'Getting article changes succeeded.',

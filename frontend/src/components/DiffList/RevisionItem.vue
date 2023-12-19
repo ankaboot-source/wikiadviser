@@ -25,18 +25,20 @@
         </q-item-label>
 
         <q-item-label v-if="!expanded" caption lines="2">
-          <q-tooltip>{{ description }}</q-tooltip>
-          <div>{{ description }}</div>
+          <q-tooltip>{{ summary }}</q-tooltip>
+          {{ summary }}
         </q-item-label>
       </q-item-section>
     </template>
 
     <!-- Current Changes -->
     <q-list>
-      <q-item-label class="q-ma-sm">
-        <div>{{ description }}</div>
-      </q-item-label>
-
+      <q-input
+        v-model="summary"
+        type="textarea"
+        label="Summary"
+        class="textarea__limit_height q-mx-sm"
+      />
       <q-list>
         <diff-item
           v-for="item in revision.items"
@@ -46,12 +48,13 @@
         />
       </q-list>
     </q-list>
+
     <q-separator />
   </q-expansion-item>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import { ChangesItem, UserRole } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
@@ -60,12 +63,13 @@ const props = defineProps<{
   role: UserRole;
   revision: {
     revision: number;
+    summary: string;
     items: ChangesItem[];
   };
 }>();
 const expanded = ref(true);
 
-const description = 'Revision summary';
+const summary = computed(() => props.revision.summary);
 
 const store = useSelectedChangeStore();
 watch(
@@ -81,3 +85,8 @@ watch(
   }
 );
 </script>
+<style>
+.textarea__limit_height textarea.q-field__native {
+  max-height: 4rem !important;
+}
+</style>

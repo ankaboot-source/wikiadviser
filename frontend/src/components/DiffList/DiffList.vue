@@ -80,15 +80,18 @@ const groupedIndexedChanges = computed(() => {
     number,
     {
       revision: number;
+      summary: string;
       items: ChangesItem[];
     }
   >();
 
   indexedChanges.value.forEach((item) => {
-    const revision = item.revision;
+    const revision = item.revision.revid;
+    const summary = item.revision.summary;
     if (!grouped.has(revision)) {
       grouped.set(revision, {
         revision,
+        summary,
         items: [],
       });
     }

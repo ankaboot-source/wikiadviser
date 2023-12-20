@@ -187,7 +187,8 @@ export async function insertRevision(
   if (revisionsError) {
     throw new Error(revisionsError.message);
   }
-  const revisionId = revisionsData[0].id;
+  const [revision ] = revisionsData;
+  return revision.id
 
   return revisionId;
 }

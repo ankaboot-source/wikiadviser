@@ -51,12 +51,12 @@ export async function refineArticleChanges(
   userId: string,
   revision_id: string
 ) {
-  const $ = load(html);
+  const CheerioAPI = load(html);
   let changeid = -1;
   // Loop through elements that have the attribute data-diff-action
-  $("[data-diff-action]:not([data-diff-action='none'])").each(
+  CheerioAPI("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
-      const $element = $(element);
+      const $element = CheerioAPI(element);
       if (!$element.prop('innerText')?.trim()) {
         $element.remove();
         return;
@@ -65,7 +65,7 @@ export async function refineArticleChanges(
       const list: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
-      const $wrapElement = $('<span>');
+      const $wrapElement = CheerioAPI('<span>');
 
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
@@ -84,13 +84,13 @@ export async function refineArticleChanges(
 
           // change-remove is always succeeded by a change-insert
           typeOfEdit = 'change';
-          const listItems = $('.ve-ui-diffElement-sidebar >')
+          const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
             .children()
             .eq((changeid += 1))
             .children()
             .children();
           listItems.each((i, elem) => {
-            list.push($(elem).text());
+            list.push(CheerioAPI(elem).text());
           });
 
           // Remove the last element
@@ -100,26 +100,28 @@ export async function refineArticleChanges(
       if (diffAction === 'structural-change') {
         typeOfEdit = 'structural-change';
 
-        const listItems = $('.ve-ui-diffElement-sidebar >')
+        const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
           .children()
           .eq((changeid += 1))
           .children()
           .children();
         listItems.each((i, elem) => {
           let description = '';
-          $(elem)
+          CheerioAPI(elem)
             .find('del')
             .replaceWith(function () {
-              return `${createStrikethroughText($(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
+              return `${createStrikethroughText(CheerioAPI(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
             });
 
-          $(elem)
+          CheerioAPI(elem)
             .find('li')
             .each((ulElemIndex, ulElem) => {
-              description = description.concat(`- ${$(ulElem).text()}\n`);
+              description = description.concat(
+                `- ${CheerioAPI(ulElem).text()}\n`
+              );
             });
 
-          description = description || $(elem).text();
+          description = description || CheerioAPI(elem).text();
 
           list.push(description);
         });
@@ -127,10 +129,10 @@ export async function refineArticleChanges(
 
       // Remove data-diff-id & data-parsoid Attributes
       $wrapElement.find('[data-diff-id]').each((_, el) => {
-        $(el).removeAttr('data-diff-id');
+        CheerioAPI(el).removeAttr('data-diff-id');
       });
       $wrapElement.find('[data-parsoid]').each((_, el) => {
-        $(el).removeAttr('data-parsoid');
+        CheerioAPI(el).removeAttr('data-parsoid');
       });
 
       // Add the description and the type of edit and update the element.
@@ -142,20 +144,20 @@ export async function refineArticleChanges(
   );
 
   // Remove sidebar
-  $('.ve-ui-diffElement-sidebar').remove();
-  $('.ve-ui-diffElement-hasDescriptions').removeClass(
+  CheerioAPI('.ve-ui-diffElement-sidebar').remove();
+  CheerioAPI('.ve-ui-diffElement-hasDescriptions').removeClass(
     've-ui-diffElement-hasDescriptions'
   );
 
   const changes = await getChanges(articleId);
-  const changeElements = $('[data-description]');
+  const changeElements = CheerioAPI('[data-description]');
 
   const changesToUpsert: Change[] = [];
   const changesToInsert: Change[] = [];
   let changeIndex = 0;
 
   for (const element of changeElements) {
-    const $element = $(element);
+    const $element = CheerioAPI(element);
     let changeId = '';
     let description: string | undefined;
 
@@ -197,7 +199,7 @@ export async function refineArticleChanges(
       description = $element.attr('data-description');
       $element.removeAttr('data-description');
       changesToInsert.push({
-        content: $.html($element),
+        content: CheerioAPI.html($element),
         status: 0,
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
@@ -221,7 +223,7 @@ export async function refineArticleChanges(
     changesToUpsert.push(...changesToInsert);
   }
 
-  const htmlContent = $.html();
+  const htmlContent = CheerioAPI.html();
   return { changesToUpsert, htmlContent };
 }
 
@@ -232,27 +234,27 @@ export function parseArticle(article: Article, changes: Change[]) {
     return null;
   }
 
-  const $ = load(content);
-  $('[data-id]').each((index, element) => {
+  const CheerioAPI = load(content);
+  CheerioAPI('[data-id]').each((index, element) => {
     // Add more data
-    const $element = $(element);
+    const $element = CheerioAPI(element);
     $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
     $element.attr('data-status', String(changes[index].status));
     $element.attr('data-index', String(changes[index].index));
     $element.attr('data-id', changes[index].id);
   });
-  return $.html();
+  return CheerioAPI.html();
 }
 
 export function parseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
-      const $ = load(change.content);
-      $('[data-diff-action]').each((_, element) => {
-        const $element = $(element);
+      const CheerioAPI = load(change.content);
+      CheerioAPI('[data-diff-action]').each((_, element) => {
+        const $element = CheerioAPI(element);
         $element.attr('data-status', String(change.status));
       });
-      const modifiedContent = $.html();
+      const modifiedContent = CheerioAPI.html();
       return {
         ...change,
         content: modifiedContent
@@ -277,9 +279,9 @@ async function replaceWikiDataHtml(
 ) {
   if (/{{(Infobox|Taxobox)[\s\S]*?}}/.test(updatedPageContent)) {
     const articleXML = await getWikipediaHTML(title, sourceLanguage);
-    const $ = load(articleXML);
+    const CheerioAPI = load(articleXML);
     const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
-    const infoboxes = $(generateOuterMostSelectors(infoboxClasses));
+    const infoboxes = CheerioAPI(generateOuterMostSelectors(infoboxClasses));
     if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
       // Remove unnecessary elements within the infobox
       infoboxes.find('.wikidata-linkback, .navbar').remove();
@@ -292,9 +294,12 @@ async function replaceWikiDataHtml(
 
       const infoboxesEscaped: string[] = [];
       for (const infobox of infoboxes) {
-        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
-          level: 'xml'
-        });
+        const infoboxEscaped = encode(
+          `<html>${CheerioAPI.html(infobox)}</html>`,
+          {
+            level: 'xml'
+          }
+        );
         infoboxesEscaped.push(infoboxEscaped);
       }
       let somethingUnexpectedHappend = false;

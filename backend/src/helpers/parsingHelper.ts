@@ -195,6 +195,7 @@ export async function refineArticleChanges(
     if (!changeId) {
       // Create new change
       description = $element.attr('data-description');
+      $element.removeAttr('data-description');
       changesToInsert.push({
         content: $.html($element),
         status: 0,
@@ -243,19 +244,22 @@ export function parseArticle(article: Article, changes: Change[]) {
   return $.html();
 }
 
-export function ParseChanges(changes: Change[]) {
+export function parseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
       const $ = load(change.content);
-      $('[data-id]').each((_, element) => {
+      $('[data-type-of-edit]').each((_, element) => {
         const $element = $(element);
-        $element.attr('data-type-of-edit', String(change.type_of_edit));
         $element.attr('data-status', String(change.status));
       });
+      const modifiedContent = $.html();
+      return {
+        ...change,
+        content: modifiedContent
+      };
     }
     return change;
   });
-
   return parsedChanges;
 }
 

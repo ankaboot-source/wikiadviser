@@ -51,7 +51,7 @@ async function removeUser() {
     html: true,
   });
   try {
-    let user = (await supabase.auth.getSession()).data.session?.user;
+    const user = (await supabase.auth.getSession()).data.session?.user;
     await deleteUser(user?.id as string);
     $q.loading.hide();
     $q.notify({

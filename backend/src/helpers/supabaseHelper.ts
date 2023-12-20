@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { ArticleData, Change } from '../types';
+import { ArticleData, Change, Permission } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -178,16 +178,17 @@ export async function getArticlesByUser(
   const { data, error } = await supabase
     .from('permissions')
     .select(
-      `id, article_id, role, articles(title, description, created_at, language)`
+      'id, article_id, role, articles(title, description, created_at, language)'
     )
     .eq('user_id', userId)
-    .eq('role', 'owner');
+    .eq('role', 'owner')
+    .returns<Permission[]>();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  const articles: any[] = data.map((article: any) => ({
+  const articles: ArticleData[] = data.map((article) => ({
     article_id: article.article_id,
     title: article.articles.title,
     description: article.articles.description,

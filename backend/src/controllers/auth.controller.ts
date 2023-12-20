@@ -85,14 +85,14 @@ export default async function restrictMediawikiAccess(
 
 export async function deleteUser(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ) {
   try {
     const { id } = req.params;
     const articles = await getArticlesByUser(id);
 
-    for (let article of articles) {
+    for (const article of articles) {
       const mediawiki = new MediawikiClient(
         article['language'],
         wikipediaApi,
@@ -105,6 +105,6 @@ export async function deleteUser(
 
     next({});
   } catch (error) {
-    return next(error);
+    next(error);
   }
 }

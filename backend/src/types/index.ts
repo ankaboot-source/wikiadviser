@@ -35,12 +35,29 @@ export interface ErrorResponse {
   message: string;
 }
 
+export type Articles = {
+  title: string;
+  description: string;
+  created_at: Date;
+  language: string;
+};
+
+type Role = 'owner' | 'editor' | 'reviewer' | 'viewer';
+
+export type Permission = {
+  id: string;
+  created_at: string;
+  article_id: string;
+  role: Role;
+  articles: Articles;
+};
+
 export type ArticleData = {
-  article_id: any;
+  article_id: string;
   title: string;
   description: string;
   permission_id: string;
-  role: string;
+  role: Role;
   language: string;
-  created_at: string;
+  created_at: Date;
 };

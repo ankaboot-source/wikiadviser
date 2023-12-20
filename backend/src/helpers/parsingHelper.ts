@@ -248,7 +248,7 @@ export function parseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
       const $ = load(change.content);
-      $('[data-type-of-edit]').each((_, element) => {
+      $('[data-diff-action]').each((_, element) => {
         const $element = $(element);
         $element.attr('data-status', String(change.status));
       });

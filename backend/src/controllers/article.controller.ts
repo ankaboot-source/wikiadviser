@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { ParseChanges, parseArticle } from '../helpers/parsingHelper';
+import { parseArticle, parseChanges } from '../helpers/parsingHelper';
 import {
   deleteArticleDB,
   getArticle,
@@ -109,7 +109,7 @@ export async function getArticleChanges(
   const { id: articleId } = req.params;
   try {
     const changes = await getChanges(articleId);
-    const articleChanges = ParseChanges(changes);
+    const articleChanges = parseChanges(changes);
     logger.debug(`Getting Parsed Changes for article: ${articleId}`);
     return res.status(200).json({
       message: 'Getting article changes succeeded.',

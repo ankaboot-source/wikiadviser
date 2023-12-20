@@ -13,10 +13,10 @@
       <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
-            :color="statusDictionary.get(props.item?.status)!.color"
+            color="white"
             :icon="statusDictionary.get(props.item?.status)!.icon"
-            :text-color="statusDictionary.get(props.item?.status)!['text-color']"
-            size="sm"
+            text-color="blue-grey-10"
+            size="md"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusDictionary.get(props.item?.status)!.message }}
@@ -269,8 +269,6 @@ enum Status {
 
 type StatusInfo = {
   message: string;
-  color: string;
-  'text-color': string;
   icon: string;
 };
 
@@ -279,8 +277,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.AwaitingReviewerApproval,
     {
       message: 'Awaiting Reviewer Approval',
-      color: 'yellow-8',
-      'text-color': 'white',
       icon: 'lightbulb',
     },
   ],
@@ -288,8 +284,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.EditApproved,
     {
       message: 'Edit Approved',
-      color: 'green',
-      'text-color': 'white',
       icon: 'thumb_up',
     },
   ],
@@ -297,8 +291,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.EditRejected,
     {
       message: 'Edit Rejected',
-      color: 'red',
-      'text-color': 'white',
       icon: 'thumb_down',
     },
   ],

@@ -11,11 +11,11 @@
             ).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
           }}
           <q-badge
+            outline
             rounded
-            text-color="black"
-            color="yellow-8"
+            color="blue-grey-10"
             class="q-mt-s text-capitalize"
-            :label="changesToReviewLength"
+            :label="revision.items.length"
             size="sm"
           >
             <q-tooltip>
@@ -26,6 +26,9 @@
         </q-item-label>
 
         <q-item-label v-if="!expanded" caption lines="2">
+          {{ summary }}
+        </q-item-label>
+        <q-item-label v-else caption lines="3">
           {{ summary }} <q-tooltip>{{ summary }}</q-tooltip>
         </q-item-label>
       </q-item-section>
@@ -33,24 +36,12 @@
 
     <!-- Current Changes -->
     <q-list>
-      <q-input
-        v-if="summary"
-        v-model="summary"
-        type="textarea"
-        dense
-        readonly
-        borderless
-        label="Summary"
-        class="textarea__limit_height q-mx-lg q-mb-sm"
+      <diff-item
+        v-for="item in revision.items"
+        :key="item.id"
+        :item="item"
+        :role="role"
       />
-      <q-list>
-        <diff-item
-          v-for="item in revision.items"
-          :key="item.id"
-          :item="item"
-          :role="role"
-        />
-      </q-list>
     </q-list>
 
     <q-separator />

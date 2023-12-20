@@ -41,8 +41,6 @@
         borderless
         label="Summary"
         class="textarea__limit_height q-mx-lg q-mb-sm"
-        @click.stop
-        @keypress.stop
       />
       <q-list>
         <diff-item

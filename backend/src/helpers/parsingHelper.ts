@@ -231,29 +231,26 @@ export function parseArticle(article: Article, changes: Change[]) {
     return null;
   }
 
-  const jQuery = load(content);
-  jQuery('[data-id]').each((index, element) => {
+  const $ = load(content);
+  $('[data-id]').each((index, element) => {
     // Add more data
-    const jQueryelement = jQuery(element);
-    jQueryelement.attr(
-      'data-type-of-edit',
-      String(changes[index].type_of_edit)
-    );
-    jQueryelement.attr('data-status', String(changes[index].status));
-    jQueryelement.attr('data-index', String(changes[index].index));
-    jQueryelement.attr('data-id', changes[index].id);
+    const $element = $(element);
+    $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
+    $element.attr('data-status', String(changes[index].status));
+    $element.attr('data-index', String(changes[index].index));
+    $element.attr('data-id', changes[index].id);
   });
-  return jQuery.html();
+  return $.html();
 }
 
 export function ParseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
-      const jQuery = load(change.content);
-      jQuery('[data-id]').each((_, element) => {
-        const jQueryelement = jQuery(element);
-        jQueryelement.attr('data-type-of-edit', String(change.type_of_edit));
-        jQueryelement.attr('data-status', String(change.status));
+      const $ = load(change.content);
+      $('[data-id]').each((_, element) => {
+        const $element = $(element);
+        $element.attr('data-type-of-edit', String(change.type_of_edit));
+        $element.attr('data-status', String(change.status));
       });
     }
     return change;

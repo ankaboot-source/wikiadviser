@@ -109,11 +109,11 @@ export async function getArticleChanges(
   const { id: articleId } = req.params;
   try {
     const changes = await getChanges(articleId);
-    const Articlechanges = ParseChanges(changes);
+    const articleChanges = ParseChanges(changes);
     logger.debug(`Getting Parsed Changes for article: ${articleId}`);
     return res.status(200).json({
       message: 'Getting article changes succeeded.',
-      changes: Articlechanges
+      changes: articleChanges
     });
   } catch (error) {
     return next(error);

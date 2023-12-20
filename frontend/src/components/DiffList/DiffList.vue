@@ -25,6 +25,7 @@
             :role="role"
           />
         </q-list>
+        <q-separator />
       </q-expansion-item>
 
       <!-- Old (Unindexed) Changes -->
@@ -32,6 +33,7 @@
         v-if="unindexedChanges.length"
         class="bg-accent"
         label="Old changes"
+        icon="history"
       >
         <q-list>
           <diff-item

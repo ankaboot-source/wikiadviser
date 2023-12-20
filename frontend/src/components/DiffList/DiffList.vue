@@ -102,7 +102,6 @@ const groupedIndexedChanges = computed(() => {
   return Array.from(grouped.values()).sort((a, b) => b.revision - a.revision);
 });
 
-console.log(groupedIndexedChanges.value);
 const archivedChanges = computed(() =>
   props.changesList.filter((item) => item.archived)
 );

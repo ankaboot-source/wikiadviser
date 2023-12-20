@@ -13,16 +13,29 @@
       <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
-            color="white"
-            :icon="statusDictionary.get(props.item?.status)!.icon"
+            v-if="pastChange"
             text-color="blue-grey-10"
-            size="md"
+            :icon="pastChange.icon"
+            color="white"
+            size="lg"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              {{ pastChange.text }}
+            </q-tooltip>
+          </q-avatar>
+
+          <q-avatar
+            text-color="blue-grey-10"
+            :icon="statusDictionary.get(props.item?.status)!.icon"
+            color="white"
+            size="lg"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusDictionary.get(props.item?.status)!.message }}
             </q-tooltip>
           </q-avatar>
         </q-item-label>
+
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
           <div @click="preventLinkVisit($event)" v-html="previewItem" />
           <q-tooltip v-if="previewDescription">
@@ -149,40 +162,44 @@
         <q-space />
         <!-- User: Reviewer Only -->
         <template
-          v-if="reviewerPermission && !viewerPermission && !props.item.status"
+          v-if="
+            reviewerPermission &&
+            !viewerPermission &&
+            !props.pastChange?.disable
+          "
         >
-          <q-btn
-            class="q-mr-sm"
-            no-caps
-            icon="thumb_down"
-            color="red-1"
-            text-color="red-10"
-            label="Reject"
-            unelevated
-            @click="handleReview(Status.EditRejected)"
-          />
-          <q-btn
-            no-caps
-            icon="thumb_up"
-            color="green-1"
-            text-color="green-10"
-            label="Approve"
-            unelevated
-            @click="handleReview(Status.EditApproved)"
-          />
-        </template>
-        <template
-          v-if="reviewerPermission && !viewerPermission && props.item.status"
-        >
-          <q-btn
-            no-caps
-            :icon="archiveButton"
-            outline
-            color="blue-grey-10"
-            class="bg-white text-capitalize"
-            :label="archiveButton"
-            @click="archiveChange(!isArchived)"
-          />
+          <template v-if="!props.item.status">
+            <q-btn
+              class="q-mr-sm"
+              no-caps
+              icon="thumb_down"
+              color="red-1"
+              text-color="red-10"
+              label="Reject"
+              unelevated
+              @click="handleReview(Status.EditRejected)"
+            />
+            <q-btn
+              no-caps
+              icon="thumb_up"
+              color="green-1"
+              text-color="green-10"
+              label="Approve"
+              unelevated
+              @click="handleReview(Status.EditApproved)"
+            />
+          </template>
+          <template v-else>
+            <q-btn
+              no-caps
+              :icon="archiveButton"
+              outline
+              color="blue-grey-10"
+              class="bg-white text-capitalize"
+              :label="archiveButton"
+              @click="archiveChange(!isArchived)"
+            />
+          </template>
         </template>
       </div>
     </q-item-section>
@@ -201,6 +218,11 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
   role: UserRole;
+  pastChange?: {
+    icon: string;
+    text: string;
+    disable?: boolean;
+  };
 }>();
 const expanded = ref(false);
 const session = ref<Session | null>();

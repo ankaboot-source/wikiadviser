@@ -8,7 +8,7 @@
         <diff-list
           :role="role"
           :changes-list="changesList"
-          class="col q-mr-md rounded-borders q-py-sm q-mt-xs bg-secondary borders"
+          class="col q-mr-md rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
         />
         <diff-card
           :article="article"

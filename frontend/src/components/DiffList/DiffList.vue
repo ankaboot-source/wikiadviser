@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-sm q-pb-sm">Awaiting reviewal</div>
+    <div class="text-h6 q-px-sm q-pb-sm">Changes in progress</div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
@@ -9,13 +9,13 @@
         :role="role"
       />
 
-      <!-- Archived changes -->
+      <!-- Past changes -->
       <q-expansion-item
-        v-if="archivedChanges.length"
+        v-if="pastChanges.length"
         v-model="expanded"
         class="bg-accent"
-        label="Archived changes"
-        icon="archive"
+        label="Past changes"
+        icon="history"
       >
         <q-list>
           <diff-item
@@ -23,27 +23,24 @@
             :key="item.id"
             :item="item"
             :role="role"
+            :past-change="{
+              icon: 'archive',
+              text: 'This change was manually archived.',
+            }"
           />
-        </q-list>
-        <q-separator />
-      </q-expansion-item>
-
-      <!-- Old (Unindexed) Changes -->
-      <q-expansion-item
-        v-if="unindexedChanges.length"
-        class="bg-accent"
-        label="Old changes"
-        icon="history"
-      >
-        <q-list>
           <diff-item
             v-for="item in unindexedChanges"
             :key="item.id"
             :item="item"
             :role="role"
+            :past-change="{
+              icon: 'not_listed_location',
+              text: 'This change was automatically orphaned.',
+              disable: true,
+            }"
           />
+          <q-separator />
         </q-list>
-        <q-separator />
       </q-expansion-item>
     </q-scroll-area>
     <template v-else>
@@ -109,6 +106,10 @@ const archivedChanges = computed(() =>
 );
 const unindexedChanges = computed(() =>
   props.changesList.filter((item) => item.index === null)
+);
+
+const pastChanges = computed(() =>
+  archivedChanges.value.concat(unindexedChanges.value)
 );
 
 const expanded = ref(false);

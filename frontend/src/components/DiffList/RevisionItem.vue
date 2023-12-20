@@ -3,18 +3,6 @@
     <template #header>
       <q-item-section class="text-body">
         <q-item-label>
-          <q-badge
-            rounded
-            text-color="black"
-            color="yellow-8"
-            class="q-mt-s text-capitalize"
-            :label="revision.items.length"
-            size="sm"
-          >
-            <q-tooltip>
-              {{ revision.items.length }} changes awaiting reviewal
-            </q-tooltip>
-          </q-badge>
           {{
             `Revision of ${new Date(
               revision.items[0]?.created_at
@@ -22,6 +10,19 @@
               revision.items[0]?.created_at
             ).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
           }}
+          <q-badge
+            rounded
+            text-color="black"
+            color="yellow-8"
+            class="q-mt-s text-capitalize"
+            :label="changesToReviewLength"
+            size="sm"
+          >
+            <q-tooltip>
+              {{ changesToReviewLength }}/{{ revision.items.length }} changes
+              awaiting reviewal
+            </q-tooltip>
+          </q-badge>
         </q-item-label>
 
         <q-item-label v-if="!expanded" caption lines="2">
@@ -74,6 +75,9 @@ const expanded = ref(true);
 
 const summary = computed(() => props.revision.summary);
 
+const changesToReviewLength = computed(() => {
+  return props.revision.items.filter((item) => item.status === 0).length;
+});
 const store = useSelectedChangeStore();
 watch(
   () => store.selectedChangeId,

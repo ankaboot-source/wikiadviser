@@ -49,7 +49,7 @@ export async function refineArticleChanges(
   articleId: string,
   html: string,
   userId: string,
-  revision_id: number
+  revision_id: string
 ) {
   const $ = load(html);
   let changeid = -1;

@@ -118,7 +118,7 @@ watch(
       return;
     }
 
-    expanded.value = indexedChanges.value.some(
+    expanded.value = archivedChanges.value.some(
       (item) => item.status !== 0 && item.id === selectedChangeId
     );
   }

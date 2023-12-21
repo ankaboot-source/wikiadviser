@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/ArticlePage.vue'),
   },
   {
-    path: '/shares/:shareId',
+    path: '/shares/:token',
     name: 'share',
     component: () => import('pages/SharePage.vue'),
   },

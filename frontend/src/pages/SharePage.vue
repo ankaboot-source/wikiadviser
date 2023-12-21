@@ -7,7 +7,7 @@ const router = useRouter();
 
 onBeforeMount(async () => {
   const { params } = useRoute();
-  const link = params.shareId;
+  const link = params.token;
   const { status, data } = await api.get(`/share/${link}`);
   if (status === 200) {
     router.push({

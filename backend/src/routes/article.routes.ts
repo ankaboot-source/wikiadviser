@@ -37,10 +37,6 @@ articleRouter.post(
   createSharedLink
 );
 
-articleRouter.get(
-  '/share/:id',
-  hasPermissions(['reviewer', 'owner', 'editor']),
-  validateLink
-);
+articleRouter.get('/share/:id', validateLink);
 
 export default articleRouter;

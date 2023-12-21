@@ -1,6 +1,8 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-sm q-pb-sm">Changes in progress</div>
+    <div class="text-h6 q-px-sm q-pb-sm">
+      <q-icon size="sm" name="model_training" /> Changes in progress
+    </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"

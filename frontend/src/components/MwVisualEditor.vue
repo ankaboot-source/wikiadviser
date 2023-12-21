@@ -51,16 +51,12 @@ async function loadingChanges() {
     await updateChanges(props.article.article_id);
 
     emit('switchTabEmit', 'view');
-    loading.value.value = false;
-    reloadIframe();
     $q.notify({
       message: 'New changes successfully created.',
       icon: 'check',
       color: 'positive',
     });
   } catch (error) {
-    loading.value.value = false;
-    reloadIframe();
     let message = 'Creating changes failed.';
     if (error instanceof Error) {
       message = error.message;
@@ -69,6 +65,9 @@ async function loadingChanges() {
       message,
       color: 'negative',
     });
+  } finally {
+    loading.value.value = false;
+    reloadIframe();
   }
 }
 async function handleUpdateChanges(event: MessageEvent) {

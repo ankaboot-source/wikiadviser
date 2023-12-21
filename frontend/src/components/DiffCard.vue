@@ -72,6 +72,7 @@
 
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from 'quasar';
+import { api } from 'src/boot/axios';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
 import 'src/css/styles/diff.scss';
@@ -165,8 +166,9 @@ watch(
 const $q = useQuasar();
 const share = ref(false);
 async function copyShareLinkToClipboard() {
+  const { data } = await api.post(`/article/${props.article.article_id}/share`);
   await copyToClipboard(
-    `${window.location.origin}/articles/${props.article.article_id}`
+    `${window.location.origin}/shares/${data.token as string}`
   );
   $q.notify({
     message: 'Share link copied to clipboard',

@@ -24,6 +24,11 @@ const routes: RouteRecordRaw[] = [
     name: 'article',
     component: () => import('pages/ArticlePage.vue'),
   },
+  {
+    path: '/shares/:shareId',
+    name: 'share',
+    component: () => import('pages/SharePage.vue'),
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

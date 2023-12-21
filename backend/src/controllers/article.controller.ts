@@ -2,11 +2,13 @@ import { NextFunction, Request, Response } from 'express';
 import { parseArticle, ParseChanges } from '../helpers/parsingHelper';
 import logger from '../logger';
 import {
+  createLink,
   deleteArticleDB,
   getArticle,
   getChanges,
   getUserPermission,
-  insertArticle
+  insertArticle,
+  verifyLink
 } from '../helpers/supabaseHelper';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
@@ -179,3 +181,43 @@ export const hasPermissions =
       return res.status(500).json({ message });
     }
   };
+
+export async function createSharedLink(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id: articleId } = req.params;
+  try {
+    const token = await createLink(articleId);
+    return res.status(200).json({
+      message: 'Share link created successfully',
+      token
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function validateLink(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id: linkId } = req.params;
+  try {
+    const articleId = await verifyLink(linkId as string);
+    if (articleId) {
+      return res.status(200).json({
+        message: 'Link is valid',
+        articleId
+      });
+    } else {
+      return res.status(403).json({
+        message: 'Invalid link'
+      });
+    }
+  } catch (error) {
+    return next(error);
+  }
+}

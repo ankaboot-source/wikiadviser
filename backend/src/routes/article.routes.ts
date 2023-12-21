@@ -5,7 +5,9 @@ import {
   deleteArticle,
   getArticleChanges,
   updateArticleChanges,
-  hasPermissions
+  hasPermissions,
+  createSharedLink,
+  validateLink
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
@@ -27,6 +29,18 @@ articleRouter.put(
   '/article/:id/changes',
   hasPermissions(['owner', 'editor']),
   updateArticleChanges
+);
+
+articleRouter.post(
+  '/article/:id/share',
+  hasPermissions(['reviewer', 'owner', 'editor']),
+  createSharedLink
+);
+
+articleRouter.get(
+  '/share/:id',
+  hasPermissions(['reviewer', 'owner', 'editor']),
+  validateLink
 );
 
 export default articleRouter;

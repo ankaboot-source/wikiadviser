@@ -41,9 +41,8 @@
 
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
-      v-show="buttonToggle === 'edit'"
+      :button-toggle="buttonToggle"
       :article="article"
-      class="col-grow q-mr-md rounded-borders borders bg-secondary"
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 

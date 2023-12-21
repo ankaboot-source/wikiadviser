@@ -8,6 +8,7 @@ export type Change = {
   article_id?: string;
   contributor_id?: string;
   created_at?: string;
+  revision_id?: string;
 };
 
 export interface Article {

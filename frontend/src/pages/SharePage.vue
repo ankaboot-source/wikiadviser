@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { api } from 'src/boot/axios';
-import { onBeforeMount, ref } from 'vue';
+import { onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();

@@ -212,11 +212,10 @@ export async function validateLink(
         message: 'Link is valid',
         articleId
       });
-    } else {
-      return res.status(403).json({
-        message: 'Invalid link'
-      });
     }
+    return res.status(403).json({
+      message: 'Invalid link'
+    });
   } catch (error) {
     return next(error);
   }

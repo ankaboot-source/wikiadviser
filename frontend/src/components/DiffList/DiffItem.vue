@@ -13,18 +13,6 @@
       <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
-            v-if="pastChange"
-            text-color="blue-grey-10"
-            :icon="pastChange.icon"
-            color="white"
-            size="lg"
-          >
-            <q-tooltip anchor="top middle" self="bottom middle">
-              {{ pastChange.text }}
-            </q-tooltip>
-          </q-avatar>
-
-          <q-avatar
             text-color="blue-grey-10"
             :icon="statusDictionary.get(props.item?.status)!.icon"
             color="white"
@@ -34,6 +22,17 @@
               {{ statusDictionary.get(props.item?.status)!.message }}
             </q-tooltip>
           </q-avatar>
+
+          <q-icon
+            v-if="pastChange?.icon"
+            color="blue-grey-10"
+            :name="pastChange.icon"
+            size="sm"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              {{ pastChange.text }}
+            </q-tooltip>
+          </q-icon>
         </q-item-label>
 
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
@@ -219,7 +218,7 @@ const props = defineProps<{
   item: ChangesItem;
   role: UserRole;
   pastChange?: {
-    icon: string;
+    icon?: string;
     text: string;
     disable?: boolean;
   };

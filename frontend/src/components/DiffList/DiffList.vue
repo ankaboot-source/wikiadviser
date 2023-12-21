@@ -14,33 +14,39 @@
         v-if="pastChanges.length"
         v-model="expanded"
         class="bg-accent"
-        label="Past changes"
-        icon="history"
       >
-        <q-list>
-          <diff-item
-            v-for="item in archivedChanges"
-            :key="item.id"
-            :item="item"
-            :role="role"
-            :past-change="{
-              icon: 'archive',
-              text: 'This change was manually archived.',
-            }"
-          />
-          <diff-item
-            v-for="item in unindexedChanges"
-            :key="item.id"
-            :item="item"
-            :role="role"
-            :past-change="{
-              icon: 'not_listed_location',
-              text: 'This change was automatically orphaned.',
-              disable: true,
-            }"
-          />
-          <q-separator />
-        </q-list>
+        <template #header>
+          <q-item-section>
+            <q-item-label class="text-h6">
+              <q-icon size="sm" name="archive" /> Past changes
+            </q-item-label>
+          </q-item-section>
+        </template>
+        <q-item-section>
+          <q-list>
+            <diff-item
+              v-for="item in archivedChanges"
+              :key="item.id"
+              :item="item"
+              :role="role"
+              :past-change="{
+                text: 'This change was manually archived.',
+              }"
+            />
+            <diff-item
+              v-for="item in unindexedChanges"
+              :key="item.id"
+              :item="item"
+              :role="role"
+              :past-change="{
+                icon: 'link_off',
+                text: 'This change was automatically orphaned.',
+                disable: true,
+              }"
+            />
+            <q-separator />
+          </q-list>
+        </q-item-section>
       </q-expansion-item>
     </q-scroll-area>
     <template v-else>

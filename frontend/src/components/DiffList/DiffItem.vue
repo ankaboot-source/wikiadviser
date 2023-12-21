@@ -3,8 +3,8 @@
     ref="expansionItem"
     v-model="expanded"
     :class="{ highlighted: highlighted }"
-    style="background-color: white; border-radius: 4px"
-    class="q-mb-md q-mx-sm borders"
+    style="background-color: white"
+    class="q-mb-md q-mx-sm borders rounded-borders"
     @after-show="scrollToItem(!store.selectedChangeId)"
     @mouseenter="setHovered(props.item.id)"
     @mouseleave="setHovered('')"
@@ -13,16 +13,28 @@
       <q-item-section class="text-body2">
         <q-item-label>
           <q-avatar
-            :color="statusDictionary.get(props.item?.status)!.color"
-            text-color="white"
+            text-color="blue-grey-10"
             :icon="statusDictionary.get(props.item?.status)!.icon"
-            size="sm"
+            color="white"
+            size="lg"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusDictionary.get(props.item?.status)!.message }}
             </q-tooltip>
           </q-avatar>
+
+          <q-icon
+            v-if="pastChange?.icon"
+            color="blue-grey-10"
+            :name="pastChange.icon"
+            size="sm"
+          >
+            <q-tooltip anchor="top middle" self="bottom middle">
+              {{ pastChange.text }}
+            </q-tooltip>
+          </q-icon>
         </q-item-label>
+
         <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
           <div @click="preventLinkVisit($event)" v-html="previewItem" />
           <q-tooltip v-if="previewDescription">
@@ -30,6 +42,7 @@
           </q-tooltip>
         </q-item-label>
       </q-item-section>
+
       <q-item-section caption top side lines="2">
         <span class="text-black">
           <q-avatar size="sm">
@@ -38,8 +51,9 @@
           {{ props.item?.user.email }}
         </span>
         <span style="size: 0.5rem">
-          {{ new Date(props.item?.created_at).toLocaleTimeString() }} <br />
-          {{ new Date(props.item?.created_at).toLocaleDateString() }}
+          {{ new Date(props.item?.created_at).toLocaleTimeString() }}
+          <br />
+          {{ new Date(props.item.created_at).toLocaleDateString() }}
         </span>
       </q-item-section>
     </template>
@@ -134,11 +148,7 @@
     </q-item-section>
     <q-separator />
 
-    <!-- User: Reviewer Only -->
-    <q-item-section
-      v-if="reviewerPermission && !viewerPermission && !props.item.status"
-      class="bg-accent"
-    >
+    <q-item-section class="bg-accent">
       <div class="row q-ma-md">
         <q-btn
           no-caps
@@ -149,25 +159,47 @@
           @click="expanded = false"
         />
         <q-space />
-        <q-btn
-          class="q-mr-sm"
-          no-caps
-          icon="thumb_down"
-          color="red-1"
-          text-color="red-10"
-          label="Reject"
-          unelevated
-          @click="handleReview(Status.EditRejected)"
-        />
-        <q-btn
-          no-caps
-          icon="thumb_up"
-          color="green-1"
-          text-color="green-10"
-          label="Approve"
-          unelevated
-          @click="handleReview(Status.EditApproved)"
-        />
+        <!-- User: Reviewer Only -->
+        <template
+          v-if="
+            reviewerPermission &&
+            !viewerPermission &&
+            !props.pastChange?.disable
+          "
+        >
+          <template v-if="!props.item.status">
+            <q-btn
+              class="q-mr-sm"
+              no-caps
+              icon="thumb_down"
+              color="red-1"
+              text-color="red-10"
+              label="Reject"
+              unelevated
+              @click="handleReview(Status.EditRejected)"
+            />
+            <q-btn
+              no-caps
+              icon="thumb_up"
+              color="green-1"
+              text-color="green-10"
+              label="Approve"
+              unelevated
+              @click="handleReview(Status.EditApproved)"
+            />
+          </template>
+          <template v-else>
+            <q-btn
+              no-caps
+              :icon="archiveButton"
+              outline
+              color="blue-grey-10"
+              class="bg-white text-capitalize"
+              :label="archiveButton"
+              @click="archiveChange(!isArchived)"
+            />
+          </template>
+        </template>
       </div>
     </q-item-section>
   </q-expansion-item>
@@ -185,6 +217,11 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
   role: UserRole;
+  pastChange?: {
+    icon?: string;
+    text: string;
+    disable?: boolean;
+  };
 }>();
 const expanded = ref(false);
 const session = ref<Session | null>();
@@ -253,7 +290,6 @@ enum Status {
 
 type StatusInfo = {
   message: string;
-  color: string;
   icon: string;
 };
 
@@ -262,7 +298,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.AwaitingReviewerApproval,
     {
       message: 'Awaiting Reviewer Approval',
-      color: 'yellow-8',
       icon: 'lightbulb',
     },
   ],
@@ -270,7 +305,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.EditApproved,
     {
       message: 'Edit Approved',
-      color: 'green',
       icon: 'thumb_up',
     },
   ],
@@ -278,7 +312,6 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
     Status.EditRejected,
     {
       message: 'Edit Rejected',
-      color: 'red',
       icon: 'thumb_down',
     },
   ],
@@ -296,6 +329,15 @@ async function handleReview(Status: Status) {
 
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value);
+}
+
+const isArchived = computed(() => props.item.archived);
+const archiveButton = computed(() => {
+  return isArchived.value ? 'unarchive' : 'archive';
+});
+
+async function archiveChange(archived = true) {
+  await updateChange(props.item.id, undefined, undefined, archived);
 }
 
 function scrollToItem(smooth: boolean) {

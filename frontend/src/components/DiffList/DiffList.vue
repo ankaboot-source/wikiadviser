@@ -10,11 +10,7 @@
       />
 
       <!-- Past changes -->
-      <q-expansion-item
-        v-if="pastChanges.length"
-        v-model="expanded"
-        class="bg-accent"
-      >
+      <q-expansion-item v-if="pastChanges.length" v-model="expanded">
         <template #header>
           <q-item-section>
             <q-item-label class="text-h6">

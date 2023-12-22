@@ -5,7 +5,7 @@ BEGIN
     NEW.raw_user_meta_data = jsonb_set(
         NEW.raw_user_meta_data::jsonb,
         '{picture}',
-        to_jsonb('https://www.gravatar.com/avatar/' || md5(NEW.email) || '?d=https://ui-avatars.com/api/' || NEW.email || '/128/random/fff/1'),
+        to_jsonb('https://www.gravatar.com/avatar/' || md5(NEW.email) || '?d=https://ui-avatars.com/api/' || NEW.email || '/128/f6f8fa/000/1'),
         true
     );
     END IF;

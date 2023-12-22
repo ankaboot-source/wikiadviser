@@ -73,7 +73,6 @@
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from 'quasar';
 import { createLink } from 'src/api/supabaseHelper';
-import { api } from 'src/boot/axios';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
 import 'src/css/styles/diff.scss';

@@ -9,7 +9,6 @@ import {
   ShareLink,
 } from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { DAY_LIMIT } from 'src/consts';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase

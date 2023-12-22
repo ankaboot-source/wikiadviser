@@ -303,6 +303,9 @@ async function parseWikidataTemplate(
     const infoboxHtml = cheerioAPI.html(infobox);
     const wikiText = (
       await axios.post(
+        // Current endpoint has request limits of 25 req/s. Migrate to using internal rest api
+        // https://www.mediawiki.org/wiki/API:REST_API/Reference#Convert_Wikitext_to_HTML
+        // https://en.wikipedia.org/api/rest_v1/#/Transforms/post_transform_html_to_wikitext
         'https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext',
         { html: infoboxHtml, scrub_wikitext: true }
       )

@@ -1,0 +1,20 @@
+/* Add archived to Articles */
+ALTER TABLE articles
+  ADD COLUMN archived boolean not null default false;
+
+/* Create Revisions */
+CREATE TABLE
+  public.revisions (
+    id uuid not null default gen_random_uuid (),
+    created_at timestamp with time zone not null default now(),
+    article_id uuid null,
+    summary text null,
+    revid bigint not null,
+    constraint revisions_pkey primary key (id),
+    constraint revisions_article_id_fkey foreign key (article_id) references articles (id) on delete cascade
+  );
+
+/* Add revision_id to Changes */
+ALTER TABLE changes
+  ADD COLUMN revision_id uuid null,
+  ADD constraint changes_revision_id_fkey foreign key (revision_id) references revisions (id) on delete cascade;

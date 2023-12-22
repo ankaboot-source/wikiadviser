@@ -12,7 +12,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       id,
       article_id,
       role,
-      users(
+      user: users(
       raw_user_meta_data,
       email
       )`
@@ -25,7 +25,8 @@ export async function getUsers(articleId: string): Promise<User[]> {
   }
 
   const users = permissionsData.map((permission: any) => ({
-    email: permission.users.email,
+    picture: permission.user.raw_user_meta_data.picture,
+    email: permission.user.email,
     role: permission.role,
     permissionId: permission.id,
   }));
@@ -142,11 +143,12 @@ export async function getChanges(articleId: string): Promise<ChangesItem[]> {
 export async function updateChange(
   changeId: string,
   status?: number,
-  description?: string
+  description?: string,
+  archived?: boolean
 ) {
   const { error: changeError } = await supabase
     .from('changes')
-    .update({ status, description })
+    .update({ status, description, archived })
     .match({ id: changeId });
 
   if (changeError) {

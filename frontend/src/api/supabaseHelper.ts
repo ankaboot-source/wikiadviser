@@ -1,7 +1,15 @@
 import { api } from 'src/boot/axios';
 import supabase from './supabase';
-import { Article, User, Permission, UserRole, ChangesItem } from 'src/types';
+import {
+  Article,
+  User,
+  Permission,
+  UserRole,
+  ChangesItem,
+  ShareLink,
+} from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
+import { DAY_LIMIT } from 'src/consts';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -192,4 +200,24 @@ export async function updateChanges(articleId: string) {
   if (apiResponse.status !== 200) {
     throw new Error('Failed to update changes from API.');
   }
+}
+
+export async function createLink(articleId: string) {
+  const { data } = await supabase
+    .from('share_links')
+    .insert({ article_id: articleId })
+    .select()
+    .single<ShareLink>();
+
+  return data?.id;
+}
+
+export async function verifyLink(token: string): Promise<string | undefined> {
+  const { data } = await supabase
+    .from('share_links')
+    .select()
+    .eq('id', token)
+    .single<ShareLink>();
+
+  return data?.article_id;
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { api } from 'src/boot/axios';
+import { verifyLink } from 'src/api/supabaseHelper';
 import { onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -7,11 +7,11 @@ const router = useRouter();
 
 onBeforeMount(async () => {
   const { params } = useRoute();
-  const link = params.token;
-  const { status, data } = await api.get(`/share/${link}`);
-  if (status === 200) {
+  const token = params.token;
+  const articleId = await verifyLink(`${token}`);
+  if (articleId) {
     router.push({
-      path: `/articles/${data.articleId}`,
+      path: `/articles/${articleId}`,
     });
   }
 });

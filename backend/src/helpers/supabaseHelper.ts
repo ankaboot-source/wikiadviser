@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { Change, ShareLink } from '../types';
+import { Change } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -170,30 +170,4 @@ export async function getUserPermission(articleId: string, userId: string) {
     .single();
 
   return data?.role;
-}
-
-export async function createLink(articleId: string) {
-  const { data } = await supabase
-    .from('share_links')
-    .insert({ article_id: articleId })
-    .select()
-    .single<ShareLink>();
-
-  return data?.id;
-}
-
-export async function verifyLink(token: string): Promise<string | null> {
-  const { data } = await supabase
-    .from('share_links')
-    .select()
-    .eq('id', token)
-    .single<ShareLink>();
-
-  if (!data) return null;
-
-  const currentDate = new Date();
-  const validDate = new Date();
-  validDate.setDate(new Date(data.created_at).getDate() + 2);
-
-  return currentDate < validDate ? data.article_id : null;
 }

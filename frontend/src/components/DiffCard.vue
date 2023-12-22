@@ -72,6 +72,7 @@
 
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from 'quasar';
+import { createLink } from 'src/api/supabaseHelper';
 import { api } from 'src/boot/axios';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
@@ -166,10 +167,8 @@ watch(
 const $q = useQuasar();
 const share = ref(false);
 async function copyShareLinkToClipboard() {
-  const { data } = await api.post(`/article/${props.article.article_id}/share`);
-  await copyToClipboard(
-    `${window.location.origin}/shares/${data.token as string}`
-  );
+  const token = await createLink(`${props.article.article_id}`);
+  await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

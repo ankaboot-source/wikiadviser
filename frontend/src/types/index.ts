@@ -58,3 +58,9 @@ export type Permission = {
   permissionId: string;
   role: UserRole;
 };
+
+export type ShareLink = {
+  id: string;
+  article_id: string;
+  created_at: Date;
+};

@@ -280,9 +280,9 @@ async function parseWikidataTemplate(
 
   const wikidataTemplateRegex = /{{(Infobox|Taxobox)[\s\S]*?}}/;
 
-  const isTemplate = wikidataTemplateRegex.test(newParsedContentXML);
+  const hasInfoboxTemplate = wikidataTemplateRegex.test(newParsedContentXML);
 
-  if (!isTemplate) {
+  if (!hasInfoboxTemplate) {
     return newParsedContentXML;
   }
 

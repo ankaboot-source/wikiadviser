@@ -1,4 +1,4 @@
-REPLACE FUNCTION handle_user_profile_picture()
+CREATE OR REPLACE FUNCTION handle_user_profile_picture()
 RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.raw_user_meta_data->>'picture' IS NULL THEN

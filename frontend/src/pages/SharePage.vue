@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { verifyLink } from 'src/api/supabaseHelper';
+import { ref } from 'vue';
 import { onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const valid = ref(true);
 
 onBeforeMount(async () => {
   const { params } = useRoute();
   const token = params.token;
-  const articleId = await verifyLink(`${token}`);
-  if (articleId) {
+  valid.value = await verifyLink(`${token}`);
+  if (valid.value) {
     router.push({
-      path: `/articles/${articleId}`,
+      path: `/`,
     });
   }
 });
 </script>
 
 <template>
-  <div class="m-auto">
+  <div class="m-auto" v-if="!valid">
     <img class="center" src="~assets/invalid-link.svg" alt="" />
     <h4 class="w-lg text-center">
       This shared link has expired. Please ask the article's owner for a new

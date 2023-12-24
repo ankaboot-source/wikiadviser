@@ -211,12 +211,26 @@ export async function createLink(articleId: string) {
   return data?.id;
 }
 
-export async function verifyLink(token: string): Promise<string | undefined> {
+export async function verifyLink(token: string): Promise<boolean> {
   const { data } = await supabase
     .from('share_links')
     .select()
     .eq('id', token)
     .single<ShareLink>();
 
-  return data?.article_id;
+  if (!data) {
+    return false;
+  }
+
+  const userId = (await supabase.auth.getSession()).data.session?.user.id as string;
+
+  const { error: permissionError } = await supabase
+  .from('permissions')
+  .insert({
+    user_id: userId,
+    article_id: data.article_id,
+    role: UserRole.Viewer,
+  });
+
+  return permissionError ? false : true;
 }

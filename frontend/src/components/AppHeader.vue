@@ -60,10 +60,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 });
 
 function getImage(): string {
-  return (
-    supabaseUser.value?.user_metadata.picture ??
-    `https://ui-avatars.com/api/${supabaseUser.value?.email}/300/random/fff/1`
-  );
+  return supabaseUser.value?.user_metadata.picture;
 }
 
 async function signOut() {

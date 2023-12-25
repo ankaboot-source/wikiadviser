@@ -12,16 +12,15 @@
     <template #header>
       <q-item-section class="text-body2">
         <q-item-label>
-          <q-avatar
-            text-color="blue-grey-10"
-            :icon="statusDictionary.get(props.item?.status)!.icon"
-            color="white"
-            size="lg"
+          <q-icon
+            color="blue-grey-10"
+            :name="statusDictionary.get(props.item?.status)!.icon"
+            size="sm"
           >
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusDictionary.get(props.item?.status)!.message }}
             </q-tooltip>
-          </q-avatar>
+          </q-icon>
 
           <q-icon
             v-if="pastChange?.icon"

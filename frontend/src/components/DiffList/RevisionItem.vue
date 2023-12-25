@@ -4,7 +4,7 @@
       <q-item-section class="text-body">
         <q-item-label>
           {{
-            `Revision of ${new Date(
+            `Revision n°${revision.index} the ${new Date(
               revision.items[0]?.created_at
             ).toLocaleDateString()} at ${new Date(
               revision.items[0]?.created_at
@@ -57,6 +57,7 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 const props = defineProps<{
   role: UserRole;
   revision: {
+    index: number;
     revision: number;
     summary: string;
     items: ChangesItem[];

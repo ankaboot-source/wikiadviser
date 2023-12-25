@@ -4,11 +4,7 @@
       <q-item-section class="text-body">
         <q-item-label>
           {{
-            `Revision n°${revision.index} the ${new Date(
-              revision.items[0]?.created_at
-            ).toLocaleDateString()} at ${new Date(
-              revision.items[0]?.created_at
-            ).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
+            `Revision n°${revision.index} the ${localeDateString} at ${localeTimeString}`
           }}
           <q-badge
             outline
@@ -82,6 +78,15 @@ watch(
       (item) => item.id === selectedChangeId
     );
   }
+);
+
+const localeDateString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
+    timeStyle: 'short',
+  })
 );
 </script>
 <style>

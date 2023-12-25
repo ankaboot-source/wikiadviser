@@ -13,7 +13,7 @@
   >
     <div>
       <div class="text-h6">
-        {{ loading.msg }}
+        {{ loading.message }}
       </div>
       <QSpinner class="q-my-xl self-center" color="primary" size="140" />
       <div class="text-body1">Please wait…</div>
@@ -34,10 +34,10 @@ const props = defineProps({
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
 const loader = {
-  editor: { value: true, msg: 'Loading Editor' },
+  editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    msg: `Processing the new changes on “${props.article.title}”`,
+    message: `Processing new changes on “${props.article.title}”`,
   },
 };
 const loading = ref(loader.editor);

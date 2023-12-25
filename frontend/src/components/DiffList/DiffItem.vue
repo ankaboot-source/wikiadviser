@@ -13,13 +13,9 @@
       <q-item-section class="text-body2">
         <q-item-label class="row">
           <q-item-section>
-            <q-icon
-              color="blue-grey-10"
-              :name="statusDictionary.get(props.item?.status)!.icon"
-              size="sm"
-            >
+            <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
               <q-tooltip anchor="top middle" self="bottom middle">
-                {{ statusDictionary.get(props.item?.status)!.message }}
+                {{ statusMessage }}
               </q-tooltip>
             </q-icon>
 
@@ -44,9 +40,9 @@
             </div>
 
             <div style="size: 0.5rem">
-              {{ new Date(props.item?.created_at).toLocaleTimeString() }}
+              {{ localeTimeString }}
               <br />
-              {{ new Date(props.item.created_at).toLocaleDateString() }}
+              {{ localeDateString }}
             </div>
           </q-item-section>
         </q-item-label>
@@ -321,6 +317,13 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
+const statusIcon = computed(
+  () => statusDictionary.get(props.item?.status)!.icon
+);
+
+const statusMessage = computed(
+  () => statusDictionary.get(props.item?.status)!.message
+);
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
   event.preventDefault();
@@ -370,6 +373,13 @@ watch(
 function setHovered(value: string) {
   store.hoveredChangeId = value;
 }
+
+const localeDateString = computed(() =>
+  new Date(props.item?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.item?.created_at).toLocaleTimeString()
+);
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

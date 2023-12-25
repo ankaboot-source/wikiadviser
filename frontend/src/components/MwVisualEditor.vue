@@ -66,7 +66,7 @@ async function loadingChanges() {
       color: 'negative',
     });
   } finally {
-    loading.value.value = false;
+    loading.value = loader.editor;
     reloadIframe();
   }
 }

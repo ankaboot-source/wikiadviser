@@ -13,16 +13,16 @@
   >
     <div>
       <div class="text-h6">
-        {{ loading.msg }}
+        {{ loading.message }}
       </div>
-      <QSpinnerGrid class="q-my-xl self-center" color="primary" size="140" />
+      <QSpinner class="q-my-xl self-center" color="primary" size="140" />
       <div class="text-body1">Please wait…</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { QSpinnerGrid, useQuasar } from 'quasar';
+import { QSpinner, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
 import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
@@ -34,10 +34,10 @@ const props = defineProps({
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
 const loader = {
-  editor: { value: true, msg: 'Loading Editor' },
+  editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    msg: `Processing the new changes of “${props.article.title}”`,
+    message: `Processing new changes on “${props.article.title}”`,
   },
 };
 const loading = ref(loader.editor);
@@ -66,7 +66,7 @@ async function loadingChanges() {
       color: 'negative',
     });
   } finally {
-    loading.value.value = false;
+    loading.value = loader.editor;
     reloadIframe();
   }
 }

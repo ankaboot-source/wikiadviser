@@ -4,11 +4,7 @@
       <q-item-section class="text-body">
         <q-item-label>
           {{
-            `Revision of ${new Date(
-              revision.items[0]?.created_at
-            ).toLocaleDateString()} at ${new Date(
-              revision.items[0]?.created_at
-            ).toLocaleTimeString(undefined, { timeStyle: 'short' })}`
+            `Revision n°${revision.index} the ${localeDateString} at ${localeTimeString}`
           }}
           <q-badge
             outline
@@ -25,7 +21,7 @@
           </q-badge>
         </q-item-label>
 
-        <q-item-label v-if="!expanded" caption lines="2">
+        <q-item-label v-if="!expanded" caption lines="1">
           {{ summary }}
         </q-item-label>
         <q-item-label v-else caption lines="3">
@@ -57,6 +53,7 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 const props = defineProps<{
   role: UserRole;
   revision: {
+    index: number;
     revision: number;
     summary: string;
     items: ChangesItem[];
@@ -81,6 +78,15 @@ watch(
       (item) => item.id === selectedChangeId
     );
   }
+);
+
+const localeDateString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
+    timeStyle: 'short',
+  })
 );
 </script>
 <style>

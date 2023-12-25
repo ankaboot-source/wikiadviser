@@ -15,14 +15,14 @@
       <div class="text-h6">
         {{ loading.msg }}
       </div>
-      <QSpinnerGrid class="q-my-xl self-center" color="primary" size="140" />
+      <QSpinner class="q-my-xl self-center" color="primary" size="140" />
       <div class="text-body1">Please wait…</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { QSpinnerGrid, useQuasar } from 'quasar';
+import { QSpinner, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
 import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
@@ -37,7 +37,7 @@ const loader = {
   editor: { value: true, msg: 'Loading Editor' },
   changes: {
     value: true,
-    msg: `Processing the new changes of “${props.article.title}”`,
+    msg: `Processing the new changes on “${props.article.title}”`,
   },
 };
 const loading = ref(loader.editor);

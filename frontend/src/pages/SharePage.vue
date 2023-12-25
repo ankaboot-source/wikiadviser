@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { verifyLink } from 'src/api/supabaseHelper';
-import { ref } from 'vue';
-import { onBeforeMount } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -13,7 +12,7 @@ onBeforeMount(async () => {
   valid.value = await verifyLink(`${token}`);
   if (valid.value) {
     router.push({
-      path: `/`,
+      path: '/',
     });
   }
 });

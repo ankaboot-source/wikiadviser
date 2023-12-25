@@ -222,11 +222,10 @@ export async function verifyLink(token: string): Promise<boolean> {
     return false;
   }
 
-  const userId = (await supabase.auth.getSession()).data.session?.user.id as string;
+  const userId = (await supabase.auth.getSession()).data.session?.user
+    .id as string;
 
-  const { error: permissionError } = await supabase
-  .from('permissions')
-  .insert({
+  const { error: permissionError } = await supabase.from('permissions').insert({
     user_id: userId,
     article_id: data.article_id,
     role: UserRole.Viewer,

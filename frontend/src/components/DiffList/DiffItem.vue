@@ -13,22 +13,25 @@
       <q-item-section class="text-body2">
         <q-item-label class="row">
           <q-item-section>
-            <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
-              <q-tooltip anchor="top middle" self="bottom middle">
-                {{ statusMessage }}
-              </q-tooltip>
-            </q-icon>
+            <q-item-label>
+              <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  {{ statusMessage }}
+                </q-tooltip>
+              </q-icon>
 
-            <q-icon
-              v-if="pastChange?.icon"
-              color="blue-grey-10"
-              :name="pastChange.icon"
-              size="sm"
-            >
-              <q-tooltip anchor="top middle" self="bottom middle">
-                {{ pastChange.text }}
-              </q-tooltip>
-            </q-icon>
+              <q-icon
+                v-if="pastChange?.icon"
+                color="blue-grey-10"
+                class="q-ml-sm"
+                :name="pastChange.icon"
+                size="sm"
+              >
+                <q-tooltip anchor="top middle" self="bottom middle">
+                  {{ pastChange.text }}
+                </q-tooltip>
+              </q-icon>
+            </q-item-label>
           </q-item-section>
 
           <q-item-section side caption class="text-right">

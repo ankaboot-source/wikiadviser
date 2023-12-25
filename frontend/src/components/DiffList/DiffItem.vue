@@ -11,49 +11,54 @@
   >
     <template #header>
       <q-item-section class="text-body2">
-        <q-item-label>
-          <q-icon
-            color="blue-grey-10"
-            :name="statusDictionary.get(props.item?.status)!.icon"
-            size="sm"
-          >
-            <q-tooltip anchor="top middle" self="bottom middle">
-              {{ statusDictionary.get(props.item?.status)!.message }}
-            </q-tooltip>
-          </q-icon>
+        <q-item-label class="row">
+          <q-item-section>
+            <q-icon
+              color="blue-grey-10"
+              :name="statusDictionary.get(props.item?.status)!.icon"
+              size="sm"
+            >
+              <q-tooltip anchor="top middle" self="bottom middle">
+                {{ statusDictionary.get(props.item?.status)!.message }}
+              </q-tooltip>
+            </q-icon>
 
-          <q-icon
-            v-if="pastChange?.icon"
-            color="blue-grey-10"
-            :name="pastChange.icon"
-            size="sm"
-          >
-            <q-tooltip anchor="top middle" self="bottom middle">
-              {{ pastChange.text }}
-            </q-tooltip>
-          </q-icon>
+            <q-icon
+              v-if="pastChange?.icon"
+              color="blue-grey-10"
+              :name="pastChange.icon"
+              size="sm"
+            >
+              <q-tooltip anchor="top middle" self="bottom middle">
+                {{ pastChange.text }}
+              </q-tooltip>
+            </q-icon>
+          </q-item-section>
+
+          <q-item-section side caption class="text-right">
+            <div class="text-black">
+              <q-avatar size="sm">
+                <img :src="props.item?.user.picture" />
+              </q-avatar>
+              {{ props.item?.user.email }}
+            </div>
+
+            <div style="size: 0.5rem">
+              {{ new Date(props.item?.created_at).toLocaleTimeString() }}
+              <br />
+              {{ new Date(props.item.created_at).toLocaleDateString() }}
+            </div>
+          </q-item-section>
         </q-item-label>
 
-        <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-          <div @click="preventLinkVisit($event)" v-html="previewItem" />
-          <q-tooltip v-if="previewDescription">
-            {{ previewDescription }}
-          </q-tooltip>
-        </q-item-label>
-      </q-item-section>
-
-      <q-item-section caption top side lines="2">
-        <span class="text-black">
-          <q-avatar size="sm">
-            <img :src="props.item?.user.picture" />
-          </q-avatar>
-          {{ props.item?.user.email }}
-        </span>
-        <span style="size: 0.5rem">
-          {{ new Date(props.item?.created_at).toLocaleTimeString() }}
-          <br />
-          {{ new Date(props.item.created_at).toLocaleDateString() }}
-        </span>
+        <q-item-section>
+          <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
+            <div @click="preventLinkVisit($event)" v-html="previewItem" />
+            <q-tooltip v-if="previewDescription">
+              {{ previewDescription }}
+            </q-tooltip>
+          </q-item-label>
+        </q-item-section>
       </q-item-section>
     </template>
     <q-separator />

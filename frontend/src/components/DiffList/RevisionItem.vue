@@ -25,7 +25,7 @@
           </q-badge>
         </q-item-label>
 
-        <q-item-label v-if="!expanded" caption lines="2">
+        <q-item-label v-if="!expanded" caption lines="1">
           {{ summary }}
         </q-item-label>
         <q-item-label v-else caption lines="3">

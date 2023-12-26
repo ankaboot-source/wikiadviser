@@ -45,10 +45,6 @@ function goToHome() {
   $router.push('/');
 }
 
-function changePassword() {
-  $router.push('/auth/update_password');
-}
-
 async function deleteAccount() {
   $q.loading.show({
     boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
@@ -104,20 +100,19 @@ async function deleteAccount() {
           <q-btn flat icon="arrow_back" round @click="goToHome()" />
           <div class="text-h4">Settings</div>
         </div>
-        <h2 class="text-h6 q-mt-xs">Profile Information</h2>
 
         <!-- Remove Image Section -->
-        <div>
-          <h2 class="text-h6 q-mb-xs">Profile picture</h2>
+        <div style="width: 21vw">
+          <h2 class="text-h6 q-mb-xs">Profile Picture</h2>
           <div>
-            <img style="width: 220px" :src="picture" />
+            <img :src="picture" />
             <br />
             <q-btn
               no-caps
               class="text-h6"
               icon="no_photography"
-              label="remove image"
-              color="negative"
+              label="Revert to default avatar photo"
+              style="background-color: #f25f25; color: white"
               unelevated
               @click="removeImage"
             />
@@ -126,15 +121,10 @@ async function deleteAccount() {
 
         <!-- Change Password Section -->
         <div>
-          <h2 class="text-h6 q-mb-xs">Change Password</h2>
-          <q-btn
-            no-caps
-            class="text-h6"
-            label="Change Password"
-            color="primary"
-            unelevated
-            @click="changePassword"
-          />
+          <h2></h2>
+          <a class="text-h6 q-mb-xs" href="/auth/update_password"
+            >Change Password</a
+          >
         </div>
 
         <!-- Delete Account Section -->
@@ -149,7 +139,7 @@ async function deleteAccount() {
             class="text-h6"
             icon="delete"
             label="Delete my account"
-            color="negative"
+            style="background-color: #f25f25; color: white"
             unelevated
             @click="showWarning"
           />
@@ -190,7 +180,7 @@ async function deleteAccount() {
                 no-caps
                 unelevated
                 padding="sm md"
-                color="negative"
+                style="background-color: #f25f25; color: white"
                 class="text-h6"
                 label="Delete"
                 :loading="isLoading"
@@ -203,3 +193,14 @@ async function deleteAccount() {
     </q-page-container>
   </q-layout>
 </template>
+
+<style scoped>
+img {
+  width: 100%;
+}
+
+a {
+  color: #007c89;
+  text-decoration: none;
+}
+</style>

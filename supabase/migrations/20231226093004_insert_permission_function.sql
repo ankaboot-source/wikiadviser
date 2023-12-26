@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION insert_permission(user_id uuid, token uuid)
+CREATE OR REPLACE FUNCTION add_viewer_to_article(user_id uuid, token uuid)
 RETURNS boolean
 LANGUAGE plpgsql
 AS $$

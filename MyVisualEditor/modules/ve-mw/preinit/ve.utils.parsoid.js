@@ -76,7 +76,7 @@ mw.libs.ve.stripRestbaseIds = function ( doc ) {
 	var restbaseIdRegExp = mw.libs.ve.restbaseIdRegExp;
 	Array.prototype.forEach.call( doc.querySelectorAll( '[id^="mw"]' ), function ( element ) {
 		if ( restbaseIdRegExp.test( element.id ) ) {
-			element.removeAttribute( 'id' );
+			/* Custom WikiAdviser */ //element.removeAttribute( 'id' );
 		}
 	} );
 };

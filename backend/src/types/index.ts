@@ -3,7 +3,7 @@ export type Change = {
   content?: string;
   status?: 0 | 1 | 2;
   description?: string;
-  type_of_edit?: 0 | 1 | 2 | 3;
+  type_of_edit?: TypeOfEditDictionary;
   index?: number | null;
   article_id?: string;
   contributor_id?: string;
@@ -29,7 +29,8 @@ export enum TypeOfEditDictionary {
   change = 0,
   insert = 1,
   remove = 2,
-  'structural-change' = 3
+  'structural-change' = 3,
+  'remove-insert' = 4
 }
 
 export interface ErrorResponse {

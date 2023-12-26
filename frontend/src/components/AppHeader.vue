@@ -14,8 +14,8 @@
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="supabaseUser" no-caps unelevated clickable @click="settings">
-        <q-avatar size="xs">
-          <img :src="getImage()" />
+        <q-avatar size="sm">
+          <img :src="supabaseUser?.user_metadata.picture" />
         </q-avatar>
         <q-text class="q-pl-sm">
           {{ supabaseUser.email }}
@@ -58,10 +58,6 @@ watch([useRoute(), articles], ([newRoute]) => {
     article.value = null;
   }
 });
-
-function getImage(): string {
-  return supabaseUser.value?.user_metadata.picture;
-}
 
 async function signOut() {
   try {

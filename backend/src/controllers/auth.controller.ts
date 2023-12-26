@@ -1,13 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import {
-  deleteArticleDB,
-  getArticlesByUser,
-  getUserPermission
-} from '../helpers/supabaseHelper';
+import { getUserPermission } from '../helpers/supabaseHelper';
 import supabase from '../api/supabase';
-import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
-import wikipediaApi from '../services/wikipedia/WikipediaApi';
-import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -90,18 +83,10 @@ export async function deleteUser(
 ) {
   try {
     const { id } = req.params;
-    const articles = await getArticlesByUser(id);
 
-    for (const article of articles) {
-      const mediawiki = new MediawikiClient(
-        article['language'],
-        wikipediaApi,
-        await PlayAutomatorFactory(article['language'])
-      );
-      await mediawiki.deleteArticleMW(article.article_id);
-      await deleteArticleDB(article.article_id);
-    }
-    await supabase.auth.admin.deleteUser(id as string);
+    await supabase.auth.admin.updateUserById(id, {
+      email: `${id}@anony`
+    });
 
     next({});
   } catch (error) {

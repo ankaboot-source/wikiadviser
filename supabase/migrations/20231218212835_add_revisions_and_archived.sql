@@ -1,7 +1,3 @@
-/* Add archived to Articles */
-ALTER TABLE articles
-  ADD COLUMN archived boolean not null default false;
-
 /* Create Revisions */
 CREATE TABLE
   public.revisions (
@@ -14,7 +10,8 @@ CREATE TABLE
     constraint revisions_article_id_fkey foreign key (article_id) references articles (id) on delete cascade
   );
 
-/* Add revision_id to Changes */
+/* Add revision_id, archived to Changes */
 ALTER TABLE changes
+  ADD COLUMN archived boolean not null default false,
   ADD COLUMN revision_id uuid null,
   ADD constraint changes_revision_id_fkey foreign key (revision_id) references revisions (id) on delete cascade;

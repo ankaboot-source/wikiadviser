@@ -3,7 +3,7 @@ RETURNS boolean
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  share_record share_links%ROWTYPE; ;
+  share_record share_links%ROWTYPE;
 BEGIN
   SELECT *
   INTO share_record

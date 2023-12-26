@@ -3,9 +3,10 @@ RETURNS boolean
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  share_link_id uuid;
+  share_record share_links%ROWTYPE; ;
 BEGIN
-  SELECT id INTO share_link_id
+  SELECT *
+  INTO share_record
   FROM share_links
   WHERE id = insert_permission.token
   LIMIT 1;
@@ -17,12 +18,7 @@ BEGIN
   INSERT INTO permissions(user_id, article_id, role)
   VALUES (
     user_id,
-    (
-      SELECT article_id
-      FROM share_links
-      WHERE id = share_link_id
-      LIMIT 1
-    ),
+    share_record.id,
     'viewer'
   );
 

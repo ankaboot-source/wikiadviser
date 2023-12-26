@@ -215,10 +215,10 @@ export async function verifyLink(token: string): Promise<boolean> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data } = await supabase.rpc("insert_permission", {
+  const { data: isValidToken } = await supabase.rpc("insert_permission", {
     user_id: userId,
     token
   });
 
-  return data;
+  return isValidToken;
 }

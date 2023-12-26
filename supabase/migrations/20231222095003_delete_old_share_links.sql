@@ -2,7 +2,7 @@ CREATE FUNCTION delete_old_share_links() RETURNS trigger
   LANGUAGE plpgsql
   AS $$
 BEGIN
-  DELETE FROM "public"."share_links" WHERE created_at < NOW() - INTERVAL '2 days';
+  DELETE FROM "public"."share_links" WHERE expired_at < NOW();
   RETURN NEW;
 END;
 $$;

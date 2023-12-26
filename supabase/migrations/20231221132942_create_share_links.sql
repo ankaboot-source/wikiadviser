@@ -1,6 +1,6 @@
 create table "public"."share_links" (
   "id" uuid not null default gen_random_uuid(),
-  "created_at" timestamp with time zone default now(),
+  "expired_at" timestamp with time zone,
   "article_id" uuid not null
 );
 

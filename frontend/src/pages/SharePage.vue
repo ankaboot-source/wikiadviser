@@ -19,7 +19,7 @@ onBeforeMount(async () => {
 </script>
 
 <template>
-  <div class="m-auto" v-if="!valid">
+  <div v-if="!valid" class="m-auto">
     <img class="center" src="~assets/invalid-link.svg" alt="" />
     <h4 class="w-lg text-center">
       This shared link has expired. Please ask the article's owner for a new

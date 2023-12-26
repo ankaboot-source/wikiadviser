@@ -9,6 +9,7 @@ import {
   ShareLink,
 } from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
+import { EXPIRATION_DAYS } from 'src/consts';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -202,9 +203,14 @@ export async function updateChanges(articleId: string) {
 }
 
 export async function createLink(articleId: string) {
+  const expiredAt = new Date();
+  expiredAt.setDate(expiredAt.getDate() + EXPIRATION_DAYS);
   const { data } = await supabase
     .from('share_links')
-    .insert({ article_id: articleId })
+    .insert({
+      article_id: articleId,
+      expired_at: expiredAt.toISOString(),
+    })
     .select()
     .single<ShareLink>();
 
@@ -215,9 +221,9 @@ export async function verifyLink(token: string): Promise<boolean> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data: isValidToken } = await supabase.rpc("insert_permission", {
+  const { data: isValidToken } = await supabase.rpc('insert_permission', {
     user_id: userId,
-    token
+    token,
   });
 
   return isValidToken;

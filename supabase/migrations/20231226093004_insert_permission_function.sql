@@ -9,6 +9,7 @@ BEGIN
   INTO share_record
   FROM share_links
   WHERE id = insert_permission.token
+  AND expired_at >= NOW()
   LIMIT 1;
 
   IF NOT FOUND THEN

@@ -62,5 +62,5 @@ export type Permission = {
 export type ShareLink = {
   id: string;
   article_id: string;
-  created_at: Date;
+  expired_at: string;
 };

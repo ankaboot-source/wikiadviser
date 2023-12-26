@@ -212,24 +212,13 @@ export async function createLink(articleId: string) {
 }
 
 export async function verifyLink(token: string): Promise<boolean> {
-  const { data } = await supabase
-    .from('share_links')
-    .select()
-    .eq('id', token)
-    .single<ShareLink>();
-
-  if (!data) {
-    return false;
-  }
-
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { error: permissionError } = await supabase.from('permissions').insert({
+  const { data } = await supabase.rpc("insert_permission", {
     user_id: userId,
-    article_id: data.article_id,
-    role: UserRole.Viewer,
+    token
   });
 
-  return permissionError ? false : true;
+  return data;
 }

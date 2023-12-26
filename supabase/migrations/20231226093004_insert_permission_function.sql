@@ -18,7 +18,7 @@ BEGIN
   INSERT INTO permissions(user_id, article_id, role)
   VALUES (
     user_id,
-    share_record.id,
+    share_record.article_id,
     'viewer'
   );
 

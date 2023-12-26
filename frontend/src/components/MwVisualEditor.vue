@@ -76,6 +76,9 @@ async function handleUpdateChanges(event: MessageEvent) {
   if (event.data === 'updateChanges') {
     await loadingChanges();
   }
+  if (event.data === 'loadedMessage') {
+    loading.value.value = false;
+  }
 }
 
 onMounted(() => {

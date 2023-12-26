@@ -18,7 +18,7 @@
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="supabaseUser" no-caps unelevated>
-        <q-avatar size="xs">
+        <q-avatar size="sm">
           <img :src="supabaseUser?.user_metadata.picture" />
         </q-avatar>
         <q-text class="q-pl-sm">

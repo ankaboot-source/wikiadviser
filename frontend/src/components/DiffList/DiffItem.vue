@@ -360,13 +360,6 @@ watch(
 function setHovered(value: string) {
   store.hoveredChangeId = value;
 }
-
-const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString()
-);
-const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString()
-);
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

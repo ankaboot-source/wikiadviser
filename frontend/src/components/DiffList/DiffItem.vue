@@ -34,7 +34,6 @@
             </q-item-label>
           </q-item-section>
         </q-item-label>
-
         <q-item-section>
           <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
             <div @click="preventLinkVisit($event)" v-html="previewItem" />

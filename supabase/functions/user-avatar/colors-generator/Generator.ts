@@ -42,9 +42,6 @@ function calculateLuminance(rgb: RGB): number {
   return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
 }
 
-/**
- * Utility class for generating colors based on a hash and a set of colors.
- */
 export default class ColorGenerator {
   /**
    * Recommenedd by WCAG 2.0 for calculating contrast ratio.
@@ -55,19 +52,13 @@ export default class ColorGenerator {
    */
   private readonly CROSS_COLORS_LUMINANCE: number = 0.4;
   /**
-   * The higher the value, the darker the color.
+   * Controls when to set font color to white.
    */
   private readonly FONT_WHITE_LUMINANCE: number = 0.5;
 
   private readonly baseColor: RGB;
   private readonly backgroundColors: RGB[];
 
-  /**
-   * Initializes the ColorGenerator utility.
-   *
-   * @param hash - Hash string.
-   * @param colors - Array of color strings.
-   */
   constructor(
     private readonly hash: string,
     private readonly backgroundHexColors: string[]
@@ -79,7 +70,7 @@ export default class ColorGenerator {
   /**
    * Generates and returns a color based on the hash and background colors.
    *
-   * @returns Object containing the main color and font color.
+   * @returns {{ color: string, fontColor: string }}
    */
   generateColors(): { mainColor: string; fontColor: string } {
     let contrasted = false;

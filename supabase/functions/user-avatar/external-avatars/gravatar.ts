@@ -2,7 +2,6 @@ import { encodeMD5 } from "../utils.ts";
 
 /**
  * Fetches the Gravatar URL associated with the provided email.
- * If no Gravatar is found for the email, it returns null.
  *
  * @param email - The email address for which to fetch the Gravatar URL.
  * @returns the Gravatar URL if found, otherwise returns null.

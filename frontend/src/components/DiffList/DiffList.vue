@@ -104,7 +104,7 @@ const groupedChanges = computed(() => {
   );
 
   return sortedGrouped.map((item, index) => ({
-    index: sortedGrouped.length - 1 - index,
+    index: sortedGrouped.length - index,
     ...item,
   }));
 });

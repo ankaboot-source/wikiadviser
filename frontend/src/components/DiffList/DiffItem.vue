@@ -343,7 +343,7 @@ async function handleDescription() {
 
 const isArchived = computed(() => props.item.archived);
 const archiveButton = computed(() => {
-  return isArchived.value ? 'unarchive' : 'archive';
+  return isArchived.value ? 'reopen' : 'archive';
 });
 
 async function archiveChange(archived = true) {

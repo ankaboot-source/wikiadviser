@@ -199,3 +199,18 @@ export async function updateChanges(articleId: string) {
     throw new Error('Failed to update changes from API.');
   }
 }
+
+export async function revertImage() {
+  const userId = (await supabase.auth.getSession()).data.session?.user
+    .id as string;
+
+  const { data, error: revertIageError } = await supabase.rpc('revert_image', {
+    user_id: userId,
+  });
+
+  if (revertIageError) {
+    throw new Error(revertIageError.message);
+  }
+
+  return data;
+}

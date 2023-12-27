@@ -37,10 +37,6 @@ function showWarning() {
   showDeleteModal.value = true;
 }
 
-function closeWarning() {
-  showDeleteModal.value = false;
-}
-
 function goToHome() {
   $router.push('/');
 }
@@ -98,21 +94,22 @@ async function deleteAccount() {
       <q-page padding>
         <div class="flex items-center">
           <q-btn flat icon="arrow_back" round @click="goToHome()" />
-          <div class="text-h4">Settings</div>
+          <div class="text-h5 merriweather">Account</div>
         </div>
 
         <!-- Remove Image Section -->
-        <div style="width: 21vw">
-          <h2 class="text-h6 q-mb-xs">Profile Picture</h2>
+        <div style="width: 13vw">
+          <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
           <div>
-            <img :src="picture" />
+            <img :src="picture" class="full-width" />
             <br />
             <q-btn
               no-caps
-              class="text-h6"
+              outline
+              class="text-sm full-width"
               icon="no_photography"
-              label="Revert to default avatar photo"
-              style="background-color: #f25f25; color: white"
+              label="Revert to default avatar"
+              color="primary"
               unelevated
               @click="removeImage"
             />
@@ -122,24 +119,26 @@ async function deleteAccount() {
         <!-- Change Password Section -->
         <div>
           <h2></h2>
-          <a class="text-h6 q-mb-xs" href="/auth/update_password"
-            >Change Password</a
-          >
+          <a class="text-h6 merriweather q-mb-xs" href="/auth/update_password">
+            Change Password
+            <q-icon name="open_in_new" style="top: -2px" />
+          </a>
         </div>
 
         <!-- Delete Account Section -->
         <div>
-          <h2 class="text-h6 q-mb-xs">Delete Account</h2>
+          <h2 class="text-h6 merriweather q-mb-xs">Delete Account</h2>
           <p class="text-body1">
             You can permanently delete your account including your data. You
             can't undo this action.
           </p>
           <q-btn
             no-caps
-            class="text-h6"
+            outline
+            class="text-sm"
             icon="delete"
             label="Delete my account"
-            style="background-color: #f25f25; color: white"
+            color="negative"
             unelevated
             @click="showWarning"
           />
@@ -148,40 +147,30 @@ async function deleteAccount() {
         <!-- Warning model Section -->
         <q-dialog v-model="showDeleteModal">
           <q-card>
-            <q-card-section class="row items-center q-card-actions">
-              <p class="text-h6 q-ma-none q-mr-md">
-                ⚠️ Deleting your account is permanent. You will lose all your
-                data.
-              </p>
-              <q-space />
-              <div class="absolute-top-right">
-                <q-btn
-                  v-close-popup
-                  class="q-ma-sm q-pa-sm"
-                  flat
-                  icon="close"
-                  size="sm"
-                  color="grey-7"
-                ></q-btn>
-              </div>
+            <q-toolbar class="borders">
+              <q-toolbar-title class="merriweather">
+                Delete User
+              </q-toolbar-title>
+              <q-btn v-close-popup flat round dense icon="close" size="sm" />
+            </q-toolbar>
+            <q-card-section>
+              All your personal data will be deleted. Other data will be
+              anonymized.
             </q-card-section>
-            <q-separator />
-            <!-- Buttons -->
-            <q-card-actions align="right" class="q-pa-md q-pr-lg">
+            <q-card-actions class="borders">
+              <q-space />
               <q-btn
+                v-close-popup
                 no-caps
-                unelevated
-                padding="sm md"
-                class="secondary-button text-h6"
+                outline
+                color="primary"
                 label="Cancel"
-                @click="closeWarning"
               />
               <q-btn
-                no-caps
+                v-close-popup
                 unelevated
-                padding="sm md"
-                style="background-color: #f25f25; color: white"
-                class="text-h6"
+                color="negative"
+                no-caps
                 label="Delete"
                 :loading="isLoading"
                 @click="deleteAccount"
@@ -195,12 +184,8 @@ async function deleteAccount() {
 </template>
 
 <style scoped>
-img {
-  width: 100%;
-}
-
 a {
-  color: #007c89;
+  color: var(--q-primary);
   text-decoration: none;
 }
 </style>

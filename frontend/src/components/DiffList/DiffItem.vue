@@ -33,21 +33,6 @@
               </q-icon>
             </q-item-label>
           </q-item-section>
-
-          <q-item-section side caption class="text-right">
-            <div class="text-black">
-              <q-avatar size="sm">
-                <img :src="props.item?.user.picture" />
-              </q-avatar>
-              {{ props.item?.user.email }}
-            </div>
-
-            <div style="size: 0.5rem">
-              {{ localeTimeString }}
-              <br />
-              {{ localeDateString }}
-            </div>
-          </q-item-section>
         </q-item-label>
 
         <q-item-section>

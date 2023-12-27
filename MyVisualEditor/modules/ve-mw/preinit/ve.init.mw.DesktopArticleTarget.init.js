@@ -23,11 +23,6 @@
  */
 ( function () {
 	/* Custom WikiAdviser */
-	// Alternative load event for iframe
-	const isIframe =  window.location !== window.parent.location;
-	if (isIframe) {
-		window.parent.postMessage('loadedMessage', '*');
-	}
 	// Once VE starts replace title with expected title
 	const urlParams = new URLSearchParams(window.location.search);
 	const expectedTitle = urlParams.get('expectedTitle');

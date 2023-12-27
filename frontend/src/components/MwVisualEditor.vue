@@ -47,6 +47,7 @@ const emit = defineEmits(['switchTabEmit']);
 async function loadingChanges() {
   try {
     loading.value = loader.changes;
+    loading.value.value = true;
 
     await updateChanges(props.article.article_id);
 
@@ -67,6 +68,7 @@ async function loadingChanges() {
     });
   } finally {
     loading.value = loader.editor;
+    loading.value.value = true;
     reloadIframe();
   }
 }

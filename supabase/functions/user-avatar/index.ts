@@ -1,8 +1,6 @@
 import { createClient } from "supabase";
-import { encodeMD5 } from "./utils.ts";
 import { Database } from "./types";
 
-import ColorsGenerator from "./colors-generator/Generator.ts";
 import generateAvatar from "./external-avatars/authUi.ts";
 import getGravatar from "./external-avatars/gravatar.ts";
 
@@ -45,13 +43,13 @@ Deno.serve(async (req) => {
       .split(", ");
 
     switch (req.method) {
-      case "POST":
+      case "POST": {
         if (userAvatarURL) {
           return new Response("Avatar already exists");
         }
 
         const avatar =
-          (await getAvatar(userEmail)) ??
+          (await getGravatar(userEmail)) ??
           generateAvatar(userEmail, backgrounds);
 
         const { error: updateError } =
@@ -64,15 +62,16 @@ Deno.serve(async (req) => {
         }
 
         return new Response("Avatar updated");
+      }
 
-      case "DELETE":
+      case "DELETE": {
         if (!userAvatarURL) {
           return new Response("Avatar doesn't exist");
         }
         const { error: deleteError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {
             user_metadata: {
-              picture: await generateAvatar(userEmail, backgrounds),
+              picture: generateAvatar(userEmail, backgrounds),
             },
           });
 
@@ -81,6 +80,7 @@ Deno.serve(async (req) => {
         }
 
         return new Response("Avatar deleted");
+      }
 
       default:
         return new Response("Method not allowed", { status: 405 });

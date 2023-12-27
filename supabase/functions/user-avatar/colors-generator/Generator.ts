@@ -31,13 +31,16 @@ function rgbToHex(rgb: RGB): string {
  * @returns Luminance value of the color.
  */
 function calculateLuminance(rgb: RGB): number {
-  const r = rgb.red / 255;
-  const g = rgb.green / 255;
-  const b = rgb.blue / 255;
+  const red = rgb.red / 255;
+  const green = rgb.green / 255;
+  const blue = rgb.blue / 255;
 
-  const sR = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
-  const sG = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
-  const sB = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+  const sR =
+    red <= 0.03928 ? red / 12.92 : Math.pow((red + 0.055) / 1.055, 2.4);
+  const sG =
+    green <= 0.03928 ? green / 12.92 : Math.pow((green + 0.055) / 1.055, 2.4);
+  const sB =
+    blue <= 0.03928 ? blue / 12.92 : Math.pow((blue + 0.055) / 1.055, 2.4);
 
   return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
 }

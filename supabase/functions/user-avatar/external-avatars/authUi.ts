@@ -10,11 +10,11 @@ import ColorsGenerator from "../colors-generator/Generator.ts";
  * @param charactersLength [charactersLength=1] - The number of characters to display in the avatar.
  * @returns the URL of the generated UI avatar.
  */
-async function buildAuthUiAvatar(
+function buildAuthUiAvatar(
   email: string,
   backgroundColor: string,
   fontColor: string,
-  charactersLength: number = 1
+  charactersLength = 1
 ) {
   return `https://ui-avatars.com/api/?background=${backgroundColor}&color=${fontColor}&length=${charactersLength}&name=${email}`;
 }

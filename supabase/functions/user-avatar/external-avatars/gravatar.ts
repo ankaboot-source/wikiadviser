@@ -10,10 +10,7 @@ export default async function getGravatar(
   email: string
 ): Promise<string | null> {
   const gravatarURL = `https://www.gravatar.com/avatar/${encodeMD5(email)}`;
-
-  const gravatarResponse = await fetch(
-    `https://www.gravatar.com/avatar/${encodeMD5(email)}?d=404`
-  );
+  const gravatarResponse = await fetch(`${gravatarURL}?d=404`);
 
   if (gravatarResponse.status !== 200) {
     return null;

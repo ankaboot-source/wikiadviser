@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     }: usersRecord = await supabaseClient.auth.getUser();
 
     if (!user) {
-      return new Response("Unauthorized", { status: 401 });
+      return new Response("Unauthorized", { headers: corsHeaders, status: 401 });
     }
 
     const userId = user.id;
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     switch (req.method) {
       case "POST": {
         if (userAvatarURL) {
-          return new Response("Avatar already exists");
+          return new Response("Avatar already exists", { headers: corsHeaders });
         }
 
         const avatar =
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
           throw new Error(updateError.message);
         }
 
-        return new Response("Avatar updated");
+        return new Response("Avatar updated", { headers: corsHeaders });
       }
 
       case "DELETE": {
@@ -69,13 +69,13 @@ Deno.serve(async (req) => {
           throw new Error(deleteError.message);
         }
 
-        return new Response("Avatar deleted");
+        return new Response("Avatar deleted", { headers: corsHeaders });
       }
 
       default:
-        return new Response("Method not allowed", { status: 405 });
+        return new Response("Method not allowed", { headers: corsHeaders, status: 405 });
     }
   } catch (error) {
-    return new Response(error.message, { status: 500 });
+    return new Response(error.message, { headers: corsHeaders, status: 500 });
   }
 });

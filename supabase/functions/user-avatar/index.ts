@@ -1,4 +1,4 @@
-import { Database } from "./types";
+import { Database } from "shared/types.ts";
 import corsHeaders from "shared/cors.ts";
 import createSupabaseClient from "shared/supabaseClient.ts";
 import createSupabaseAdmin from "shared/supabaseAdmin.ts";

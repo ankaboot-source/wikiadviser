@@ -1,4 +1,4 @@
-import {Hash, encode} from "md5";
+import { Hash, encode } from "md5";
 
 /**
  * Encodes the given string using MD5 algorithm.
@@ -9,4 +9,3 @@ import {Hash, encode} from "md5";
 export function encodeMD5(str: string): string {
   return new Hash("md5").digest(encode(str)).hex();
 }
-

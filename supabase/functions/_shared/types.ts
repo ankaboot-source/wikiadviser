@@ -1,12 +1,3 @@
-/**
-* Represents a color in RGB format.
-*/
-export interface RGB {
- red: number;
- green: number;
- blue: number;
-}
-
 export type Json =
   | string
   | number

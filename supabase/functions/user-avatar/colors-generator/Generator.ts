@@ -1,4 +1,13 @@
 /**
+* Represents a color in RGB format.
+*/
+export interface RGB {
+  red: number;
+  green: number;
+  blue: number;
+ }
+
+/**
  * Converts a hexadecimal color string to RGB format.
  *
  * @param hex - Hexadecimal color string.

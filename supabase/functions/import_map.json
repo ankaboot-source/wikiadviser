@@ -1,0 +1,7 @@
+{
+    "imports": {
+        "supabase": "https://esm.sh/@supabase/supabase-js@2",
+        "md5": "https://deno.land/x/checksum@1.2.0/mod.ts",
+        "shared/": "/shared/"
+    }
+}

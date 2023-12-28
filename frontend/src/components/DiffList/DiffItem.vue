@@ -40,6 +40,22 @@
           </q-tooltip>
         </q-item-label>
       </q-item-section>
+      <q-item-section
+        v-if="expanded && !!pastChange"
+        side
+        caption
+        class="text-right"
+      >
+        <div class="text-black">
+          <q-avatar size="sm">
+            <img :src="props.item?.user.picture" />
+          </q-avatar>
+          {{ props.item?.user.email }}
+        </div>
+        <div style="size: 0.5rem">
+          {{ localeDateString }} at {{ localeTimeString }}
+        </div>
+      </q-item-section>
     </template>
 
     <q-separator />
@@ -358,6 +374,13 @@ watch(
 function setHovered(value: string) {
   store.hoveredChangeId = value;
 }
+
+const localeDateString = computed(() =>
+  new Date(props.item?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.item?.created_at).toLocaleTimeString()
+);
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

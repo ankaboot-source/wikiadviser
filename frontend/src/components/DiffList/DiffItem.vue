@@ -34,7 +34,7 @@
             </q-item-label>
           </q-item-section>
         </q-item-label>
-        <q-item-section>
+        <q-item-section class="word_break_all">
           <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
             <div @click="preventLinkVisit($event)" v-html="previewItem" />
             <q-tooltip v-if="previewDescription">
@@ -56,7 +56,7 @@
         ></div>
         <div
           v-else
-          class="q-pl-md text-left text-body-2"
+          class="q-pl-md text-left text-body-2 word_break_all"
           @click="preventLinkVisit($event)"
           v-html="props.item.content"
         ></div>

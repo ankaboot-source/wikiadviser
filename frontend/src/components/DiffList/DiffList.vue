@@ -145,3 +145,8 @@ watch(
   }
 );
 </script>
+<style>
+.q-scrollarea__content {
+  width: inherit !important;
+}
+</style>

@@ -37,7 +37,7 @@
           </q-item-section>
         </q-item-label>
 
-        <q-item-section>
+        <q-item-section class="word_break_all">
           <q-item-label v-if="!expanded" caption lines="1">
             {{ summary }}
           </q-item-label>
@@ -107,8 +107,3 @@ const localeTimeString = computed(() =>
   })
 );
 </script>
-<style>
-.textarea__limit_height textarea.q-field__native {
-  height: 1rem;
-}
-</style>

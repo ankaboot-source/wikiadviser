@@ -30,9 +30,7 @@
             </div>
 
             <div style="size: 0.5rem">
-              {{ localeTimeString }}
-              <br />
-              {{ localeDateString }}
+              {{ localeDateString }} at {{ localeTimeString }}
             </div>
           </q-item-section>
         </q-item-label>

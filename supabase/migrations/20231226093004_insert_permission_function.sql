@@ -8,7 +8,7 @@ BEGIN
   SELECT *
   INTO share_record
   FROM share_links
-  WHERE id = insert_permission.token
+  WHERE id = token
   AND expired_at >= NOW()
   LIMIT 1;
 

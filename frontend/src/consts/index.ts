@@ -1,1 +1,3 @@
-export const EXPIRATION_DAYS = parseInt(process.env.DAY_LIMIT!) ?? 2;
+export const EXPIRATION_DAYS = process.env.DAY_LIMIT
+  ? parseInt(process.env.DAY_LIMIT)
+  : 2;

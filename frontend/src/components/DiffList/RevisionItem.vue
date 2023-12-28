@@ -1,32 +1,48 @@
 <template>
   <q-expansion-item v-if="revision.items.length" v-model="expanded">
     <template #header>
-      <q-item-section class="text-body">
-        <q-item-label>
-          {{
-            `Revision n°${revision.index} the ${localeDateString} at ${localeTimeString}`
-          }}
-          <q-badge
-            outline
-            rounded
-            color="blue-grey-10"
-            class="q-mt-s text-capitalize"
-            :label="revision.items.length"
-            size="sm"
-          >
-            <q-tooltip>
-              {{ changesToReviewLength }}/{{ revision.items.length }} changes
-              awaiting reviewal
-            </q-tooltip>
-          </q-badge>
+      <q-item-section class="text-body2">
+        <q-item-label class="row">
+          <q-item-section>
+            <q-item-label>
+              {{ `Revision n°${revision.index}` }}
+              <q-badge
+                outline
+                rounded
+                color="blue-grey-10"
+                class="q-mt-s text-capitalize"
+                :label="revision.items.length"
+                size="sm"
+              >
+                <q-tooltip>
+                  {{ changesToReviewLength }}/{{ revision.items.length }}
+                  changes awaiting reviewal
+                </q-tooltip>
+              </q-badge>
+            </q-item-label>
+          </q-item-section>
+          <q-item-section side caption class="text-right">
+            <div class="text-black">
+              <q-avatar size="sm">
+                <img :src="revision.items[0]?.user.picture" />
+              </q-avatar>
+              {{ revision.items[0]?.user.email }}
+            </div>
+
+            <div style="size: 0.5rem">
+              {{ localeDateString }} at {{ localeTimeString }}
+            </div>
+          </q-item-section>
         </q-item-label>
 
-        <q-item-label v-if="!expanded" caption lines="1">
-          {{ summary }}
-        </q-item-label>
-        <q-item-label v-else caption lines="3">
-          {{ summary }} <q-tooltip>{{ summary }}</q-tooltip>
-        </q-item-label>
+        <q-item-section class="word_break_all">
+          <q-item-label v-if="!expanded" caption lines="1">
+            {{ summary }}
+          </q-item-label>
+          <q-item-label v-else caption lines="3">
+            {{ summary }} <q-tooltip>{{ summary }}</q-tooltip>
+          </q-item-label>
+        </q-item-section>
       </q-item-section>
     </template>
 
@@ -89,8 +105,3 @@ const localeTimeString = computed(() =>
   })
 );
 </script>
-<style>
-.textarea__limit_height textarea.q-field__native {
-  height: 1rem;
-}
-</style>

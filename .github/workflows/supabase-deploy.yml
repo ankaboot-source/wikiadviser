@@ -24,4 +24,5 @@ jobs:
 
       - run: supabase link --project-ref $SUPABASE_PROJECT_ID
       - run: supabase db push
+      - run: supabase secrets set --env-file ./supabase/functions/.env
       - run: supabase functions deploy 

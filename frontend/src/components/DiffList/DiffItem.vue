@@ -10,40 +10,36 @@
     @mouseleave="setHovered('')"
   >
     <template #header>
-      <q-item-section class="text-body2">
-        <q-item-label class="row">
-          <q-item-section>
-            <q-item-label>
-              <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  {{ statusMessage }}
-                </q-tooltip>
-              </q-icon>
+      <q-item-section avatar>
+        <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
+          <q-tooltip anchor="top middle" self="bottom middle">
+            {{ statusMessage }}
+          </q-tooltip>
+        </q-icon>
 
-              <q-icon
-                v-if="pastChange?.icon"
-                color="blue-grey-10"
-                class="q-ml-sm"
-                :name="pastChange.icon"
-                size="sm"
-              >
-                <q-tooltip anchor="top middle" self="bottom middle">
-                  {{ pastChange.text }}
-                </q-tooltip>
-              </q-icon>
-            </q-item-label>
-          </q-item-section>
+        <q-icon
+          v-if="pastChange?.icon"
+          color="blue-grey-10"
+          class="q-ml-sm"
+          :name="pastChange.icon"
+          size="sm"
+        >
+          <q-tooltip anchor="top middle" self="bottom middle">
+            {{ pastChange.text }}
+          </q-tooltip>
+        </q-icon>
+      </q-item-section>
+
+      <q-item-section>
+        <q-item-label v-if="!expanded" class="q-pa-xs word_break_all" lines="3">
+          <div @click="preventLinkVisit($event)" v-html="previewItem" />
+          <q-tooltip v-if="previewDescription">
+            {{ previewDescription }}
+          </q-tooltip>
         </q-item-label>
-        <q-item-section class="word_break_all">
-          <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
-            <div @click="preventLinkVisit($event)" v-html="previewItem" />
-            <q-tooltip v-if="previewDescription">
-              {{ previewDescription }}
-            </q-tooltip>
-          </q-item-label>
-        </q-item-section>
       </q-item-section>
     </template>
+
     <q-separator />
 
     <q-item-section>

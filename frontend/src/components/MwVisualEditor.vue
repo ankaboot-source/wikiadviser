@@ -44,6 +44,13 @@ const loading = ref(loader.editor);
 
 const emit = defineEmits(['switchTabEmit']);
 
+const renderIframe = ref(true);
+async function reloadIframe() {
+  renderIframe.value = false;
+  await nextTick();
+  renderIframe.value = true;
+}
+
 async function loadingChanges() {
   try {
     loading.value = loader.changes;
@@ -85,11 +92,4 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('message', handleUpdateChanges);
 });
-
-const renderIframe = ref(true);
-async function reloadIframe() {
-  renderIframe.value = false;
-  await nextTick();
-  renderIframe.value = true;
-}
 </script>

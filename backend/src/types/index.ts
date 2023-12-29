@@ -9,7 +9,6 @@ export type Change = {
   contributor_id?: string;
   created_at?: string;
   revision_id?: string;
-  section?: string;
 };
 
 export interface Article {

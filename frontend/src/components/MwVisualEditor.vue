@@ -1,45 +1,70 @@
 <template>
-  <iframe v-if="!loading" :src="articleLink" frameBorder="0" />
-  <div v-else class="q-pa-xl row justify-center text-center">
+  <iframe
+    v-if="renderIframe"
+    v-show="buttonToggle === 'edit' && !loading.value"
+    :src="articleLink"
+    class="col-grow q-mr-md rounded-borders borders bg-secondary"
+    frameBorder="0"
+    @load="loading.value = false"
+  />
+  <div
+    v-if="buttonToggle === 'edit' && loading.value"
+    class="q-pa-xl row justify-center text-center col-grow q-mr-md rounded-borders borders bg-secondary"
+  >
     <div>
       <div class="text-h6">
-        Processing the new changes of “{{ props.article.title }}”
+        {{ loading.message }}
       </div>
-      <QSpinnerGrid class="q-my-xl self-center" color="primary" size="140" />
+      <QSpinner class="q-my-xl self-center" color="primary" size="140" />
       <div class="text-body1">Please wait…</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { QSpinnerGrid, useQuasar } from 'quasar';
+import { QSpinner, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
+  buttonToggle: { type: String, required: true },
 });
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}?veaction=edit&expectedTitle=${props.article.title}`;
-const loading = ref(false);
+const loader = {
+  editor: { value: true, message: 'Loading Editor' },
+  changes: {
+    value: true,
+    message: `Processing new changes on “${props.article.title}”`,
+  },
+};
+const loading = ref(loader.editor);
+
 const emit = defineEmits(['switchTabEmit']);
+
+const renderIframe = ref(true);
+async function reloadIframe() {
+  renderIframe.value = false;
+  await nextTick();
+  renderIframe.value = true;
+}
 
 async function loadingChanges() {
   try {
-    loading.value = true;
+    loading.value = loader.changes;
+    loading.value.value = true;
 
     await updateChanges(props.article.article_id);
 
     emit('switchTabEmit', 'view');
-    loading.value = false;
     $q.notify({
       message: 'New changes successfully created.',
       icon: 'check',
       color: 'positive',
     });
   } catch (error) {
-    loading.value = false;
     let message = 'Creating changes failed.';
     if (error instanceof Error) {
       message = error.message;
@@ -48,6 +73,10 @@ async function loadingChanges() {
       message,
       color: 'negative',
     });
+  } finally {
+    loading.value = loader.editor;
+    loading.value.value = true;
+    reloadIframe();
   }
 }
 async function handleUpdateChanges(event: MessageEvent) {

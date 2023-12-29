@@ -30,7 +30,7 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	// Stylesheets might not have processed yet, so manually set starting width to 0
 	this.$bar = $( '<div>' ).addClass( 've-init-mw-progressBarWidget-bar' ).css( 'width', 0 );
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
-
+	
 	/* Custom WikiAdviser */
 	// Remove non editor distractions
 	document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});

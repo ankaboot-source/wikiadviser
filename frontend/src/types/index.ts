@@ -12,6 +12,12 @@ export type ChangesItem = {
   created_at: string;
   comments: Comment[];
   index: number | null;
+  revision_id: string;
+  revision: {
+    revid: number;
+    summary: string;
+  };
+  archived: boolean;
 };
 
 export type SearchResult = {

@@ -151,6 +151,7 @@ wfLoadExtension( 'Interwiki' );
 
 $wgDefaultSkin = "vector-2022";
 wfLoadExtension( 'MyVisualEditor' );
+$wgVisualEditorEnableDiffPage = true;
 $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
 wfLoadExtension( 'UniversalLanguageSelector' );
 

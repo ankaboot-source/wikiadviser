@@ -151,11 +151,12 @@ export async function getChanges(articleId: string): Promise<ChangesItem[]> {
 export async function updateChange(
   changeId: string,
   status?: number,
-  description?: string
+  description?: string,
+  archived?: boolean
 ) {
   const { error: changeError } = await supabase
     .from('changes')
-    .update({ status, description })
+    .update({ status, description, archived })
     .match({ id: changeId });
 
   if (changeError) {

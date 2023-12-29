@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
       case "DELETE": {
         if (!userAvatarURL) {
-          return new Response("Avatar doesn't exist");
+          return new Response("Avatar doesn't exist", { headers: corsHeaders });
         }
         const { error: deleteError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {

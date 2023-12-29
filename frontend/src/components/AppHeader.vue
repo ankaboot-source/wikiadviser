@@ -17,7 +17,7 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated>
+      <q-btn v-if="supabaseUser" no-caps unelevated @click="settings">
         <q-avatar size="sm">
           <img :src="avatarURL" />
         </q-avatar>
@@ -32,19 +32,21 @@
         no-caps
         unelevated
         @click="signOut"
-      >
-      </q-btn>
+      />
     </q-toolbar>
   </q-header>
 </template>
+
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { User } from '@supabase/supabase-js';
+
+const router = useRouter();
 
 const props = defineProps<{
   user: User | null;
@@ -77,6 +79,12 @@ async function signOut() {
   } catch (error) {
     console.error(error);
   }
+}
+
+function settings() {
+  router.push({
+    path: '/settings',
+  });
 }
 </script>
 

@@ -196,6 +196,13 @@ export async function deleteArticle(articleId: string) {
   }
 }
 
+export async function deleteUser() {
+  const apiResponse = await api.delete('/auth');
+  if (apiResponse.status !== 200) {
+    throw new Error('Failed to delete user from API.');
+  }
+}
+
 export async function updateChanges(articleId: string) {
   const apiResponse = await api.put(`/article/${articleId}/changes`);
   if (apiResponse.status !== 200) {

@@ -14,6 +14,10 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/auth/UpdatePasswordPage.vue'),
   },
   {
+    path: '/settings',
+    component: () => import('pages/auth/UserSettingsPage.vue'),
+  },
+  {
     path: '/articles',
     alias: '/',
     name: 'articles',

@@ -1,4 +1,5 @@
 # Notes
+
 ## Known proxy limitations
 
 - Exporting xml dump: missing `</base>` tag at line 5.
@@ -11,6 +12,8 @@
   - Our custom code is marked by `/* Custom WikiAdviser */` comments.
   - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (backend).
 - In `./backend/.env` use the `service_role` key from <b>supabase</b> for `SUPABASE_SECRET_PROJECT_TOKEN`
+
+- Don't forget to copy and paste the email templates from `email-templates` to <b>supabase</b> templates.
 
 ## Important links and references
 

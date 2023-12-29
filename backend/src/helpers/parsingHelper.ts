@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
-import logger from '../logger';
 import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
+import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 
 function addPermissionDataToChanges(
   changesToInsert: Change[],
@@ -31,23 +31,32 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
         created_at: change.created_at,
         description: change.description,
         type_of_edit: change.type_of_edit,
-        contributor_id: change.contributor_id
+        contributor_id: change.contributor_id,
+        revision_id: change.revision_id
       });
     }
   }
 }
 
+function createStrikethroughText(text: string) {
+  return text
+    .split('')
+    .map((char) => `${char}\u0336`)
+    .join('');
+}
+
 export async function refineArticleChanges(
   articleId: string,
   html: string,
-  userId: string
+  userId: string,
+  revision_id: string
 ) {
-  const $ = load(html);
+  const CheerioAPI = load(html);
   let changeid = -1;
   // Loop through elements that have the attribute data-diff-action
-  $("[data-diff-action]:not([data-diff-action='none'])").each(
+  CheerioAPI("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
-      const $element = $(element);
+      const $element = CheerioAPI(element);
       if (!$element.prop('innerText')?.trim()) {
         $element.remove();
         return;
@@ -56,7 +65,7 @@ export async function refineArticleChanges(
       const list: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
-      const $wrapElement = $('<span>');
+      const $wrapElement = CheerioAPI('<span>');
 
       // Append a clone of the element to the wrap element
       $wrapElement.append($element.clone());
@@ -64,44 +73,77 @@ export async function refineArticleChanges(
       let typeOfEdit: string = diffAction;
 
       // Wrapping related changes: Check if next node is an element (Not a text node)
-      // AND if the current element has "change-remove" diff
+      // AND if the current element has "change-remove" | "remove" diffAction
       const node = $element[0].next as ChildNodeData | null;
-      if (!node?.data?.trim() && diffAction === 'change-remove') {
+      if (
+        !node?.data?.trim() &&
+        (diffAction === 'change-remove' || diffAction === 'remove')
+      ) {
         const $nextElement = $element.next();
-        // Check if the next element has "change-insert" diff action
-        if ($nextElement.data('diff-action') === 'change-insert') {
+        const nextTypeOfEdit = $nextElement.data('diff-action');
+        // Check if the next element has "change-insert" | "insert" diff action
+
+        if (nextTypeOfEdit === 'insert' || nextTypeOfEdit === 'change-insert') {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
 
-          // change-remove is always succeeded by a change-insert
-          typeOfEdit = 'change';
-          const listItems = $('.ve-ui-diffElement-sidebar >')
-            .children()
-            .eq((changeid += 1))
-            .children()
-            .children();
-          listItems.each((i, elem) => {
-            list.push($(elem).text());
-          });
+          typeOfEdit = nextTypeOfEdit === 'insert' ? 'remove-insert' : 'change';
 
+          if (nextTypeOfEdit === 'change-insert') {
+            const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
+              .children()
+              .eq((changeid += 1))
+              .children()
+              .children();
+            listItems.each((i, elem) => {
+              list.push(CheerioAPI(elem).text());
+            });
+          }
           // Remove the last element
           $nextElement.remove();
         }
       }
+
       if (diffAction === 'structural-change') {
         typeOfEdit = 'structural-change';
+
+        const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
+          .children()
+          .eq((changeid += 1))
+          .children()
+          .children();
+        listItems.each((i, elem) => {
+          let description = '';
+          CheerioAPI(elem)
+            .find('del')
+            .replaceWith(function strikeThrough() {
+              return `${createStrikethroughText(CheerioAPI(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
+            });
+
+          CheerioAPI(elem)
+            .find('li')
+            .each((ulElemIndex, ulElem) => {
+              description = description.concat(
+                `- ${CheerioAPI(ulElem).text()}\n`
+              );
+            });
+
+          description = description || CheerioAPI(elem).text();
+
+          list.push(description);
+        });
       }
 
       // Remove data-diff-id & data-parsoid Attributes
       $wrapElement.find('[data-diff-id]').each((_, el) => {
-        $(el).removeAttr('data-diff-id');
+        CheerioAPI(el).removeAttr('data-diff-id');
       });
       $wrapElement.find('[data-parsoid]').each((_, el) => {
-        $(el).removeAttr('data-parsoid');
+        CheerioAPI(el).removeAttr('data-parsoid');
       });
 
       // Add the description and the type of edit and update the element.
-      $wrapElement.attr('data-description', list.join(' '));
+      $wrapElement.attr('data-description', list.join('\n'));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
 
       $element.replaceWith($wrapElement);
@@ -109,20 +151,20 @@ export async function refineArticleChanges(
   );
 
   // Remove sidebar
-  $('.ve-ui-diffElement-sidebar').remove();
-  $('.ve-ui-diffElement-hasDescriptions').removeClass(
+  CheerioAPI('.ve-ui-diffElement-sidebar').remove();
+  CheerioAPI('.ve-ui-diffElement-hasDescriptions').removeClass(
     've-ui-diffElement-hasDescriptions'
   );
 
   const changes = await getChanges(articleId);
-  const changeElements = $('[data-description]');
+  const changeElements = CheerioAPI('[data-description]');
 
   const changesToUpsert: Change[] = [];
   const changesToInsert: Change[] = [];
   let changeIndex = 0;
 
   for (const element of changeElements) {
-    const $element = $(element);
+    const $element = CheerioAPI(element);
     let changeId = '';
     let description: string | undefined;
 
@@ -130,6 +172,7 @@ export async function refineArticleChanges(
       | 'change'
       | 'insert'
       | 'remove'
+      | 'remove-insert'
       | 'structural-change';
 
     for (const change of changes) {
@@ -151,7 +194,8 @@ export async function refineArticleChanges(
           created_at: change.created_at,
           description: change.description,
           type_of_edit: change.type_of_edit,
-          contributor_id: change.contributor_id
+          contributor_id: change.contributor_id,
+          revision_id: change.revision_id
         });
         changeIndex += 1;
         break;
@@ -161,12 +205,14 @@ export async function refineArticleChanges(
     if (!changeId) {
       // Create new change
       description = $element.attr('data-description');
+      $element.removeAttr('data-description');
       changesToInsert.push({
-        content: $.html($element),
+        content: CheerioAPI.html($element),
         status: 0,
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
-        index: changeIndex
+        index: changeIndex,
+        revision_id
       });
       changeIndex += 1;
     }
@@ -179,13 +225,13 @@ export async function refineArticleChanges(
 
   unindexUnassignedChanges(changesToUpsert, changes);
 
-  // Add 'article_id' and 'contributor_id' properties to changeToinsert
+  // Add 'article_id', 'contributor_id' properties to changeToinsert
   if (changesToInsert) {
     addPermissionDataToChanges(changesToInsert, articleId, userId);
     changesToUpsert.push(...changesToInsert);
   }
 
-  const htmlContent = $.html();
+  const htmlContent = CheerioAPI.html();
   return { changesToUpsert, htmlContent };
 }
 
@@ -196,34 +242,34 @@ export function parseArticle(article: Article, changes: Change[]) {
     return null;
   }
 
-  const jQuery = load(content);
-  jQuery('[data-id]').each((index, element) => {
+  const CheerioAPI = load(content);
+  CheerioAPI('[data-id]').each((index, element) => {
     // Add more data
-    const jQueryelement = jQuery(element);
-    jQueryelement.attr(
-      'data-type-of-edit',
-      String(changes[index].type_of_edit)
-    );
-    jQueryelement.attr('data-status', String(changes[index].status));
-    jQueryelement.attr('data-index', String(changes[index].index));
-    jQueryelement.attr('data-id', changes[index].id);
+    const $element = CheerioAPI(element);
+    $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
+    $element.attr('data-status', String(changes[index].status));
+    $element.attr('data-index', String(changes[index].index));
+    $element.attr('data-id', changes[index].id);
   });
-  return jQuery.html();
+  return CheerioAPI.html();
 }
 
-export function ParseChanges(changes: Change[]) {
+export function parseChanges(changes: Change[]) {
   const parsedChanges = changes.map((change) => {
     if (change.content) {
-      const jQuery = load(change.content);
-      jQuery('[data-id]').each((_, element) => {
-        const jQueryelement = jQuery(element);
-        jQueryelement.attr('data-type-of-edit', String(change.type_of_edit));
-        jQueryelement.attr('data-status', String(change.status));
+      const CheerioAPI = load(change.content);
+      CheerioAPI('[data-diff-action]').each((_, element) => {
+        const $element = CheerioAPI(element);
+        $element.attr('data-status', String(change.status));
       });
+      const modifiedContent = CheerioAPI.html();
+      return {
+        ...change,
+        content: modifiedContent
+      };
     }
     return change;
   });
-
   return parsedChanges;
 }
 
@@ -233,60 +279,70 @@ function generateOuterMostSelectors(classes: string[]) {
     .join(', ');
 }
 
-async function replaceWikiDataHtml(
-  updatedPageContent: string,
-  title: string,
-  sourceLanguage: string,
-  getWikipediaHTML: (title: string, language: string) => Promise<string>
+async function parseWikidataTemplate(
+  pageContentXML: string,
+  pageContentHTML: string,
+  articleId: string,
+  parsoidInstance: Parsoid
 ) {
-  if (/{{Infobox[\s\S]*?}}/.test(updatedPageContent)) {
-    const articleXML = await getWikipediaHTML(title, sourceLanguage);
-    const $ = load(articleXML);
-    const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
-    const infoboxes = $(generateOuterMostSelectors(infoboxClasses));
-    if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
-      // Remove unnecessary elements within the infobox
-      infoboxes.find('.wikidata-linkback, .navbar').remove();
-      // Replace image source within the infobox
-      infoboxes
-        .find('img')
-        .attr('src', (_, src) =>
-          src?.replace(/^\/media/, 'https://upload.wikimedia.org')
-        );
+  const newParsedContentXML = pageContentXML;
+  const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
-      const infoboxesEscaped: string[] = [];
-      for (const infobox of infoboxes) {
-        const infoboxEscaped = encode(`<html>${$.html(infobox)}</html>`, {
-          level: 'xml'
-        });
-        infoboxesEscaped.push(infoboxEscaped);
-      }
-      let somethingUnexpectedHappend = false;
-      const infoboxUpdatedContent = updatedPageContent.replace(
-        /{{Infobox[\s\S]*?}}/g,
-        () => {
-          const escapedInfobox = infoboxesEscaped.shift();
-          if (!escapedInfobox) {
-            somethingUnexpectedHappend = true;
-            return '';
-          }
-          return escapedInfobox;
-        }
-      );
-      if (!somethingUnexpectedHappend) {
-        return infoboxUpdatedContent;
-      }
-      logger.error(
-        `Unexpected error while processing infoboxes in article: ${title}`
-      );
-    }
+  const wikidataTemplateRegex = /{{(Infobox|Taxobox)[\s\S]*?}}/;
+
+  const hasInfoboxTemplate = wikidataTemplateRegex.test(newParsedContentXML);
+
+  if (!hasInfoboxTemplate) {
+    return newParsedContentXML;
   }
-  return updatedPageContent;
+
+  const cheerioAPI = load(pageContentHTML);
+  const infoboxes = cheerioAPI(generateOuterMostSelectors(infoboxClasses));
+  const isWikidataTemplate = infoboxes
+    .html()
+    ?.toLowerCase()
+    .includes('wikidata');
+
+  if (!isWikidataTemplate) {
+    return newParsedContentXML;
+  }
+
+  infoboxes.find('.wikidata-linkback, .navbar').remove();
+
+  const promises = Array.from(infoboxes).map(async (infobox) => {
+    const infoboxHtml = cheerioAPI.html(infobox);
+    const wikiText = await parsoidInstance.ParsoidHtmlToWikitext(
+      infoboxHtml,
+      articleId
+    );
+    const parsedWikitext = wikiText
+      .replace(/<style[^>]*>.*<\/style>/g, '')
+      .replace(/\[\[.*\/wiki\/((File|Fichier):(.*?))\]\]/g, '[[$1]]') // Fix images
+      .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // remove wikidata redundant links
+      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '')
+      .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
+
+    return encode(parsedWikitext);
+  });
+
+  const parsedInfoboxes = await Promise.all(promises);
+
+  const infoboxUpdatedContent = newParsedContentXML.replace(
+    /{{(Infobox|Taxobox)[\s\S]*?}}/g,
+    () => {
+      const escapedInfobox = parsedInfoboxes.shift();
+      if (escapedInfobox === undefined) {
+        throw new Error('Failed to parse all wikidata template');
+      }
+      return escapedInfobox;
+    }
+  );
+  return infoboxUpdatedContent;
 }
 
 function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
   return pageContent.replace(
-    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
+    /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
       `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
@@ -297,14 +353,13 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  * @returns {string} - The processed article data.
  */
 export async function processExportedArticle(
-  exportData: string,
+  pageContentXML: string,
   sourceLanguage: string,
-  title: string,
   articleId: string,
-  getWikipediaHTML: (title: string, language: string) => Promise<string>
+  pageContentHTML: string
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
-  let processedData = exportData.replace(
+  let processedData = pageContentXML.replace(
     '\n    <generator>',
     '</base>\n    <generator>'
   );
@@ -320,14 +375,16 @@ export async function processExportedArticle(
   const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
-  let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
-  updatedPageContent = await replaceWikiDataHtml(
-    updatedPageContent,
-    title,
-    sourceLanguage,
-    getWikipediaHTML
+  let updatedPageContent = await parseWikidataTemplate(
+    pageContent,
+    pageContentHTML,
+    articleId,
+    new Parsoid(sourceLanguage)
   );
-
+  updatedPageContent = addSourceExternalLinks(
+    updatedPageContent,
+    sourceLanguage
+  );
   processedData =
     processedData.substring(0, pageStartIndex) +
     updatedPageContent +

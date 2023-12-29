@@ -2,15 +2,22 @@ export type ChangesItem = {
   id: string;
   content: string;
   status: 0 | 1 | 2;
-  type_of_edit: 0 | 1 | 2;
+  type_of_edit: 0 | 1 | 2 | 3;
   description: string;
   user: {
     id: string;
     email: string;
+    picture: string;
   };
   created_at: string;
   comments: Comment[];
   index: number | null;
+  revision_id: string;
+  revision: {
+    revid: number;
+    summary: string;
+  };
+  archived: boolean;
 };
 
 export type SearchResult = {
@@ -20,6 +27,7 @@ export type SearchResult = {
 };
 
 export type User = {
+  picture: string;
   email: string;
   role: UserRole;
   permissionId: string;
@@ -55,4 +63,10 @@ export enum UserRole {
 export type Permission = {
   permissionId: string;
   role: UserRole;
+};
+
+export type ShareLink = {
+  id: string;
+  article_id: string;
+  expired_at: string;
 };

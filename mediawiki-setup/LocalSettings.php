@@ -19,7 +19,7 @@ if ( !defined( 'MEDIAWIKI' ) ) {
 ## Uncomment this to disable output compression
 # $wgDisableOutputCompression = true;
 
-$wgSitename = "wikiadviser";
+$wgSitename = "WikiAdviser";
 $wgMetaNamespace = "Wikiadviser";
 
 ## The URL base path to the directory containing the wiki;
@@ -38,10 +38,15 @@ $wgResourceBasePath = $wgScriptPath;
 
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
+/* 
+Copy the repo's `docs/icons` folder into mediawiki's `$wgResourceBasePath/resources/assets`
+$wgResourceBasePath is where your mediawiki instance is installed. 
+*/
 $wgLogos = [
-	'1x' => "$wgResourceBasePath/resources/assets/change-your-logo.svg",
-	'icon' => "$wgResourceBasePath/resources/assets/change-your-logo.svg",
+	'1x' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
+	'icon' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
 ];
+$wgFavicon = "$wgResourceBasePath/resources/assets/icons/favicon.ico";
 
 ## UPO means: this is also a user preference option
 
@@ -146,6 +151,7 @@ wfLoadExtension( 'Interwiki' );
 
 $wgDefaultSkin = "vector-2022";
 wfLoadExtension( 'MyVisualEditor' );
+$wgVisualEditorEnableDiffPage = true;
 $wgDefaultRobotPolicy = 'noindex,nofollow'; // To avoid indexing the wiki by search engines.
 wfLoadExtension( 'UniversalLanguageSelector' );
 
@@ -199,3 +205,7 @@ $wgWBRepoSettings['allowEntityImport'] = true;
 
 $wgShowExceptionDetails = true;
 $wgExternalLinkTarget = '_blank';
+
+
+# Enable parsoid API
+wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );

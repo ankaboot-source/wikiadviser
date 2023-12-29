@@ -41,9 +41,8 @@
 
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
-      v-show="buttonToggle === 'edit'"
+      :button-toggle="buttonToggle"
       :article="article"
-      class="col-grow q-mr-md rounded-borders borders bg-secondary"
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 
@@ -72,6 +71,7 @@
 
 <script setup lang="ts">
 import { copyToClipboard, useQuasar } from 'quasar';
+import { createLink } from 'src/api/supabaseHelper';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/ShareCard.vue';
 import 'src/css/styles/diff.scss';
@@ -165,9 +165,8 @@ watch(
 const $q = useQuasar();
 const share = ref(false);
 async function copyShareLinkToClipboard() {
-  await copyToClipboard(
-    `${window.location.origin}/articles/${props.article.article_id}`
-  );
+  const token = await createLink(`${props.article.article_id}`);
+  await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',
     color: 'positive',

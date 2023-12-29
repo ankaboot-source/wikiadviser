@@ -81,6 +81,7 @@ module.exports = configure(function (/* ctx */) {
         MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
         WIKIADVISER_ROOT_DOMAIN: process.env.WIKIADVISER_ROOT_DOMAIN,
         WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
+        DAY_LIMIT: process.env.DAY_LIMIT,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

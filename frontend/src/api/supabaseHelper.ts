@@ -9,7 +9,7 @@ import {
   ShareLink,
 } from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { EXPIRATION_DAYS } from 'src/consts';
+import { EXPIRATION_DAYS } from 'src/utils/consts';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase

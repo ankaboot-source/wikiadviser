@@ -1,1 +1,0 @@
-DROP FUNCTION IF EXISTS insert_permissions_policy();

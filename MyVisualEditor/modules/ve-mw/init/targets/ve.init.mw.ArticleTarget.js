@@ -731,7 +731,7 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		// Not passing trackMechanism because this isn't an abort action
 		this.tryTeardown( true );
 	}
-		/* Custom WikiAdviser */
+	/* Custom WikiAdviser */
 	// On "Save Changes", update changes
 	const isIframe =  window.location !== window.parent.location;
 	if (isIframe) {

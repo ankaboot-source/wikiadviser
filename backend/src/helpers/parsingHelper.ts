@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
-import axios from 'axios';
 import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
+import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 
 function addPermissionDataToChanges(
   changesToInsert: Change[],
@@ -273,7 +273,9 @@ function generateOuterMostSelectors(classes: string[]) {
 
 async function parseWikidataTemplate(
   pageContentXML: string,
-  pageContentHTML: string
+  pageContentHTML: string,
+  articleId: string,
+  parsoidInstance: Parsoid
 ) {
   const newParsedContentXML = pageContentXML;
   const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
@@ -301,21 +303,16 @@ async function parseWikidataTemplate(
 
   const promises = Array.from(infoboxes).map(async (infobox) => {
     const infoboxHtml = cheerioAPI.html(infobox);
-    const wikiText = (
-      await axios.post(
-        // Current endpoint has request limits of 25 req/s. Migrate to using internal rest api
-        // https://www.mediawiki.org/wiki/API:REST_API/Reference#Convert_Wikitext_to_HTML
-        // https://en.wikipedia.org/api/rest_v1/#/Transforms/post_transform_html_to_wikitext
-        'https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext',
-        { html: infoboxHtml, scrub_wikitext: true }
-      )
-    ).data;
-
+    const wikiText = await parsoidInstance.ParsoidHtmlToWikitext(
+      infoboxHtml,
+      articleId
+    );
     const parsedWikitext = wikiText
       .replace(/<style[^>]*>.*<\/style>/g, '')
       .replace(/\[\[.*\/wiki\/((File|Fichier):(.*?))\]\]/g, '[[$1]]') // Fix images
       .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // remove wikidata redundant links
-      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '');
+      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '')
+      .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
 
     return encode(parsedWikitext);
   });
@@ -372,7 +369,9 @@ export async function processExportedArticle(
 
   let updatedPageContent = await parseWikidataTemplate(
     pageContent,
-    pageContentHTML
+    pageContentHTML,
+    articleId,
+    new Parsoid(sourceLanguage)
   );
   updatedPageContent = addSourceExternalLinks(
     updatedPageContent,

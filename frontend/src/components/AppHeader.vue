@@ -3,7 +3,11 @@
     <q-toolbar>
       <q-toolbar-title>
         <q-breadcrumbs class="merriweather">
-          <q-breadcrumbs-el label="WikiAdviser" icon="public" to="/" />
+          <q-breadcrumbs-el
+            label="WikiAdviser"
+            icon="img:/icons/favicon-32x32.png"
+            to="/"
+          />
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
@@ -15,7 +19,7 @@
       <q-space />
       <q-btn v-if="supabaseUser" no-caps unelevated clickable @click="settings">
         <q-avatar size="sm">
-          <img :src="supabaseUser?.user_metadata.picture" />
+          <img :src="avatarURL" />
         </q-avatar>
         <q-text class="q-pl-sm">
           {{ supabaseUser.email }}
@@ -40,15 +44,21 @@ import { useQuasar } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSupabaseUser } from '@nuxtbase/auth-ui-vue';
+import { User } from '@supabase/supabase-js';
 
 const router = useRouter();
+
+const props = defineProps<{
+  user: User | null;
+}>();
+
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const { supabaseUser } = useSupabaseUser(supabase);
+const supabaseUser = ref<User | null>(props.user);
+const avatarURL = computed(() => supabaseUser.value?.user_metadata.picture);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -62,6 +72,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
+    supabaseUser.value = null;
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

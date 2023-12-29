@@ -100,7 +100,8 @@ export class MediawikiAutomator {
   }
 }
 
-const browser = (async () => (await chromium.launch()).newContext())();
+const browser = (async () =>
+  (await chromium.launch({ headless: true })).newContext())();
 
 export const PlayAutomatorFactory = async (language: string) => {
   const context = await browser;

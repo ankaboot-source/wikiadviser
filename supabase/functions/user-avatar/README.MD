@@ -39,8 +39,8 @@ curl --request POST 'http://localhost:54321/functions/v1/user-avatar' \
 
 ```js
 // Generate a new avatar to the user.
-await supabase.rpc('user-avatar', { method: 'POST' });
+await supabase.functions.invoke('user-avatar', { method: 'POST' });
 
 // Sets user avatar to default.
-await supabase.rpc('user-avatar', { method: 'DELETE' });
+await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
 ```

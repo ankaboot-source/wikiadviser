@@ -30,7 +30,7 @@ onMounted(async () => {
 });
 
 async function revertImage() {
-  await supabase.rpc('user-avatar', { method: 'DELETE' });
+  await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
 }
 
 function showWarning() {

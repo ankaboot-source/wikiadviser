@@ -32,8 +32,7 @@ function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
         description: change.description,
         type_of_edit: change.type_of_edit,
         contributor_id: change.contributor_id,
-        revision_id: change.revision_id,
-        section: change.section
+        revision_id: change.revision_id
       });
     }
   }
@@ -137,8 +136,6 @@ export async function refineArticleChanges(
         });
       }
 
-      const section = $element.closest('p').attr('id');
-
       // Remove data-diff-id & data-parsoid Attributes
       $wrapElement.find('[data-diff-id]').each((_, el) => {
         CheerioAPI(el).removeAttr('data-diff-id');
@@ -150,7 +147,6 @@ export async function refineArticleChanges(
       // Add the description and the type of edit and update the element.
       $wrapElement.attr('data-description', list.join('\n'));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
-      $wrapElement.attr('data-section', section);
 
       $element.replaceWith($wrapElement);
     }
@@ -180,15 +176,13 @@ export async function refineArticleChanges(
       | 'remove'
       | 'remove-insert'
       | 'structural-change';
-    const section = $element.attr('data-section');
 
     for (const change of changes) {
       const $changeContent = load(change.content, null, false);
       const changeContentInnerHTML = $changeContent('span:first').html();
       if (
         TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
-        $element.html() === changeContentInnerHTML &&
-        section === change.section
+        $element.html() === changeContentInnerHTML
       ) {
         // Update the change INDEX
         changeId = change.id;
@@ -203,8 +197,7 @@ export async function refineArticleChanges(
           description: change.description,
           type_of_edit: change.type_of_edit,
           contributor_id: change.contributor_id,
-          revision_id: change.revision_id,
-          section: change.section
+          revision_id: change.revision_id
         });
         changeIndex += 1;
         break;
@@ -221,8 +214,7 @@ export async function refineArticleChanges(
         description,
         type_of_edit: TypeOfEditDictionary[typeOfEdit],
         index: changeIndex,
-        revision_id,
-        section
+        revision_id
       });
       changeIndex += 1;
     }
@@ -260,7 +252,6 @@ export function parseArticle(article: Article, changes: Change[]) {
     $element.attr('data-status', String(changes[index].status));
     $element.attr('data-index', String(changes[index].index));
     $element.attr('data-id', changes[index].id);
-    $element.attr('data-section', changes[index].section);
   });
   return CheerioAPI.html();
 }

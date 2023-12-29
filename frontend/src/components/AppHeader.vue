@@ -17,7 +17,7 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated clickable @click="settings">
+      <q-btn v-if="supabaseUser" no-caps unelevated @click="settings">
         <q-avatar size="sm">
           <img :src="avatarURL" />
         </q-avatar>

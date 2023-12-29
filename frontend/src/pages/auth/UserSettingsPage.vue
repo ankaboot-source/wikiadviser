@@ -29,8 +29,8 @@ onMounted(async () => {
   });
 });
 
-function removeImage() {
-  // TODO:
+async function revertIamge() {
+  await supabase.rpc('user-avatar', { method: 'DELETE' });
 }
 
 function showWarning() {
@@ -111,7 +111,7 @@ async function deleteAccount() {
               label="Revert to default avatar"
               color="primary"
               unelevated
-              @click="removeImage"
+              @click="revertIamge"
             />
           </div>
         </div>

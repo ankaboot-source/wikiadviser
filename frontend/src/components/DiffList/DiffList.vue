@@ -1,7 +1,7 @@
 <template>
   <div class="column">
     <div class="text-h6 q-px-sm q-pb-sm">
-      <q-icon size="sm" name="model_training" /> Changes in progress
+      <q-icon size="sm" name="model_training" /> Changes to review
     </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
@@ -75,10 +75,7 @@ const props = defineProps<{
   changesList: ChangesItem[];
 }>();
 
-const indexedChanges = computed(() =>
-  props.changesList.filter((item) => item.index !== null && !item.archived)
-);
-const groupedIndexedChanges = computed(() => {
+const groupedChanges = computed(() => {
   const grouped = new Map<
     number,
     {
@@ -88,7 +85,7 @@ const groupedIndexedChanges = computed(() => {
     }
   >();
 
-  indexedChanges.value.forEach((item) => {
+  props.changesList.forEach((item) => {
     const revision = item.revision.revid;
     const summary = item.revision.summary;
     if (!grouped.has(revision)) {
@@ -102,8 +99,26 @@ const groupedIndexedChanges = computed(() => {
     grouped.get(revision)?.items.push(item);
   });
 
-  return Array.from(grouped.values()).sort((a, b) => b.revision - a.revision);
+  const sortedGrouped = Array.from(grouped.values()).sort(
+    (a, b) => b.revision - a.revision
+  );
+
+  return sortedGrouped.map((item, index) => ({
+    index: sortedGrouped.length - index,
+    ...item,
+  }));
 });
+
+const groupedIndexedChanges = computed(() =>
+  groupedChanges.value
+    .map((groupedItem) => ({
+      ...groupedItem,
+      items: groupedItem.items.filter(
+        (item) => item.index !== null && !item.archived
+      ),
+    }))
+    .filter((groupedItem) => groupedItem.items.length > 0)
+);
 
 const archivedChanges = computed(() =>
   props.changesList.filter((item) => item.archived)
@@ -111,7 +126,6 @@ const archivedChanges = computed(() =>
 const unindexedChanges = computed(() =>
   props.changesList.filter((item) => item.index === null)
 );
-
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value)
 );
@@ -131,3 +145,8 @@ watch(
   }
 );
 </script>
+<style>
+.q-scrollarea__content {
+  width: inherit !important;
+}
+</style>

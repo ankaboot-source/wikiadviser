@@ -18,8 +18,8 @@
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="supabaseUser" no-caps unelevated>
-        <q-avatar size="sm">
-          <img :src="supabaseUser?.user_metadata.picture" />
+        <q-avatar size="xs">
+          <img :src="avatarURL" />
         </q-avatar>
         <q-text class="q-pl-sm">
           {{ supabaseUser.email }}
@@ -44,14 +44,19 @@ import { useQuasar } from 'quasar';
 import { useRoute } from 'vue-router';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSupabaseUser } from '@nuxtbase/auth-ui-vue';
+import { User } from '@supabase/supabase-js';
+
+const props = defineProps<{
+  user: User | null;
+}>();
 
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const { supabaseUser } = useSupabaseUser(supabase);
+const supabaseUser = ref<User | null>(props.user);
+const avatarURL = computed(() => supabaseUser.value?.user_metadata.picture);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;

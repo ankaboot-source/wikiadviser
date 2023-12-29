@@ -10,22 +10,18 @@
     @mouseleave="setHovered('')"
   >
     <template #header>
-      <q-item-section class="text-body2">
-        <q-item-label>
-          <q-avatar
-            text-color="blue-grey-10"
-            :icon="statusDictionary.get(props.item?.status)!.icon"
-            color="white"
-            size="lg"
-          >
+      <q-item-section avatar>
+        <q-item-label class="row">
+          <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
             <q-tooltip anchor="top middle" self="bottom middle">
-              {{ statusDictionary.get(props.item?.status)!.message }}
+              {{ statusMessage }}
             </q-tooltip>
-          </q-avatar>
+          </q-icon>
 
           <q-icon
             v-if="pastChange?.icon"
             color="blue-grey-10"
+            class="q-ml-sm"
             :name="pastChange.icon"
             size="sm"
           >
@@ -34,29 +30,34 @@
             </q-tooltip>
           </q-icon>
         </q-item-label>
+      </q-item-section>
 
-        <q-item-label v-if="!expanded" class="q-pa-xs" lines="3">
+      <q-item-section>
+        <q-item-label v-if="!expanded" class="q-pa-xs word_break_all" lines="3">
           <div @click="preventLinkVisit($event)" v-html="previewItem" />
           <q-tooltip v-if="previewDescription">
             {{ previewDescription }}
           </q-tooltip>
         </q-item-label>
       </q-item-section>
-
-      <q-item-section caption top side lines="2">
-        <span class="text-black">
+      <q-item-section
+        v-if="expanded && !!pastChange"
+        side
+        caption
+        class="text-right"
+      >
+        <div class="text-black">
           <q-avatar size="sm">
             <img :src="props.item?.user.picture" />
           </q-avatar>
           {{ props.item?.user.email }}
-        </span>
-        <span style="size: 0.5rem">
-          {{ new Date(props.item?.created_at).toLocaleTimeString() }}
-          <br />
-          {{ new Date(props.item.created_at).toLocaleDateString() }}
-        </span>
+        </div>
+        <div style="size: 0.5rem">
+          {{ localeDateString }} at {{ localeTimeString }}
+        </div>
       </q-item-section>
     </template>
+
     <q-separator />
 
     <q-item-section>
@@ -69,7 +70,7 @@
         ></div>
         <div
           v-else
-          class="q-pl-md text-left text-body-2"
+          class="q-pl-md text-left text-body-2 word_break_all"
           @click="preventLinkVisit($event)"
           v-html="props.item.content"
         ></div>
@@ -317,6 +318,13 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
+const statusIcon = computed(
+  () => statusDictionary.get(props.item?.status)!.icon
+);
+
+const statusMessage = computed(
+  () => statusDictionary.get(props.item?.status)!.message
+);
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
   event.preventDefault();
@@ -333,7 +341,7 @@ async function handleDescription() {
 
 const isArchived = computed(() => props.item.archived);
 const archiveButton = computed(() => {
-  return isArchived.value ? 'unarchive' : 'archive';
+  return isArchived.value ? 'reopen' : 'archive';
 });
 
 async function archiveChange(archived = true) {
@@ -366,6 +374,13 @@ watch(
 function setHovered(value: string) {
   store.hoveredChangeId = value;
 }
+
+const localeDateString = computed(() =>
+  new Date(props.item?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.item?.created_at).toLocaleTimeString()
+);
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

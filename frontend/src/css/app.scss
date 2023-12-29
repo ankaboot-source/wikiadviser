@@ -143,6 +143,10 @@
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
+.word_break_all {
+  word-break: break-all;
+}
+
 /* Custom Global Scrollbar (except the scroll area ones) */
 ::-webkit-scrollbar {
   height: 12px;

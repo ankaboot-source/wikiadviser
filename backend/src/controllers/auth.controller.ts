@@ -78,14 +78,14 @@ export default async function restrictMediawikiAccess(
 
 export async function deleteUser(
   req: Request,
-  _res: Response,
+  res: Response,
   next: NextFunction
 ) {
   try {
-    const { id } = req.params;
+    const { id } = res.locals.user;
 
     await supabase.auth.admin.updateUserById(id, {
-      email: `${id}@anony`
+      email: `${id}@anon`
     });
 
     next({});

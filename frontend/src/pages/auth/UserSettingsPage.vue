@@ -29,7 +29,7 @@ onMounted(async () => {
   });
 });
 
-async function revertIamge() {
+async function revertImage() {
   await supabase.rpc('user-avatar', { method: 'DELETE' });
 }
 
@@ -55,8 +55,7 @@ async function deleteAccount() {
     html: true,
   });
   try {
-    const user = (await supabase.auth.getSession()).data.session?.user;
-    await deleteUser(user?.id as string);
+    await deleteUser();
     $q.loading.hide();
     $q.notify({
       message: 'User deleted.',
@@ -111,7 +110,7 @@ async function deleteAccount() {
               label="Revert to default avatar"
               color="primary"
               unelevated
-              @click="revertIamge"
+              @click="revertImage"
             />
           </div>
         </div>

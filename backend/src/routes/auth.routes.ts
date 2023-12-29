@@ -6,6 +6,6 @@ import restrictMediawikiAccess, {
 const authRouter = Router();
 
 authRouter.get('/auth/mediawiki', restrictMediawikiAccess);
-authRouter.delete('/auth/:id', deleteUser);
+authRouter.delete('/auth', deleteUser);
 
 export default authRouter;

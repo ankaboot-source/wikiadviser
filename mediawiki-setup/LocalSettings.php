@@ -205,3 +205,7 @@ $wgWBRepoSettings['allowEntityImport'] = true;
 
 $wgShowExceptionDetails = true;
 $wgExternalLinkTarget = '_blank';
+
+
+# Enable parsoid API
+wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );

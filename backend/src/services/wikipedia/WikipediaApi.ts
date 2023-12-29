@@ -109,9 +109,8 @@ export class WikipediaApi implements WikipediaInteractor {
         exportData = await processExportedArticle(
           exportData,
           language,
-          title,
           articleId,
-          this.getWikipediaHTML.bind(this)
+          await this.getWikipediaHTML(title, language)
         );
         resolve(exportData);
       });

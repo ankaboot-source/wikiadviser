@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
-import logger from '../logger';
 import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
+import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 
 function addPermissionDataToChanges(
   changesToInsert: Change[],
@@ -279,63 +279,70 @@ function generateOuterMostSelectors(classes: string[]) {
     .join(', ');
 }
 
-async function replaceWikiDataHtml(
-  updatedPageContent: string,
-  title: string,
-  sourceLanguage: string,
-  getWikipediaHTML: (title: string, language: string) => Promise<string>
+async function parseWikidataTemplate(
+  pageContentXML: string,
+  pageContentHTML: string,
+  articleId: string,
+  parsoidInstance: Parsoid
 ) {
-  if (/{{(Infobox|Taxobox)[\s\S]*?}}/.test(updatedPageContent)) {
-    const articleXML = await getWikipediaHTML(title, sourceLanguage);
-    const CheerioAPI = load(articleXML);
-    const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
-    const infoboxes = CheerioAPI(generateOuterMostSelectors(infoboxClasses));
-    if (infoboxes.html()?.toLowerCase().includes('wikidata')) {
-      // Remove unnecessary elements within the infobox
-      infoboxes.find('.wikidata-linkback, .navbar').remove();
-      // Replace image source within the infobox
-      infoboxes
-        .find('img')
-        .attr('src', (_, src) =>
-          src?.replace(/^\/media/, 'https://upload.wikimedia.org')
-        );
+  const newParsedContentXML = pageContentXML;
+  const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
-      const infoboxesEscaped: string[] = [];
-      for (const infobox of infoboxes) {
-        const infoboxEscaped = encode(
-          `<html>${CheerioAPI.html(infobox)}</html>`,
-          {
-            level: 'xml'
-          }
-        );
-        infoboxesEscaped.push(infoboxEscaped);
-      }
-      let somethingUnexpectedHappend = false;
-      const infoboxUpdatedContent = updatedPageContent.replace(
-        /{{(Infobox|Taxobox)[\s\S]*?}}/g,
-        () => {
-          const escapedInfobox = infoboxesEscaped.shift();
-          if (!escapedInfobox) {
-            somethingUnexpectedHappend = true;
-            return '';
-          }
-          return escapedInfobox;
-        }
-      );
-      if (!somethingUnexpectedHappend) {
-        return infoboxUpdatedContent;
-      }
-      logger.error(
-        `Unexpected error while processing infoboxes in article: ${title}`
-      );
-    }
+  const wikidataTemplateRegex = /{{(Infobox|Taxobox)[\s\S]*?}}/;
+
+  const hasInfoboxTemplate = wikidataTemplateRegex.test(newParsedContentXML);
+
+  if (!hasInfoboxTemplate) {
+    return newParsedContentXML;
   }
-  return updatedPageContent;
+
+  const cheerioAPI = load(pageContentHTML);
+  const infoboxes = cheerioAPI(generateOuterMostSelectors(infoboxClasses));
+  const isWikidataTemplate = infoboxes
+    .html()
+    ?.toLowerCase()
+    .includes('wikidata');
+
+  if (!isWikidataTemplate) {
+    return newParsedContentXML;
+  }
+
+  infoboxes.find('.wikidata-linkback, .navbar').remove();
+
+  const promises = Array.from(infoboxes).map(async (infobox) => {
+    const infoboxHtml = cheerioAPI.html(infobox);
+    const wikiText = await parsoidInstance.ParsoidHtmlToWikitext(
+      infoboxHtml,
+      articleId
+    );
+    const parsedWikitext = wikiText
+      .replace(/<style[^>]*>.*<\/style>/g, '')
+      .replace(/\[\[.*\/wiki\/((File|Fichier):(.*?))\]\]/g, '[[$1]]') // Fix images
+      .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // remove wikidata redundant links
+      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '')
+      .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
+
+    return encode(parsedWikitext);
+  });
+
+  const parsedInfoboxes = await Promise.all(promises);
+
+  const infoboxUpdatedContent = newParsedContentXML.replace(
+    /{{(Infobox|Taxobox)[\s\S]*?}}/g,
+    () => {
+      const escapedInfobox = parsedInfoboxes.shift();
+      if (escapedInfobox === undefined) {
+        throw new Error('Failed to parse all wikidata template');
+      }
+      return escapedInfobox;
+    }
+  );
+  return infoboxUpdatedContent;
 }
 
 function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
   return pageContent.replace(
-    /\[\[(?!File:)([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
+    /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
       `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
@@ -346,14 +353,13 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  * @returns {string} - The processed article data.
  */
 export async function processExportedArticle(
-  exportData: string,
+  pageContentXML: string,
   sourceLanguage: string,
-  title: string,
   articleId: string,
-  getWikipediaHTML: (title: string, language: string) => Promise<string>
+  pageContentHTML: string
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
-  let processedData = exportData.replace(
+  let processedData = pageContentXML.replace(
     '\n    <generator>',
     '</base>\n    <generator>'
   );
@@ -369,14 +375,16 @@ export async function processExportedArticle(
   const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
-  let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
-  updatedPageContent = await replaceWikiDataHtml(
-    updatedPageContent,
-    title,
-    sourceLanguage,
-    getWikipediaHTML
+  let updatedPageContent = await parseWikidataTemplate(
+    pageContent,
+    pageContentHTML,
+    articleId,
+    new Parsoid(sourceLanguage)
   );
-
+  updatedPageContent = addSourceExternalLinks(
+    updatedPageContent,
+    sourceLanguage
+  );
   processedData =
     processedData.substring(0, pageStartIndex) +
     updatedPageContent +

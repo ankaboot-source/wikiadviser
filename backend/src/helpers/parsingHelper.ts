@@ -73,24 +73,22 @@ export async function refineArticleChanges(
       let typeOfEdit: string = diffAction;
 
       // Wrapping related changes: Check if next node is an element (Not a text node)
-      // AND if the current element has "change-remove" | 'remove' diffAction
+      // AND if the current element has "change-remove" | "remove" diffAction
       const node = $element[0].next as ChildNodeData | null;
       if (
         !node?.data?.trim() &&
         (diffAction === 'change-remove' || diffAction === 'remove')
       ) {
         const $nextElement = $element.next();
-        // Check if the next element has "change-insert" diff action
-        if (
-          $nextElement.data('diff-action') === 'change-insert' ||
-          $nextElement.data('diff-action') === 'insert'
-        ) {
+        const nextTypeOfEdit = $nextElement.data('diff-action');
+        // Check if the next element has "change-insert" | "insert" diff action
+
+        if (nextTypeOfEdit === 'insert' || nextTypeOfEdit === 'change-insert') {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
-          typeOfEdit = 'remove-insert';
-          if ($nextElement.data('diff-action') === 'change-insert') {
-            // change-remove is always succeeded by a change-insert
-            typeOfEdit = 'change';
+          typeOfEdit = nextTypeOfEdit === 'insert' ? 'remove-insert' : 'change';
+
+          if (nextTypeOfEdit === 'change-insert') {
             const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
               .children()
               .eq((changeid += 1))
@@ -100,7 +98,6 @@ export async function refineArticleChanges(
               list.push(CheerioAPI(elem).text());
             });
           }
-
           // Remove the last element
           $nextElement.remove();
         }
@@ -118,7 +115,7 @@ export async function refineArticleChanges(
           let description = '';
           CheerioAPI(elem)
             .find('del')
-            .replaceWith(function () {
+            .replaceWith(function strikeThrough() {
               return `${createStrikethroughText(CheerioAPI(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
             });
 

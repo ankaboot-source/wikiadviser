@@ -4,6 +4,9 @@
 			"Astahar"
 		]
 	},
+	"tag-editcheck-newcontent-description": "EditCheck шутланӑ тӑрӑх, страницӑна ҫӗнӗ контент хушӑ",
+	"tag-editcheck-newreference-description": "Страницӑна каҫӑ хушӑннӑ",
+	"tag-editcheck-references-description": "EditCheck шутланӑ тӑрӑх кунта каҫӑ хушмалла",
 	"tag-visualeditor": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|курӑмлӑ редакторпа]]",
 	"tag-visualeditor-description": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|Курӑмлӑ редакторпа]] тунӑ тӳрлетӳсем",
 	"tag-visualeditor-needcheck": "[[{{MediaWiki:visualeditor-descriptionpagelink}}|курӑмлӑ редакторпа]]: тӗрӗсле",

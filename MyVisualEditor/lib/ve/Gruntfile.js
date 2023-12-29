@@ -217,7 +217,7 @@ module.exports = function ( grunt ) {
 				demoPages: demoPages
 			},
 			desktopDemoWikimediaUIDist: {
-				targetFile: 'demos/ve/desktop-wikimediaui-dist.html',
+				targetFile: 'demos/ve/desktop-dist-wikimediaui.html',
 				template: 'demos/ve/demo.html.template',
 				modules: modules,
 				load: [
@@ -379,7 +379,9 @@ module.exports = function ( grunt ) {
 					ChromeCustom: {
 						base: 'ChromeHeadless',
 						// Chrome requires --no-sandbox in Docker/CI.
-						flags: ( process.env.CHROMIUM_FLAGS || '' ).split( ' ' )
+						flags: process.env.CHROMIUM_FLAGS ?
+							process.env.CHROMIUM_FLAGS.split( ' ' ) :
+							undefined
 					}
 				},
 				autoWatch: false

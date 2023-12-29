@@ -24,7 +24,7 @@ onBeforeMount(async () => {
       <q-card class="q-pa-sm column" flat style="width: 80vw">
         <q-card-section v-if="!valid" class="text-center" padding>
           <q-img
-            src="~assets/invalid-link.svg"
+            src="/images/invalid-link.svg"
             spinner-color="white"
             alt="invalid link"
             height="20.25vh"

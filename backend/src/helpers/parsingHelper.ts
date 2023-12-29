@@ -86,6 +86,7 @@ export async function refineArticleChanges(
         if (nextTypeOfEdit === 'insert' || nextTypeOfEdit === 'change-insert') {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
+
           typeOfEdit = nextTypeOfEdit === 'insert' ? 'remove-insert' : 'change';
 
           if (nextTypeOfEdit === 'change-insert') {

@@ -190,7 +190,7 @@
         display: none !important;
       }
 
-      /* to hide Menu** */
+      /* to hide Menu */
       .vector-main-menu-landmark {
         display: none !important;
       }

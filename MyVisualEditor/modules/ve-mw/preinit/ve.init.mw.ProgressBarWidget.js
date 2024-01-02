@@ -32,9 +32,14 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
 	
 	/* Custom WikiAdviser */
-	// Remove non editor distractions
-	document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});
-	document.querySelectorAll('.mw-page-container-inner, .mw-content-container').forEach((element) => {element.removeAttribute('class')});
+	try {
+		// Click on Hide TOC button
+		document.querySelector('button[data-event-name="pinnable-header.vector-toc.unpin"]').click();
+		// Click on Full width layout button
+		document.querySelector('button[data-event-name="limited-width-toggle-off"]').click();
+	  } catch (error) {
+		console.error('An error occurred while trying to Hide TOC or make the layout full width:', error.message);
+	  }
 	/* End Custom WikiAdviser */
 };
 

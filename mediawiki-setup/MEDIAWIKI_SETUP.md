@@ -155,15 +155,8 @@
         display: none !important;
       }
 
-      /* to hide "Notice" button */
-      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-iconElement.oo-ui-tool-with-icon.oo-ui-tool.oo-ui-tool-name-notices.oo-ui-popupTool.ve-ui-mwPopupTool {
-        display: none !important;
-      }
-
-      /* to hide 'Notice" popup */
-      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top:nth-child(
-          2
-        ) {
+      /* to hide "Notice" popup */
+      .oo-ui-popupWidget-popup {
         display: none !important;
       }
 
@@ -192,12 +185,12 @@
         display: none !important;
       }
 
-      /* Login, Create account */
+      /* to hide header of Login, Create account */
       .vector-header-end {
         display: none !important;
       }
 
-      /* Menu */
+      /* to hide Menu** */
       .vector-main-menu-landmark {
         display: none !important;
       }

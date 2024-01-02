@@ -185,7 +185,7 @@
         display: none !important;
       }
 
-      /* to hide header of Login, Create account */
+      /* to hide header: Login, Create account */
       .vector-header-end {
         display: none !important;
       }

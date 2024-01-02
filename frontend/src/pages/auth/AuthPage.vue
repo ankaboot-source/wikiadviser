@@ -7,7 +7,6 @@
         </p>
         <Auth
           v-model:view="authView"
-          style="font-family: Lexend Deca !important"
           social-layout="vertical"
           :supabase-client="supabaseClient"
           :redirect-to="callbackURL"

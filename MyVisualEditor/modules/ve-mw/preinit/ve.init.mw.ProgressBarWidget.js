@@ -32,9 +32,12 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
 	
 	/* Custom WikiAdviser */
-	// Remove non editor distractions
-	document.querySelectorAll('.mw-page-container-inner > :not(.mw-content-container), .vector-article-toolbar').forEach((element) => {element.remove()});
-	document.querySelectorAll('.mw-page-container-inner, .mw-content-container').forEach((element) => {element.removeAttribute('class')});
+	try {
+		// Make inner page full width and hide left bar (TOC)
+		document.querySelectorAll('.mw-page-container-inner, .mw-body')?.forEach((element) => {element?.removeAttribute('class')});
+	  } catch (error) {
+		console.error('An error occurred while trying to hide non editor distractions', error.message);
+	  }
 	/* End Custom WikiAdviser */
 };
 

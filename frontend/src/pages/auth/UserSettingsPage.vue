@@ -33,6 +33,10 @@ async function revertImage() {
   await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
 }
 
+function defaultImage() {
+  return picture.value.indexOf('https://ui-avatars.com/api/') != -1;
+}
+
 function showWarning() {
   showDeleteModal.value = true;
 }
@@ -103,6 +107,7 @@ async function deleteAccount() {
             <img :src="picture" class="full-width" />
             <br />
             <q-btn
+              v-if="!defaultImage()"
               no-caps
               outline
               class="text-sm full-width"

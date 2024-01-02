@@ -194,6 +194,11 @@
       .vector-main-menu-landmark {
         display: none !important;
       }
+
+      /* to hide Tools right bar */
+      .vector-column-end {
+        display: none !important;
+      }
       ```
 
       </details>

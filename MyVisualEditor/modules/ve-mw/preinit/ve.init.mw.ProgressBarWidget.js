@@ -34,9 +34,9 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	/* Custom WikiAdviser */
 	try {
 		// Click on Hide TOC button
-		document.querySelector('button[data-event-name="pinnable-header.vector-toc.unpin"]').click();
+		document.querySelector('button[data-event-name="pinnable-header.vector-toc.unpin"]')?.click();
 		// Click on Full width layout button
-		document.querySelector('button[data-event-name="limited-width-toggle-off"]').click();
+		document.querySelector('button[data-event-name="limited-width-toggle-off"]')?.click();
 	  } catch (error) {
 		console.error('An error occurred while trying to Hide TOC or make the layout full width:', error.message);
 	  }

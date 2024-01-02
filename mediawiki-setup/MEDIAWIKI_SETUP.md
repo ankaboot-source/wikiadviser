@@ -140,27 +140,27 @@
     - <details> <summary> Add CSS rules: </summary>
 
       ```css
-      /* to hide the discussion tab */
+      /* hide the discussion tab */
       #ca-talk {
         display: none !important;
       }
 
-      /* to hide the "View History" tab */
+      /* hide the "View History" tab */
       #ca-history {
         display: none !important;
       }
 
-      /* to hide the "Add languages" menu. */
+      /* hide the "Add languages" menu. */
       .vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang {
         display: none !important;
       }
 
-      /* to hide "Notice" popup */
+      /* hide "Notice" popup */
       .oo-ui-popupWidget-popup {
         display: none !important;
       }
 
-      /* to hide "Read the user guide & Leave feedback about this software" list items */
+      /* hide "Read the user guide & Leave feedback about this software" list items */
       .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(
           1
         ),
@@ -170,33 +170,38 @@
         display: none !important;
       }
 
-      /* to hide "Warning to log in" in edit source */
+      /* hide "Warning to log in" in edit source */
       .mw-message-box-warning.mw-anon-edit-warning.mw-message-box {
         display: none !important;
       }
 
-      /* to hide "Search bar" in edit source */
+      /* hide "Search bar" in edit source */
       .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
         display: none !important;
       }
 
-      /* to hide footer */
+      /* hide footer */
       .mw-footer-container {
         display: none !important;
       }
 
-      /* to hide header: Login, Create account */
+      /* hide header: Login, Create account */
       .vector-header-end {
         display: none !important;
       }
 
-      /* to hide Menu */
+      /* hide Menu */
       .vector-main-menu-landmark {
         display: none !important;
       }
 
-      /* to hide Tools right bar */
+      /* hide right bar (Tools) */
       .vector-column-end {
+        display: none !important;
+      }
+
+      /* hide "Add Languages" button */
+      #p-lang-btn {
         display: none !important;
       }
       ```

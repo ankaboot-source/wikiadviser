@@ -43,7 +43,7 @@ function goToHome() {
 
 async function deleteAccount() {
   $q.loading.show({
-    boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
+    boxClass: 'bg-white text-dark q-pa-xl',
 
     spinner: QSpinnerGrid,
     spinnerColor: 'primary',

@@ -6,8 +6,8 @@
         no-caps
         unelevated
         toggle-color="blue-grey-2"
-        toggle-text-color="blue-grey-10"
-        text-color="blue-grey-10"
+        toggle-text-color="dark"
+        text-color="dark"
         color="bg-secondary"
         class="borders"
         :options="toggleOptions"
@@ -16,7 +16,6 @@
       <q-btn
         v-if="role != UserRole.Viewer"
         icon="link"
-        color="blue-grey-10"
         outline
         label="Share link"
         no-caps
@@ -26,7 +25,6 @@
       <q-btn
         v-if="role != UserRole.Viewer"
         icon="o_group"
-        color="blue-grey-10"
         outline
         label="Share"
         no-caps

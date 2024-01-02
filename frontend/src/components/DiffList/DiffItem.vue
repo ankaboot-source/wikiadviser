@@ -12,7 +12,7 @@
     <template #header>
       <q-item-section avatar>
         <q-item-label class="row">
-          <q-icon color="blue-grey-10" :name="statusIcon" size="sm">
+          <q-icon :name="statusIcon" size="sm">
             <q-tooltip anchor="top middle" self="bottom middle">
               {{ statusMessage }}
             </q-tooltip>
@@ -20,7 +20,6 @@
 
           <q-icon
             v-if="pastChange?.icon"
-            color="blue-grey-10"
             class="q-ml-sm"
             :name="pastChange.icon"
             size="sm"
@@ -154,7 +153,6 @@
         <q-btn
           no-caps
           outline
-          color="blue-grey-10"
           class="bg-white"
           label="Close"
           @click="expanded = false"
@@ -174,7 +172,7 @@
               no-caps
               icon="thumb_down"
               color="red-1"
-              text-color="red-10"
+              text-color="negative"
               label="Reject"
               unelevated
               @click="handleReview(Status.EditRejected)"
@@ -183,7 +181,7 @@
               no-caps
               icon="thumb_up"
               color="green-1"
-              text-color="green-10"
+              text-color="positive"
               label="Approve"
               unelevated
               @click="handleReview(Status.EditApproved)"
@@ -194,7 +192,6 @@
               no-caps
               :icon="archiveButton"
               outline
-              color="blue-grey-10"
               class="bg-white text-capitalize"
               :label="archiveButton"
               @click="archiveChange(!isArchived)"

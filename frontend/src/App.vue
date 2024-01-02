@@ -1,6 +1,6 @@
 <template>
   <template v-if="loading"></template>
-  <q-layout v-else view="hHh lpR fFf">
+  <q-layout v-else view="hHh lpR fFf" class="text-dark">
     <app-header :user="user" />
     <q-page-container>
       <q-page class="flex">

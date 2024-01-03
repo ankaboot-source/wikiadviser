@@ -175,7 +175,7 @@ export default class MediawikiClient {
       await this.mediawikiAutomator.importMediaWikiPage(articleId, exportData);
       logger.info(`Successfully imported file ${title}`);
     } catch (error) {
-      logger.error(`Error importing article ${title}`, error);
+      logger.error(error, `Error importing article ${title}`);
       throw error;
     }
   }

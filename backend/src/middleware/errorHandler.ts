@@ -14,6 +14,6 @@ export default function errorHandler(
     message: error.message
   };
 
-  logger.error(error.message, error);
+  logger.error(error);
   return res.status(code).send({ ...response });
 }

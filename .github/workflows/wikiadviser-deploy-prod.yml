@@ -22,6 +22,8 @@ jobs:
           WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
           WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT }}
 
+          NODE_ENV: ${{vars.NODE_ENV}}
+
           WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
 
           MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT }}
@@ -37,7 +39,7 @@ jobs:
           host: ${{ vars.WIKIADVISER_PROD_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER_PROD }}
           username: ${{ secrets.SSH_USERNAME_WIKIADVISER_PROD }}
-          envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_PROD_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROD_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_ROOT_DOMAIN,SENTRY_DSN,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,DAY_LIMIT
+          envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_PROD_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROD_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_ROOT_DOMAIN,SENTRY_DSN,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,DAY_LIMIT,NODE_ENV
           script: |
             wikiadviser_path="/home/wikiadviser-prod/wikiadviser"
 
@@ -69,11 +71,12 @@ jobs:
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
-            
+
             echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env         
 
             echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
             echo "SENTRY_DSN=$SENTRY_DSN" >> $wikiadviser_path/.env
+            echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \
@@ -99,7 +102,7 @@ jobs:
             wikiadviser_path="/home/wiki-user/wikiadviser"
             visual_editor_folder_name="MyVisualEditor"
             extensions_base_path="/var/www/wiki-${{ matrix.env }}"
-            
+
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
@@ -109,7 +112,7 @@ jobs:
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
-            
+
             # Copy Visual Editor to Extensions
             cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
 

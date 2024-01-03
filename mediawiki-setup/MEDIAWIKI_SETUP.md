@@ -156,7 +156,12 @@
       }
 
       /* hide "Notice" popup */
-      .oo-ui-popupWidget-popup {
+      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
+        display: none !important;
+      }
+
+      /* hide "Notice" button in toolbar */
+      .ve-ui-toolbar-group-notices {
         display: none !important;
       }
 

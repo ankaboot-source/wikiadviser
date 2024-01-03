@@ -6,7 +6,7 @@
           Create your new password
         </p>
         <Auth
-          :view="'update_password'"
+          view="update_password"
           :supabase-client="supabaseClient"
           :appearance="{
             theme: ThemeSupa,
@@ -43,7 +43,7 @@ const $quasar = useQuasar();
 
 const hasUpdatedPassword = ref(false);
 
-watch(hasUpdatedPassword, async (updated: boolean) => {
+watch(hasUpdatedPassword, (updated: boolean) => {
   if (updated) {
     $quasar.notify({
       message: 'Your password has been successfully updated',

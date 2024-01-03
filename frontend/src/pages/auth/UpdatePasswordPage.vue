@@ -6,7 +6,7 @@
           Create your new password
         </p>
         <Auth
-          :view="'update_password'"
+          view="update_password"
           :supabase-client="supabaseClient"
           :appearance="{
             theme: ThemeSupa,
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { Auth } from '@nuxtbase/auth-ui-vue';
 import supabaseClient from 'src/api/supabase';
 import { ref, watch } from 'vue';
@@ -43,7 +43,7 @@ const $quasar = useQuasar();
 
 const hasUpdatedPassword = ref(false);
 
-watch(hasUpdatedPassword, async (updated: boolean) => {
+watch(hasUpdatedPassword, (updated: boolean) => {
   if (updated) {
     $quasar.notify({
       message: 'Your password has been successfully updated',
@@ -53,8 +53,8 @@ watch(hasUpdatedPassword, async (updated: boolean) => {
   }
 });
 
-supabaseClient.auth.onAuthStateChange((event, _) => {
-  if (event == 'USER_UPDATED') {
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === 'USER_UPDATED') {
     hasUpdatedPassword.value = true;
   }
 });

@@ -6,7 +6,7 @@
           {{ message }}
         </p>
         <Auth
-          v-model="authView"
+          :view="authView"
           social-layout="vertical"
           :supabase-client="supabaseClient"
           :redirect-to="callbackURL"

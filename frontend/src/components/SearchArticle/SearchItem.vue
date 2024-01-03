@@ -1,6 +1,6 @@
 <template>
   <q-item
-    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
+    class="q-pa-sm q-mb-sm borders rounded-borders"
     clickable
     @click="itemOnClick"
   >
@@ -66,7 +66,7 @@ async function itemOnClick() {
     }
 
     $q.loading.show({
-      boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
+      boxClass: 'bg-white text-dark q-pa-xl',
 
       spinner: QSpinnerGrid,
       spinnerColor: 'primary',

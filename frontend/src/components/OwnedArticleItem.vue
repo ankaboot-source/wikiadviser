@@ -1,6 +1,6 @@
 <template>
   <q-item
-    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
+    class="q-pa-sm q-mb-sm borders rounded-borders text-dark"
     clickable
     @click="gotoArticle(article.article_id)"
   >
@@ -15,13 +15,13 @@
           </div>
           <div class="row">
             <q-badge
-              text-color="light-blue-10"
+              text-color="info"
               color="light-blue-1"
               class="q-mr-sm text-capitalize"
               :label="article.role"
             />
             <q-badge
-              text-color="light-blue-10"
+              text-color="info"
               color="light-blue-1"
               class="text-capitalize"
               icon="translate"
@@ -137,7 +137,7 @@ function gotoArticle(articleId: string) {
 }
 async function removeArticle(articleId: string, articleTitle: string) {
   $q.loading.show({
-    boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
+    boxClass: 'bg-white text-dark q-pa-xl',
 
     spinner: QSpinnerGrid,
     spinnerColor: 'primary',

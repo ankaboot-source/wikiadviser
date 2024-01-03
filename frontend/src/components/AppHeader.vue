@@ -21,9 +21,9 @@
         <q-avatar size="sm">
           <img :src="avatarURL" />
         </q-avatar>
-        <q-text class="q-pl-sm">
+        <div class="q-pl-sm">
           {{ supabaseUser.email }}
-        </q-text>
+        </div>
       </q-btn>
       <q-btn
         v-if="supabaseUser"
@@ -31,7 +31,7 @@
         icon="logout"
         no-caps
         unelevated
-        @click="signOut"
+        @click="signOut()"
       />
     </q-toolbar>
   </q-header>
@@ -39,7 +39,7 @@
 
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 import { useRoute, useRouter } from 'vue-router';
 import { Article } from 'src/types';
@@ -67,6 +67,10 @@ watch([useRoute(), articles], ([newRoute]) => {
   } else {
     article.value = null;
   }
+});
+
+watchEffect(() => {
+  supabaseUser.value = props.user;
 });
 
 async function signOut() {

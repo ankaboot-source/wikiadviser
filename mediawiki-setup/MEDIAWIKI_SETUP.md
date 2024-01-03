@@ -150,11 +150,6 @@
         display: none !important;
       }
 
-      /* hide the "Add languages" menu. */
-      .vector-menu.vector-dropdown.vector-menu-dropdown.mw-portlet.mw-portlet-lang {
-        display: none !important;
-      }
-
       /* hide "Notice" popup */
       .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
         display: none !important;

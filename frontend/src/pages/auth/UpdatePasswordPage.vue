@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
+import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { Auth } from '@nuxtbase/auth-ui-vue';
 import supabaseClient from 'src/api/supabase';
 import { ref, watch } from 'vue';
@@ -53,8 +53,8 @@ watch(hasUpdatedPassword, async (updated: boolean) => {
   }
 });
 
-supabaseClient.auth.onAuthStateChange((event, _) => {
-  if (event == 'USER_UPDATED') {
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === 'USER_UPDATED') {
     hasUpdatedPassword.value = true;
   }
 });

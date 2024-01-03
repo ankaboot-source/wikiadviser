@@ -87,99 +87,85 @@ async function deleteAccount() {
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <app-header />
-    <q-page-container>
-      <q-page padding>
-        <div class="flex items-center">
-          <q-btn flat icon="arrow_back" round @click="goToHome()" />
-          <div class="text-h5 merriweather">Account</div>
-        </div>
+  <q-page padding>
+    <div class="flex items-center">
+      <q-btn flat icon="arrow_back" round @click="goToHome()" />
+      <div class="text-h5 merriweather">Account</div>
+    </div>
 
-        <!-- Remove Image Section -->
-        <div style="width: 13vw">
-          <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
-          <div>
-            <img :src="picture" class="full-width" />
-            <br />
-            <q-btn
-              no-caps
-              outline
-              class="text-sm full-width"
-              icon="no_photography"
-              label="Revert to default avatar"
-              color="primary"
-              unelevated
-              @click="revertImage"
-            />
-          </div>
-        </div>
+    <!-- Remove Image Section -->
+    <div style="width: 13vw">
+      <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
+      <div>
+        <img :src="picture" class="full-width" />
+        <br />
+        <q-btn
+          no-caps
+          outline
+          class="text-sm full-width"
+          icon="no_photography"
+          label="Revert to default avatar"
+          color="primary"
+          unelevated
+          @click="revertImage"
+        />
+      </div>
+    </div>
 
-        <!-- Change Password Section -->
-        <div>
-          <h2></h2>
-          <a class="text-h6 merriweather q-mb-xs" href="/auth/update_password">
-            Change Password
-            <q-icon name="open_in_new" style="top: -2px" />
-          </a>
-        </div>
+    <!-- Change Password Section -->
+    <div>
+      <h2></h2>
+      <a class="text-h6 merriweather q-mb-xs" href="/auth/update_password">
+        Change Password
+        <q-icon name="open_in_new" style="top: -2px" />
+      </a>
+    </div>
 
-        <!-- Delete Account Section -->
-        <div>
-          <h2 class="text-h6 merriweather q-mb-xs">Delete Account</h2>
-          <p class="text-body1">
-            You can permanently delete your account including your data. You
-            can't undo this action.
-          </p>
+    <!-- Delete Account Section -->
+    <div>
+      <h2 class="text-h6 merriweather q-mb-xs">Delete Account</h2>
+      <p class="text-body1">
+        You can permanently delete your account including your data. You can't
+        undo this action.
+      </p>
+      <q-btn
+        no-caps
+        outline
+        class="text-sm"
+        icon="delete"
+        label="Delete my account"
+        color="negative"
+        unelevated
+        @click="showWarning"
+      />
+    </div>
+
+    <!-- Warning model Section -->
+    <q-dialog v-model="showDeleteModal">
+      <q-card>
+        <q-toolbar class="borders">
+          <q-toolbar-title class="merriweather"> Delete User </q-toolbar-title>
+          <q-btn v-close-popup flat round dense icon="close" size="sm" />
+        </q-toolbar>
+        <q-card-section>
+          All your personal data will be deleted. Other data will be anonymized.
+        </q-card-section>
+        <q-card-actions class="borders">
+          <q-space />
+          <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />
           <q-btn
-            no-caps
-            outline
-            class="text-sm"
-            icon="delete"
-            label="Delete my account"
-            color="negative"
+            v-close-popup
             unelevated
-            @click="showWarning"
+            color="negative"
+            no-caps
+            label="Delete"
+            :loading="isLoading"
+            @click="deleteAccount"
           />
-        </div>
-
-        <!-- Warning model Section -->
-        <q-dialog v-model="showDeleteModal">
-          <q-card>
-            <q-toolbar class="borders">
-              <q-toolbar-title class="merriweather">
-                Delete User
-              </q-toolbar-title>
-              <q-btn v-close-popup flat round dense icon="close" size="sm" />
-            </q-toolbar>
-            <q-card-section>
-              All your personal data will be deleted. Other data will be
-              anonymized.
-            </q-card-section>
-            <q-card-actions class="borders">
-              <q-space />
-              <q-btn
-                v-close-popup
-                no-caps
-                outline
-                color="primary"
-                label="Cancel"
-              />
-              <q-btn
-                v-close-popup
-                unelevated
-                color="negative"
-                no-caps
-                label="Delete"
-                :loading="isLoading"
-                @click="deleteAccount"
-              />
-            </q-card-actions>
-          </q-card>
-        </q-dialog>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
 </template>
 
 <style scoped>

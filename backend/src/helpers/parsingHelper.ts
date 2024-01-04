@@ -1,8 +1,8 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
+import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
-import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 
 function addPermissionDataToChanges(
   changesToInsert: Change[],

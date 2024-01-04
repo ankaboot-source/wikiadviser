@@ -9,7 +9,6 @@
               <q-badge
                 outline
                 rounded
-                color="blue-grey-10"
                 class="q-mt-s text-capitalize"
                 :label="revision.items.length"
                 size="sm"

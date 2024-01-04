@@ -1,6 +1,6 @@
 <template>
   <q-item
-    class="q-pa-sm q-mb-sm borders rounded-borders text-blue-grey-10"
+    class="q-pa-sm q-mb-sm borders rounded-borders text-dark"
     clickable
     @click="gotoArticle(article.article_id)"
   >
@@ -15,13 +15,13 @@
           </div>
           <div class="row">
             <q-badge
-              text-color="light-blue-10"
+              text-color="info"
               color="light-blue-1"
               class="q-mr-sm text-capitalize"
               :label="article.role"
             />
             <q-badge
-              text-color="light-blue-10"
+              text-color="info"
               color="light-blue-1"
               class="text-capitalize"
               icon="translate"
@@ -76,6 +76,7 @@
                 <q-card-actions class="borders">
                   <q-space />
                   <q-btn
+                    v-if="!deletingArticle"
                     v-close-popup
                     no-caps
                     outline
@@ -83,13 +84,20 @@
                     label="Cancel"
                   />
                   <q-btn
-                    v-close-popup
+                    :v-close-popup="!deletingArticle"
                     unelevated
                     color="negative"
+                    style="width: 10em"
                     no-caps
                     label="Delete"
-                    @click="removeArticle(article.article_id, article.title)"
-                  />
+                    :loading="deletingArticle"
+                    @click="removeArticle(article.article_id)"
+                  >
+                    <template #loading>
+                      <q-spinner class="on-left" />
+                      Deleting
+                    </template>
+                  </q-btn>
                 </q-card-actions>
               </q-card>
             </q-dialog>
@@ -103,7 +111,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { QSpinnerGrid, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import supabase from 'src/api/supabase';
@@ -116,6 +124,7 @@ const props = defineProps<{
 const $q = useQuasar();
 const router = useRouter();
 const deleteArticleDialog = ref(false);
+const deletingArticle = ref(false);
 const articlesStore = useArticlesStore();
 
 const userLocale = navigator.language || navigator.languages[0];
@@ -135,22 +144,11 @@ function gotoArticle(articleId: string) {
     },
   });
 }
-async function removeArticle(articleId: string, articleTitle: string) {
-  $q.loading.show({
-    boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
-
-    spinner: QSpinnerGrid,
-    spinnerColor: 'primary',
-    spinnerSize: 140,
-
-    message: `
-        <div class='text-h6'> Deleting “${articleTitle}”  </div></br>
-        <div class='text-body1'>Please wait…</div>`,
-    html: true,
-  });
+async function removeArticle(articleId: string) {
+  deletingArticle.value = true;
   try {
     await deleteArticle(articleId);
-    $q.loading.hide();
+    deletingArticle.value = false;
     $q.notify({
       message: 'Article deleted.',
       icon: 'check',
@@ -165,7 +163,7 @@ async function removeArticle(articleId: string, articleTitle: string) {
 
     await articlesStore.fetchArticles(user.id);
   } catch (error) {
-    $q.loading.hide();
+    deletingArticle.value = false;
     if (error instanceof Error) {
       console.error(error.message);
       $q.notify({

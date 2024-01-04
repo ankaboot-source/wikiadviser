@@ -5,17 +5,17 @@
     </div>
     <div v-else class="q-panel scroll col">
       <div class="row justify-evenly q-pa-sm">
-        <diff-list
-          :role="role"
-          :changes-list="changesList"
-          class="col q-mr-md rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-        />
         <diff-card
           :article="article"
           :changes-content="changesContent"
           :role="role"
           :editor-permission="editorPermission"
-          class="col-9"
+          class="col-9 q-mr-md"
+        />
+        <diff-list
+          :role="role"
+          :changes-list="changesList"
+          class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
         />
       </div>
     </div>

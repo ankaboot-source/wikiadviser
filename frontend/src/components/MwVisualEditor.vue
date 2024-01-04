@@ -3,13 +3,13 @@
     v-if="renderIframe"
     v-show="buttonToggle === 'edit' && !loading.value"
     :src="articleLink"
-    class="col-grow q-mr-md rounded-borders borders bg-secondary"
+    class="col-grow rounded-borders borders bg-secondary"
     frameBorder="0"
     @load="loading.value = false"
   />
   <div
     v-if="buttonToggle === 'edit' && loading.value"
-    class="q-pa-xl row justify-center text-center col-grow q-mr-md rounded-borders borders bg-secondary"
+    class="q-pa-xl row justify-center text-center col-grow rounded-borders borders bg-secondary"
   >
     <div>
       <div class="text-h6">

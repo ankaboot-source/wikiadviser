@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <q-toolbar class="q-pl-none q-pr-none">
+    <q-toolbar class="q-px-none">
       <q-btn-toggle
         v-model="buttonToggle"
         no-caps

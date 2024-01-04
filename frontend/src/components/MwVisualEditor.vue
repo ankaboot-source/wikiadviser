@@ -3,7 +3,7 @@
     v-if="renderIframe"
     v-show="buttonToggle === 'edit' && !loading.value"
     :src="articleLink"
-    class="col-grow q-mr-md rounded-borders borders bg-secondary"
+    class="col-grow rounded-borders borders bg-secondary"
     frameBorder="0"
     @load="loading.value = false"
   />

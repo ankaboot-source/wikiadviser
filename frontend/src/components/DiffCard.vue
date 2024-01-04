@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <q-toolbar class="q-pr-md q-pl-none">
+    <q-toolbar class="q-pl-none q-pr-none">
       <q-btn-toggle
         v-model="buttonToggle"
         no-caps
@@ -49,7 +49,7 @@
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
       >
-        <div class="q-mr-md" v-html="props.changesContent" />
+        <div v-html="props.changesContent" />
       </q-scroll-area>
       <div
         v-else

@@ -82,6 +82,7 @@ module.exports = configure(function (/* ctx */) {
         WIKIADVISER_ROOT_DOMAIN: process.env.WIKIADVISER_ROOT_DOMAIN,
         WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
         DAY_LIMIT: process.env.DAY_LIMIT,
+        DEFAULT_AVATAR_URL: process.env.DEFAULT_AVATAR_URL,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

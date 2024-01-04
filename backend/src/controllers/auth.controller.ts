@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { getUserPermission } from '../helpers/supabaseHelper';
-import supabase from '../api/supabase';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -73,23 +72,5 @@ export default async function restrictMediawikiAccess(
     return res.sendStatus(200);
   } catch (error) {
     return next(error);
-  }
-}
-
-export async function deleteUser(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const { id } = res.locals.user;
-
-    await supabase.auth.admin.updateUserById(id, {
-      email: `${id}@anon`
-    });
-
-    next({});
-  } catch (error) {
-    next(error);
   }
 }

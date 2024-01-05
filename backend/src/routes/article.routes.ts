@@ -5,7 +5,7 @@ import {
   deleteArticle,
   getArticleChanges,
   updateArticleChanges,
-  hasPermissions,
+  hasPermissions
 } from '../controllers/article.controller';
 
 const articleRouter = Router();

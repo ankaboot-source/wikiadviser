@@ -261,8 +261,11 @@ export async function deleteChangeDB(changeId: string) {
     throw new Error("Change can't be deleted.");
   }
 
-  const {error: deleteError } = await supabase.from('changes').delete().eq('id', change.id);
-  
+  const { error: deleteError } = await supabase
+    .from('changes')
+    .delete()
+    .eq('id', change.id);
+
   if (deleteError) {
     throw new Error(deleteError.message);
   }

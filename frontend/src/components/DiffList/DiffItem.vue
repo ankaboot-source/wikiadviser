@@ -177,7 +177,8 @@
                 <q-btn v-close-popup flat round dense icon="close" size="sm" />
               </q-toolbar>
               <q-card-section>
-                This change is unrelated to any revisions and can be safely deleted.
+                This change is unrelated to any revisions and can be safely
+                deleted.
               </q-card-section>
               <q-card-actions class="borders">
                 <q-space />
@@ -257,7 +258,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole } from 'src/types';
-import { deleteChangeDB, insertComment, updateChange } from 'src/api/supabaseHelper';
+import {
+  deleteChangeDB,
+  insertComment,
+  updateChange,
+} from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';

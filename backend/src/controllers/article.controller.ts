@@ -120,7 +120,6 @@ export async function getArticleChanges(
   }
 }
 
-
 /**
  * Updates the changes made to a specified article in a MediaWiki instance.
  *

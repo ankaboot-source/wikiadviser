@@ -266,7 +266,6 @@ import {
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
 
 const $quasar = useQuasar();

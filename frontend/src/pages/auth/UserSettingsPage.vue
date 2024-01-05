@@ -1,19 +1,17 @@
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import { QSpinner, useQuasar } from 'quasar';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Session } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
-import { DEFAULT_AVATAR_URL } from 'src/utils/consts';
 
 const session = ref<Session | null>();
 const email = ref('');
 const picture = ref('');
 const $q = useQuasar();
 const articlesStore = useArticlesStore();
-const defaultImage = ref(false);
 
 const $router = useRouter();
 
@@ -28,7 +26,6 @@ onMounted(async () => {
     session.value = _session;
     email.value = session.value?.user.email as string;
     picture.value = session.value?.user.user_metadata.picture;
-    defaultImage.value = picture.value.indexOf(DEFAULT_AVATAR_URL) !== -1;
   });
 });
 
@@ -55,7 +52,6 @@ async function revertImage() {
       icon: 'check',
       color: 'positive',
     });
-    defaultImage.value = true;
   } catch (error) {
     $q.loading.hide();
     if (error instanceof Error) {
@@ -125,6 +121,8 @@ async function deleteAccount() {
     }
   }
 }
+
+const defaultAvatar = computed(() => session.value?.user.user_metadata.default_avatar);
 </script>
 
 <template>
@@ -143,7 +141,7 @@ async function deleteAccount() {
             <img :src="picture" style="width: 168px;"/>
             <br />
             <q-btn
-              v-if="!defaultImage"
+              v-if="!defaultAvatar()"
               no-caps
               outline
               class="text-sm"

@@ -13,7 +13,6 @@
           class="col-9 q-mr-md"
         />
         <diff-list
-          :article-id="articleId"
           :role="role"
           :changes-list="changesList"
           class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"

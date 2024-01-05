@@ -24,7 +24,6 @@
           <q-list>
             <diff-item
               v-for="item in archivedChanges"
-              :article-id="articleId"
               :key="item.id"
               :item="item"
               :role="role"
@@ -34,7 +33,6 @@
             />
             <diff-item
               v-for="item in unindexedChanges"
-              :article-id="articleId"
               :key="item.id"
               :item="item"
               :role="role"
@@ -73,7 +71,6 @@ import RevisionItem from './RevisionItem.vue';
 const store = useSelectedChangeStore();
 
 const props = defineProps<{
-  articleId: string;
   role: UserRole;
   changesList: ChangesItem[];
 }>();

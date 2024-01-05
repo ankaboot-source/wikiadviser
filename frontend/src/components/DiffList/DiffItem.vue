@@ -272,7 +272,6 @@ import { useQuasar } from 'quasar';
 const $quasar = useQuasar();
 const store = useSelectedChangeStore();
 const props = defineProps<{
-  articleId: string;
   item: ChangesItem;
   role: UserRole;
   pastChange?: {

@@ -144,7 +144,7 @@ export async function deleteArticleChange(
       .single();
 
     if (error) {
-      throw error;
+      throw Error(error.message);
     }
 
     if (!change) {

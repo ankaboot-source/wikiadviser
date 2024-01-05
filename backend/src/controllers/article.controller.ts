@@ -11,6 +11,8 @@ import logger from '../logger';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
+import supabaseClient from '../api/supabase';
+
 
 /**
  * Creates a new article and imports it into a MediaWiki instance.
@@ -115,6 +117,53 @@ export async function getArticleChanges(
       message: 'Getting article changes succeeded.',
       changes: articleChanges
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Deletes a specific change from the database based on the provided ID.
+ *
+ * @param req - Express Request object.
+ * @param res - Express Response object.
+ * @param next - Express NextFunction object.
+ */
+export async function deleteArticleChange(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { changeId } = req.params;
+
+  try {
+    const { data: change, error } = await supabaseClient
+      .from('changes')
+      .select('*')
+      .eq('id', changeId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    if (!change) {
+      return res.status(404).json({
+        message: `Change with id(${changeId}) not found.`
+      });
+    }
+
+    if (change.index !== null) {
+      return res.status(403).json({
+        message: "Change can't be deleted."
+      });
+    }
+
+    await supabaseClient.from('changes').delete().eq('id', change.id);
+
+    return res
+      .status(200)
+      .json({ message: 'Deleting change succeeded.', change });
   } catch (error) {
     return next(error);
   }

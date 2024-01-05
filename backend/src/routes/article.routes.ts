@@ -5,11 +5,13 @@ import {
   deleteArticle,
   getArticleChanges,
   updateArticleChanges,
-  hasPermissions
+  hasPermissions,
+  deleteArticleChange
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
 
+/* Articles */
 articleRouter.post('/article', createArticle);
 articleRouter.get(
   '/article/:id',
@@ -18,6 +20,7 @@ articleRouter.get(
 );
 articleRouter.delete('/article/:id', hasPermissions(['owner']), deleteArticle);
 
+/* Changes */
 articleRouter.get(
   '/article/:id/changes',
   hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
@@ -27,6 +30,12 @@ articleRouter.put(
   '/article/:id/changes',
   hasPermissions(['owner', 'editor']),
   updateArticleChanges
+);
+
+articleRouter.delete(
+  '/article/:id/changes/:changeId',
+  hasPermissions(['owner']),
+  deleteArticleChange
 );
 
 export default articleRouter;

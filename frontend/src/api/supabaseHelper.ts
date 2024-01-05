@@ -241,3 +241,29 @@ export async function verifyLink(token: string): Promise<boolean> {
 
   return isValidToken;
 }
+
+export async function deleteChangeDB(changeId: string) {
+  const { data: change, error } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
+    .single();
+
+  if (error) {
+    throw Error(error.message);
+  }
+
+  if (!change) {
+    throw new Error(`Change with id(${changeId}) not found.`);
+  }
+
+  if (change.index !== null) {
+    throw new Error("Change can't be deleted.");
+  }
+
+  const {error: deleteError } = await supabase.from('changes').delete().eq('id', change.id);
+  
+  if (deleteError) {
+    throw new Error(deleteError.message);
+  }
+}

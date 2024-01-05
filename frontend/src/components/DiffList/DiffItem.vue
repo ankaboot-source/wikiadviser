@@ -158,7 +158,7 @@
           @click="expanded = false"
         />
         <q-space />
-        <template v-if="isOrphenated">
+        <template v-if="isUnindexed">
           <q-btn
             no-caps
             icon="delete_forever"
@@ -177,8 +177,7 @@
                 <q-btn v-close-popup flat round dense icon="close" size="sm" />
               </q-toolbar>
               <q-card-section>
-                This change is not linked to any of the revisions, it can be
-                safely deleted.
+                This change is unrelated to any revisions and can be safely deleted.
               </q-card-section>
               <q-card-actions class="borders">
                 <q-space />
@@ -258,7 +257,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole } from 'src/types';
-import { insertComment, updateChange } from 'src/api/supabaseHelper';
+import { deleteChangeDB, insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
@@ -397,14 +396,14 @@ const archiveButton = computed(() => {
   return isArchived.value ? 'reopen' : 'archive';
 });
 
-const isOrphenated = computed(() => props.item.index === null);
+const isUnindexed = computed(() => props.item.index === null);
 const deleteChangeDialog = ref(false);
 const deletingChange = ref(false);
 
 async function deleteChange() {
   deletingChange.value = true;
   try {
-    await api.delete(`/article/${props.articleId}/changes/${props.item.id}`);
+    await deleteChangeDB(props.item.id);
     $quasar.notify({
       message: 'Successfully deleted change',
       icon: 'check',

@@ -6,7 +6,6 @@ import {
   getArticleChanges,
   updateArticleChanges,
   hasPermissions,
-  deleteArticleChange
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
@@ -30,12 +29,6 @@ articleRouter.put(
   '/article/:id/changes',
   hasPermissions(['owner', 'editor']),
   updateArticleChanges
-);
-
-articleRouter.delete(
-  '/article/:id/changes/:changeId',
-  hasPermissions(['owner']),
-  deleteArticleChange
 );
 
 export default articleRouter;

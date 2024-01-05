@@ -13,7 +13,6 @@ import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
 import supabaseClient from '../api/supabase';
 
-
 /**
  * Creates a new article and imports it into a MediaWiki instance.
  *

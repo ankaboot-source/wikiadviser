@@ -11,7 +11,7 @@ CREATE POLICY update_articles_policy
       -- Check if the user is the owner of the article
       auth.uid() = (
         SELECT user_id
-        FROM private.get_all_permissions_by_article_id(article_id) p
+        FROM private.get_all_permissions_by_article_id(id) p
         WHERE p.role = 'owner' 
       )
   );

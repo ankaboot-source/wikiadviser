@@ -196,13 +196,6 @@ export async function deleteArticle(articleId: string) {
   }
 }
 
-export async function deleteUser() {
-  const apiResponse = await api.delete('/auth');
-  if (apiResponse.status !== 200) {
-    throw new Error('Failed to delete user from API.');
-  }
-}
-
 export async function updateChanges(articleId: string) {
   const apiResponse = await api.put(`/article/${articleId}/changes`);
   if (apiResponse.status !== 200) {
@@ -229,7 +222,7 @@ export async function verifyLink(token: string): Promise<boolean> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data: isValidToken, error } = await supabase.rpc(
+  const { data: isValidToken, error: ValidationError } = await supabase.rpc(
     'add_viewer_to_article',
     {
       user_id: userId,
@@ -237,7 +230,15 @@ export async function verifyLink(token: string): Promise<boolean> {
     }
   );
 
-  console.log(error);
+  if (ValidationError) throw new Error(ValidationError.message);
 
   return isValidToken;
+}
+
+export async function deleteUser() {
+  const { error: deleteUserError } = await supabase.rpc(
+    'delete_user_and_keep_data'
+  );
+
+  if (deleteUserError) throw new Error(deleteUserError.message);
 }

@@ -12,6 +12,14 @@
         class="borders"
         :options="toggleOptions"
       />
+      <q-btn
+        icon="open_in_new"
+        outline
+        label="View article"
+        class="q-ml-xs"
+        no-caps
+        @click="viewArticleInNewTab()"
+      />
       <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
@@ -215,6 +223,13 @@ watch(
 const onSwitchTabEmitChange = (tab: string) => {
   buttonToggle.value = tab;
 };
+
+function viewArticleInNewTab() {
+  window.open(
+    `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`,
+    '_blank'
+  );
+}
 </script>
 
 <style>

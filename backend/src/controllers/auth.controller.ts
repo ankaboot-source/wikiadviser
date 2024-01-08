@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import supabase from '../api/supabase';
 import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
@@ -22,7 +21,7 @@ export default async function restrictMediawikiAccess(
 
   try {
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{1,36})(&|$)`,
       'i'
     );
 
@@ -45,7 +44,7 @@ export default async function restrictMediawikiAccess(
     if (!user && !isPublicArticle) {
       return res
         .status(403)
-        .send('This user is not authorized to access to this content');
+        .send('You are not authorized to access this content');
     }
 
     const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
@@ -89,23 +88,5 @@ export default async function restrictMediawikiAccess(
     return res.sendStatus(200);
   } catch (error) {
     return next(error);
-  }
-}
-
-export async function deleteUser(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  try {
-    const { id } = res.locals.user;
-
-    await supabase.auth.admin.updateUserById(id, {
-      email: `${id}@anon`
-    });
-
-    next({});
-  } catch (error) {
-    next(error);
   }
 }

@@ -226,7 +226,7 @@ const onSwitchTabEmitChange = (tab: string) => {
 
 function viewArticleInNewTab() {
   window.open(
-    `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`,
+    `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
     '_blank'
   );
 }

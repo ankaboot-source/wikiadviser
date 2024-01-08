@@ -14,6 +14,14 @@
       />
       <q-space />
       <q-btn
+        icon="open_in_new"
+        outline
+        label="View article"
+        class="q-mr-xs"
+        no-caps
+        @click="viewArticleInNewTab()"
+      />
+      <q-btn
         v-if="role != UserRole.Viewer"
         icon="link"
         outline
@@ -26,7 +34,7 @@
         v-if="role != UserRole.Viewer"
         icon="o_group"
         outline
-        label="Share"
+        label="Sharing settings"
         no-caps
         class="q-pr-lg"
         @click="share = !share"
@@ -172,9 +180,13 @@ async function copyShareLinkToClipboard() {
   });
 }
 
-const viewButton = { label: 'Review', value: 'view', icon: 'thumbs_up_down' };
+const viewButton = {
+  label: 'Review changes',
+  value: 'view',
+  icon: 'thumbs_up_down',
+};
 const editButton = {
-  label: 'Edit',
+  label: 'Edit article',
   value: 'edit',
   icon: 'edit',
 };
@@ -211,6 +223,13 @@ watch(
 const onSwitchTabEmitChange = (tab: string) => {
   buttonToggle.value = tab;
 };
+
+function viewArticleInNewTab() {
+  window.open(
+    `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`,
+    '_blank'
+  );
+}
 </script>
 
 <style>

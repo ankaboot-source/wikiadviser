@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { getUserPermission } from '../helpers/supabaseHelper';
 import supabase from '../api/supabase';
+import { getUserPermission } from '../helpers/supabaseHelper';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -25,6 +25,7 @@ export default async function restrictMediawikiAccess(
       `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
       'i'
     );
+
     const allowedPrefixRegEx = new RegExp(
       `^(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php?|(skins|resources)/)))`,
       'i'
@@ -67,7 +68,15 @@ export default async function restrictMediawikiAccess(
       if (!permission) {
         return res
           .status(403)
-          .send('This user is not authorized to access to this content');
+          .send('This user is not authorized to access this content');
+      }
+
+      const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
+      const isViewer = ['viewer', 'reviewer'].includes(permission);
+      if (isViewer && !isViewArticle) {
+        return res
+          .status(403)
+          .send('This user is not authorized to access this content');
       }
     }
     return res.sendStatus(200);

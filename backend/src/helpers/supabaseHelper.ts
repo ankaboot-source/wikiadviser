@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { Change } from '../types';
+import { Change, Role } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -164,7 +164,10 @@ export async function deleteArticleDB(articleId: string) {
   }
 }
 
-export async function getUserPermission(articleId: string, userId: string) {
+export async function getUserPermission(
+  articleId: string,
+  userId: string
+): Promise<Role | null> {
   const { data } = await supabase
     .from('permissions')
     .select()

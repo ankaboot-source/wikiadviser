@@ -26,7 +26,7 @@
         v-if="role != UserRole.Viewer"
         icon="o_group"
         outline
-        label="Share"
+        label="Sharing settings"
         no-caps
         class="q-pr-lg"
         @click="share = !share"
@@ -172,9 +172,13 @@ async function copyShareLinkToClipboard() {
   });
 }
 
-const viewButton = { label: 'Review', value: 'view', icon: 'thumbs_up_down' };
+const viewButton = {
+  label: 'Review changes',
+  value: 'view',
+  icon: 'thumbs_up_down',
+};
 const editButton = {
-  label: 'Edit',
+  label: 'Edit article',
   value: 'edit',
   icon: 'edit',
 };

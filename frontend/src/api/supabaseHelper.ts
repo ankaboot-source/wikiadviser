@@ -92,7 +92,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       id,
       article_id,
       role,
-      articles(title,description,created_at,language)
+      articles(title,description,created_at,language,web_publication)
       `
     )
     .eq('user_id', userId);
@@ -114,6 +114,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       role: article.role,
       language: article.articles.language,
       created_at: new Date(article.articles.created_at),
+      web_publication: article.articles.web_publication,
     }));
 
   return articles;
@@ -240,4 +241,18 @@ export async function verifyLink(token: string): Promise<boolean> {
   console.log(error);
 
   return isValidToken;
+}
+
+export async function updateArticleWebPublication(
+  web_publication: boolean,
+  articleId: string
+) {
+  const { error } = await supabase
+    .from('articles')
+    .update({ web_publication })
+    .eq('id', articleId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

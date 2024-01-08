@@ -17,6 +17,14 @@
       </q-list>
     </q-card-section>
 
+    <q-card-section v-if="ownerPermission">
+      <q-toggle
+        v-model="web_publication_toggle"
+        label="Publish this article on the Web and makes it readable to everyone 🌍"
+        @update:model-value="handlePublish()"
+      />
+    </q-card-section>
+
     <q-card-actions v-if="ownerPermission" class="borders">
       <q-space />
       <q-btn
@@ -40,17 +48,18 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User, UserRole, Permission } from 'src/types';
+import { User, UserRole, Permission, Article } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import {
   deletePermission,
   getUsers,
+  updateArticleWebPublication,
   updatePermission,
 } from 'src/api/supabaseHelper';
-import { useQuasar } from 'quasar';
+import { copyToClipboard, useQuasar } from 'quasar';
 const $q = useQuasar();
 const props = defineProps<{
-  articleId: string;
+  article: Article;
   role: UserRole;
 }>();
 const users = ref<User[]>();
@@ -58,7 +67,7 @@ const users = ref<User[]>();
 const ownerPermission = props.role === UserRole.Owner;
 
 onMounted(async () => {
-  users.value = await getUsers(props.articleId);
+  users.value = await getUsers(props.article.article_id);
 });
 
 type EmittedPermission = {
@@ -125,6 +134,7 @@ async function handlePermissionChange() {
       }
     }
   }
+
   if (permissionsToUpdate.value.length) {
     try {
       await updatePermission(permissionsToUpdate.value);
@@ -133,7 +143,7 @@ async function handlePermissionChange() {
         icon: 'check',
         color: 'positive',
       });
-      users.value = await getUsers(props.articleId);
+      users.value = await getUsers(props.article.article_id);
       permissionsToUpdate.value = [];
     } catch (error) {
       $q.loading.hide();
@@ -151,6 +161,47 @@ async function handlePermissionChange() {
         });
       }
     }
+  }
+
+  if (web_publication_toggle.value !== props.article.web_publication) {
+    await updateArticleWebPublication(
+      web_publication_toggle.value,
+      props.article.article_id
+    );
+    if (web_publication_toggle.value) {
+      // publish
+      copyToClipboard(
+        `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+      );
+      $q.notify({
+        message: 'Published article',
+        caption: 'Publish link copied to clipboard',
+        color: 'positive',
+        icon: 'public',
+      });
+    } else {
+      // unpublish
+      $q.notify({
+        message: 'Unpublished article',
+        color: 'positive',
+        icon: 'public_off',
+      });
+    }
+  }
+}
+
+const web_publication_toggle = ref(props.article.web_publication);
+function handlePublish() {
+  if (web_publication_toggle.value) {
+    copyToClipboard(
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+    );
+    $q.notify({
+      message: 'Publish link copied to clipboard',
+      caption: 'Dont forget to apply changes',
+      color: 'positive',
+      icon: 'content_copy',
+    });
   }
 }
 </script>

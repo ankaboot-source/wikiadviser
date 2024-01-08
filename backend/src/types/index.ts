@@ -37,3 +37,5 @@ export interface ErrorResponse {
   message: string;
   stack?: string;
 }
+
+export type Role = 'viewer' | 'reviewer' | 'editor' | 'owner';

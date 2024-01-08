@@ -162,7 +162,9 @@ export const hasPermissions =
     const { id: articleId } = req.params;
     try {
       const permission = await getUserPermission(articleId, user.id);
-      const grantedPermissions = permissions.includes(permission);
+      const grantedPermissions = permission
+        ? permissions.includes(permission)
+        : null;
 
       if (grantedPermissions) {
         return next();

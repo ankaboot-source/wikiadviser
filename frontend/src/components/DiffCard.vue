@@ -12,15 +12,15 @@
         class="borders"
         :options="toggleOptions"
       />
+      <q-space />
       <q-btn
         icon="open_in_new"
         outline
         label="View article"
-        class="q-ml-xs"
+        class="q-mr-xs"
         no-caps
         @click="viewArticleInNewTab()"
       />
-      <q-space />
       <q-btn
         v-if="role != UserRole.Viewer"
         icon="link"

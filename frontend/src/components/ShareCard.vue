@@ -201,7 +201,7 @@ async function handleApplyChanges() {
         console.error(error);
         $q.notify({
           message:
-            'Whoops, something went wrong while applying article publish changes',
+            'Whoops, something went wrong while applying article publishing changes',
           color: 'negative',
         });
       }

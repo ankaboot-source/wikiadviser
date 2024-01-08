@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import supabase from '../api/supabase';
 import { getUserPermission } from '../helpers/supabaseHelper';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);

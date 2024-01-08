@@ -4,6 +4,15 @@ AS $$
 DECLARE
   anonymous_id UUID;
 BEGIN
+  -- Delete permissions
+  DELETE FROM articles
+  WHERE id IN (
+    SELECT article_id
+    FROM permissions
+    WHERE role = 'owner'
+    AND user_id = auth.uid()
+  );
+
   -- Fetch the anonymous user ID
   SELECT id INTO anonymous_id
   FROM users
@@ -13,31 +22,12 @@ BEGIN
   -- Update changes table
   UPDATE changes
   SET contributor_id = anonymous_id
-  WHERE contributor_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM permissions
-    WHERE user_id = auth.uid()
-    AND role IN ('reviewer', 'editor')
-  );
+  WHERE contributor_id = auth.uid();
 
   -- Update comments table
   UPDATE comments
   SET commenter_id = anonymous_id
-  WHERE commenter_id = auth.uid()
-  AND EXISTS (
-    SELECT 1 FROM permissions
-    WHERE user_id = auth.uid()
-    AND role IN ('reviewer', 'editor')
-  );
-
-  -- Delete permissions
-  DELETE FROM articles
-  WHERE id IN (
-    SELECT article_id
-    FROM permissions
-    WHERE role = 'owner'
-    AND user_id = auth.uid()
-  );
+  WHERE commenter_id = auth.uid();
 
   DELETE FROM permissions
   WHERE user_id = auth.uid();

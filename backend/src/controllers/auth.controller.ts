@@ -21,7 +21,7 @@ export default async function restrictMediawikiAccess(
 
   try {
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php?title=([0-9a-f-]{1,36})(&|$)`,
       'i'
     );
 

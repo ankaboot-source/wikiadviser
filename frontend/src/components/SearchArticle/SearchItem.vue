@@ -47,6 +47,7 @@ async function itemOnClick() {
     const { data } = await supabase.auth.getSession();
 
     if (!data.session?.user.id) {
+      router.push('/');
       throw new Error('User session not found.');
     }
 

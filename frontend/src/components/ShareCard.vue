@@ -214,9 +214,9 @@ async function handleApplyChanges() {
       }
     } finally {
       const { data } = await supabase.auth.getSession();
-      if (!data.session?.user) {
+      if (!data.session?.user.id) {
         router.push('/');
-        return;
+        throw new Error('User session not found.');
       }
 
       await articlesStore.fetchArticles(data.session.user.id);

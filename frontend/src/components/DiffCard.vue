@@ -40,7 +40,7 @@
         @click="share = !share"
       >
         <q-dialog v-model="share">
-          <share-card :article-id="article.article_id" :role="article.role" />
+          <share-card :article="article" :role="article.role" />
         </q-dialog>
       </q-btn>
     </q-toolbar>

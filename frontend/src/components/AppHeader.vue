@@ -14,6 +14,11 @@
             to="."
             @click="$router.go(0)"
           />
+          <q-icon
+            v-if="article?.web_publication"
+            name="public"
+            class="q-mr-xs"
+          />
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />

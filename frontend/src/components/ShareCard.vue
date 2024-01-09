@@ -57,6 +57,7 @@ import {
   updatePermission,
 } from 'src/api/supabaseHelper';
 import { copyToClipboard, useQuasar } from 'quasar';
+
 const $q = useQuasar();
 const props = defineProps<{
   article: Article;
@@ -185,7 +186,7 @@ async function handleApplyChanges() {
       } else {
         // Unpublish
         $q.notify({
-          message: 'Unpublished article',
+          message: 'Article set to private',
           color: 'positive',
           icon: 'public_off',
         });

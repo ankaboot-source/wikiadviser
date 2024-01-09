@@ -212,15 +212,14 @@ async function handleApplyChanges() {
           color: 'negative',
         });
       }
-    } finally {
-      const { data } = await supabase.auth.getSession();
-      if (!data.session?.user.id) {
-        router.push('/');
-        throw new Error('User session not found.');
-      }
-
-      await articlesStore.fetchArticles(data.session.user.id);
     }
+    const { data } = await supabase.auth.getSession();
+    if (!data.session?.user.id) {
+      router.push('/');
+      throw new Error('User session not found.');
+    }
+
+    await articlesStore.fetchArticles(data.session.user.id);
   }
 }
 

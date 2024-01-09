@@ -235,9 +235,9 @@ export async function verifyLink(token: string): Promise<boolean> {
   return isValidToken;
 }
 
-export async function deleteUser() {
+export async function deleteUser(userId: string) {
   const { error: deleteUserError } = await supabase.rpc(
-    'delete_user_and_keep_data'
+    'delete_user_and_anonymize_data'
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);

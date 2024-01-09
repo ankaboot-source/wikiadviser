@@ -56,33 +56,6 @@ export async function createNewArticle(
   return response.data.articleId;
 }
 
-export async function createNewPermission(
-  articleId: string,
-  userId: string
-): Promise<void> {
-  // check if user has permission on that Article
-  const existingPermission = await supabase
-    .from('permissions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('article_id', articleId)
-    .maybeSingle();
-
-  // if not, add a permission request.
-  if (!existingPermission.data) {
-    const { error: permissionError } = await supabase
-      .from('permissions')
-      .insert({
-        user_id: userId,
-        article_id: articleId,
-        role: UserRole.Viewer,
-      });
-    if (permissionError) {
-      throw new Error(permissionError.message);
-    }
-  }
-}
-
 export async function getArticles(userId: string): Promise<Article[]> {
   // check if user has permission on that Article
   const { data: articleData, error: articleError } = await supabase

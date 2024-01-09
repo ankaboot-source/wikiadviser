@@ -2,7 +2,7 @@
 import supabase from 'src/api/supabase';
 import Button from 'src/components/LoadingButton.vue';
 import { QSpinner, useQuasar } from 'quasar';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Session, User, UserResponse } from '@supabase/supabase-js';
@@ -99,6 +99,7 @@ async function deleteAccount() {
 }
 
 const picture = computed(() => user.value?.user_metadata.user_avatar);
+
 const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
 </script>
 
@@ -126,7 +127,7 @@ const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
             label="Revert to default avatar"
             :on-click="revertImage"
           >
-            Revert to default avatar
+            Reverting to default avatar
           </Button>
         </div>
       </div>

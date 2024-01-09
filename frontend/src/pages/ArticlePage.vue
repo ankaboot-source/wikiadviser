@@ -25,17 +25,16 @@
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import {
-  createNewPermission,
   getArticleParsedContent,
   getChanges,
   getUsers,
 } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Article, ChangesItem, UserRole } from 'src/types';
 import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
 
 const route = useRoute();
 const router = useRouter();
@@ -78,23 +77,22 @@ async function fetchChanges() {
 
 onBeforeMount(async () => {
   const { data } = await supabase.auth.getSession();
+
+  if (!data.session?.user) {
+    router.push('/');
+    return;
+  }
+
   // Access the article id parameter from the route's params object
   articleId.value = params.articleId as string;
-  await articlesStore.fetchArticles(data.session!.user.id);
+
+  await articlesStore.fetchArticles(data.session.user.id);
   article.value = articlesStore.getArticleById(articleId.value);
+
   if (!article.value) {
-    // In case this article exists, a permission request will be sent to the Owner.
-    try {
-      await createNewPermission(articleId.value, data.session!.user.id);
-    } catch (error) {
-      // Article does not exist or Another error
-      router.push('404');
-    }
-    // Get updated articles
-    await articlesStore.fetchArticles(data.session!.user.id);
-    if (articlesStore.articles) {
-      article.value = articlesStore.getArticleById(articleId.value);
-    }
+    // Article does not exist for this user
+    router.push({ name: '404' });
+    return;
   }
   if (article.value) {
     role.value = article.value.role;

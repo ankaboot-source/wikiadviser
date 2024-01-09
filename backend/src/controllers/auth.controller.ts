@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { getUserPermission } from '../helpers/supabaseHelper';
+import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -21,7 +21,7 @@ export default async function restrictMediawikiAccess(
 
   try {
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php/([0-9a-f-]{1,36})([?/]|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{1,36})(&|$)`,
       'i'
     );
 
@@ -30,10 +30,21 @@ export default async function restrictMediawikiAccess(
       'i'
     );
 
-    if (!user || !(typeof forwardedUri === 'string')) {
+    if (!(typeof forwardedUri === 'string')) {
       return res
         .status(403)
         .send('This user is not authorized to access to this content');
+    }
+
+    const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[2];
+    const article = articleIdForwardedUri
+      ? await getArticle(articleIdForwardedUri)
+      : null;
+    const isPublicArticle = article?.web_publication;
+    if (!user && !isPublicArticle) {
+      return res
+        .status(403)
+        .send('You are not authorized to access this content');
     }
 
     const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
@@ -58,21 +69,17 @@ export default async function restrictMediawikiAccess(
 
       const articleId = isRequestFromVisualEditor
         ? (req.query.page as string)
-        : forwardedUri.match(articleIdRegEx)?.[2];
+        : articleIdForwardedUri;
 
       const permission = articleId
         ? await getUserPermission(articleId, user.id)
         : null;
 
-      if (!permission) {
-        return res
-          .status(403)
-          .send('This user is not authorized to access this content');
-      }
-
       const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
-      const isViewer = ['viewer', 'reviewer'].includes(permission);
-      if (isViewer && !isViewArticle) {
+      const isViewer = permission
+        ? ['viewer', 'reviewer'].includes(permission)
+        : null;
+      if ((isViewer || isPublicArticle) && !isViewArticle) {
         return res
           .status(403)
           .send('This user is not authorized to access this content');

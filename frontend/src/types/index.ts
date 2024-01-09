@@ -41,6 +41,7 @@ export type Article = {
   role: UserRole;
   created_at: Date;
   language: string;
+  web_publication: boolean;
 };
 
 export type Comment = {

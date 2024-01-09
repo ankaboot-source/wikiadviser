@@ -1,15 +1,8 @@
 import { api } from 'src/boot/axios';
-import supabase from './supabase';
-import {
-  Article,
-  User,
-  Permission,
-  UserRole,
-  ChangesItem,
-  ShareLink,
-} from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
+import { Article, ChangesItem, Permission, ShareLink, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
+import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -56,33 +49,6 @@ export async function createNewArticle(
   return response.data.articleId;
 }
 
-export async function createNewPermission(
-  articleId: string,
-  userId: string
-): Promise<void> {
-  // check if user has permission on that Article
-  const existingPermission = await supabase
-    .from('permissions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('article_id', articleId)
-    .maybeSingle();
-
-  // if not, add a permission request.
-  if (!existingPermission.data) {
-    const { error: permissionError } = await supabase
-      .from('permissions')
-      .insert({
-        user_id: userId,
-        article_id: articleId,
-        role: UserRole.Viewer,
-      });
-    if (permissionError) {
-      throw new Error(permissionError.message);
-    }
-  }
-}
-
 export async function getArticles(userId: string): Promise<Article[]> {
   // check if user has permission on that Article
   const { data: articleData, error: articleError } = await supabase
@@ -92,7 +58,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       id,
       article_id,
       role,
-      articles(title,description,created_at,language)
+      articles(title,description,created_at,language,web_publication)
       `
     )
     .eq('user_id', userId);
@@ -114,6 +80,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       role: article.role,
       language: article.articles.language,
       created_at: new Date(article.articles.created_at),
+      web_publication: article.articles.web_publication,
     }));
 
   return articles;
@@ -196,13 +163,6 @@ export async function deleteArticle(articleId: string) {
   }
 }
 
-export async function deleteUser() {
-  const apiResponse = await api.delete('/auth');
-  if (apiResponse.status !== 200) {
-    throw new Error('Failed to delete user from API.');
-  }
-}
-
 export async function updateChanges(articleId: string) {
   const apiResponse = await api.put(`/article/${articleId}/changes`);
   if (apiResponse.status !== 200) {
@@ -229,7 +189,7 @@ export async function verifyLink(token: string): Promise<boolean> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data: isValidToken, error } = await supabase.rpc(
+  const { data: isValidToken, error: ValidationError } = await supabase.rpc(
     'add_viewer_to_article',
     {
       user_id: userId,
@@ -237,7 +197,7 @@ export async function verifyLink(token: string): Promise<boolean> {
     }
   );
 
-  console.log(error);
+  if (ValidationError) throw new Error(ValidationError.message);
 
   return isValidToken;
 }
@@ -269,4 +229,25 @@ export async function deleteChangeDB(changeId: string) {
   if (deleteError) {
     throw new Error(deleteError.message);
   }
+}
+export async function updateArticleWebPublication(
+  web_publication: boolean,
+  articleId: string
+) {
+  const { error } = await supabase
+    .from('articles')
+    .update({ web_publication })
+    .eq('id', articleId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function deleteUser() {
+  const { error: deleteUserError } = await supabase.rpc(
+    'delete_user_and_keep_data'
+  );
+
+  if (deleteUserError) throw new Error(deleteUserError.message);
 }

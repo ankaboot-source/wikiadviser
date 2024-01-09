@@ -17,6 +17,14 @@
       </q-list>
     </q-card-section>
 
+    <q-card-section v-if="ownerPermission">
+      <q-toggle
+        v-model="web_publication_toggle"
+        label="Publish this article on the Web and make it readable to everyone 🌍"
+        @update:model-value="handlePublish()"
+      />
+    </q-card-section>
+
     <q-card-actions v-if="ownerPermission" class="borders">
       <q-space />
       <q-btn
@@ -32,7 +40,7 @@
         unelevated
         no-caps
         label="Apply"
-        @click="handlePermissionChange()"
+        @click="handleApplyChanges()"
       />
     </q-card-actions>
   </q-card>
@@ -40,17 +48,25 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User, UserRole, Permission } from 'src/types';
+import { User, UserRole, Permission, Article } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import {
   deletePermission,
   getUsers,
+  updateArticleWebPublication,
   updatePermission,
 } from 'src/api/supabaseHelper';
-import { useQuasar } from 'quasar';
+import { copyToClipboard, useQuasar } from 'quasar';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import supabase from 'src/api/supabase';
+import { useRouter } from 'vue-router';
+const articlesStore = useArticlesStore();
+
 const $q = useQuasar();
+const router = useRouter();
+
 const props = defineProps<{
-  articleId: string;
+  article: Article;
   role: UserRole;
 }>();
 const users = ref<User[]>();
@@ -58,7 +74,7 @@ const users = ref<User[]>();
 const ownerPermission = props.role === UserRole.Owner;
 
 onMounted(async () => {
-  users.value = await getUsers(props.articleId);
+  users.value = await getUsers(props.article.article_id);
 });
 
 type EmittedPermission = {
@@ -69,6 +85,7 @@ type EmittedPermission = {
 };
 const permissionsToUpdate = ref<Permission[]>([]);
 const permissionsToDelete = ref<string[]>([]);
+const web_publication_toggle = ref(props.article.web_publication);
 
 const onPermissionChange = (permission: EmittedPermission) => {
   const { permissionId, duplicate, remove } = permission;
@@ -88,7 +105,7 @@ const onPermissionChange = (permission: EmittedPermission) => {
       permissionsToUpdate.value?.splice(existingPermissionIndex, 1);
     } else {
       // Change it
-      permissionsToUpdate.value![existingPermissionIndex] = permission;
+      permissionsToUpdate.value[existingPermissionIndex] = permission;
     }
   } else {
     // If the permission doesn't exist, Add it
@@ -96,7 +113,7 @@ const onPermissionChange = (permission: EmittedPermission) => {
   }
 };
 
-async function handlePermissionChange() {
+async function handleApplyChanges() {
   if (permissionsToDelete.value.length) {
     try {
       for (const permission of permissionsToDelete.value) {
@@ -125,6 +142,7 @@ async function handlePermissionChange() {
       }
     }
   }
+
   if (permissionsToUpdate.value.length) {
     try {
       await updatePermission(permissionsToUpdate.value);
@@ -133,7 +151,7 @@ async function handlePermissionChange() {
         icon: 'check',
         color: 'positive',
       });
-      users.value = await getUsers(props.articleId);
+      users.value = await getUsers(props.article.article_id);
       permissionsToUpdate.value = [];
     } catch (error) {
       $q.loading.hide();
@@ -151,6 +169,71 @@ async function handlePermissionChange() {
         });
       }
     }
+  }
+
+  // Publish Article
+  if (web_publication_toggle.value !== props.article.web_publication) {
+    try {
+      await updateArticleWebPublication(
+        web_publication_toggle.value,
+        props.article.article_id
+      );
+      if (web_publication_toggle.value) {
+        // Publish
+        copyToClipboard(
+          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+        );
+        $q.notify({
+          message: 'Published on the web',
+          caption: 'Publish link copied to clipboard',
+          color: 'positive',
+          icon: 'public',
+        });
+      } else {
+        // Unpublish
+        $q.notify({
+          message: 'Article set to private',
+          color: 'positive',
+          icon: 'public_off',
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error.message);
+        $q.notify({
+          message: error.message,
+          color: 'negative',
+        });
+      } else {
+        console.error(error);
+        $q.notify({
+          message:
+            'Whoops, something went wrong while applying article publishing changes',
+          color: 'negative',
+        });
+      }
+    }
+    const { data } = await supabase.auth.getSession();
+    if (!data.session?.user.id) {
+      router.push('/');
+      throw new Error('User session not found.');
+    }
+
+    await articlesStore.fetchArticles(data.session.user.id);
+  }
+}
+
+function handlePublish() {
+  if (web_publication_toggle.value) {
+    copyToClipboard(
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+    );
+    $q.notify({
+      message: 'Publish link copied to clipboard',
+      caption: 'Dont forget to apply changes',
+      color: 'positive',
+      icon: 'content_copy',
+    });
   }
 }
 </script>

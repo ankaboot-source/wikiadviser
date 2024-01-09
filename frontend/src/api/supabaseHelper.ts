@@ -1,15 +1,8 @@
 import { api } from 'src/boot/axios';
-import supabase from './supabase';
-import {
-  Article,
-  User,
-  Permission,
-  UserRole,
-  ChangesItem,
-  ShareLink,
-} from 'src/types';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
+import { Article, ChangesItem, Permission, ShareLink, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
+import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase

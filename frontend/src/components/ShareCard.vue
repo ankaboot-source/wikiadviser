@@ -59,9 +59,12 @@ import {
 import { copyToClipboard, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import supabase from 'src/api/supabase';
+import { useRouter } from 'vue-router';
 const articlesStore = useArticlesStore();
 
 const $q = useQuasar();
+const router = useRouter();
+
 const props = defineProps<{
   article: Article;
   role: UserRole;
@@ -181,7 +184,7 @@ async function handleApplyChanges() {
           `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
         );
         $q.notify({
-          message: 'Published article',
+          message: 'Published on the web',
           caption: 'Publish link copied to clipboard',
           color: 'positive',
           icon: 'public',
@@ -211,7 +214,12 @@ async function handleApplyChanges() {
       }
     } finally {
       const { data } = await supabase.auth.getSession();
-      await articlesStore.fetchArticles(data.session!.user.id);
+      if (!data.session?.user) {
+        router.push('/');
+        return;
+      }
+
+      await articlesStore.fetchArticles(data.session.user.id);
     }
   }
 }

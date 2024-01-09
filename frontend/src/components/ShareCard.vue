@@ -20,7 +20,7 @@
     <q-card-section v-if="ownerPermission">
       <q-toggle
         v-model="web_publication_toggle"
-        label="Publish this article on the Web and makes it readable to everyone 🌍"
+        label="Publish this article on the Web and make it readable to everyone 🌍"
         @update:model-value="handlePublish()"
       />
     </q-card-section>
@@ -57,6 +57,9 @@ import {
   updatePermission,
 } from 'src/api/supabaseHelper';
 import { copyToClipboard, useQuasar } from 'quasar';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import supabase from 'src/api/supabase';
+const articlesStore = useArticlesStore();
 
 const $q = useQuasar();
 const props = defineProps<{
@@ -206,6 +209,9 @@ async function handleApplyChanges() {
           color: 'negative',
         });
       }
+    } finally {
+      const { data } = await supabase.auth.getSession();
+      await articlesStore.fetchArticles(data.session!.user.id);
     }
   }
 }

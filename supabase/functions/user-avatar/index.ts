@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
     const userEmail = user.email;
-    const userAvatarURL = user.user_metadata.picture;
+    const userAvatarURL = user.user_metadata.user_avatar;
     const backgrounds = Deno.env
       .get("WIKIADVISER_BACKGROUND_COLORS")
       .split(", ");
@@ -42,10 +42,12 @@ Deno.serve(async (req) => {
         if (userAvatarURL) {
           return new Response("Avatar already exists", {
             headers: corsHeaders,
+            status: 409,
           });
         }
 
-        let avatar = await getGravatar(userEmail);
+        let avatar =
+          user.user_metadata.picture ?? (await getGravatar(userEmail));
         let defaultAvatar = false;
 
         if (!avatar) {
@@ -55,7 +57,10 @@ Deno.serve(async (req) => {
 
         const { error: updateError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {
-            user_metadata: { picture: avatar, default_avatar: defaultAvatar },
+            user_metadata: {
+              user_avatar: avatar,
+              default_avatar: defaultAvatar,
+            },
           });
 
         if (updateError) {
@@ -72,8 +77,8 @@ Deno.serve(async (req) => {
         const { error: deleteError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {
             user_metadata: {
-              picture: generateAvatar(userEmail, backgrounds),
-              default_avater: false,
+              user_avatar: generateAvatar(userEmail, backgrounds),
+              default_avatar: true,
             },
           });
 

@@ -246,7 +246,7 @@ export async function updateArticleWebPublication(
 
 export async function deleteUser() {
   const { error: deleteUserError } = await supabase.rpc(
-    'delete_user_and_keep_data'
+    'delete_user_and_anonymize_data'
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);

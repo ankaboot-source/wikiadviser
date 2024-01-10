@@ -10,10 +10,10 @@ onBeforeMount(async () => {
   try {
     const { params } = useRoute();
     const token = params.token;
-    const path = await verifyLink(`${token}`);
+    const articleId = await verifyLink(`${token}`);
 
     router.push({
-      path: `/articles/${path}`,
+      path: `/articles/${articleId}`,
     });
   } catch (error) {
     valid.value = false;

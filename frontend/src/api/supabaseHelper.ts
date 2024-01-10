@@ -189,7 +189,7 @@ export async function verifyLink(token: string): Promise<string> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data: path, error: validationError } = await supabase.rpc(
+  const { data: articleId, error: validationError } = await supabase.rpc(
     'add_viewer_to_article',
     {
       user_id: userId,
@@ -199,7 +199,7 @@ export async function verifyLink(token: string): Promise<string> {
 
   if (validationError) throw new Error(validationError.message);
 
-  return path;
+  return articleId;
 }
 
 export async function deleteChangeDB(changeId: string) {

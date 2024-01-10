@@ -33,8 +33,8 @@ jobs:
               --build \
               --force-recreate
 
-            # Remove unused images/containers/volumes
-            # docker system prune -f
+            Remove unused images/containers/volumes
+            docker system prune -f
 
   deploy-visual-editor-demo:
     runs-on: ubuntu-latest
@@ -52,6 +52,7 @@ jobs:
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
             visual_editor_folder_name="MyVisualEditor"
+            logo_folder="/docs/icons"
             extensions_base_path="/var/www/wiki-${{ matrix.env }}"
             
             # Check if the folder exists
@@ -66,6 +67,9 @@ jobs:
             
             # Copy Visual Editor to Extensions
             cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
+
+            # Copy logo
+            cp -r $wikiadviser_path/$logo_folder /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/resources/assets/
 
             # Run update.php in Maintenance Folder
             # https://www.mediawiki.org/wiki/Manual:Update.php

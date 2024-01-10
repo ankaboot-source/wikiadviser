@@ -10,6 +10,7 @@ import {
 
 const articleRouter = Router();
 
+/* Articles */
 articleRouter.post('/article', createArticle);
 articleRouter.get(
   '/article/:id',
@@ -18,6 +19,7 @@ articleRouter.get(
 );
 articleRouter.delete('/article/:id', hasPermissions(['owner']), deleteArticle);
 
+/* Changes */
 articleRouter.get(
   '/article/:id/changes',
   hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),

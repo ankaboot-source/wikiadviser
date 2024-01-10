@@ -38,7 +38,7 @@ async function setSession() {
   session.value = (await supabaseClient.auth.getSession()).data.session;
   if (session.value) {
     user.value = (await supabaseClient.auth.getUser()).data.user;
-    if (!user.value?.user_metadata.picture) {
+    if (!user.value?.user_metadata.user_avatar) {
       await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });
       user.value = (await supabaseClient.auth.getUser()).data.user;
     }

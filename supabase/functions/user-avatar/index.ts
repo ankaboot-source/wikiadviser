@@ -14,20 +14,25 @@ Deno.serve(async (req) => {
       return new Response("ok", { headers: corsHeaders });
     }
 
-    const supabaseClient = createSupabaseClient(req.headers.get('Authorization'))
-    const supabaseAdmin = createSupabaseAdmin()
+    const supabaseClient = createSupabaseClient(
+      req.headers.get("Authorization")
+    );
+    const supabaseAdmin = createSupabaseAdmin();
 
     const {
       data: { user },
     }: usersRecord = await supabaseClient.auth.getUser();
 
     if (!user) {
-      return new Response("Unauthorized", { headers: corsHeaders, status: 401 });
+      return new Response("Unauthorized", {
+        headers: corsHeaders,
+        status: 401,
+      });
     }
 
     const userId = user.id;
     const userEmail = user.email;
-    const userAvatarURL = user.user_metadata.picture;
+    const userAvatarURL = user.user_metadata.user_avatar;
     const backgrounds = Deno.env
       .get("WIKIADVISER_BACKGROUND_COLORS")
       .split(", ");
@@ -35,16 +40,27 @@ Deno.serve(async (req) => {
     switch (req.method) {
       case "POST": {
         if (userAvatarURL) {
-          return new Response("Avatar already exists", { headers: corsHeaders });
+          return new Response("Avatar already exists", {
+            headers: corsHeaders,
+            status: 409,
+          });
         }
 
-        const avatar =
-          (await getGravatar(userEmail)) ??
-          generateAvatar(userEmail, backgrounds);
+        let avatar =
+          user.user_metadata.picture ?? (await getGravatar(userEmail));
+        let defaultAvatar = false;
+
+        if (!avatar) {
+          avatar = generateAvatar(userEmail, backgrounds);
+          defaultAvatar = true;
+        }
 
         const { error: updateError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {
-            user_metadata: { picture: avatar },
+            user_metadata: {
+              user_avatar: avatar,
+              default_avatar: defaultAvatar,
+            },
           });
 
         if (updateError) {
@@ -61,7 +77,8 @@ Deno.serve(async (req) => {
         const { error: deleteError } =
           await supabaseAdmin.auth.admin.updateUserById(userId, {
             user_metadata: {
-              picture: generateAvatar(userEmail, backgrounds),
+              user_avatar: generateAvatar(userEmail, backgrounds),
+              default_avatar: true,
             },
           });
 
@@ -73,7 +90,10 @@ Deno.serve(async (req) => {
       }
 
       default:
-        return new Response("Method not allowed", { headers: corsHeaders, status: 405 });
+        return new Response("Method not allowed", {
+          headers: corsHeaders,
+          status: 405,
+        });
     }
   } catch (error) {
     return new Response(error.message, { headers: corsHeaders, status: 500 });

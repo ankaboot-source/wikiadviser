@@ -8,6 +8,11 @@
       <div class="row items-center q-gutter-sm">
         <div class="col q-pl-sm">
           <div class="text-weight-bold">
+            <q-icon
+              v-if="props.article.web_publication"
+              name="public"
+              class="q-mr-xs"
+            />
             {{ article.title }}
           </div>
           <div v-if="article.description">

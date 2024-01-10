@@ -70,19 +70,25 @@ export default async function restrictMediawikiAccess(
       const articleId = isRequestFromVisualEditor
         ? (req.query.page as string)
         : articleIdForwardedUri;
-
       if (!articleId) {
         return res
           .status(403)
           .send('This user is not authorized to access this content');
       }
+
       const permission = await getUserPermission(articleId, user.id);
+      if (!permission && !isPublicArticle) {
+        return res
+          .status(403)
+          .send('This user is not authorized to access this content');
+      }
 
       const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
       const isViewer = permission
         ? ['viewer', 'reviewer'].includes(permission)
-        : null;
-      if ((isViewer || isPublicArticle) && !isViewArticle) {
+        : isPublicArticle;
+
+      if (isViewer && !isViewArticle) {
         return res
           .status(403)
           .send('This user is not authorized to access this content');

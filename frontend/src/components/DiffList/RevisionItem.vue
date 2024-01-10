@@ -55,15 +55,15 @@
     </q-list>
     <div
       v-if="canDeleteRevision && $props.revision.isRecent"
-      class="q-pb-md center"
+      class="q-pb-sm q-pr-xs text-right"
     >
       <q-btn
         no-caps
+        unelevated
+        flat
         icon="delete_forever"
-        outline
         color="blue-grey-10"
-        class="q-pa-sm bg-white text-capitalize"
-        label="cancel this revision"
+        label="Cancel this revision"
         @click.stop="deleteRevisionDialog = true"
       />
       <q-dialog v-model="deleteRevisionDialog">
@@ -75,7 +75,7 @@
             <q-btn v-close-popup flat round dense icon="close" size="sm" />
           </q-toolbar>
           <q-card-section>
-            Cancelling this revision is permanent. You will lose all changes and
+            Canceling this revision is permanent. You will lose all changes and
             details about this revision.
           </q-card-section>
           <q-card-actions class="borders">
@@ -94,7 +94,7 @@
               color="negative"
               style="width: 10em"
               no-caps
-              label="cancel"
+              label="Cancel"
               :loading="deletingRevision"
               @click="deleteRevision()"
             >

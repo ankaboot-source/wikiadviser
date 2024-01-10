@@ -97,3 +97,6 @@ jobs:
 
             # Start monitoring exporters 
             docker compose up -d;
+            docker stop monitoring-agent-cadvisor-1
+            docker stop monitoring-agent-promtail-1
+            docker container prune

@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
+import logger from '../logger';
+import SupabaseCookieAuthorization from '../services/auth/SupabaseCookieResolver';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -17,9 +19,11 @@ export default async function restrictMediawikiAccess(
 ) {
   const forwardedUri = req.headers['x-forwarded-uri'];
   const forwardedMethod = req.headers['x-forwarded-method'];
-  const { user } = res.locals;
 
   try {
+    const authHandler = new SupabaseCookieAuthorization(logger);
+    const user = await authHandler.verifyCookie(req);
+
     const articleIdRegEx = new RegExp(
       `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{36})(&|$)`,
       'i'
@@ -33,7 +37,7 @@ export default async function restrictMediawikiAccess(
     if (!(typeof forwardedUri === 'string')) {
       return res
         .status(403)
-        .send('This user is not authorized to access to this content');
+        .send('You are not authorized to access this content');
     }
 
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[2];
@@ -73,14 +77,20 @@ export default async function restrictMediawikiAccess(
       if (!articleId) {
         return res
           .status(403)
-          .send('This user is not authorized to access this content');
+          .send(
+            'This user is not authorized to access this content, missing article'
+          );
       }
 
-      const permission = await getUserPermission(articleId, user.id);
+      const permission = user
+        ? await getUserPermission(articleId, user.id)
+        : null;
       if (!permission && !isPublicArticle) {
         return res
           .status(403)
-          .send('This user is not authorized to access this content');
+          .send(
+            'This user is not authorized to access this content, missing permission'
+          );
       }
 
       const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
@@ -91,7 +101,9 @@ export default async function restrictMediawikiAccess(
       if (isViewer && !isViewArticle) {
         return res
           .status(403)
-          .send('This user is not authorized to access this content');
+          .send(
+            'This user is not authorized to access this content, editor permissions required'
+          );
       }
     }
     return res.sendStatus(200);

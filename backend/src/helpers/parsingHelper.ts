@@ -361,6 +361,7 @@ export async function processExportedArticle(
   pageContentXML: string,
   sourceLanguage: string,
   articleId: string,
+  displayTitle: string,
   pageContentHTML: string
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
@@ -373,6 +374,12 @@ export async function processExportedArticle(
   processedData = processedData.replace(
     /<title>(.*?)<\/title>/s,
     `<title>${articleId}</title>`
+  );
+
+  // Insert DISPLAYTITLE
+  processedData = processedData.replace(
+    /<\/text>/s,
+    `\n{{DISPLAYTITLE:${displayTitle}}}</text>`
   );
 
   // Externalize article sources to wikipedia

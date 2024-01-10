@@ -5,7 +5,8 @@ import {
   deleteArticle,
   getArticleChanges,
   updateArticleChanges,
-  hasPermissions
+  hasPermissions,
+  deleteArticleRevision
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
@@ -17,6 +18,14 @@ articleRouter.get(
   hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
   getParsedArticle
 );
+
+/* Revisions */
+articleRouter.delete(
+  '/article/:id/revisions/:revId',
+  hasPermissions(['owner']),
+  deleteArticleRevision
+);
+
 articleRouter.delete('/article/:id', hasPermissions(['owner']), deleteArticle);
 
 /* Changes */

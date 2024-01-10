@@ -1,14 +1,15 @@
 <template>
   <div class="column">
     <div class="text-h6 q-px-sm q-pb-sm">
-      <q-icon size="sm" name="model_training" /> Changes to review
+      <q-icon size="sm" name="thumbs_up_down" /> Changes to review
     </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
-        :key="revision.revision"
+        :key="revision.revid"
         :revision="revision"
         :role="role"
+        :article-id="articleId"
       />
 
       <!-- Past changes -->
@@ -71,6 +72,7 @@ import RevisionItem from './RevisionItem.vue';
 const store = useSelectedChangeStore();
 
 const props = defineProps<{
+  articleId: string;
   role: UserRole;
   changesList: ChangesItem[];
 }>();
@@ -79,31 +81,32 @@ const groupedChanges = computed(() => {
   const grouped = new Map<
     number,
     {
-      revision: number;
+      revid: number;
       summary: string;
       items: ChangesItem[];
     }
   >();
 
   props.changesList.forEach((item) => {
-    const revision = item.revision.revid;
+    const revid = item.revision.revid;
     const summary = item.revision.summary;
-    if (!grouped.has(revision)) {
-      grouped.set(revision, {
-        revision,
+    if (!grouped.has(revid)) {
+      grouped.set(revid, {
+        revid,
         summary,
         items: [],
       });
     }
 
-    grouped.get(revision)?.items.push(item);
+    grouped.get(revid)?.items.push(item);
   });
 
   const sortedGrouped = Array.from(grouped.values()).sort(
-    (a, b) => b.revision - a.revision
+    (a, b) => b.revid - a.revid
   );
 
   return sortedGrouped.map((item, index) => ({
+    isRecent: index === 0,
     index: sortedGrouped.length - index,
     ...item,
   }));

@@ -37,7 +37,7 @@ export default async function restrictMediawikiAccess(
     if (!(typeof forwardedUri === 'string')) {
       return res
         .status(403)
-        .send('This user is not authorized to access to this content');
+        .send('You are not authorized to access this content');
     }
 
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[2];

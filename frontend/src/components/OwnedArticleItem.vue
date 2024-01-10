@@ -12,7 +12,9 @@
               v-if="props.article.web_publication"
               name="public"
               class="q-mr-xs"
-            />
+            >
+              <q-tooltip>This article is published on the Web</q-tooltip>
+            </q-icon>
             {{ article.title }}
           </div>
           <div v-if="article.description">

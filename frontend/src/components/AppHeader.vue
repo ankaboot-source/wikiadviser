@@ -8,16 +8,14 @@
             icon="img:/icons/logo.svg"
             to="/"
           />
+          <q-icon v-if="article?.web_publication" name="public" class="q-mr-xs">
+            <q-tooltip>This article is published on the Web</q-tooltip>
+          </q-icon>
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
             to="."
             @click="$router.go(0)"
-          />
-          <q-icon
-            v-if="article?.web_publication"
-            name="public"
-            class="q-mr-xs"
           />
         </q-breadcrumbs>
       </q-toolbar-title>

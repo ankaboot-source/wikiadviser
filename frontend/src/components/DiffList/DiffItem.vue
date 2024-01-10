@@ -257,7 +257,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { ChangesItem, UserRole } from 'src/types';
+import { ChangesItem, UserRole, Status } from 'src/types';
 import {
   deleteChangeDB,
   insertComment,
@@ -286,6 +286,12 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
+
+type StatusInfo = {
+  message: string;
+  icon: string;
+};
+
 const editorPermission =
   props.role === UserRole.Editor || props.role === UserRole.Owner;
 const reviewerPermission =
@@ -293,6 +299,30 @@ const reviewerPermission =
   UserRole.Editor ||
   props.role === UserRole.Owner;
 const viewerPermission = props.role === UserRole.Viewer;
+
+const statusDictionary: Map<Status, StatusInfo> = new Map([
+  [
+    Status.AwaitingReviewerApproval,
+    {
+      message: 'Awaiting Reviewer Approval',
+      icon: 'lightbulb',
+    },
+  ],
+  [
+    Status.EditApproved,
+    {
+      message: 'Edit Approved',
+      icon: 'thumb_up',
+    },
+  ],
+  [
+    Status.EditRejected,
+    {
+      message: 'Edit Rejected',
+      icon: 'thumb_down',
+    },
+  ],
+]);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -337,41 +367,6 @@ async function handleComment() {
 }
 
 const description = ref(props.item?.description);
-
-enum Status {
-  AwaitingReviewerApproval = 0,
-  EditApproved = 1,
-  EditRejected = 2,
-}
-
-type StatusInfo = {
-  message: string;
-  icon: string;
-};
-
-const statusDictionary: Map<Status, StatusInfo> = new Map([
-  [
-    Status.AwaitingReviewerApproval,
-    {
-      message: 'Awaiting Reviewer Approval',
-      icon: 'lightbulb',
-    },
-  ],
-  [
-    Status.EditApproved,
-    {
-      message: 'Edit Approved',
-      icon: 'thumb_up',
-    },
-  ],
-  [
-    Status.EditRejected,
-    {
-      message: 'Edit Rejected',
-      icon: 'thumb_down',
-    },
-  ],
-]);
 
 const statusIcon = computed(
   () => statusDictionary.get(props.item?.status)!.icon

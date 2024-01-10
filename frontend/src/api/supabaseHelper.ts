@@ -185,11 +185,11 @@ export async function createLink(articleId: string) {
   return data?.id;
 }
 
-export async function verifyLink(token: string): Promise<boolean> {
+export async function verifyLink(token: string): Promise<string> {
   const userId = (await supabase.auth.getSession()).data.session?.user
     .id as string;
 
-  const { data: isValidToken, error: ValidationError } = await supabase.rpc(
+  const { data: articleId, error: validationError } = await supabase.rpc(
     'add_viewer_to_article',
     {
       user_id: userId,
@@ -197,9 +197,9 @@ export async function verifyLink(token: string): Promise<boolean> {
     }
   );
 
-  if (ValidationError) throw new Error(ValidationError.message);
+  if (validationError) throw new Error(validationError.message);
 
-  return isValidToken;
+  return articleId;
 }
 
 export async function deleteChangeDB(changeId: string) {

@@ -211,26 +211,6 @@ export async function deleteArticleRevision(
     await mediawiki.updateChanges(articleId, user.id);
     await supabaseClient.from('revisions').delete().eq('revid', revisionId);
 
-    const { data, error } = await supabaseClient
-      .from('revisions')
-      .select()
-      .eq('article_id', articleId)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      throw new Error(error.message);
-    }
-
-    const [latestRevision] = data ?? null;
-
-    if (latestRevision) {
-      await supabaseClient
-        .from('revisions')
-        .update({ revid: revision.edit.newrevid })
-        .eq('id', latestRevision.id);
-    }
-
     return res
       .status(200)
       .json({ message: `Deleted revision(${revisionId}).`, revision });

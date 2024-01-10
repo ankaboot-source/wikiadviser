@@ -20,15 +20,10 @@ export default async function restrictMediawikiAccess(
   const forwardedUri = req.headers['x-forwarded-uri'];
   const forwardedMethod = req.headers['x-forwarded-method'];
 
-  const authHandler = new SupabaseCookieAuthorization(logger);
-  const user = await authHandler.verifyCookie(req);
-
-  if (!user) {
-    return res.status(401).json({ message: 'Authorization denied' });
-  }
-
-  res.locals.user = user;
   try {
+    const authHandler = new SupabaseCookieAuthorization(logger);
+    const user = await authHandler.verifyCookie(req);
+
     const articleIdRegEx = new RegExp(
       `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{36})(&|$)`,
       'i'

@@ -15,6 +15,8 @@
 
 - Don't forget to copy and paste the email templates from `email-templates` to <b>supabase</b> templates.
 
+- Don't forget to create a user in supabase with email `contact@wikiadviser.io`.
+
 ## Important links and references
 
 - [Mediawiki API documentation](https://www.mediawiki.org/wiki/API:Main_page)

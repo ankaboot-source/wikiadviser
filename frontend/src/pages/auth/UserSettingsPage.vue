@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import Button from 'src/components/LoadingButton.vue';
-import { QSpinner, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Session, User, UserResponse } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
 
 const session = ref<Session | null>();
@@ -70,7 +70,7 @@ function goToHome() {
 async function deleteAccount() {
   deletingAccount.value = true;
   try {
-    await deleteUser(session.value?.user.id as string);
+    await deleteUser();
     $q.notify({
       message: 'User deleted.',
       icon: 'check',

@@ -71,3 +71,16 @@ export type ShareLink = {
   article_id: string;
   expired_at: string;
 };
+
+export enum Status {
+  AwaitingReviewerApproval = 0,
+  EditApproved = 1,
+  EditRejected = 2,
+}
+export interface Revision {
+  id: number;
+  index: number;
+  summary: string;
+  items: ChangesItem[];
+  isRecent: boolean;
+}

@@ -1,7 +1,7 @@
 <template>
   <div class="column">
     <div class="text-h6 q-px-sm q-pb-sm">
-      <q-icon size="sm" name="model_training" /> Changes to review
+      <q-icon size="sm" name="thumbs_up_down" /> Changes to review
     </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item

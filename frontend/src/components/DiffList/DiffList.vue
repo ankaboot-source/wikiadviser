@@ -9,7 +9,7 @@
         :key="revision.id"
         :revision="revision"
         :role="role"
-        :article-id="props.articleId"
+        :article-id="articleId"
       />
 
       <!-- Past changes -->

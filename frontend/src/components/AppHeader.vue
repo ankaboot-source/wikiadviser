@@ -5,7 +5,7 @@
         <q-breadcrumbs class="merriweather">
           <q-breadcrumbs-el
             label="WikiAdviser"
-            icon="img:/icons/favicon-32x32.png"
+            icon="img:/icons/logo.svg"
             to="/"
           />
           <q-breadcrumbs-el

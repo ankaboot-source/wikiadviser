@@ -33,7 +33,7 @@ jobs:
               --build \
               --force-recreate
 
-            Remove unused images/containers/volumes
+            #Remove unused images/containers/volumes
             docker system prune -f
 
   deploy-visual-editor-demo:

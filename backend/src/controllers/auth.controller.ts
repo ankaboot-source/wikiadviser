@@ -82,7 +82,9 @@ export default async function restrictMediawikiAccess(
           );
       }
 
-      const permission = await getUserPermission(articleId, user.id);
+      const permission = user
+        ? await getUserPermission(articleId, user.id)
+        : null;
       if (!permission && !isPublicArticle) {
         return res
           .status(403)

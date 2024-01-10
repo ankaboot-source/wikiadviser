@@ -43,8 +43,8 @@ Copy the repo's `docs/icons` folder into mediawiki's `$wgResourceBasePath/resour
 $wgResourceBasePath is where your mediawiki instance is installed. 
 */
 $wgLogos = [
-	'1x' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
-	'icon' => "$wgResourceBasePath/resources/assets/icons/LOGO.png",
+	'1x' => "$wgResourceBasePath/resources/assets/icons/logo.svg",
+	'icon' => "$wgResourceBasePath/resources/assets/icons/logo.svg",
 ];
 $wgFavicon = "$wgResourceBasePath/resources/assets/icons/favicon.ico";
 

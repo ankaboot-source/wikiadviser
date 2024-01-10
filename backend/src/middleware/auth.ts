@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import SupabaseCookieAuthorization from '../services/auth/SupabaseCookieResolver';
+import { NextFunction, Request, Response } from 'express';
 import logger from '../logger';
+import SupabaseCookieAuthorization from '../services/auth/SupabaseCookieResolver';
 
 /**
  * Authorization middleware for verifying user sessions.

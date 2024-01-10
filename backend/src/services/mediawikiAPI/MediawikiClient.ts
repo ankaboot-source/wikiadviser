@@ -218,11 +218,13 @@ export default class MediawikiClient {
    */
   async getArticleDiffHtml(articleId: string): Promise<{
     diff: string;
-    originalRevision: { id: string; summary: string };
+    originalRevision: { id: string };
     latestRevision: { id: string; summary: string };
   }> {
-    const { revid: originalRevid, comment: originalRevSummary } =
-      await this.getRevisionData(articleId, 'newer');
+    const { revid: originalRevid } = await this.getRevisionData(
+      articleId,
+      'newer'
+    );
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');
 
@@ -240,8 +242,7 @@ export default class MediawikiClient {
     return {
       diff,
       originalRevision: {
-        id: originalRevid,
-        summary: originalRevSummary
+        id: originalRevid
       },
       latestRevision: {
         id: latestRevid,

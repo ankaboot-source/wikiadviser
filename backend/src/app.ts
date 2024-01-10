@@ -25,9 +25,9 @@ if (SENTRY_DSN) {
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 app.use(cookieParser());
+app.use(authRouter);
 app.use(authorizationMiddlware);
 
-app.use(authRouter);
 app.use(articleRouter);
 app.use(wikipediaRouter);
 

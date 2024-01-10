@@ -78,7 +78,7 @@ export enum Status {
   EditRejected = 2,
 }
 export interface Revision {
-  id: number;
+  revid: number;
   index: number;
   summary: string;
   items: ChangesItem[];

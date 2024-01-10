@@ -6,7 +6,7 @@
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
-        :key="revision.id"
+        :key="revision.revid"
         :revision="revision"
         :role="role"
         :article-id="articleId"
@@ -81,28 +81,28 @@ const groupedChanges = computed(() => {
   const grouped = new Map<
     number,
     {
-      id: number;
+      revid: number;
       summary: string;
       items: ChangesItem[];
     }
   >();
 
   props.changesList.forEach((item) => {
-    const id = item.revision.revid;
+    const revid = item.revision.revid;
     const summary = item.revision.summary;
-    if (!grouped.has(id)) {
-      grouped.set(id, {
-        id,
+    if (!grouped.has(revid)) {
+      grouped.set(revid, {
+        revid,
         summary,
         items: [],
       });
     }
 
-    grouped.get(id)?.items.push(item);
+    grouped.get(revid)?.items.push(item);
   });
 
   const sortedGrouped = Array.from(grouped.values()).sort(
-    (a, b) => b.id - a.id
+    (a, b) => b.revid - a.revid
   );
 
   return sortedGrouped.map((item, index) => ({

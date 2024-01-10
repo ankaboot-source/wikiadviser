@@ -21,7 +21,7 @@ export default async function restrictMediawikiAccess(
 
   try {
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{1,36})(&|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{36})(&|$)`,
       'i'
     );
 
@@ -40,7 +40,7 @@ export default async function restrictMediawikiAccess(
     const article = articleIdForwardedUri
       ? await getArticle(articleIdForwardedUri)
       : null;
-    const isPublicArticle = article?.web_publication;
+    const isPublicArticle = article?.web_publication ?? null;
     if (!user && !isPublicArticle) {
       return res
         .status(403)
@@ -71,9 +71,12 @@ export default async function restrictMediawikiAccess(
         ? (req.query.page as string)
         : articleIdForwardedUri;
 
-      const permission = articleId
-        ? await getUserPermission(articleId, user.id)
-        : null;
+      if (!articleId) {
+        return res
+          .status(403)
+          .send('This user is not authorized to access this content');
+      }
+      const permission = await getUserPermission(articleId, user.id);
 
       const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
       const isViewer = permission

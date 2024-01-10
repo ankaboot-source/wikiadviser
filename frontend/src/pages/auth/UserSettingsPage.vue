@@ -1,59 +1,48 @@
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { QSpinner, useQuasar } from 'quasar';
+import Button from 'src/components/LoadingButton.vue';
+import { useQuasar } from 'quasar';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
 
 const session = ref<Session | null>();
+const user = ref<User | null>();
 const email = ref('');
-const picture = ref('');
+const revertingImage = ref(false);
 const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 const $router = useRouter();
 
-const isLoading = ref(false);
+const deletingAccount = ref(false);
 
 const showDeleteModal = ref(false);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
+  user.value = (await supabase.auth.getUser()).data.user;
   session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
     email.value = session.value?.user.email as string;
-    picture.value = session.value?.user.user_metadata.picture;
   });
 });
 
 async function revertImage() {
-  $q.loading.show({
-    boxClass: 'bg-white text-blue-grey-10 q-pa-xl',
-
-    spinner: QSpinner,
-    spinnerColor: 'primary',
-    spinnerSize: 140,
-
-    message: `
-      <div class='text-h6'>Reverting picture</div>
-      </br>
-      <div class='text-body1'>Please wait…</div>
-    `,
-    html: true,
-  });
+  revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    $q.loading.hide();
+    user.value = (await supabase.auth.getUser()).data.user;
     $q.notify({
       message: 'Reverted to default avatar picture.',
       icon: 'check',
       color: 'positive',
     });
+    revertingImage.value = false;
   } catch (error) {
-    $q.loading.hide();
     if (error instanceof Error) {
       console.error(error.message);
       $q.notify({
@@ -79,33 +68,20 @@ function goToHome() {
 }
 
 async function deleteAccount() {
-  $q.loading.show({
-    boxClass: 'bg-white text-dark q-pa-xl',
-
-    spinner: QSpinner,
-    spinnerColor: 'primary',
-    spinnerSize: 140,
-
-    message: `
-        <div class='text-h6'>Deleting “${email.value}”  </div></br>
-        <div class='text-body1'>Please wait…</div>`,
-    html: true,
-  });
+  deletingAccount.value = true;
   try {
     await deleteUser();
-    $q.loading.hide();
     $q.notify({
       message: 'User deleted.',
       icon: 'check',
       color: 'positive',
     });
+    deletingAccount.value = false;
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     articlesStore.resetArticles();
-
     document.location.href = '/';
   } catch (error) {
-    $q.loading.hide();
     if (error instanceof Error) {
       console.error(error.message);
       $q.notify({
@@ -122,9 +98,9 @@ async function deleteAccount() {
   }
 }
 
-const defaultAvatar = computed(
-  () => session.value?.user.user_metadata.default_avatar
-);
+const picture = computed(() => user.value?.user_metadata.user_avatar);
+
+const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
 </script>
 
 <template>
@@ -141,17 +117,18 @@ const defaultAvatar = computed(
         <div>
           <img :src="picture" style="width: 168px" />
           <br />
-          <q-btn
-            v-if="!defaultAvatar"
-            no-caps
+          <Button
+            :show="!defaultAvatar"
+            :loading="revertingImage"
             outline
-            class="text-sm"
+            class-name="text-sm"
             icon="no_photography"
-            label="Revert to default avatar"
             color="primary"
-            unelevated
-            @click="revertImage"
-          />
+            label="Revert to default avatar"
+            :on-click="revertImage"
+          >
+            Reverting to default avatar
+          </Button>
         </div>
       </div>
 
@@ -204,15 +181,16 @@ const defaultAvatar = computed(
               color="primary"
               label="Cancel"
             />
-            <q-btn
-              v-close-popup
-              unelevated
+            <Button
+              show
+              close-popup
               color="negative"
-              no-caps
               label="Delete"
-              :loading="isLoading"
+              :loading="deletingAccount"
               @click="deleteAccount"
-            />
+            >
+              Deleting
+            </Button>
           </q-card-actions>
         </q-card>
       </q-dialog>

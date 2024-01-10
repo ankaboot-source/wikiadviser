@@ -1,8 +1,6 @@
-CREATE OR REPLACE FUNCTION delete_user_and_keep_data()
-RETURNS void
-AS $$
-DECLARE
-  anonymous_id UUID;
+CREATE OR REPLACE FUNCTION delete_user_and_anonymize_data() RETURNS void SECURITY definer
+SET search_path = public AS $$
+DECLARE anonymous_id UUID;
 BEGIN
   -- Delete permissions
   DELETE FROM articles

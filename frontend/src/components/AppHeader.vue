@@ -63,7 +63,7 @@ const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
 const supabaseUser = ref<User | null>(props.user);
-const avatarURL = computed(() => supabaseUser.value?.user_metadata.picture);
+const avatarURL = computed(() => supabaseUser.value?.user_metadata.user_avatar);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;

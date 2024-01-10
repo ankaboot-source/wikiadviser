@@ -63,20 +63,20 @@
         outline
         color="blue-grey-10"
         class="q-pa-sm bg-white text-capitalize"
-        label="delete this revision"
+        label="cancel this revision"
         @click.stop="deleteRevisionDialog = true"
       />
       <q-dialog v-model="deleteRevisionDialog">
         <q-card>
           <q-toolbar class="borders">
             <q-toolbar-title class="merriweather">
-              Delete Revison
+              Cancel Revison
             </q-toolbar-title>
             <q-btn v-close-popup flat round dense icon="close" size="sm" />
           </q-toolbar>
           <q-card-section>
-            The changes made in this revision have been rejected. You may safely
-            discard this version.
+            Cancelling this revision is permanent. You will lose all changes and
+            details about this revision.
           </q-card-section>
           <q-card-actions class="borders">
             <q-space />
@@ -86,7 +86,7 @@
               no-caps
               outline
               color="primary"
-              label="Cancel"
+              label="Do not cancel this revision"
             />
             <q-btn
               :v-close-popup="!deletingRevision"
@@ -94,13 +94,13 @@
               color="negative"
               style="width: 10em"
               no-caps
-              label="Delete"
+              label="cancel"
               :loading="deletingRevision"
               @click="deleteRevision()"
             >
               <template #loading>
                 <q-spinner class="on-left" />
-                Deleting
+                Canceling
               </template>
             </q-btn>
           </q-card-actions>

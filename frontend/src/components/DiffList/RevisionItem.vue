@@ -44,7 +44,6 @@
         </q-item-section>
       </q-item-section>
     </template>
-
     <!-- Current Changes -->
     <q-list>
       <diff-item
@@ -54,7 +53,60 @@
         :role="role"
       />
     </q-list>
-
+    <div
+      v-if="canDeleteRevision && $props.revision.isRecent"
+      class="q-pb-md center"
+    >
+      <q-btn
+        no-caps
+        icon="delete_forever"
+        outline
+        color="blue-grey-10"
+        class="q-pa-sm bg-white text-capitalize"
+        label="delete this revision"
+        @click.stop="deleteRevisionDialog = true"
+      />
+      <q-dialog v-model="deleteRevisionDialog">
+        <q-card>
+          <q-toolbar class="borders">
+            <q-toolbar-title class="merriweather">
+              Delete Revison
+            </q-toolbar-title>
+            <q-btn v-close-popup flat round dense icon="close" size="sm" />
+          </q-toolbar>
+          <q-card-section>
+            The changes made in this revision have been rejected. You may safely
+            discard this version.
+          </q-card-section>
+          <q-card-actions class="borders">
+            <q-space />
+            <q-btn
+              v-if="!deletingRevision"
+              v-close-popup
+              no-caps
+              outline
+              color="primary"
+              label="Cancel"
+            />
+            <q-btn
+              :v-close-popup="!deletingRevision"
+              unelevated
+              color="negative"
+              style="width: 10em"
+              no-caps
+              label="Delete"
+              :loading="deletingRevision"
+              @click="deleteRevision()"
+            >
+              <template #loading>
+                <q-spinner class="on-left" />
+                Deleting
+              </template>
+            </q-btn>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+    </div>
     <q-separator />
   </q-expansion-item>
 </template>
@@ -62,26 +114,45 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
-import { ChangesItem, UserRole } from 'src/types';
+import { UserRole, Status, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { api } from 'src/boot/axios';
+import { useQuasar } from 'quasar';
+import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   role: UserRole;
-  revision: {
-    index: number;
-    revision: number;
-    summary: string;
-    items: ChangesItem[];
-  };
+  revision: Revision;
+  articleId: string;
 }>();
+
+const store = useSelectedChangeStore();
+const $quasar = useQuasar();
+const $router = useRouter();
+
 const expanded = ref(true);
+const deleteRevisionDialog = ref<boolean>(false);
+const deletingRevision = ref<boolean>(false);
 
 const summary = computed(() => props.revision.summary);
-
 const changesToReviewLength = computed(() => {
   return props.revision.items.filter((item) => item.status === 0).length;
 });
-const store = useSelectedChangeStore();
+const localeDateString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
+);
+const localeTimeString = computed(() =>
+  new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
+    timeStyle: 'short',
+  })
+);
+
+const canDeleteRevision = computed(() =>
+  props.revision.items.every(
+    (revision) => revision.status === Status.EditRejected
+  )
+);
+
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -95,12 +166,32 @@ watch(
   }
 );
 
-const localeDateString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
-);
-const localeTimeString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
-    timeStyle: 'short',
-  })
-);
+async function deleteRevision() {
+  deletingRevision.value = true;
+
+  try {
+    await api.delete(
+      `/article/${props.articleId}/revisions/${props.revision.id}`
+    );
+    $quasar.notify({
+      message: 'Successfully deleted change',
+      icon: 'check',
+      color: 'positive',
+    });
+    $router.go(0);
+  } catch (error) {
+    let message = 'Failed to delete change';
+
+    if (error instanceof Error) {
+      message = error.message;
+    }
+    $quasar.notify({
+      message,
+      color: 'negative',
+    });
+  }
+
+  deletingRevision.value = false;
+  deleteRevisionDialog.value = false;
+}
 </script>

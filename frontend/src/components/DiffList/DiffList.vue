@@ -6,9 +6,10 @@
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
       <revision-item
         v-for="revision in groupedIndexedChanges"
-        :key="revision.revision"
+        :key="revision.id"
         :revision="revision"
         :role="role"
+        :article-id="props.articleId"
       />
 
       <!-- Past changes -->
@@ -71,6 +72,7 @@ import RevisionItem from './RevisionItem.vue';
 const store = useSelectedChangeStore();
 
 const props = defineProps<{
+  articleId: string;
   role: UserRole;
   changesList: ChangesItem[];
 }>();
@@ -79,31 +81,32 @@ const groupedChanges = computed(() => {
   const grouped = new Map<
     number,
     {
-      revision: number;
+      id: number;
       summary: string;
       items: ChangesItem[];
     }
   >();
 
   props.changesList.forEach((item) => {
-    const revision = item.revision.revid;
+    const id = item.revision.revid;
     const summary = item.revision.summary;
-    if (!grouped.has(revision)) {
-      grouped.set(revision, {
-        revision,
+    if (!grouped.has(id)) {
+      grouped.set(id, {
+        id,
         summary,
         items: [],
       });
     }
 
-    grouped.get(revision)?.items.push(item);
+    grouped.get(id)?.items.push(item);
   });
 
   const sortedGrouped = Array.from(grouped.values()).sort(
-    (a, b) => b.revision - a.revision
+    (a, b) => b.id - a.id
   );
 
   return sortedGrouped.map((item, index) => ({
+    isRecent: index === 0,
     index: sortedGrouped.length - index,
     ...item,
   }));

@@ -174,13 +174,13 @@ async function deleteRevision() {
       `/article/${props.articleId}/revisions/${props.revision.id}`
     );
     $quasar.notify({
-      message: 'Successfully deleted change',
+      message: 'Revision has been canceled',
       icon: 'check',
       color: 'positive',
     });
     $router.go(0);
   } catch (error) {
-    let message = 'Failed to delete change';
+    let message = 'Failed to cancel revision';
 
     if (error instanceof Error) {
       message = error.message;

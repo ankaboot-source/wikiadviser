@@ -32,7 +32,7 @@ const props = defineProps({
   buttonToggle: { type: String, required: true },
 });
 const $q = useQuasar();
-const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit&expectedTitle=${props.article.title}`;
+const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit`;
 const loader = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {

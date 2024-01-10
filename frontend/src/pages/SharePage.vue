@@ -7,13 +7,16 @@ const router = useRouter();
 const valid = ref(true);
 
 onBeforeMount(async () => {
-  const { params } = useRoute();
-  const token = params.token;
-  valid.value = await verifyLink(`${token}`);
-  if (valid.value) {
+  try {
+    const { params } = useRoute();
+    const token = params.token;
+    const path = await verifyLink(`${token}`);
+
     router.push({
-      path: '/',
+      path: `/articles/${path}`,
     });
+  } catch (error) {
+    valid.value = false;
   }
 });
 </script>

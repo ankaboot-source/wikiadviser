@@ -41,15 +41,6 @@ export default async function restrictMediawikiAccess(
     }
 
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[2];
-    const article = articleIdForwardedUri
-      ? await getArticle(articleIdForwardedUri)
-      : null;
-    const isPublicArticle = article?.web_publication ?? null;
-    if (!user && !isPublicArticle) {
-      return res
-        .status(403)
-        .send('You are not authorized to access this content');
-    }
 
     const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
       (lang: string) => `/${lang}/api.php`
@@ -66,6 +57,16 @@ export default async function restrictMediawikiAccess(
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
+      const article = articleIdForwardedUri
+        ? await getArticle(articleIdForwardedUri)
+        : null;
+      const isPublicArticle = article?.web_publication ?? null;
+      if (!user && !isPublicArticle) {
+        return res
+          .status(403)
+          .send('You are not authorized to access this content');
+      }
+
       const isRequestFromVisualEditor =
         forwardUriStartsWith.some((prefix: string) =>
           forwardedUri.startsWith(prefix)

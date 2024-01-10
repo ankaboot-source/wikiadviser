@@ -12,6 +12,21 @@ import { MediawikiAutomator } from './MediawikiAutomator';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
 
+type RevisionDeleted = {
+  error?: {
+    info: string;
+  };
+  edit: {
+    result: string;
+    pageid: number;
+    title: string;
+    contentmodel: string;
+    oldrevid: number;
+    newrevid: number;
+    newtimestamp: string;
+    watched: string;
+  };
+};
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
@@ -195,37 +210,101 @@ export default class MediawikiClient {
     return response.data.query.pages[0].revisions[0];
   }
 
-  async updateChanges(articleId: string, userId: string) {
-    const { revid: originalRevid } = await this.getRevisionData(
-      articleId,
-      'newer'
-    );
-    const { revid: latestRevid, comment: summary } = await this.getRevisionData(
-      articleId,
-      'older'
-    );
+  /**
+   * Retrieves the HTML difference between the latest and original revisions of an article.
+   *
+   * @param articleId - The ID of the article.
+   * @returns An object containing the difference HTML and revision IDs of the original and latest revisions.
+   */
+  async getArticleDiffHtml(articleId: string): Promise<{
+    diff: string;
+    originalRevision: { id: string; summary: string };
+    latestRevision: { id: string; summary: string };
+  }> {
+    const { revid: originalRevid, comment: originalRevSummary } =
+      await this.getRevisionData(articleId, 'newer');
+    const { revid: latestRevid, comment: latestRevSummary } =
+      await this.getRevisionData(articleId, 'older');
 
     logger.info('Getting the Diff HTML of Revids:', {
       originalRevid,
       latestRevid
     });
 
-    const revisionId = await insertRevision(articleId, latestRevid, summary);
-
-    const diffPage = await this.mediawikiAutomator.getMediaWikiDiffHtml(
+    const diff = await this.mediawikiAutomator.getMediaWikiDiffHtml(
       articleId,
       originalRevid,
       latestRevid
     );
 
+    return {
+      diff,
+      originalRevision: {
+        id: originalRevid,
+        summary: originalRevSummary
+      },
+      latestRevision: {
+        id: latestRevid,
+        summary: latestRevSummary
+      }
+    };
+  }
+
+  async updateChanges(articleId: string, userId: string) {
+    const { diff, latestRevision } = await this.getArticleDiffHtml(articleId);
+
+    const revisionId = await insertRevision(
+      articleId,
+      latestRevision.id,
+      latestRevision.summary
+    );
+
     const { changesToUpsert, htmlContent } = await refineArticleChanges(
       articleId,
-      diffPage,
+      diff,
       userId,
       revisionId
     );
 
     await upsertChanges(changesToUpsert);
     await updateCurrentHtmlContent(articleId, htmlContent);
+  }
+
+  /**
+   * Deletes a specific revision using its ID.
+   *
+   * @param revisionId - The ID of the revision to be deleted.
+   * @returns The response data after attempting to delete the revision.
+   * @throws An error if the deletion fails.
+   */
+  async deleteRevision(articleId: string, revisionId: string) {
+    const csrftoken = await this.loginAndGetCsrf();
+    const { data }: { data: RevisionDeleted } =
+      await this.mediawikiApiInstance.post(
+        '',
+        {
+          action: 'edit',
+          title: articleId,
+          undo: revisionId,
+          token: csrftoken,
+          format: 'json'
+        },
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+
+    this.logout(csrftoken);
+    const error = data.error?.info;
+
+    if (error) {
+      throw new Error(
+        `Failed to delete revision with id ${revisionId}: ${error}`
+      );
+    }
+
+    return data;
   }
 }

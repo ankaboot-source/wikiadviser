@@ -11,6 +11,7 @@ import logger from '../logger';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
+import supabaseClient from '../api/supabase';
 
 /**
  * Creates a new article and imports it into a MediaWiki instance.
@@ -153,7 +154,6 @@ export async function updateArticleChanges(
  * Middleware function that checks if the user has the required permissions.
  *
  * @param {string[]} permissions - The required permissions for accessing a specific resource.
- * @returns {(req: Request, res: Response, next: NextFunction) => Promise<void>} - Middleware function.
  */
 export const hasPermissions =
   (permissions: string[]) =>
@@ -181,3 +181,60 @@ export const hasPermissions =
       return res.status(500).json({ message });
     }
   };
+
+/**
+ * Delete a specific revision of an article.
+ *
+ * @param req - The Express request object.
+ * @param res - The Express response object.
+ * @param next - The Express next function.
+ */
+export async function deleteArticleRevision(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  try {
+    const { id: articleId, revId: revisionId } = req.params;
+    const { user } = res.locals;
+
+    const { language } = await getArticle(articleId);
+
+    const mediawiki = new MediawikiClient(
+      language,
+      wikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
+    const revision = await mediawiki.deleteRevision(articleId, revisionId);
+
+    // Update changes in article_html
+    await mediawiki.updateChanges(articleId, user.id);
+    await supabaseClient.from('revisions').delete().eq('revid', revisionId);
+
+    const { data, error } = await supabaseClient
+      .from('revisions')
+      .select()
+      .eq('article_id', articleId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const [latestRevision] = data ?? null;
+
+    if (latestRevision) {
+      await supabaseClient
+        .from('revisions')
+        .update({ revid: revision.edit.newrevid })
+        .eq('id', latestRevision.id);
+    }
+
+    return res
+      .status(200)
+      .json({ message: `Deleted revision(${revisionId}).`, revision });
+  } catch (error) {
+    return next(error);
+  }
+}

@@ -237,7 +237,6 @@ export async function refineArticleChanges(
 
 export function parseArticle(article: Article, changes: Change[]) {
   const content = article.current_html_content;
-
   if (!content) {
     return null;
   }
@@ -245,6 +244,12 @@ export function parseArticle(article: Article, changes: Change[]) {
   const CheerioAPI = load(content);
   CheerioAPI('[data-id]').each((index, element) => {
     // Add more data
+
+    if (!changes[index]) {
+      // In case article html and changes not synced
+      return;
+    }
+
     const $element = CheerioAPI(element);
     $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
     $element.attr('data-status', String(changes[index].status));

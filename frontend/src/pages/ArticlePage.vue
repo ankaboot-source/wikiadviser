@@ -45,8 +45,8 @@ const { params } = route;
 
 const users = ref();
 
-const article = computed(() => articlesStore.getArticleById(articleId.value));
 const articleId = ref('');
+const article = computed(() => articlesStore.getArticleById(articleId.value));
 
 const role = ref<UserRole>(UserRole.Viewer);
 const editorPermission = ref<boolean | null>(null);

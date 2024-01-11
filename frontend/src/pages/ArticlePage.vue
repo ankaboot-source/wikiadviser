@@ -33,8 +33,8 @@ import {
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Article, ChangesItem, UserRole } from 'src/types';
-import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { ChangesItem, UserRole } from 'src/types';
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -45,8 +45,8 @@ const { params } = route;
 
 const users = ref();
 
-const article = ref<Article>();
 const articleId = ref('');
+const article = computed(() => articlesStore.getArticleById(articleId.value));
 
 const role = ref<UserRole>(UserRole.Viewer);
 const editorPermission = ref<boolean | null>(null);
@@ -88,7 +88,6 @@ onBeforeMount(async () => {
   articleId.value = params.articleId as string;
 
   await articlesStore.fetchArticles(data.session.user.id);
-  article.value = articlesStore.getArticleById(articleId.value);
 
   if (!article.value) {
     // Article does not exist for this user

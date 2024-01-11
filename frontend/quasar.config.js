@@ -23,7 +23,7 @@ require('dotenv').config();
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
-      fix: true,
+      // fix: true,
       // include = [],
       // exclude = [],
       // rawOptions = {},

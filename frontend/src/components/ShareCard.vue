@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 30vw">
     <q-toolbar class="bg-white borders">
-      <q-toolbar-title class="merriweather">Share this article</q-toolbar-title>
+      <q-toolbar-title class="merriweather">Sharing settings</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
@@ -20,9 +20,13 @@
     <q-card-section v-if="ownerPermission">
       <q-toggle
         v-model="web_publication_toggle"
-        label="Publish this article on the Web and make it readable to everyone 🌍"
         @update:model-value="handlePublish()"
-      />
+      >
+        Publish this article on the Web and make it readable to everyone
+        <q-icon name="public" size="xs" class="q-ml-xs">
+          <q-tooltip>This article is published on the Web</q-tooltip>
+        </q-icon>
+      </q-toggle>
     </q-card-section>
 
     <q-card-actions v-if="ownerPermission" class="borders">

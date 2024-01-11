@@ -74,7 +74,7 @@ const message = computed(() => {
 onMounted(() => {
   // Replaces Azure name & logo with Microsoft.
   const signInButton = Array.from(
-    document.querySelectorAll('.supabase-auth-ui_ui-button')
+    document.querySelectorAll('.supabase-auth-ui_ui-button'),
   ).find((button) => button.textContent === 'Sign in with Azure');
 
   if (signInButton) {

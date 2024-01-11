@@ -102,7 +102,7 @@ const groupedChanges = computed(() => {
   });
 
   const sortedGrouped = Array.from(grouped.values()).sort(
-    (a, b) => b.revid - a.revid,
+    (a, b) => b.revid - a.revid
   );
 
   return sortedGrouped.map((item, index) => ({
@@ -117,20 +117,21 @@ const groupedIndexedChanges = computed(() =>
     .map((groupedItem) => ({
       ...groupedItem,
       items: groupedItem.items.filter(
-        (item) => item.index !== null && !item.archived,
+        (item) => item.index !== null && !item.archived
       ),
     }))
-    .filter((groupedItem) => groupedItem.items.length > 0),
+    .filter((groupedItem) => groupedItem.items.length > 0)
 );
 
 const archivedChanges = computed(() =>
-  props.changesList.filter((item) => item.archived),
+  props.changesList.filter((item) => item.archived)
 );
 const unindexedChanges = computed(() =>
-  props.changesList.filter((item) => item.index === null),
+  // Archived with a status either approved or rejected
+  props.changesList.filter((item) => item.index === null && item.status !== 0)
 );
 const pastChanges = computed(() =>
-  archivedChanges.value.concat(unindexedChanges.value),
+  archivedChanges.value.concat(unindexedChanges.value)
 );
 
 const expanded = ref(false);
@@ -143,9 +144,9 @@ watch(
     }
 
     expanded.value = archivedChanges.value.some(
-      (item) => item.status !== 0 && item.id === selectedChangeId,
+      (item) => item.status !== 0 && item.id === selectedChangeId
     );
-  },
+  }
 );
 </script>
 <style>

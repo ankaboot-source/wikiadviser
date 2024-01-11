@@ -66,12 +66,6 @@ export type Permission = {
   role: UserRole;
 };
 
-export type ShareLink = {
-  id: string;
-  article_id: string;
-  expired_at: string;
-};
-
 export enum Status {
   AwaitingReviewerApproval = 0,
   EditApproved = 1,

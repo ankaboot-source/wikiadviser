@@ -139,18 +139,18 @@ const changesToReviewLength = computed(() => {
   return props.revision.items.filter((item) => item.status === 0).length;
 });
 const localeDateString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleDateString(),
+  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
 );
 const localeTimeString = computed(() =>
   new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
     timeStyle: 'short',
-  }),
+  })
 );
 
 const canDeleteRevision = computed(() =>
   props.revision.items.every(
-    (revision) => revision.status === Status.EditRejected,
-  ),
+    (revision) => revision.status === Status.EditRejected
+  )
 );
 
 watch(
@@ -161,9 +161,9 @@ watch(
     }
 
     expanded.value = props.revision.items.some(
-      (item) => item.id === selectedChangeId,
+      (item) => item.id === selectedChangeId
     );
-  },
+  }
 );
 
 async function deleteRevision() {
@@ -171,7 +171,7 @@ async function deleteRevision() {
 
   try {
     await api.delete(
-      `/article/${props.articleId}/revisions/${props.revision.revid}`,
+      `/article/${props.articleId}/revisions/${props.revision.revid}`
     );
     $quasar.notify({
       message: 'Revision has been canceled',

@@ -100,7 +100,7 @@ const onPermissionChange = (permission: EmittedPermission) => {
     return;
   }
   const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
-    (perm) => perm.permissionId === permissionId,
+    (perm) => perm.permissionId === permissionId
   );
 
   if (existingPermissionIndex !== -1) {
@@ -181,12 +181,12 @@ async function handleApplyChanges() {
     try {
       await updateArticleWebPublication(
         web_publication_toggle.value,
-        props.article.article_id,
+        props.article.article_id
       );
       if (web_publication_toggle.value) {
         // Publish
         copyToClipboard(
-          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
         );
         $q.notify({
           message: 'Published on the web',
@@ -231,7 +231,7 @@ async function handleApplyChanges() {
 function handlePublish() {
   if (web_publication_toggle.value) {
     copyToClipboard(
-      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
     );
     $q.notify({
       message: 'Publish link copied to clipboard',

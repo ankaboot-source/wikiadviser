@@ -25,6 +25,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
     throw new Error(permissionsError.message);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = permissionsData.map((permission: any) => ({
     picture: permission.user.raw_user_meta_data.picture,
     email: permission.user.email,
@@ -72,6 +73,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
 
   const articles: Article[] = articleData
     .filter((article) => article.role !== null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((article: any) => ({
       article_id: article.article_id,
       title: article.articles.title,

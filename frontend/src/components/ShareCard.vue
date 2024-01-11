@@ -40,6 +40,7 @@
         label="Cancel"
       />
       <q-btn
+        v-close-popup
         color="primary"
         unelevated
         no-caps

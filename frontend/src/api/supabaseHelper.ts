@@ -186,13 +186,9 @@ export async function createLink(articleId: string) {
 }
 
 export async function verifyLink(token: string): Promise<string> {
-  const userId = (await supabase.auth.getSession()).data.session?.user
-    .id as string;
-
   const { data: articleId, error: validationError } = await supabase.rpc(
     'add_viewer_to_article',
     {
-      user_id: userId,
       token,
     }
   );

@@ -27,27 +27,5 @@ CREATE TRIGGER delete_old_share_links_trigger
 AFTER INSERT
 ON "public"."share_links" EXECUTE PROCEDURE delete_old_share_links();
 
--- add viewer function
-CREATE OR REPLACE FUNCTION add_viewer_to_article(user_id uuid, token uuid) RETURNS uuid
-LANGUAGE plpgsql AS $$
-DECLARE share_record share_links %ROWTYPE;
-BEGIN
-  SELECT * INTO share_record
-  FROM share_links
-  WHERE id = token
-  AND expired_at >= NOW()
-  LIMIT 1;
-
-  INSERT INTO permissions(user_id, article_id, role)
-  VALUES (
-    user_id,
-    share_record.article_id,
-    'viewer'
-  );
-
-  RETURN share_record.article_id;
-END;
-$$;
-
 -- drop policy
 DROP FUNCTION IF EXISTS insert_permissions_policy();

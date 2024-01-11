@@ -22,7 +22,7 @@
         @click="viewArticleInNewTab()"
       />
       <q-btn
-        v-if="role != UserRole.Viewer"
+        v-if="role != UserRole.Owner"
         icon="link"
         outline
         label="Share link"
@@ -84,6 +84,7 @@ import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, UserRole } from 'src/types';
+import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
 
 const store = useSelectedChangeStore();
@@ -177,6 +178,10 @@ async function copyShareLinkToClipboard() {
     message: 'Share link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',
+  });
+  $q.notify({
+    message: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
+    color: 'positive',
   });
 }
 

@@ -12,7 +12,9 @@
               v-if="props.article.web_publication"
               name="public"
               class="q-mr-xs"
-            />
+            >
+              <q-tooltip>This article is published on the Web</q-tooltip>
+            </q-icon>
             {{ article.title }}
           </div>
           <div v-if="article.description">
@@ -188,7 +190,7 @@ async function removeArticle(articleId: string) {
 const language = computed(
   () =>
     wikiadviserLanguages.find(
-      (option) => props.article.language === option.lang
-    )?.label
+      (option) => props.article.language === option.lang,
+    )?.label,
 );
 </script>

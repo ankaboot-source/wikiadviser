@@ -120,7 +120,7 @@
 
 - You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc..., in the extensions folder of mediawiki (for example `/var/www/wiki-dev/en/extensions`), each extension has its official install documentation provided by mediawiki, please follow it to install your required extension.
 
-- Copy the repository's `docs/icons` folder into mediawiki's `(mediawiki root folder)/resources/assets` to set our icon in the mediawiki instance.
+- Copy this [folder](./docs/icons) into mediawiki's `(mediawiki root folder)/resources/assets` to set our icon in the mediawiki instance (Automated).
 
 - Replace <code>LocalSettings.php</code> in the root folder of your mediawiki instance with [LocalSettings.php](./LocalSettings.php)
 

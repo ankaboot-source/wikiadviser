@@ -208,8 +208,8 @@ export async function deleteArticleRevision(
     const revision = await mediawiki.deleteRevision(articleId, revisionId);
 
     // Update changes in article_html
-    await mediawiki.updateChanges(articleId, user.id);
     await supabaseClient.from('revisions').delete().eq('revid', revisionId);
+    await mediawiki.updateChanges(articleId, user.id);
 
     return res
       .status(200)

@@ -138,7 +138,7 @@ watch(
     await nextTick();
     handleTabIndexes();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -146,7 +146,7 @@ watch(
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
       const element = document.querySelector(
-        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`
+        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`,
       );
 
       if (element) {
@@ -166,7 +166,7 @@ watch(
         element.classList.remove('hovered');
       });
     }
-  }
+  },
 );
 
 const $q = useQuasar();
@@ -204,7 +204,7 @@ const toggleOptions = computed(() =>
     props.editorPermission
   )
     ? [viewButton]
-    : [viewButton, editButton]
+    : [viewButton, editButton],
 );
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
@@ -222,7 +222,7 @@ watch(
     }
     buttonToggle.value = newToggle;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onSwitchTabEmitChange = (tab: string) => {
@@ -232,7 +232,7 @@ const onSwitchTabEmitChange = (tab: string) => {
 function viewArticleInNewTab() {
   window.open(
     `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
-    '_blank'
+    '_blank',
   );
 }
 </script>

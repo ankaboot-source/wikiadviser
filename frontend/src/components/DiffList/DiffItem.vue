@@ -206,10 +206,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole, Status } from 'src/types';
-import {
-  insertComment,
-  updateChange,
-} from 'src/api/supabaseHelper';
+import { insertComment, updateChange } from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
@@ -314,11 +311,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)!.icon
+  () => statusDictionary.get(props.item?.status)!.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)!.message
+  () => statusDictionary.get(props.item?.status)!.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
@@ -335,7 +332,9 @@ async function handleDescription() {
 }
 
 const isArchived = computed(() => props.item.archived);
-const archiveButton = computed(() => isArchived.value ? 'unarchive' : 'archive');
+const archiveButton = computed(() =>
+  isArchived.value ? 'unarchive' : 'archive',
+);
 
 async function archiveChange(archived = true) {
   await updateChange(props.item.id, undefined, undefined, archived);
@@ -361,7 +360,7 @@ watch(
       }, 400);
       store.selectedChangeId = '';
     }
-  }
+  },
 );
 
 function setHovered(value: string) {
@@ -369,10 +368,10 @@ function setHovered(value: string) {
 }
 
 const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString()
+  new Date(props.item?.created_at).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString()
+  new Date(props.item?.created_at).toLocaleTimeString(),
 );
 </script>
 <style scoped>

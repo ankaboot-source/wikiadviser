@@ -125,7 +125,7 @@ const articlesFiltered = computed(() => {
     return articles.value;
   } else {
     return articles.value?.filter((article: Article) =>
-      article.title.toLowerCase().includes(trimmedTerm.toLowerCase())
+      article.title.toLowerCase().includes(trimmedTerm.toLowerCase()),
     );
   }
 });

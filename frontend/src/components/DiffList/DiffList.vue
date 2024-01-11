@@ -32,17 +32,6 @@
                 text: 'This change was manually archived.',
               }"
             />
-            <diff-item
-              v-for="item in unindexedChanges"
-              :key="item.id"
-              :item="item"
-              :role="role"
-              :past-change="{
-                icon: 'link_off',
-                text: 'This change was automatically orphaned.',
-                disable: true,
-              }"
-            />
             <q-separator />
           </q-list>
         </q-item-section>
@@ -126,13 +115,7 @@ const groupedIndexedChanges = computed(() =>
 const archivedChanges = computed(() =>
   props.changesList.filter((item) => item.archived)
 );
-const unindexedChanges = computed(() =>
-  // Archived with a status either approved or rejected
-  props.changesList.filter((item) => item.index === null && item.status !== 0)
-);
-const pastChanges = computed(() =>
-  archivedChanges.value.concat(unindexedChanges.value)
-);
+const pastChanges = computed(() => archivedChanges.value );
 
 const expanded = ref(false);
 

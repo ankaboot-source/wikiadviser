@@ -213,9 +213,7 @@ import {
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { useQuasar } from 'quasar';
 
-const $quasar = useQuasar();
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
@@ -337,9 +335,7 @@ async function handleDescription() {
 }
 
 const isArchived = computed(() => props.item.archived);
-const archiveButton = computed(() => {
-  return isArchived.value ? 'reopen' : 'archive';
-});
+const archiveButton = computed(() => isArchived.value ? 'unarchive' : 'archive');
 
 async function archiveChange(archived = true) {
   await updateChange(props.item.id, undefined, undefined, archived);

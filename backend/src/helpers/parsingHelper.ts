@@ -237,7 +237,6 @@ export async function refineArticleChanges(
 
 export function parseArticle(article: Article, changes: Change[]) {
   const content = article.current_html_content;
-
   if (!content) {
     return null;
   }
@@ -245,6 +244,12 @@ export function parseArticle(article: Article, changes: Change[]) {
   const CheerioAPI = load(content);
   CheerioAPI('[data-id]').each((index, element) => {
     // Add more data
+
+    if (!changes[index]) {
+      // In case article html and changes not synced
+      return;
+    }
+
     const $element = CheerioAPI(element);
     $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
     $element.attr('data-status', String(changes[index].status));
@@ -356,6 +361,7 @@ export async function processExportedArticle(
   pageContentXML: string,
   sourceLanguage: string,
   articleId: string,
+  displayTitle: string,
   pageContentHTML: string
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
@@ -368,6 +374,12 @@ export async function processExportedArticle(
   processedData = processedData.replace(
     /<title>(.*?)<\/title>/s,
     `<title>${articleId}</title>`
+  );
+
+  // Insert DISPLAYTITLE
+  processedData = processedData.replace(
+    /<\/text>/s,
+    `\n{{DISPLAYTITLE:${displayTitle}}}</text>`
   );
 
   // Externalize article sources to wikipedia

@@ -7,7 +7,7 @@ defineProps<{
   outline?: boolean;
   color: 'primary' | 'negative';
   label: string;
-  style?: string;
+  styling?: string;
   onClick: () => void;
   className?: string;
 }>();
@@ -20,7 +20,7 @@ defineProps<{
     unelevated
     :class="className"
     :color="color"
-    :style="style"
+    :style="styling"
     no-caps
     :icon="icon"
     :outline="outline"

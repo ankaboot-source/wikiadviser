@@ -181,7 +181,7 @@ async function handleApplyChanges() {
       if (web_publication_toggle.value) {
         // Publish
         copyToClipboard(
-          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
         );
         $q.notify({
           message: 'Published on the web',
@@ -226,7 +226,7 @@ async function handleApplyChanges() {
 function handlePublish() {
   if (web_publication_toggle.value) {
     copyToClipboard(
-      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php/${props.article.article_id}`
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
     );
     $q.notify({
       message: 'Publish link copied to clipboard',

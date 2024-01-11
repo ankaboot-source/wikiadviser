@@ -158,9 +158,61 @@
           @click="expanded = false"
         />
         <q-space />
+        <template v-if="isUnindexed">
+          <q-btn
+            no-caps
+            icon="delete_forever"
+            outline
+            color="blue-grey-10"
+            class="bg-white text-capitalize"
+            label="delete"
+            @click.stop="deleteChangeDialog = true"
+          />
+          <q-dialog v-model="deleteChangeDialog">
+            <q-card>
+              <q-toolbar class="borders">
+                <q-toolbar-title class="merriweather">
+                  Delete Change
+                </q-toolbar-title>
+                <q-btn v-close-popup flat round dense icon="close" size="sm" />
+              </q-toolbar>
+              <q-card-section>
+                This change is unrelated to any revisions and can be safely
+                deleted.
+              </q-card-section>
+              <q-card-actions class="borders">
+                <q-space />
+                <q-btn
+                  v-if="!deletingChange"
+                  v-close-popup
+                  no-caps
+                  outline
+                  color="primary"
+                  label="Cancel"
+                />
+                <q-btn
+                  :v-close-popup="!deletingChange"
+                  unelevated
+                  color="negative"
+                  style="width: 10em"
+                  no-caps
+                  label="Delete"
+                  :loading="deletingChange"
+                  @click="deleteChange()"
+                >
+                  <template #loading>
+                    <q-spinner class="on-left" />
+                    Deleting
+                  </template>
+                </q-btn>
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
+        </template>
+
         <!-- User: Reviewer Only -->
         <template
-          v-if="
+          v-else-if="
             reviewerPermission &&
             !viewerPermission &&
             !props.pastChange?.disable
@@ -205,12 +257,18 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { ChangesItem, UserRole } from 'src/types';
-import { insertComment, updateChange } from 'src/api/supabaseHelper';
+import { ChangesItem, UserRole, Status } from 'src/types';
+import {
+  deleteChangeDB,
+  insertComment,
+  updateChange,
+} from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { useQuasar } from 'quasar';
 
+const $quasar = useQuasar();
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
@@ -228,6 +286,12 @@ const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
+
+type StatusInfo = {
+  message: string;
+  icon: string;
+};
+
 const editorPermission =
   props.role === UserRole.Editor || props.role === UserRole.Owner;
 const reviewerPermission =
@@ -235,6 +299,30 @@ const reviewerPermission =
   UserRole.Editor ||
   props.role === UserRole.Owner;
 const viewerPermission = props.role === UserRole.Viewer;
+
+const statusDictionary: Map<Status, StatusInfo> = new Map([
+  [
+    Status.AwaitingReviewerApproval,
+    {
+      message: 'Awaiting Reviewer Approval',
+      icon: 'lightbulb',
+    },
+  ],
+  [
+    Status.EditApproved,
+    {
+      message: 'Edit Approved',
+      icon: 'thumb_up',
+    },
+  ],
+  [
+    Status.EditRejected,
+    {
+      message: 'Edit Rejected',
+      icon: 'thumb_down',
+    },
+  ],
+]);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
@@ -280,41 +368,6 @@ async function handleComment() {
 
 const description = ref(props.item?.description);
 
-enum Status {
-  AwaitingReviewerApproval = 0,
-  EditApproved = 1,
-  EditRejected = 2,
-}
-
-type StatusInfo = {
-  message: string;
-  icon: string;
-};
-
-const statusDictionary: Map<Status, StatusInfo> = new Map([
-  [
-    Status.AwaitingReviewerApproval,
-    {
-      message: 'Awaiting Reviewer Approval',
-      icon: 'lightbulb',
-    },
-  ],
-  [
-    Status.EditApproved,
-    {
-      message: 'Edit Approved',
-      icon: 'thumb_up',
-    },
-  ],
-  [
-    Status.EditRejected,
-    {
-      message: 'Edit Rejected',
-      icon: 'thumb_down',
-    },
-  ],
-]);
-
 const statusIcon = computed(
   () => statusDictionary.get(props.item?.status)!.icon
 );
@@ -340,6 +393,35 @@ const isArchived = computed(() => props.item.archived);
 const archiveButton = computed(() => {
   return isArchived.value ? 'reopen' : 'archive';
 });
+
+const isUnindexed = computed(() => props.item.index === null);
+const deleteChangeDialog = ref(false);
+const deletingChange = ref(false);
+
+async function deleteChange() {
+  deletingChange.value = true;
+  try {
+    await deleteChangeDB(props.item.id);
+    $quasar.notify({
+      message: 'Successfully deleted change',
+      icon: 'check',
+      color: 'positive',
+    });
+  } catch (e) {
+    let message = 'Failed to delete change';
+
+    if (e instanceof Error) {
+      message = e.message;
+    }
+
+    $quasar.notify({
+      message,
+      color: 'negative',
+    });
+  }
+  deletingChange.value = false;
+  deleteChangeDialog.value = false;
+}
 
 async function archiveChange(archived = true) {
   await updateChange(props.item.id, undefined, undefined, archived);

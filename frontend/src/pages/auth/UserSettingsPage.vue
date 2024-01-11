@@ -186,8 +186,9 @@ const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
               close-popup
               color="negative"
               label="Delete"
+              styling="width: 10em;"
               :loading="deletingAccount"
-              @click="deleteAccount"
+              :on-click="deleteAccount"
             >
               Deleting
             </Button>

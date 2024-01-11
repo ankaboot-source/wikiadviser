@@ -22,7 +22,7 @@
         @click="viewArticleInNewTab()"
       />
       <q-btn
-        v-if="role != UserRole.Owner"
+        v-if="role != UserRole.Viewer"
         icon="link"
         outline
         label="Share link"

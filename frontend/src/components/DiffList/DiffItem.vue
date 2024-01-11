@@ -369,11 +369,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)!.icon
+  () => statusDictionary.get(props.item?.status)!.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)!.message
+  () => statusDictionary.get(props.item?.status)!.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
@@ -447,7 +447,7 @@ watch(
       }, 400);
       store.selectedChangeId = '';
     }
-  }
+  },
 );
 
 function setHovered(value: string) {
@@ -455,10 +455,10 @@ function setHovered(value: string) {
 }
 
 const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString()
+  new Date(props.item?.created_at).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString()
+  new Date(props.item?.created_at).toLocaleTimeString(),
 );
 </script>
 <style scoped>

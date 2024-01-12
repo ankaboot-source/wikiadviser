@@ -88,7 +88,7 @@ async function itemOnClick() {
     );
     $q.loading.hide();
     $q.notify({
-      message: 'Article successfully created.',
+      message: 'Article successfully created',
       icon: 'check',
       color: 'positive',
     });

@@ -125,7 +125,7 @@ async function handleApplyChanges() {
         await deletePermission(permission);
       }
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });
@@ -152,7 +152,7 @@ async function handleApplyChanges() {
     try {
       await updatePermission(permissionsToUpdate.value);
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });

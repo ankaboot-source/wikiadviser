@@ -60,12 +60,12 @@ async function loadingChanges() {
 
     emit('switchTabEmit', 'view');
     $q.notify({
-      message: 'New changes successfully created.',
+      message: 'New changes successfully created',
       icon: 'check',
       color: 'positive',
     });
   } catch (error) {
-    let message = 'Creating changes failed.';
+    let message = 'Creating changes failed';
     if (error instanceof Error) {
       message = error.message;
     }

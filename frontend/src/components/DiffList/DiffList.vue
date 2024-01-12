@@ -54,7 +54,8 @@
           There are currently no changes
         </div>
         <div class="text-body2">
-          After the article is edited, the changes will be displayed here for your review.
+          After the article is edited, the changes will be displayed here for
+          your review.
         </div>
       </div>
     </template>

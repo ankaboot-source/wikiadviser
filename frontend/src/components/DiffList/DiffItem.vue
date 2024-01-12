@@ -158,9 +158,60 @@
           @click="expanded = false"
         />
         <q-space />
+        <template v-if="isUnindexed">
+          <q-btn
+            no-caps
+            icon="delete_forever"
+            outline
+            color="blue-grey-10"
+            class="bg-white text-capitalize"
+            label="Hide"
+            @click.stop="hideChangeDialoge = true"
+          />
+          <q-dialog v-model="hideChangeDialoge">
+            <q-card>
+              <q-toolbar class="borders">
+                <q-toolbar-title class="merriweather">
+                  Hide Change
+                </q-toolbar-title>
+                <q-btn v-close-popup flat round dense icon="close" size="sm" />
+              </q-toolbar>
+              <q-card-section>
+                This change is unrelated to any revisions and can be safely
+                hidden. It will no longer appear in the past changes folder.
+              </q-card-section>
+              <q-card-actions class="borders">
+                <q-space />
+                <q-btn
+                  v-if="!hidingChange"
+                  v-close-popup
+                  no-caps
+                  outline
+                  color="primary"
+                  label="Cancel"
+                />
+                <q-btn
+                  :v-close-popup="!hidingChange"
+                  unelevated
+                  color="negative"
+                  style="width: 10em"
+                  no-caps
+                  label="Hide"
+                  :loading="hidingChange"
+                  @click="hideChange()"
+                >
+                  <template #loading>
+                    <q-spinner class="on-left" />
+                    Hiding
+                  </template>
+                </q-btn>
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
+        </template>
         <!-- User: Reviewer Only -->
         <template
-          v-if="
+          v-else-if="
             reviewerPermission &&
             !viewerPermission &&
             !props.pastChange?.disable
@@ -206,10 +257,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole, Status } from 'src/types';
-import { insertComment, updateChange } from 'src/api/supabaseHelper';
+import {
+  hideChanges,
+  insertComment,
+  updateChange,
+} from 'src/api/supabaseHelper';
 import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { useQuasar } from 'quasar';
+
+const $quasar = useQuasar();
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -376,6 +434,33 @@ const localeDateString = computed(() =>
 const localeTimeString = computed(() =>
   new Date(props.item?.created_at).toLocaleTimeString(),
 );
+
+const isUnindexed = computed(() => props.item.index === null);
+const hideChangeDialoge = ref(false);
+const hidingChange = ref(false);
+
+async function hideChange() {
+  hidingChange.value = true;
+  try {
+    await hideChanges(props.item.id);
+    $quasar.notify({
+      message: 'Change is successfully and permanently hidden.',
+      icon: 'check',
+      color: 'positive',
+    });
+  } catch (e) {
+    let message = 'Failed to hide change';
+    if (e instanceof Error) {
+      message = e.message;
+    }
+    $quasar.notify({
+      message,
+      color: 'negative',
+    });
+  }
+  hidingChange.value = false;
+  hideChangeDialoge.value = false;
+}
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

@@ -33,6 +33,17 @@
               }"
             />
             <q-separator />
+            <diff-item
+              v-for="item in unindexedChanges"
+              :key="item.id"
+              :item="item"
+              :role="role"
+              :past-change="{
+                icon: 'link_off',
+                text: 'This change was automatically orphaned.',
+                disable: true,
+              }"
+            />
           </q-list>
         </q-item-section>
       </q-expansion-item>
@@ -115,8 +126,12 @@ const groupedIndexedChanges = computed(() =>
 const archivedChanges = computed(() =>
   props.changesList.filter((item) => item.archived),
 );
-const pastChanges = computed(() => archivedChanges.value);
-
+const unindexedChanges = computed(() =>
+  props.changesList.filter((item) => item.index === null && !item.hidden),
+);
+const pastChanges = computed(() =>
+  archivedChanges.value.concat(unindexedChanges.value),
+);
 const expanded = ref(false);
 
 watch(

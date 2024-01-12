@@ -1,1 +1,0 @@
-DROP POLICY delete_unindexed_changes_policy ON changes;

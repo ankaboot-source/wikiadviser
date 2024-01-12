@@ -223,3 +223,32 @@ export async function deleteUser() {
 
   if (deleteUserError) throw new Error(deleteUserError.message);
 }
+
+export async function hideChanges(changeId: string) {
+  const { data: change, error } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
+    .single();
+
+  if (error) {
+    throw Error(error.message);
+  }
+
+  if (!change) {
+    throw new Error(`Change with id(${changeId}) not found.`);
+  }
+
+  if (change.index !== null) {
+    throw new Error('Cannot hide this change.');
+  }
+
+  const { error: hideError } = await supabase
+    .from('changes')
+    .update({ hidden: true })
+    .eq('id', change.id);
+
+  if (hideError) {
+    throw new Error(hideError.message);
+  }
+}

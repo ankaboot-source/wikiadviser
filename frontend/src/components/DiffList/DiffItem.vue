@@ -444,7 +444,7 @@ async function hideChange() {
   try {
     await hideChanges(props.item.id);
     $quasar.notify({
-      message: 'Change is successfully and permanently hidden.',
+      message: 'Change is successfully and permanently hidden',
       icon: 'check',
       color: 'positive',
     });

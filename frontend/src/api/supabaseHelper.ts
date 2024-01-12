@@ -236,11 +236,11 @@ export async function hideChanges(changeId: string) {
   }
 
   if (!change) {
-    throw new Error(`Change with id(${changeId}) not found.`);
+    throw new Error(`Change with id(${changeId}) not found`);
   }
 
   if (change.index !== null) {
-    throw new Error('Cannot hide this change.');
+    throw new Error('Cannot hide this change');
   }
 
   const { error: hideError } = await supabase

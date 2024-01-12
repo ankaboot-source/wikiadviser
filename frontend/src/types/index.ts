@@ -18,6 +18,7 @@ export type ChangesItem = {
     summary: string;
   };
   archived: boolean;
+  hidden: boolean;
 };
 
 export type SearchResult = {

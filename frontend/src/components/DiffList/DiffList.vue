@@ -32,6 +32,7 @@
                 text: 'This change was manually archived.',
               }"
             />
+            <q-separator />
             <diff-item
               v-for="item in unindexedChanges"
               :key="item.id"
@@ -43,7 +44,6 @@
                 disable: true,
               }"
             />
-            <q-separator />
           </q-list>
         </q-item-section>
       </q-expansion-item>
@@ -127,12 +127,11 @@ const archivedChanges = computed(() =>
   props.changesList.filter((item) => item.archived),
 );
 const unindexedChanges = computed(() =>
-  props.changesList.filter((item) => item.index === null),
+  props.changesList.filter((item) => item.index === null && !item.hidden),
 );
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
-
 const expanded = ref(false);
 
 watch(

@@ -165,25 +165,25 @@
             outline
             color="blue-grey-10"
             class="bg-white text-capitalize"
-            label="delete"
-            @click.stop="deleteChangeDialog = true"
+            label="Hide"
+            @click.stop="hideChangeDialoge = true"
           />
-          <q-dialog v-model="deleteChangeDialog">
+          <q-dialog v-model="hideChangeDialoge">
             <q-card>
               <q-toolbar class="borders">
                 <q-toolbar-title class="merriweather">
-                  Delete Change
+                  Hide Change
                 </q-toolbar-title>
                 <q-btn v-close-popup flat round dense icon="close" size="sm" />
               </q-toolbar>
               <q-card-section>
                 This change is unrelated to any revisions and can be safely
-                deleted.
+                hidden. It will no longer appear in the past changes folder.
               </q-card-section>
               <q-card-actions class="borders">
                 <q-space />
                 <q-btn
-                  v-if="!deletingChange"
+                  v-if="!hidingChange"
                   v-close-popup
                   no-caps
                   outline
@@ -191,25 +191,24 @@
                   label="Cancel"
                 />
                 <q-btn
-                  :v-close-popup="!deletingChange"
+                  :v-close-popup="!hidingChange"
                   unelevated
                   color="negative"
                   style="width: 10em"
                   no-caps
-                  label="Delete"
-                  :loading="deletingChange"
-                  @click="deleteChange()"
+                  label="Hide"
+                  :loading="hidingChange"
+                  @click="hideChange()"
                 >
                   <template #loading>
                     <q-spinner class="on-left" />
-                    Deleting
+                    Hiding
                   </template>
                 </q-btn>
               </q-card-actions>
             </q-card>
           </q-dialog>
         </template>
-
         <!-- User: Reviewer Only -->
         <template
           v-else-if="
@@ -242,10 +241,10 @@
           <template v-else>
             <q-btn
               no-caps
-              :icon="archiveButton"
+              :icon="pastChangesIcon"
               outline
               class="bg-white text-capitalize"
-              :label="archiveButton"
+              :label="pastChangesButton"
               @click="archiveChange(!isArchived)"
             />
           </template>
@@ -259,7 +258,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { ChangesItem, UserRole, Status } from 'src/types';
 import {
-  deleteChangeDB,
+  hideChanges,
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
@@ -269,6 +268,7 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
 
 const $quasar = useQuasar();
+
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangesItem;
@@ -390,38 +390,12 @@ async function handleDescription() {
 }
 
 const isArchived = computed(() => props.item.archived);
-const archiveButton = computed(() => {
-  return isArchived.value ? 'reopen' : 'archive';
-});
-
-const isUnindexed = computed(() => props.item.index === null);
-const deleteChangeDialog = ref(false);
-const deletingChange = ref(false);
-
-async function deleteChange() {
-  deletingChange.value = true;
-  try {
-    await deleteChangeDB(props.item.id);
-    $quasar.notify({
-      message: 'Successfully deleted change',
-      icon: 'check',
-      color: 'positive',
-    });
-  } catch (e) {
-    let message = 'Failed to delete change';
-
-    if (e instanceof Error) {
-      message = e.message;
-    }
-
-    $quasar.notify({
-      message,
-      color: 'negative',
-    });
-  }
-  deletingChange.value = false;
-  deleteChangeDialog.value = false;
-}
+const pastChangesButton = computed(() =>
+  isArchived.value ? 'reopen' : 'archive',
+);
+const pastChangesIcon = computed(() =>
+  isArchived.value ? 'unarchive' : 'archive',
+);
 
 async function archiveChange(archived = true) {
   await updateChange(props.item.id, undefined, undefined, archived);
@@ -460,6 +434,33 @@ const localeDateString = computed(() =>
 const localeTimeString = computed(() =>
   new Date(props.item?.created_at).toLocaleTimeString(),
 );
+
+const isUnindexed = computed(() => props.item.index === null);
+const hideChangeDialoge = ref(false);
+const hidingChange = ref(false);
+
+async function hideChange() {
+  hidingChange.value = true;
+  try {
+    await hideChanges(props.item.id);
+    $quasar.notify({
+      message: 'Change is successfully and permanently hidden',
+      icon: 'check',
+      color: 'positive',
+    });
+  } catch (e) {
+    let message = 'Failed to hide change';
+    if (e instanceof Error) {
+      message = e.message;
+    }
+    $quasar.notify({
+      message,
+      color: 'negative',
+    });
+  }
+  hidingChange.value = false;
+  hideChangeDialoge.value = false;
+}
 </script>
 <style scoped>
 .q-item__section--main + .q-item__section--main {

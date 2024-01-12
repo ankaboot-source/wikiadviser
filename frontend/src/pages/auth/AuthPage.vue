@@ -26,7 +26,7 @@
                   inputLabelText: '#263238' /* dark */,
                   defaultButtonText: '#263238' /* dark */,
                   messageTextDanger: '#b71c1c' /* negative */,
-                  messageText: '#1b5e200' /* positive */,
+                  messageText: '#1b5e20' /* positive */,
                 },
               },
             },

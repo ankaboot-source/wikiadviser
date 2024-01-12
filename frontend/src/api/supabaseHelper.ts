@@ -202,34 +202,6 @@ export async function verifyLink(token: string): Promise<string> {
   return articleId;
 }
 
-export async function deleteChangeDB(changeId: string) {
-  const { data: change, error } = await supabase
-    .from('changes')
-    .select('*')
-    .eq('id', changeId)
-    .single();
-
-  if (error) {
-    throw Error(error.message);
-  }
-
-  if (!change) {
-    throw new Error(`Change with id(${changeId}) not found.`);
-  }
-
-  if (change.index !== null) {
-    throw new Error("Change can't be deleted.");
-  }
-
-  const { error: deleteError } = await supabase
-    .from('changes')
-    .delete()
-    .eq('id', change.id);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-}
 export async function updateArticleWebPublication(
   web_publication: boolean,
   articleId: string,
@@ -250,4 +222,33 @@ export async function deleteUser() {
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);
+}
+
+export async function hideChanges(changeId: string) {
+  const { data: change, error } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
+    .single();
+
+  if (error) {
+    throw Error(error.message);
+  }
+
+  if (!change) {
+    throw new Error(`Change with id(${changeId}) not found`);
+  }
+
+  if (change.index !== null) {
+    throw new Error('Cannot hide this change');
+  }
+
+  const { error: hideError } = await supabase
+    .from('changes')
+    .update({ hidden: true })
+    .eq('id', change.id);
+
+  if (hideError) {
+    throw new Error(hideError.message);
+  }
 }

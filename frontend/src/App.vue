@@ -26,7 +26,7 @@ const user = ref<User | null>(null);
 const session = ref<Session | null>();
 
 onMounted(async () => {
-  session.value = (await supabaseClient.auth.getSession()).data.session
+  session.value = (await supabaseClient.auth.getSession()).data.session;
   supabaseClient.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
     setSession();

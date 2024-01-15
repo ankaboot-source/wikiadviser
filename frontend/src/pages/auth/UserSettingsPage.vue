@@ -37,7 +37,7 @@ async function revertImage() {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
     user.value = (await supabase.auth.getUser()).data.user;
     $q.notify({
-      message: 'Reverted to default avatar picture.',
+      message: 'Reverted to default avatar picture',
       icon: 'check',
       color: 'positive',
     });
@@ -72,7 +72,7 @@ async function deleteAccount() {
   try {
     await deleteUser();
     $q.notify({
-      message: 'User deleted.',
+      message: 'User deleted',
       icon: 'check',
       color: 'positive',
     });

@@ -157,7 +157,7 @@ async function removeArticle(articleId: string) {
     await deleteArticle(articleId);
     deletingArticle.value = false;
     $q.notify({
-      message: 'Article deleted.',
+      message: 'Article deleted',
       icon: 'check',
       color: 'positive',
     });
@@ -165,7 +165,7 @@ async function removeArticle(articleId: string) {
     const user = data.session?.user;
 
     if (!user) {
-      throw new Error('User is not logged in.');
+      throw new Error('User is not logged in');
     }
 
     await articlesStore.fetchArticles(user.id);

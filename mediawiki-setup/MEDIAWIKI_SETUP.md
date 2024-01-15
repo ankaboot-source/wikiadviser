@@ -144,64 +144,60 @@
       #ca-talk {
         display: none !important;
       }
-
       /* hide the "View History" tab */
       #ca-history {
         display: none !important;
       }
-
       /* hide "Notice" popup */
       .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
         display: none !important;
       }
-
       /* hide "Notice" button in toolbar */
       .ve-ui-toolbar-group-notices {
         display: none !important;
       }
-
-      /* hide "Read the user guide & Leave feedback about this software" list items */
-      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(
-          1
-        ),
-      .oo-ui-widget.oo-ui-widget-enabled.oo-ui-buttonElement.oo-ui-buttonElement-frameless.oo-ui-iconElement.oo-ui-labelElement.oo-ui-buttonWidget:nth-child(
-          3
-        ) {
-        display: none !important;
-      }
-
       /* hide "Warning to log in" in edit source */
       .mw-message-box-warning.mw-anon-edit-warning.mw-message-box {
         display: none !important;
       }
-
       /* hide "Search bar" in edit source */
       .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
         display: none !important;
       }
-
       /* hide footer */
       .mw-footer-container {
         display: none !important;
       }
-
-      /* hide header: Login, Create account */
-      .vector-header-end {
+      /* hide header */
+      .vector-header-container {
         display: none !important;
       }
-
       /* hide Menu */
       .vector-main-menu-landmark {
         display: none !important;
       }
-
       /* hide right bar (Tools) */
       .vector-column-end {
         display: none !important;
       }
-
       /* hide "Add Languages" button */
       #p-lang-btn {
+        display: none !important;
+      }
+      /* hide Watch star */
+      .mw-watchlink.mw-list-item {
+        display: none !important;
+      }
+      /* hide  tools: special pages */
+      #t-specialpages {
+        display: none !important;
+      }
+      /* hide fullscreen button */
+      #p-dock-bottom {
+        display: none !important;
+      }
+      /* Hide Sandwich */
+      .vector-toc-landmark {
         display: none !important;
       }
       ```

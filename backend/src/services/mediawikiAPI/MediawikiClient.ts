@@ -174,7 +174,7 @@ export default class MediawikiClient {
     this.logout(csrftoken);
   }
 
-  async importNewArticle(articleId: string, title: string): Promise<void> {
+  async importArticle(articleId: string, title: string): Promise<void> {
     try {
       // Export
       logger.info(`Exporting file ${title}`);

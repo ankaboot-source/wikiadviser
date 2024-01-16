@@ -33,7 +33,7 @@ export async function importArticle(
       wikipediaApi,
       await PlayAutomatorFactory(language)
     );
-    await mediawiki.importNewArticle(articleId, title);
+    await mediawiki.importArticle(articleId, title);
 
     return res
       .status(201)

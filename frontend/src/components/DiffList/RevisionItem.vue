@@ -162,7 +162,7 @@ async function deleteRevision() {
     await api.delete(
       `/article/${props.articleId}/revisions/${props.revision.revid}`,
     );
-    await $quasar.notify({
+    $quasar.notify({
       message: 'Revision has been canceled',
       icon: 'check',
       color: 'positive',

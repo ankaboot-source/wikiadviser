@@ -94,13 +94,13 @@
     </div>
   </div>
   <q-dialog v-model="showNewArticleDialog">
-    <search-article />
+    <add-article-card />
   </q-dialog>
 </template>
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';
 import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
-import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
+import AddArticleCard from 'src/components/AddArticleCard/AddArticleCard.vue';
 import { Article } from 'src/types';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';

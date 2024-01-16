@@ -1,18 +1,27 @@
 import { Router } from 'express';
 import {
   createArticle,
-  getParsedArticle,
   deleteArticle,
+  deleteArticleRevision,
   getArticleChanges,
-  updateArticleChanges,
+  getParsedArticle,
   hasPermissions,
-  deleteArticleRevision
+  importArticle,
+  updateArticleChanges
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
 
 /* Articles */
-articleRouter.post('/article', createArticle);
+articleRouter.post('/article', (req, res) => {
+  const { isNew, ...otherParams } = req.body;
+  if (isNew) {
+    createArticle(req, res, otherParams);
+  } else {
+    importArticle(req, res, otherParams);
+  }
+});
+
 articleRouter.get(
   '/article/:id',
   hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),

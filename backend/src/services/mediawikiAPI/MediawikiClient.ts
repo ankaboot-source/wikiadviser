@@ -308,4 +308,34 @@ export default class MediawikiClient {
 
     return data;
   }
+
+  async createArticle(articleId: string, title: string) {
+    const csrftoken = await this.loginAndGetCsrf();
+
+    const { data } = await this.mediawikiApiInstance.post(
+      '',
+      {
+        action: 'edit',
+        title: articleId,
+        appendtext: `{{DISPLAYTITLE:${title}}}`,
+        token: csrftoken,
+        createonly: true,
+        format: 'json'
+      },
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    this.logout(csrftoken);
+    const error = data.error?.info;
+
+    if (error) {
+      throw new Error(`Failed to create new article id ${articleId}: ${error}`);
+    }
+
+    return data;
+  }
 }

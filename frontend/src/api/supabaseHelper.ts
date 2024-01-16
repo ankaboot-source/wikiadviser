@@ -35,13 +35,15 @@ export async function getUsers(articleId: string): Promise<User[]> {
   return users;
 }
 
-export async function createNewArticle(
+export async function createArticle(
   title: string,
   userId: string,
   language: wikiadviserLanguage,
   description?: string,
+  isNew?: boolean
 ) {
   const response = await api.post('article', {
+    isNew,
     title,
     userId,
     language,

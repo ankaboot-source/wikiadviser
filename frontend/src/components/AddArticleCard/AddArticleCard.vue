@@ -8,6 +8,55 @@
     </q-toolbar>
 
     <q-card-section>
+      Create New Article
+      <q-input
+        v-model="newArticle.title"
+        bg-color="white"
+        dense
+        outlined
+        label="title"
+        placeholder="title"
+      />
+      <q-input
+        v-model="newArticle.description"
+        bg-color="white"
+        dense
+        outlined
+        label="description"
+        placeholder="description"
+      />
+      <q-select
+        v-model="newArticle.language"
+        :option-label="(item) => item.value.toLocaleUpperCase()"
+        :options="wikiadviserLanguages"
+        filled
+        dense
+        options-dense
+      >
+        <q-tooltip anchor="top middle" self="center middle">
+          {{ newArticle.language?.label }}
+        </q-tooltip>
+        <template #option="scope">
+          <q-item v-bind="scope.itemProps">
+            <q-item-section>
+              <q-item-label>{{ scope.opt.label }}</q-item-label>
+            </q-item-section>
+          </q-item>
+        </template>
+      </q-select>
+      <q-btn
+        icon="add"
+        no-caps
+        unelevated
+        color="primary"
+        label="Create"
+        :disable="!term"
+        @click="addArticle()"
+      />
+    </q-card-section>
+
+    <q-card-section>
+      Import new Article
       <q-input
         v-model="term"
         bg-color="white"
@@ -74,11 +123,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { SearchResult } from 'src/types';
+import { ref, watch } from 'vue';
 import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();
@@ -128,4 +177,90 @@ watch([term, articleLanguage], async ([term]) => {
     isSearching.value = false;
   }
 });
+
+import { QSpinnerGrid } from 'quasar';
+import supabase from 'src/api/supabase';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { Article } from 'src/types';
+import { useRouter } from 'vue-router';
+import { createArticle } from 'src/api/supabaseHelper';
+
+const router = useRouter();
+const articlesStore = useArticlesStore();
+const articleId = ref('');
+
+const newArticle = ref({
+  title: '',
+  description: '',
+  language: defaultArticleLanguage,
+});
+async function addArticle() {
+  try {
+    const { data } = await supabase.auth.getSession();
+
+    if (!data.session?.user.id) {
+      router.push('/');
+      throw new Error('User session not found.');
+    }
+
+    // check access
+    const article = articlesStore.articles?.find(
+      (article: Article) =>
+        article.title === newArticle.value.title &&
+        article.language === newArticle.value.language.value,
+    );
+
+    if (article) {
+      // GOTO ARTICLE PAGE
+      return router.push({
+        name: 'article',
+        params: { articleId: article.article_id },
+      });
+    }
+
+    $q.loading.show({
+      boxClass: 'bg-white text-dark q-pa-xl',
+
+      spinner: QSpinnerGrid,
+      spinnerColor: 'primary',
+      spinnerSize: 140,
+
+      message: `
+      <div class='text-h6'> 🕵️🔐 Anonymously and Safely Creating “${term.value}”. </div></br>
+      <div class='text-body1'>Please wait…</div>`,
+      html: true,
+    });
+
+    //NEW ARTICLE
+    articleId.value = await createArticle(
+      newArticle.value.title,
+      data.session.user.id,
+      newArticle.value.language.value,
+      newArticle.value.description,
+      true,
+    );
+    $q.loading.hide();
+    $q.notify({
+      message: 'Article successfully created',
+      icon: 'check',
+      color: 'positive',
+    });
+
+    await articlesStore.fetchArticles(data.session.user.id);
+
+    // GOTO ARTICLE PAGE, EDIT TAB
+    return router.push({
+      name: 'article',
+      params: {
+        articleId: articleId.value,
+      },
+    });
+  } catch (error) {
+    $q.loading.hide();
+    $q.notify({
+      message: 'Failed importing or creating article',
+      color: 'negative',
+    });
+  }
+}
 </script>

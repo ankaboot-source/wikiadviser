@@ -42,14 +42,14 @@
       </q-select>
     </q-card-section>
     <q-card-actions class="borders">
+      <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />
       <q-space />
       <q-btn
-        icon="add"
+        icon="note_add"
         no-caps
         unelevated
         color="primary"
         label="Create"
-        :disable="!newArticle.title"
         @click="addArticle()"
       />
     </q-card-actions>
@@ -78,12 +78,14 @@ const articlesStore = useArticlesStore();
 const articleId = ref('');
 
 const newArticle = ref({
-  title: 'Untitled',
+  title: '',
   description: '',
   language: defaultArticleLanguage,
 });
 async function addArticle() {
   try {
+    newArticle.value.title = newArticle.value.title || 'Untitled';
+
     const { data } = await supabase.auth.getSession();
 
     if (!data.session?.user.id) {

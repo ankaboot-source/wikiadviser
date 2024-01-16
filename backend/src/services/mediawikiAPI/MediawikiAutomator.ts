@@ -1,4 +1,5 @@
 import { BrowserContext, Page, chromium } from 'playwright';
+import logger from '../../logger';
 
 const { MEDIAWIKI_INTERNAL_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
   process.env;
@@ -85,9 +86,26 @@ export class MediawikiAutomator {
     latestRevid: string
   ): Promise<string> {
     const page = await this.getPageInContext();
+
     await page.goto(
       `${this.mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
       { waitUntil: 'networkidle' }
+    );
+
+    const timeoutInMinutes = 10;
+    const timeoutInMillis = timeoutInMinutes * 60 * 1000;
+    const diffSelector = '.ve-init-mw-diffPage-diff';
+
+    logger.info(
+      `Waiting for selector '${diffSelector}' to appear. Timeout = ${timeoutInMinutes} minutes.`
+    );
+    performance.mark('diff-start');
+    // wait until all html is loaded
+    await page.waitForSelector(diffSelector, { timeout: timeoutInMillis });
+    logger.info(
+      `Selector '${diffSelector}' resolved in ${
+        performance.measure('diff-start').duration
+      } milliseconds.`
     );
 
     const diffPage = await page.$eval(
@@ -101,7 +119,7 @@ export class MediawikiAutomator {
 }
 
 const browser = (async () =>
-  (await chromium.launch({ headless: true })).newContext())();
+  (await chromium.launch({ headless: false })).newContext())();
 
 export const PlayAutomatorFactory = async (language: string) => {
   const context = await browser;

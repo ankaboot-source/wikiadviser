@@ -105,7 +105,7 @@ async function itemOnClick() {
   } catch (error) {
     $q.loading.hide();
     $q.notify({
-      message: 'Failed importing or creating article',
+      message: 'Failed importing article',
       color: 'negative',
     });
   }

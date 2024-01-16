@@ -9,56 +9,60 @@
 
     <q-card-section>
       Create New Article
-      <q-input
-        v-model="newArticle.title"
-        bg-color="white"
-        dense
-        outlined
-        label="title"
-        placeholder="title"
-      />
-      <q-input
-        v-model="newArticle.description"
-        bg-color="white"
-        dense
-        outlined
-        label="description"
-        placeholder="description"
-      />
-      <q-select
-        v-model="newArticle.language"
-        :option-label="(item) => item.value.toLocaleUpperCase()"
-        :options="wikiadviserLanguages"
-        filled
-        dense
-        options-dense
-      >
-        <q-tooltip anchor="top middle" self="center middle">
-          {{ newArticle.language?.label }}
-        </q-tooltip>
-        <template #option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label>{{ scope.opt.label }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
-      <q-btn
-        icon="add"
-        no-caps
-        unelevated
-        color="primary"
-        label="Create"
-        :disable="!term"
-        @click="addArticle()"
-      />
+      <q-card-actions>
+        <q-input
+          v-model="newArticle.title"
+          bg-color="white"
+          dense
+          outlined
+          label="title"
+          placeholder="title"
+        />
+        <q-input
+          v-model="newArticle.description"
+          bg-color="white"
+          dense
+          outlined
+          label="description"
+          placeholder="description"
+        />
+        <q-select
+          v-model="newArticle.language"
+          :option-label="(item) => item.value.toLocaleUpperCase()"
+          :options="wikiadviserLanguages"
+          filled
+          dense
+          options-dense
+        >
+          <q-tooltip anchor="top middle" self="center middle">
+            {{ newArticle.language?.label }}
+          </q-tooltip>
+          <template #option="scope">
+            <q-item v-bind="scope.itemProps">
+              <q-item-section>
+                <q-item-label>{{ scope.opt.label }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+        <q-space />
+        <q-btn
+          icon="add"
+          no-caps
+          unelevated
+          color="primary"
+          label="Create"
+          :disable="!term"
+          @click="addArticle()"
+        />
+      </q-card-actions>
     </q-card-section>
 
     <q-card-section>
       Import new Article
       <q-input
         v-model="term"
+        class="q-mt-sm q-mx-sm"
         bg-color="white"
         dense
         outlined
@@ -93,7 +97,7 @@
 
     <q-scroll-area
       v-if="searchResults?.length"
-      class="col-grow q-pt-none q-pb-lg"
+      class="col-grow q-pt-none q-pb-lg q-mx-sm"
     >
       <q-list class="q-mx-md">
         <search-item

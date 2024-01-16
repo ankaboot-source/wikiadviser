@@ -40,7 +40,7 @@ export async function createArticle(
   userId: string,
   language: wikiadviserLanguage,
   description?: string,
-  isNew?: boolean
+  isNew?: boolean,
 ) {
   const response = await api.post('article', {
     isNew,

@@ -107,10 +107,6 @@ export async function updatePermission(
 
   await Promise.all(updatedPermissionsPromises);
 }
-export async function getArticleParsedContent(articleId: string) {
-  const response = await api.get(`article/${articleId}`);
-  return response.data.content;
-}
 
 export async function getChanges(articleId: string): Promise<ChangeItem[]> {
   const response = await api.get(`article/${articleId}/changes`);

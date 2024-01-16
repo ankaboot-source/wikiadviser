@@ -1,3 +1,13 @@
+export type SupabaseArticle = {
+  id: string;
+  created_at: Date | null;
+  title: string | null;
+  description: string | null;
+  current_html_content: string | null;
+  language: string | null;
+  web_publication: boolean;
+};
+
 export type SupabaseChange = {
   id: string;
   created_at: string;

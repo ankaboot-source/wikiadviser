@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangesItem, Permission, User } from 'src/types';
+import { Article, ChangeItem, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
 
@@ -112,7 +112,7 @@ export async function getArticleParsedContent(articleId: string) {
   return response.data.content;
 }
 
-export async function getChanges(articleId: string): Promise<ChangesItem[]> {
+export async function getChanges(articleId: string): Promise<ChangeItem[]> {
   const response = await api.get(`article/${articleId}/changes`);
   return response.data.changes;
 }

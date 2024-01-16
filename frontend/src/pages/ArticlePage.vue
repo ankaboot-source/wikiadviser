@@ -24,12 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import supabaseClient from 'src/api/supabase';
 import supabase from 'src/api/supabase';
-import {
-  getChanges,
-  getUsers,
-} from 'src/api/supabaseHelper';
+import { getChanges, getUsers } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
@@ -59,9 +55,9 @@ const changesContent = ref<string | null>(null);
 
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 
-let realtimeChannel: RealtimeChannel = supabaseClient.channel('changes');
+const realtimeChannel: RealtimeChannel = supabase.channel('changes');
 
-async function initializeRealtimeSubscription(
+function initializeRealtimeSubscription(
   channel: RealtimeChannel,
   articleId: string,
 ) {
@@ -78,7 +74,9 @@ async function initializeRealtimeSubscription(
         const updatedArticle = payload.new as SupabaseArticle;
 
         changesList.value = await getChanges(articleId);
-        changesContent.value = changesList.value.length ? updatedArticle.current_html_content : '';
+        changesContent.value = changesList.value.length
+          ? updatedArticle.current_html_content
+          : '';
       },
     )
     .subscribe();
@@ -88,7 +86,8 @@ onBeforeMount(async () => {
   const user = (await supabase.auth.getSession()).data.session?.user;
 
   if (!user) {
-    return router.push('/');
+    router.push('/');
+    return;
   }
 
   // Access the article id parameter from the route's params object
@@ -99,7 +98,8 @@ onBeforeMount(async () => {
 
   if (!article.value) {
     // Article does not exist for this user
-    return router.push({ name: '404' });
+    router.push({ name: '404' });
+    return;
   }
 
   role.value = article.value.role;
@@ -110,14 +110,14 @@ onBeforeMount(async () => {
 
   changesList.value = await getChanges(articleId.value);
   changesContent.value = (
-    await supabaseClient
+    await supabase
       .from('articles')
       .select('current_html_content')
       .eq('id', articleId.value)
       .single()
   ).data?.current_html_content;
 
-  await initializeRealtimeSubscription(realtimeChannel, articleId.value);
+  initializeRealtimeSubscription(realtimeChannel, articleId.value);
 
   loading.value = false;
 });

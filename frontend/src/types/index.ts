@@ -34,7 +34,7 @@ export interface ChangeItem extends SupabaseChange {
     revid: number;
     summary: string;
   };
-};
+}
 
 export type SearchResult = {
   title: string;

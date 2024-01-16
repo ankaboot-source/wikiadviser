@@ -208,8 +208,8 @@ const toggleOptions = computed(() =>
 );
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
-  const emptyContent = !props.changesContent || !props.changesContent.length
-  return props.editorPermission && emptyContent ? 'edit' : 'view'
+  const emptyContent = !props.changesContent || !props.changesContent.length;
+  return props.editorPermission && emptyContent ? 'edit' : 'view';
 });
 
 watch(

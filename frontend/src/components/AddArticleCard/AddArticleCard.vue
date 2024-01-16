@@ -127,11 +127,15 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
+import { QSpinnerGrid, useQuasar } from 'quasar';
+import supabase from 'src/api/supabase';
+import { createArticle } from 'src/api/supabaseHelper';
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
-import { SearchResult } from 'src/types';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { Article, SearchResult } from 'src/types';
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();
@@ -181,13 +185,6 @@ watch([term, articleLanguage], async ([term]) => {
     isSearching.value = false;
   }
 });
-
-import { QSpinnerGrid } from 'quasar';
-import supabase from 'src/api/supabase';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Article } from 'src/types';
-import { useRouter } from 'vue-router';
-import { createArticle } from 'src/api/supabaseHelper';
 
 const router = useRouter();
 const articlesStore = useArticlesStore();
@@ -266,5 +263,6 @@ async function addArticle() {
       color: 'negative',
     });
   }
+  return undefined;
 }
 </script>

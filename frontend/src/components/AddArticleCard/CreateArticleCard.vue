@@ -84,7 +84,9 @@ const newArticle = ref({
 });
 async function addArticle() {
   try {
-    newArticle.value.title = newArticle.value.title || 'Untitled';
+    newArticle.value.title = newArticle.value.title
+      ? newArticle.value.title
+      : 'Untitled';
 
     const { data } = await supabase.auth.getSession();
 

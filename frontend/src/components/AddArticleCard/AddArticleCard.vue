@@ -15,16 +15,16 @@
           bg-color="white"
           dense
           outlined
-          label="title"
-          placeholder="title"
+          label="Title"
+          placeholder="Title"
         />
         <q-input
           v-model="newArticle.description"
           bg-color="white"
           dense
           outlined
-          label="description"
-          placeholder="description"
+          label="Description"
+          placeholder="Description"
         />
         <q-select
           v-model="newArticle.language"

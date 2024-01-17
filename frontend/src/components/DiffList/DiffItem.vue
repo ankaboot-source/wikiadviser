@@ -241,10 +241,10 @@
           <template v-else>
             <q-btn
               no-caps
-              :icon="parseChangesIcon"
+              :icon="pastChangesIcon"
               outline
               class="bg-white text-capitalize"
-              :label="parseChangesButton"
+              :label="pastChangesButton"
               @click="archiveChange(!isArchived)"
             />
           </template>
@@ -390,10 +390,10 @@ async function handleDescription() {
 }
 
 const isArchived = computed(() => props.item.archived);
-const parseChangesButton = computed(() =>
+const pastChangesButton = computed(() =>
   isArchived.value ? 'reopen' : 'archive',
 );
-const parseChangesIcon = computed(() =>
+const pastChangesIcon = computed(() =>
   isArchived.value ? 'unarchive' : 'archive',
 );
 

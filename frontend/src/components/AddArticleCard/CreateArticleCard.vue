@@ -1,5 +1,5 @@
 <template>
-  <q-card class="column" style="max-width: 60vw; max-height: 80vh" flat>
+  <q-card class="column" style="width: 60vw; max-height: 80vh" flat>
     <q-toolbar class="borders">
       <q-toolbar-title class="merriweather">
         Create a new article
@@ -7,39 +7,26 @@
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
     <q-card-section>
+      Title
       <q-input
         v-model="newArticle.title"
         bg-color="white"
         dense
         outlined
-        label="Title"
+        class="q-mb-sm"
       />
+      <div class="row">
+        <div>Description</div>
+        <q-space />
+        <div class="text-grey-7">Optional</div>
+      </div>
       <q-input
         v-model="newArticle.description"
         bg-color="white"
         dense
         outlined
-        label="Description"
+        class="q-mb-sm"
       />
-      <q-select
-        v-model="newArticle.language"
-        :option-label="(item) => item.value.toLocaleUpperCase()"
-        :options="wikiadviserLanguages"
-        filled
-        dense
-        options-dense
-      >
-        <q-tooltip anchor="top middle" self="center middle">
-          {{ newArticle.language?.label }}
-        </q-tooltip>
-        <template #option="scope">
-          <q-item v-bind="scope.itemProps">
-            <q-item-section>
-              <q-item-label>{{ scope.opt.label }}</q-item-label>
-            </q-item-section>
-          </q-item>
-        </template>
-      </q-select>
     </q-card-section>
     <q-card-actions class="borders">
       <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />

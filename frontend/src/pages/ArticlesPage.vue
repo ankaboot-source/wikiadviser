@@ -18,7 +18,7 @@
             @click="showCreateArticleDialog = !showCreateArticleDialog"
           />
           <q-btn
-            icon="add"
+            icon="cloud_download"
             no-caps
             unelevated
             class="q-ml-sm"

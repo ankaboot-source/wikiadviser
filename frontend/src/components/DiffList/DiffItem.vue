@@ -194,7 +194,7 @@
                   :v-close-popup="!hidingChange"
                   unelevated
                   color="negative"
-                  style="width: 10em"
+                  icon="delete"
                   no-caps
                   label="delete"
                   :loading="hidingChange"
@@ -202,7 +202,7 @@
                 >
                   <template #loading>
                     <q-spinner class="on-left" />
-                    Deleting
+                    Delete
                   </template>
                 </q-btn>
               </q-card-actions>

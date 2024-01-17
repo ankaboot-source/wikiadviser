@@ -37,7 +37,8 @@
               {{ language }}
             </q-badge>
             <div v-if="article.created_at" class="text-weight-light on-right">
-              Created the
+              <span v-if="article.imported">Imported on</span>
+              <span v-else>Created the</span>
               {{
                 article.created_at.toLocaleString(userLocale, {
                   year: 'numeric',

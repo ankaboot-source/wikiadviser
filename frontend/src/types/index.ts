@@ -58,6 +58,7 @@ export type Article = {
   created_at: Date;
   language: string;
   web_publication: boolean;
+  imported: boolean;
 };
 
 export type Comment = {

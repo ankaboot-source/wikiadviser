@@ -1,7 +1,7 @@
 <template>
   <template v-if="loading"></template>
   <q-layout v-else view="hHh lpR fFf" class="text-dark">
-    <app-header :user="user" />
+    <app-header />
     <q-page-container>
       <q-page class="flex">
         <div class="column col">
@@ -14,16 +14,17 @@
 </template>
 
 <script setup lang="ts">
-import { Session, User } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { useMeta } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 import AuthenticationPage from 'src/pages/auth/AuthPage.vue';
 import { onMounted, ref } from 'vue';
+import { useUserStore } from './stores/useUserStore';
 
 const loading = ref<boolean>(true);
-const user = ref<User | null>(null);
 const session = ref<Session | null>();
+const userStore = useUserStore();
 
 onMounted(() => {
   supabaseClient.auth.onAuthStateChange((_, _session) => {
@@ -37,10 +38,10 @@ onMounted(() => {
 async function setSession() {
   session.value = (await supabaseClient.auth.getSession()).data.session;
   if (session.value) {
-    user.value = (await supabaseClient.auth.getUser()).data.user;
-    if (!user.value?.user_metadata.user_avatar) {
+    userStore.fetchUser();
+    if (!userStore.user?.user_metadata.user_avatar) {
       await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });
-      user.value = (await supabaseClient.auth.getUser()).data.user;
+      userStore.fetchUser();
     }
   }
 }

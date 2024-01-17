@@ -5,14 +5,15 @@ import { useQuasar } from 'quasar';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Session, User } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
+import { useUserStore } from 'src/stores/useUserStore';
 
 const session = ref<Session | null>();
-const user = ref<User | null>();
 const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
+const userStore = useUserStore();
 const articlesStore = useArticlesStore();
 
 const $router = useRouter();
@@ -23,7 +24,7 @@ const showDeleteModal = ref(false);
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession();
-  user.value = (await supabase.auth.getUser()).data.user;
+  userStore.fetchUser();
   session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
     session.value = _session;
@@ -35,7 +36,7 @@ async function revertImage() {
   revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    user.value = (await supabase.auth.getUser()).data.user;
+    userStore.fetchUser();
     $q.notify({
       message: 'Reverted to default avatar picture.',
       icon: 'check',
@@ -98,9 +99,11 @@ async function deleteAccount() {
   }
 }
 
-const picture = computed(() => user.value?.user_metadata.user_avatar);
+const picture = computed(() => userStore.user?.user_metadata.user_avatar);
 
-const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
+const defaultAvatar = computed(
+  () => userStore.user?.user_metadata.default_avatar
+);
 </script>
 
 <template>

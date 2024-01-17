@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import supabaseClient from '../api/supabase';
-import { parseArticle, parseChanges } from '../helpers/parsingHelper';
+import { parseChanges } from '../helpers/parsingHelper';
 import {
   deleteArticleDB,
   getArticle,
@@ -72,31 +72,6 @@ export async function createArticle(
       .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error) {
     await deleteArticleDB(articleId);
-    return next(error);
-  }
-}
-
-/**
- * Retrieves and parses the content of a specified article.
- *
- * @param {Request} req - The Express request object.
- * @param {Response} res - The Express response object.
- */
-export async function getParsedArticle(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { id: articleId } = req.params;
-  try {
-    const article = await getArticle(articleId);
-    const changes = await getChanges(articleId);
-    const content = parseArticle(article, changes);
-    logger.info({ articleId }, 'Get Parsed Article');
-    return res
-      .status(200)
-      .json({ message: 'Getting article changes succeeded.', content });
-  } catch (error) {
     return next(error);
   }
 }

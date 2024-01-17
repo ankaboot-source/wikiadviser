@@ -79,17 +79,30 @@ async function loadingChanges() {
     reloadIframe();
   }
 }
-async function handleUpdateChanges(event: MessageEvent) {
-  if (event.data === 'updateChanges') {
-    await loadingChanges();
+
+async function EventHandler(event: MessageEvent): Promise<void> {
+  const { data } = event;
+
+  switch (data) {
+    case 'updateChanges':
+      await loadingChanges();
+      break;
+
+    case 'update-revisions':
+      emit('switchTabEmit', 'view');
+      reloadIframe();
+      break;
+
+    default:
+      break;
   }
 }
 
 onMounted(() => {
-  window.addEventListener('message', handleUpdateChanges);
+  window.addEventListener('message', EventHandler);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('message', handleUpdateChanges);
+  window.removeEventListener('message', EventHandler);
 });
 </script>

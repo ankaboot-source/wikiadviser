@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { ChangesItem, UserRole } from 'src/types';
+import { ChangeItem, UserRole } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import RevisionItem from './RevisionItem.vue';
@@ -74,7 +74,7 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   articleId: string;
   role: UserRole;
-  changesList: ChangesItem[];
+  changesList: ChangeItem[];
 }>();
 
 const groupedChanges = computed(() => {
@@ -83,7 +83,7 @@ const groupedChanges = computed(() => {
     {
       revid: number;
       summary: string;
-      items: ChangesItem[];
+      items: ChangeItem[];
     }
   >();
 

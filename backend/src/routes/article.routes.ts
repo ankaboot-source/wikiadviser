@@ -4,7 +4,6 @@ import {
   deleteArticle,
   deleteArticleRevision,
   getArticleChanges,
-  getParsedArticle,
   hasPermissions,
   importArticle,
   updateArticleChanges
@@ -15,12 +14,6 @@ const articleRouter = Router();
 /* Articles */
 articleRouter.post('/article', createArticle);
 articleRouter.post('/article/import', importArticle);
-
-articleRouter.get(
-  '/article/:id',
-  hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
-  getParsedArticle
-);
 
 /* Revisions */
 articleRouter.delete(

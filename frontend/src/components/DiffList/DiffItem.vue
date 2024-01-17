@@ -165,20 +165,20 @@
             outline
             color="blue-grey-10"
             class="bg-white text-capitalize"
-            label="Hide"
+            label="delete"
             @click.stop="hideChangeDialoge = true"
           />
           <q-dialog v-model="hideChangeDialoge">
             <q-card>
               <q-toolbar class="borders">
                 <q-toolbar-title class="merriweather">
-                  Hide Change
+                  Delete Change
                 </q-toolbar-title>
                 <q-btn v-close-popup flat round dense icon="close" size="sm" />
               </q-toolbar>
               <q-card-section>
                 This change is unrelated to any revisions and can be safely
-                hidden. It will no longer appear in the past changes folder.
+                deleted. It will no longer appear in the past changes folder.
               </q-card-section>
               <q-card-actions class="borders">
                 <q-space />
@@ -196,13 +196,13 @@
                   color="negative"
                   style="width: 10em"
                   no-caps
-                  label="Hide"
+                  label="delete"
                   :loading="hidingChange"
                   @click="hideChange()"
                 >
                   <template #loading>
                     <q-spinner class="on-left" />
-                    Hiding
+                    Deleting
                   </template>
                 </q-btn>
               </q-card-actions>
@@ -256,7 +256,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
-import { ChangesItem, UserRole, Status } from 'src/types';
+import { ChangeItem, UserRole, Status } from 'src/types';
 import {
   hideChanges,
   insertComment,
@@ -271,7 +271,7 @@ const $quasar = useQuasar();
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
-  item: ChangesItem;
+  item: ChangeItem;
   role: UserRole;
   pastChange?: {
     icon?: string;

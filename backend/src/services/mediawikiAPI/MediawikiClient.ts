@@ -1,6 +1,9 @@
 import { AxiosInstance } from 'axios';
 import mediawikiApiInstances from '../../api/mediawikiApiInstances';
-import { refineArticleChanges } from '../../helpers/parsingHelper';
+import {
+  parseArticle,
+  refineArticleChanges
+} from '../../helpers/parsingHelper';
 import {
   insertRevision,
   updateCurrentHtmlContent,
@@ -266,8 +269,12 @@ export default class MediawikiClient {
       revisionId
     );
 
+    const parsedArticleHtml = parseArticle(
+      { current_html_content: htmlContent },
+      changesToUpsert
+    );
     await upsertChanges(changesToUpsert);
-    await updateCurrentHtmlContent(articleId, htmlContent);
+    await updateCurrentHtmlContent(articleId, parsedArticleHtml as string);
   }
 
   /**

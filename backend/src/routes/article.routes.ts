@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import {
   createArticle,
-  getParsedArticle,
   deleteArticle,
   getArticleChanges,
   updateArticleChanges,
@@ -13,11 +12,6 @@ const articleRouter = Router();
 
 /* Articles */
 articleRouter.post('/article', createArticle);
-articleRouter.get(
-  '/article/:id',
-  hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
-  getParsedArticle
-);
 
 /* Revisions */
 articleRouter.delete(

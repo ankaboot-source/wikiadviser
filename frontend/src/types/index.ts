@@ -1,25 +1,40 @@
-export type ChangesItem = {
+export type SupabaseArticle = {
   id: string;
-  content: string;
-  status: 0 | 1 | 2;
-  type_of_edit: 0 | 1 | 2 | 3;
+  created_at: Date | null;
+  title: string | null;
+  description: string | null;
+  current_html_content: string | null;
+  language: string | null;
+  web_publication: boolean;
+};
+
+export type SupabaseChange = {
+  id: string;
+  created_at: string;
+  status: number;
+  type_of_edit: number;
   description: string;
+  content: string;
+  article_id: string;
+  contributor_id: string;
+  index: number;
+  archived: boolean;
+  revision_id: string;
+  hidden: boolean;
+};
+
+export interface ChangeItem extends SupabaseChange {
   user: {
     id: string;
     email: string;
     picture: string;
   };
-  created_at: string;
   comments: Comment[];
-  index: number | null;
-  revision_id: string;
   revision: {
     revid: number;
     summary: string;
   };
-  archived: boolean;
-  hidden: boolean;
-};
+}
 
 export type SearchResult = {
   title: string;
@@ -76,6 +91,6 @@ export interface Revision {
   revid: number;
   index: number;
   summary: string;
-  items: ChangesItem[];
+  items: ChangeItem[];
   isRecent: boolean;
 }

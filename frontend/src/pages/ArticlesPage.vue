@@ -13,6 +13,7 @@
             no-caps
             outline
             unelevated
+            class="q-ml-sm"
             color="primary"
             label="Create a new Article"
             @click="showCreateArticleDialog = !showCreateArticleDialog"

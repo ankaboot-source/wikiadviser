@@ -109,13 +109,15 @@ onBeforeMount(async () => {
     article.value.role === UserRole.Owner;
 
   changesList.value = await getChanges(articleId.value);
-  changesContent.value = (
-    await supabase
-      .from('articles')
-      .select('current_html_content')
-      .eq('id', articleId.value)
-      .single()
-  ).data?.current_html_content;
+  changesContent.value = changesList.value.length
+    ? (
+        await supabase
+          .from('articles')
+          .select('current_html_content')
+          .eq('id', articleId.value)
+          .single()
+      ).data?.current_html_content
+    : null;
 
   initializeRealtimeSubscription(realtimeChannel, articleId.value);
 

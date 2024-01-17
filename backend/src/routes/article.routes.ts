@@ -13,14 +13,8 @@ import {
 const articleRouter = Router();
 
 /* Articles */
-articleRouter.post('/article', (req, res) => {
-  const { isNew, ...otherParams } = req.body;
-  if (isNew) {
-    createArticle(req, res, otherParams);
-  } else {
-    importArticle(req, res, otherParams);
-  }
-});
+articleRouter.post('/article', createArticle);
+articleRouter.post('/article/import', importArticle);
 
 articleRouter.get(
   '/article/:id',

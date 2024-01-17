@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
-import { createArticle } from 'src/api/supabaseHelper';
+import { importArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
@@ -80,7 +80,7 @@ async function itemOnClick() {
     });
 
     //NEW ARTICLE
-    articleId.value = await createArticle(
+    articleId.value = await importArticle(
       props.item.title,
       data.session.user.id,
       props.articleLanguage,

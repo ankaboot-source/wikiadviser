@@ -40,10 +40,23 @@ export async function createArticle(
   userId: string,
   language: wikiadviserLanguage,
   description?: string,
-  isNew?: boolean,
 ) {
   const response = await api.post('article', {
-    isNew,
+    title,
+    userId,
+    language,
+    description,
+  });
+  return response.data.articleId;
+}
+
+export async function importArticle(
+  title: string,
+  userId: string,
+  language: wikiadviserLanguage,
+  description?: string,
+) {
+  const response = await api.post('article/import', {
     title,
     userId,
     language,

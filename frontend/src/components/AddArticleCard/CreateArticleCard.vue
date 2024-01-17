@@ -129,7 +129,6 @@ async function addArticle() {
       data.session.user.id,
       newArticle.value.language.value,
       newArticle.value.description,
-      true,
     );
     $q.loading.hide();
     $q.notify({

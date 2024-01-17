@@ -25,7 +25,7 @@
         v-if="role === UserRole.Owner"
         icon="link"
         outline
-        label="Share link"
+        label="Share article"
         no-caps
         class="q-mr-xs"
         @click="copyShareLinkToClipboard()"
@@ -175,7 +175,7 @@ async function copyShareLinkToClipboard() {
   const token = await createLink(`${props.article.article_id}`);
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
-    message: 'Share link copied to clipboard',
+    message: 'Share article link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',
   });

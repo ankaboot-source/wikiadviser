@@ -228,10 +228,9 @@ export default class MediawikiClient {
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');
 
-    logger.info('Getting the Diff HTML of Revids:', {
-      originalRevid,
-      latestRevid
-    });
+    logger.info(
+      `Getting the Diff HTML of Revids: ${originalRevid} -> ${latestRevid}`
+    );
 
     const diff = await this.mediawikiAutomator.getMediaWikiDiffHtml(
       articleId,

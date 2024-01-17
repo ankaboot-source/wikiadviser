@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
-import { parseArticle, parseChanges } from '../helpers/parsingHelper';
+import supabaseClient from '../api/supabase';
+import { parseChanges } from '../helpers/parsingHelper';
 import {
   deleteArticleDB,
   getArticle,
@@ -11,15 +12,14 @@ import logger from '../logger';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
-import supabaseClient from '../api/supabase';
 
 /**
- * Creates a new article and imports it into a MediaWiki instance.
+ * Imports a new article into a MediaWiki instance.
  *
  * @param req - The Express request object.
  * @param res - The Express response object.
  */
-export async function createArticle(
+export async function importArticle(
   req: Request,
   res: Response,
   next: NextFunction
@@ -33,11 +33,11 @@ export async function createArticle(
       wikipediaApi,
       await PlayAutomatorFactory(language)
     );
-    await mediawiki.importNewArticle(articleId, title);
+    await mediawiki.importArticle(articleId, title);
 
     return res
       .status(201)
-      .json({ message: 'Creating new article succeeded.', articleId });
+      .json({ message: 'Importing new article succeeded.', articleId });
   } catch (error) {
     await deleteArticleDB(articleId);
     return next(error);
@@ -45,26 +45,33 @@ export async function createArticle(
 }
 
 /**
- * Retrieves and parses the content of a specified article.
+ * Creates a new empty article in a MediaWiki instance.
  *
- * @param {Request} req - The Express request object.
- * @param {Response} res - The Express response object.
+ * @param req - The Express request object.
+ * @param res - The Express response object.
  */
-export async function getParsedArticle(
+export async function createArticle(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const { id: articleId } = req.params;
+  const { title, language, description } = req.body;
+  const { user } = res.locals;
+  const articleId = await insertArticle(title, user.id, language, description);
+
   try {
-    const article = await getArticle(articleId);
-    const changes = await getChanges(articleId);
-    const content = parseArticle(article, changes);
-    logger.info({ articleId }, 'Get Parsed Article');
+    const mediawiki = new MediawikiClient(
+      language,
+      wikipediaApi,
+      await PlayAutomatorFactory(language)
+    );
+    await mediawiki.createArticle(articleId, title);
+
     return res
-      .status(200)
-      .json({ message: 'Getting article changes succeeded.', content });
+      .status(201)
+      .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error) {
+    await deleteArticleDB(articleId);
     return next(error);
   }
 }

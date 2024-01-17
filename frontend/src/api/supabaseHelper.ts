@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangesItem, Permission, ShareLink, User } from 'src/types';
+import { Article, ChangeItem, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
 
@@ -16,7 +16,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       user: users(
       raw_user_meta_data,
       email
-      )`
+      )`,
     )
     .order('created_at')
     .eq('article_id', articleId);
@@ -25,6 +25,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
     throw new Error(permissionsError.message);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = permissionsData.map((permission: any) => ({
     picture: permission.user.raw_user_meta_data.picture,
     email: permission.user.email,
@@ -34,13 +35,28 @@ export async function getUsers(articleId: string): Promise<User[]> {
   return users;
 }
 
-export async function createNewArticle(
+export async function createArticle(
   title: string,
   userId: string,
   language: wikiadviserLanguage,
-  description?: string
+  description?: string,
 ) {
   const response = await api.post('article', {
+    title,
+    userId,
+    language,
+    description,
+  });
+  return response.data.articleId;
+}
+
+export async function importArticle(
+  title: string,
+  userId: string,
+  language: wikiadviserLanguage,
+  description?: string,
+) {
+  const response = await api.post('article/import', {
     title,
     userId,
     language,
@@ -59,7 +75,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       article_id,
       role,
       articles(title,description,created_at,language,web_publication)
-      `
+      `,
     )
     .eq('user_id', userId);
 
@@ -72,6 +88,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
 
   const articles: Article[] = articleData
     .filter((article) => article.role !== null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .map((article: any) => ({
       article_id: article.article_id,
       title: article.articles.title,
@@ -87,7 +104,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
 }
 
 export async function updatePermission(
-  permissions: Permission[]
+  permissions: Permission[],
 ): Promise<void> {
   const updatedPermissionsPromises = permissions.map(
     async ({ permissionId, role }) => {
@@ -100,17 +117,13 @@ export async function updatePermission(
       if (error) {
         throw new Error(error.message);
       }
-    }
+    },
   );
 
   await Promise.all(updatedPermissionsPromises);
 }
-export async function getArticleParsedContent(articleId: string) {
-  const response = await api.get(`article/${articleId}`);
-  return response.data.content;
-}
 
-export async function getChanges(articleId: string): Promise<ChangesItem[]> {
+export async function getChanges(articleId: string): Promise<ChangeItem[]> {
   const response = await api.get(`article/${articleId}/changes`);
   return response.data.changes;
 }
@@ -119,7 +132,7 @@ export async function updateChange(
   changeId: string,
   status?: number,
   description?: string,
-  archived?: boolean
+  archived?: boolean,
 ) {
   const { error: changeError } = await supabase
     .from('changes')
@@ -134,7 +147,7 @@ export async function updateChange(
 export async function insertComment(
   changeId: string,
   commenterId: string,
-  content: string
+  content: string,
 ) {
   const { error: changeError } = await supabase
     .from('comments')
@@ -173,16 +186,18 @@ export async function updateChanges(articleId: string) {
 export async function createLink(articleId: string) {
   const expiredAt = new Date();
   expiredAt.setDate(expiredAt.getDate() + EXPIRATION_DAYS);
-  const { data } = await supabase
-    .from('share_links')
-    .insert({
-      article_id: articleId,
-      expired_at: expiredAt.toISOString(),
-    })
-    .select()
-    .single<ShareLink>();
 
-  return data?.id;
+  const { data: token, error: tokenCreationError } = await supabase.rpc(
+    'create_share_links',
+    {
+      p_article_id: articleId,
+      expired_at: expiredAt.toISOString(),
+    },
+  );
+
+  if (tokenCreationError) throw new Error(tokenCreationError.message);
+
+  return token;
 }
 
 export async function verifyLink(token: string): Promise<string> {
@@ -190,7 +205,7 @@ export async function verifyLink(token: string): Promise<string> {
     'add_viewer_to_article',
     {
       token,
-    }
+    },
   );
 
   if (validationError) throw new Error(validationError.message);
@@ -198,37 +213,9 @@ export async function verifyLink(token: string): Promise<string> {
   return articleId;
 }
 
-export async function deleteChangeDB(changeId: string) {
-  const { data: change, error } = await supabase
-    .from('changes')
-    .select('*')
-    .eq('id', changeId)
-    .single();
-
-  if (error) {
-    throw Error(error.message);
-  }
-
-  if (!change) {
-    throw new Error(`Change with id(${changeId}) not found.`);
-  }
-
-  if (change.index !== null) {
-    throw new Error("Change can't be deleted.");
-  }
-
-  const { error: deleteError } = await supabase
-    .from('changes')
-    .delete()
-    .eq('id', change.id);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-}
 export async function updateArticleWebPublication(
   web_publication: boolean,
-  articleId: string
+  articleId: string,
 ) {
   const { error } = await supabase
     .from('articles')
@@ -242,8 +229,37 @@ export async function updateArticleWebPublication(
 
 export async function deleteUser() {
   const { error: deleteUserError } = await supabase.rpc(
-    'delete_user_and_anonymize_data'
+    'delete_user_and_anonymize_data',
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);
+}
+
+export async function hideChanges(changeId: string) {
+  const { data: change, error } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
+    .single();
+
+  if (error) {
+    throw Error(error.message);
+  }
+
+  if (!change) {
+    throw new Error(`Change with id(${changeId}) not found`);
+  }
+
+  if (change.index !== null) {
+    throw new Error('Cannot hide this change');
+  }
+
+  const { error: hideError } = await supabase
+    .from('changes')
+    .update({ hidden: true })
+    .eq('id', change.id);
+
+  if (hideError) {
+    throw new Error(hideError.message);
+  }
 }

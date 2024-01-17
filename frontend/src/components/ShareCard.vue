@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 30vw">
     <q-toolbar class="bg-white borders">
-      <q-toolbar-title class="merriweather">Share this article</q-toolbar-title>
+      <q-toolbar-title class="merriweather">Sharing settings</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
@@ -20,9 +20,13 @@
     <q-card-section v-if="ownerPermission">
       <q-toggle
         v-model="web_publication_toggle"
-        label="Publish this article on the Web and make it readable to everyone 🌍"
         @update:model-value="handlePublish()"
-      />
+      >
+        Publish this article on the Web and make it readable to everyone
+        <q-icon name="public" size="xs" class="q-ml-xs">
+          <q-tooltip>This article is published on the Web</q-tooltip>
+        </q-icon>
+      </q-toggle>
     </q-card-section>
 
     <q-card-actions v-if="ownerPermission" class="borders">
@@ -36,6 +40,7 @@
         label="Cancel"
       />
       <q-btn
+        v-close-popup
         color="primary"
         unelevated
         no-caps
@@ -95,7 +100,7 @@ const onPermissionChange = (permission: EmittedPermission) => {
     return;
   }
   const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
-    (perm) => perm.permissionId === permissionId
+    (perm) => perm.permissionId === permissionId,
   );
 
   if (existingPermissionIndex !== -1) {
@@ -120,7 +125,7 @@ async function handleApplyChanges() {
         await deletePermission(permission);
       }
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });
@@ -147,7 +152,7 @@ async function handleApplyChanges() {
     try {
       await updatePermission(permissionsToUpdate.value);
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });
@@ -176,12 +181,12 @@ async function handleApplyChanges() {
     try {
       await updateArticleWebPublication(
         web_publication_toggle.value,
-        props.article.article_id
+        props.article.article_id,
       );
       if (web_publication_toggle.value) {
         // Publish
         copyToClipboard(
-          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
+          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
         );
         $q.notify({
           message: 'Published on the web',
@@ -226,7 +231,7 @@ async function handleApplyChanges() {
 function handlePublish() {
   if (web_publication_toggle.value) {
     copyToClipboard(
-      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
     );
     $q.notify({
       message: 'Publish link copied to clipboard',

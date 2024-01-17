@@ -60,12 +60,12 @@ async function loadingChanges() {
 
     emit('switchTabEmit', 'view');
     $q.notify({
-      message: 'New changes successfully created.',
+      message: 'New changes successfully created',
       icon: 'check',
       color: 'positive',
     });
   } catch (error) {
-    let message = 'Creating changes failed.';
+    let message = 'Creating changes failed';
     if (error instanceof Error) {
       message = error.message;
     }
@@ -79,17 +79,30 @@ async function loadingChanges() {
     reloadIframe();
   }
 }
-async function handleUpdateChanges(event: MessageEvent) {
-  if (event.data === 'updateChanges') {
-    await loadingChanges();
+
+async function EventHandler(event: MessageEvent): Promise<void> {
+  const { data } = event;
+
+  switch (data) {
+    case 'updateChanges':
+      await loadingChanges();
+      break;
+
+    case 'update-revisions':
+      emit('switchTabEmit', 'view');
+      reloadIframe();
+      break;
+
+    default:
+      break;
   }
 }
 
 onMounted(() => {
-  window.addEventListener('message', handleUpdateChanges);
+  window.addEventListener('message', EventHandler);
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener('message', handleUpdateChanges);
+  window.removeEventListener('message', EventHandler);
 });
 </script>

@@ -53,10 +53,7 @@
         :role="role"
       />
     </q-list>
-    <div
-      v-if="canDeleteRevision && $props.revision.isRecent"
-      class="q-pb-sm q-pr-xs text-right"
-    >
+    <div v-if="$props.revision.isRecent" class="q-pb-sm q-pr-xs text-right">
       <q-btn
         no-caps
         unelevated
@@ -92,9 +89,8 @@
               :v-close-popup="!deletingRevision"
               unelevated
               color="negative"
-              style="width: 10em"
               no-caps
-              label="Cancel"
+              label="Cancel this revision"
               :loading="deletingRevision"
               @click="deleteRevision()"
             >
@@ -114,11 +110,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
-import { UserRole, Status, Revision } from 'src/types';
+import { UserRole, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
-import { useRouter } from 'vue-router';
 
 const props = defineProps<{
   role: UserRole;
@@ -128,7 +123,6 @@ const props = defineProps<{
 
 const store = useSelectedChangeStore();
 const $quasar = useQuasar();
-const $router = useRouter();
 
 const expanded = ref(true);
 const deleteRevisionDialog = ref<boolean>(false);
@@ -139,18 +133,12 @@ const changesToReviewLength = computed(() => {
   return props.revision.items.filter((item) => item.status === 0).length;
 });
 const localeDateString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleDateString()
+  new Date(props.revision.items[0]?.created_at).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
   new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
     timeStyle: 'short',
-  })
-);
-
-const canDeleteRevision = computed(() =>
-  props.revision.items.every(
-    (revision) => revision.status === Status.EditRejected
-  )
+  }),
 );
 
 watch(
@@ -161,24 +149,24 @@ watch(
     }
 
     expanded.value = props.revision.items.some(
-      (item) => item.id === selectedChangeId
+      (item) => item.id === selectedChangeId,
     );
-  }
+  },
 );
 
 async function deleteRevision() {
   deletingRevision.value = true;
 
   try {
+    window.parent.postMessage('update-revisions', '*');
     await api.delete(
-      `/article/${props.articleId}/revisions/${props.revision.revid}`
+      `/article/${props.articleId}/revisions/${props.revision.revid}`,
     );
     $quasar.notify({
       message: 'Revision has been canceled',
       icon: 'check',
       color: 'positive',
     });
-    $router.go(0);
   } catch (error) {
     let message = 'Failed to cancel revision';
 
@@ -190,7 +178,6 @@ async function deleteRevision() {
       color: 'negative',
     });
   }
-
   deletingRevision.value = false;
   deleteRevisionDialog.value = false;
 }

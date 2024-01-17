@@ -14,11 +14,9 @@
             to="."
             @click="$router.go(0)"
           />
-          <q-icon
-            v-if="article?.web_publication"
-            name="public"
-            class="q-mr-xs"
-          />
+          <q-icon v-if="article?.web_publication" name="public">
+            <q-tooltip>This article is published on the Web</q-tooltip>
+          </q-icon>
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
@@ -43,13 +41,13 @@
 </template>
 
 <script setup lang="ts">
-import supabase from 'src/api/supabase';
-import { computed, ref, watch, watchEffect } from 'vue';
-import { useQuasar } from 'quasar';
-import { useRoute, useRouter } from 'vue-router';
-import { Article } from 'src/types';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { User } from '@supabase/supabase-js';
+import { useQuasar } from 'quasar';
+import supabase from 'src/api/supabase';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { Article } from 'src/types';
+import { computed, ref, watch, watchEffect } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 

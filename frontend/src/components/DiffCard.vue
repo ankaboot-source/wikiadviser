@@ -22,7 +22,7 @@
         @click="viewArticleInNewTab()"
       />
       <q-btn
-        v-if="role != UserRole.Viewer"
+        v-if="role === UserRole.Owner"
         icon="link"
         outline
         label="Share link"
@@ -67,8 +67,8 @@
           There are currently no changes
         </div>
         <div class="q-pb-sm text-body2">
-          Easily navigate through changes using the changes tab once the article
-          has been edited.
+          After the article is edited, the changes will be displayed here for
+          your review.
         </div>
       </div>
     </template>
@@ -138,7 +138,7 @@ watch(
     await nextTick();
     handleTabIndexes();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -146,7 +146,7 @@ watch(
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
       const element = document.querySelector(
-        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`
+        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`,
       );
 
       if (element) {
@@ -166,7 +166,7 @@ watch(
         element.classList.remove('hovered');
       });
     }
-  }
+  },
 );
 
 const $q = useQuasar();
@@ -204,14 +204,12 @@ const toggleOptions = computed(() =>
     props.editorPermission
   )
     ? [viewButton]
-    : [viewButton, editButton]
+    : [viewButton, editButton],
 );
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
-  if (props.editorPermission === true && props.changesContent === '') {
-    return 'edit';
-  }
-  return 'view';
+  const emptyContent = !props.changesContent || !props.changesContent.length;
+  return props.editorPermission && emptyContent ? 'edit' : 'view';
 });
 
 watch(
@@ -222,7 +220,7 @@ watch(
     }
     buttonToggle.value = newToggle;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onSwitchTabEmitChange = (tab: string) => {
@@ -232,7 +230,7 @@ const onSwitchTabEmitChange = (tab: string) => {
 function viewArticleInNewTab() {
   window.open(
     `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
-    '_blank'
+    '_blank',
   );
 }
 </script>

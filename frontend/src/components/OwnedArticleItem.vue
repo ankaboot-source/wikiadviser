@@ -37,7 +37,7 @@
               {{ language }}
             </q-badge>
             <div v-if="article.created_at" class="text-weight-light on-right">
-              Imported on
+              Created the
               {{
                 article.created_at.toLocaleString(userLocale, {
                   year: 'numeric',
@@ -94,7 +94,7 @@
                     :v-close-popup="!deletingArticle"
                     unelevated
                     color="negative"
-                    style="width: 10em"
+                    icon="delete"
                     no-caps
                     label="Delete"
                     :loading="deletingArticle"
@@ -102,7 +102,7 @@
                   >
                     <template #loading>
                       <q-spinner class="on-left" />
-                      Deleting
+                      Delete
                     </template>
                   </q-btn>
                 </q-card-actions>

@@ -35,13 +35,28 @@ export async function getUsers(articleId: string): Promise<User[]> {
   return users;
 }
 
-export async function createNewArticle(
+export async function createArticle(
   title: string,
   userId: string,
   language: wikiadviserLanguage,
   description?: string,
 ) {
   const response = await api.post('article', {
+    title,
+    userId,
+    language,
+    description,
+  });
+  return response.data.articleId;
+}
+
+export async function importArticle(
+  title: string,
+  userId: string,
+  language: wikiadviserLanguage,
+  description?: string,
+) {
+  const response = await api.post('article/import', {
     title,
     userId,
     language,

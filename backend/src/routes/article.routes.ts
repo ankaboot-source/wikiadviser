@@ -2,16 +2,18 @@ import { Router } from 'express';
 import {
   createArticle,
   deleteArticle,
+  deleteArticleRevision,
   getArticleChanges,
-  updateArticleChanges,
   hasPermissions,
-  deleteArticleRevision
+  importArticle,
+  updateArticleChanges
 } from '../controllers/article.controller';
 
 const articleRouter = Router();
 
 /* Articles */
 articleRouter.post('/article', createArticle);
+articleRouter.post('/article/import', importArticle);
 
 /* Revisions */
 articleRouter.delete(

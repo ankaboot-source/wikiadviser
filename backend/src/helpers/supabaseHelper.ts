@@ -5,12 +5,13 @@ export async function insertArticle(
   title: string,
   userId: string,
   language: string,
-  description?: string
+  description?: string,
+  imported?: boolean
 ): Promise<string> {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
     .from('articles')
-    .insert({ title, description, language })
+    .insert({ title, description, language, imported })
     .select();
   if (articlesError) {
     throw new Error(articlesError.message);

@@ -34,7 +34,7 @@
         v-if="role != UserRole.Viewer"
         icon="o_group"
         outline
-        label="Sharing settings"
+        label="Share settings"
         no-caps
         class="q-pr-lg"
         @click="share = !share"

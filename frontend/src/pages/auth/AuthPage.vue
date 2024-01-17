@@ -53,7 +53,7 @@ const authView = ref<ViewType>('sign_in');
 const callbackURL = computed(() => {
   return authView.value === 'forgotten_password'
     ? `${location.origin}/auth/update_password`
-    : `${location.origin}`;
+    : `${location.href}`;
 });
 
 const message = computed(() => {

@@ -60,7 +60,7 @@ const realtimeChannel: RealtimeChannel = supabase.channel('changes');
 
 function initializeRealtimeSubscription(
   channel: RealtimeChannel,
-  articleId: string
+  articleId: string,
 ) {
   channel
     .on(
@@ -78,7 +78,7 @@ function initializeRealtimeSubscription(
         changesContent.value = changesList.value.length
           ? updatedArticle.current_html_content
           : '';
-      }
+      },
     )
     .subscribe();
 }

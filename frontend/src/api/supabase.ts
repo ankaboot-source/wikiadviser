@@ -10,7 +10,7 @@ const supabaseClient = createBrowserClient(
       domain: process.env.WIKIADVISER_ROOT_DOMAIN ?? 'localhost',
       secure: true,
     },
-  }
+  },
 );
 
 export default supabaseClient;

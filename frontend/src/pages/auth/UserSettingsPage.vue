@@ -5,7 +5,6 @@ import { useQuasar } from 'quasar';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Session } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
 import { useUserStore } from 'src/stores/useUserStore';
 import { useSessionStore } from 'src/stores/useSessionStore';
@@ -24,11 +23,8 @@ const showDeleteModal = ref(false);
 
 onMounted(() => {
   const sessionStore = useSessionStore();
+  email.value = sessionStore.session?.user.email as string;
   userStore.fetchUser();
-  supabase.auth.onAuthStateChange((_, _session) => {
-    sessionStore.session = _session as Session;
-    email.value = sessionStore.session?.user.email as string;
-  });
 });
 
 async function revertImage() {
@@ -101,7 +97,7 @@ async function deleteAccount() {
 const picture = computed(() => userStore.user?.user_metadata.user_avatar);
 
 const defaultAvatar = computed(
-  () => userStore.user?.user_metadata.default_avatar
+  () => userStore.user?.user_metadata.default_avatar,
 );
 </script>
 

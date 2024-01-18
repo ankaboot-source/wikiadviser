@@ -262,8 +262,6 @@ import {
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
-import { Session } from '@supabase/supabase-js';
-import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
 import { useSessionStore } from 'src/stores/useSessionStore';
@@ -326,11 +324,8 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 
 onMounted(() => {
   const sessionStore = useSessionStore();
-  supabase.auth.onAuthStateChange((_, _session) => {
-    sessionStore.session = _session as Session;
-    email.value = sessionStore.session?.user.email as string;
-    userId.value = sessionStore.session?.user.id as string;
-  });
+  email.value = sessionStore.session?.user.email as string;
+  userId.value = sessionStore.session?.user.id as string;
 });
 
 const previewDescription = computed(() => {
@@ -368,11 +363,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)?.icon
+  () => statusDictionary.get(props.item?.status)?.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)?.message
+  () => statusDictionary.get(props.item?.status)?.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
@@ -390,10 +385,10 @@ async function handleDescription() {
 
 const isArchived = computed(() => props.item.archived);
 const pastChangesButton = computed(() =>
-  isArchived.value ? 'reopen' : 'archive'
+  isArchived.value ? 'reopen' : 'archive',
 );
 const pastChangesIcon = computed(() =>
-  isArchived.value ? 'unarchive' : 'archive'
+  isArchived.value ? 'unarchive' : 'archive',
 );
 
 async function archiveChange(archived = true) {
@@ -420,7 +415,7 @@ watch(
       }, 400);
       store.selectedChangeId = '';
     }
-  }
+  },
 );
 
 function setHovered(value: string) {
@@ -428,10 +423,10 @@ function setHovered(value: string) {
 }
 
 const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString()
+  new Date(props.item?.created_at).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString()
+  new Date(props.item?.created_at).toLocaleTimeString(),
 );
 
 const isUnindexed = computed(() => props.item.index === null);

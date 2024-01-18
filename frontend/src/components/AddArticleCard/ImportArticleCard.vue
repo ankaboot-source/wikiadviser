@@ -88,7 +88,7 @@ const searchResults = ref<SearchResult[]>();
 
 const defaultArticleLanguage =
   wikiadviserLanguages.find(
-    (option) => window.navigator.language.split('-')[0] === option.lang
+    (option) => window.navigator.language.split('-')[0] === option.lang,
   ) || wikiadviserLanguages[0];
 
 const articleLanguage = ref(defaultArticleLanguage);

@@ -192,7 +192,7 @@ async function removeArticle(articleId: string) {
 const language = computed(
   () =>
     wikiadviserLanguages.find(
-      (option) => props.article.language === option.lang
-    )?.label
+      (option) => props.article.language === option.lang,
+    )?.label,
 );
 </script>

@@ -28,7 +28,6 @@ const userStore = useUserStore();
 const sessionStore = useSessionStore();
 
 onMounted(async () => {
-  session.value = (await supabaseClient.auth.getSession()).data.session;
   supabaseClient.auth.onAuthStateChange((_, _session) => {
     sessionStore.session = _session as Session;
     setSession();
@@ -39,11 +38,10 @@ onMounted(async () => {
 
 async function setSession() {
   if (sessionStore.session) {
-    userStore.fetchUser();
     if (!userStore.user?.user_metadata.user_avatar) {
       await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });
-      userStore.fetchUser();
     }
+    userStore.fetchUser();
   }
 }
 

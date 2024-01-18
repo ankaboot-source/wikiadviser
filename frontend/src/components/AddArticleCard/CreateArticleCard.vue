@@ -63,7 +63,7 @@ const $q = useQuasar();
 const loadingCreation = ref(false);
 const defaultArticleLanguage =
   wikiadviserLanguages.find(
-    (option) => window.navigator.language.split('-')[0] === option.lang
+    (option) => window.navigator.language.split('-')[0] === option.lang,
   ) || wikiadviserLanguages[0];
 
 const router = useRouter();
@@ -93,7 +93,7 @@ async function addArticle() {
     const article = articlesStore.articles?.find(
       (article: Article) =>
         article.title === newArticle.value.title &&
-        article.language === newArticle.value.language.value
+        article.language === newArticle.value.language.value,
     );
 
     if (article) {
@@ -109,7 +109,7 @@ async function addArticle() {
       newArticle.value.title,
       data.session.user.id,
       newArticle.value.language.value,
-      newArticle.value.description
+      newArticle.value.description,
     );
     loadingCreation.value = false;
     $q.notify({

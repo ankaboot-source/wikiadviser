@@ -56,7 +56,7 @@ async function itemOnClick() {
     const article = articlesStore.articles?.find(
       (article: Article) =>
         article.title === props.item.title &&
-        article.language === props.articleLanguage
+        article.language === props.articleLanguage,
     );
 
     if (article) {
@@ -85,7 +85,7 @@ async function itemOnClick() {
       props.item.title,
       user.id,
       props.articleLanguage,
-      props.item.description
+      props.item.description,
     );
     $q.loading.hide();
     $q.notify({

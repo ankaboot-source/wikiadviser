@@ -24,7 +24,6 @@
 </template>
 
 <script setup lang="ts">
-import supabase from 'src/api/supabase';
 import {
   getArticleParsedContent,
   getChanges,
@@ -33,6 +32,7 @@ import {
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
 import { ChangesItem, UserRole } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -77,9 +77,10 @@ async function fetchChanges() {
 }
 
 onBeforeMount(async () => {
-  const { data } = await supabase.auth.getSession();
+  const sessionStore = useSessionStore();
+  const user = sessionStore.session?.user;
 
-  if (!data.session?.user) {
+  if (!user) {
     router.push('/');
     return;
   }
@@ -87,7 +88,7 @@ onBeforeMount(async () => {
   // Access the article id parameter from the route's params object
   articleId.value = params.articleId as string;
 
-  await articlesStore.fetchArticles(data.session.user.id);
+  await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
     // Article does not exist for this user

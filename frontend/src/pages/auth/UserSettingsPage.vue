@@ -8,8 +8,8 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Session } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
 import { useUserStore } from 'src/stores/useUserStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
 
-const session = ref<Session | null>();
 const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
@@ -23,12 +23,11 @@ const deletingAccount = ref(false);
 const showDeleteModal = ref(false);
 
 onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
+  const sessionStore = useSessionStore();
   userStore.fetchUser();
-  session.value = data.session;
   supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
+    sessionStore.session = _session as Session;
+    email.value = sessionStore.session?.user.email as string;
   });
 });
 

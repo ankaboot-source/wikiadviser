@@ -267,6 +267,7 @@ import { Session } from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
+import { useSessionStore } from 'src/stores/useSessionStore';
 
 const $quasar = useQuasar();
 const store = useSelectedChangeStore();
@@ -280,7 +281,6 @@ const props = defineProps<{
   };
 }>();
 const expanded = ref(false);
-const session = ref<Session | null>();
 const email = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
@@ -325,12 +325,11 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 ]);
 
 onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  session.value = data.session;
+  const sessionStore = useSessionStore();
   supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
-    userId.value = session.value?.user.id as string;
+    sessionStore.session = _session as Session;
+    email.value = sessionStore.session?.user.email as string;
+    userId.value = sessionStore.session?.user.id as string;
   });
 });
 
@@ -369,11 +368,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)!.icon,
+  () => statusDictionary.get(props.item?.status)?.icon
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)!.message,
+  () => statusDictionary.get(props.item?.status)?.message
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
@@ -447,7 +446,7 @@ watch(
       }, 400);
       store.selectedChangeId = '';
     }
-  },
+  }
 );
 
 function setHovered(value: string) {
@@ -455,10 +454,10 @@ function setHovered(value: string) {
 }
 
 const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString(),
+  new Date(props.item?.created_at).toLocaleDateString()
 );
 const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString(),
+  new Date(props.item?.created_at).toLocaleTimeString()
 );
 </script>
 <style scoped>

@@ -121,9 +121,9 @@ import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
-import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { useSessionStore } from 'src/stores/useSessionStore';
 const props = defineProps<{
   article: Article;
 }>();
@@ -161,8 +161,9 @@ async function removeArticle(articleId: string) {
       icon: 'check',
       color: 'positive',
     });
-    const { data } = await supabase.auth.getSession();
-    const user = data.session?.user;
+
+    const sessionStore = useSessionStore();
+    const user = sessionStore.session?.user;
 
     if (!user) {
       throw new Error('User is not logged in.');
@@ -190,7 +191,7 @@ async function removeArticle(articleId: string) {
 const language = computed(
   () =>
     wikiadviserLanguages.find(
-      (option) => props.article.language === option.lang,
-    )?.label,
+      (option) => props.article.language === option.lang
+    )?.label
 );
 </script>

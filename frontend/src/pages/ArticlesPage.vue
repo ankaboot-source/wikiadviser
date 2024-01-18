@@ -102,8 +102,9 @@ import { computed, onBeforeMount, ref } from 'vue';
 import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
 import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
 import { Article } from 'src/types';
-import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
+import { User } from '@supabase/supabase-js';
 
 const articlesStore = useArticlesStore();
 
@@ -114,8 +115,10 @@ const showNewArticleDialog = ref(false);
 const articles = computed(() => articlesStore.articles);
 
 onBeforeMount(async () => {
-  const { data } = await supabase.auth.getSession();
-  await articlesStore.fetchArticles(data.session!.user.id);
+  const sessionStore = useSessionStore();
+  const user = sessionStore.session?.user as User;
+
+  await articlesStore.fetchArticles(user.id);
   loading.value = false;
 });
 
@@ -125,7 +128,7 @@ const articlesFiltered = computed(() => {
     return articles.value;
   } else {
     return articles.value?.filter((article: Article) =>
-      article.title.toLowerCase().includes(trimmedTerm.toLowerCase()),
+      article.title.toLowerCase().includes(trimmedTerm.toLowerCase())
     );
   }
 });

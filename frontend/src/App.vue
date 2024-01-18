@@ -5,7 +5,7 @@
     <q-page-container>
       <q-page class="flex">
         <div class="column col">
-          <router-view v-if="session" />
+          <router-view v-if="sessionStore.session" />
           <authentication-page v-else />
         </div>
       </q-page>
@@ -21,14 +21,15 @@ import AppHeader from 'src/components/AppHeader.vue';
 import AuthenticationPage from 'src/pages/auth/AuthPage.vue';
 import { onMounted, ref } from 'vue';
 import { useUserStore } from './stores/useUserStore';
+import { useSessionStore } from './stores/useSessionStore';
 
 const loading = ref<boolean>(true);
-const session = ref<Session | null>();
 const userStore = useUserStore();
+const sessionStore = useSessionStore();
 
 onMounted(() => {
   supabaseClient.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
+    sessionStore.session = _session as Session;
     setSession();
   });
 
@@ -36,8 +37,7 @@ onMounted(() => {
 });
 
 async function setSession() {
-  session.value = (await supabaseClient.auth.getSession()).data.session;
-  if (session.value) {
+  if (sessionStore.session) {
     userStore.fetchUser();
     if (!userStore.user?.user_metadata.user_avatar) {
       await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });

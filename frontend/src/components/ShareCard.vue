@@ -63,8 +63,8 @@ import {
 } from 'src/api/supabaseHelper';
 import { copyToClipboard, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import supabase from 'src/api/supabase';
 import { useRouter } from 'vue-router';
+import { useSessionStore } from 'src/stores/useSessionStore';
 const articlesStore = useArticlesStore();
 
 const $q = useQuasar();
@@ -100,7 +100,7 @@ const onPermissionChange = (permission: EmittedPermission) => {
     return;
   }
   const existingPermissionIndex = permissionsToUpdate.value?.findIndex(
-    (perm) => perm.permissionId === permissionId,
+    (perm) => perm.permissionId === permissionId
   );
 
   if (existingPermissionIndex !== -1) {
@@ -181,12 +181,12 @@ async function handleApplyChanges() {
     try {
       await updateArticleWebPublication(
         web_publication_toggle.value,
-        props.article.article_id,
+        props.article.article_id
       );
       if (web_publication_toggle.value) {
         // Publish
         copyToClipboard(
-          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
         );
         $q.notify({
           message: 'Published on the web',
@@ -218,20 +218,23 @@ async function handleApplyChanges() {
         });
       }
     }
-    const { data } = await supabase.auth.getSession();
-    if (!data.session?.user.id) {
+
+    const sessionStore = useSessionStore();
+    const user = sessionStore.session?.user;
+
+    if (!user?.id) {
       router.push('/');
       throw new Error('User session not found.');
     }
 
-    await articlesStore.fetchArticles(data.session.user.id);
+    await articlesStore.fetchArticles(user.id);
   }
 }
 
 function handlePublish() {
   if (web_publication_toggle.value) {
     copyToClipboard(
-      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`
     );
     $q.notify({
       message: 'Publish link copied to clipboard',

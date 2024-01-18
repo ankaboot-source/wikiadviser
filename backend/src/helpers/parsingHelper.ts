@@ -57,25 +57,34 @@ export async function refineArticleChanges(
   CheerioAPI("[data-diff-action]:not([data-diff-action='none'])").each(
     (index, element) => {
       const $element = CheerioAPI(element);
-      if (!$element.prop('innerText')?.trim()) {
+      const elementInnerText = $element.prop('innerText')?.trim();
+      if (!elementInnerText) {
+        // If element is empty of innerText Destroy it
         $element.remove();
         return;
-      } // If element is empty of innerText Destroy it
+      }
       const diffAction: string = $element.data('diff-action') as string;
+      let typeOfEdit: string = diffAction;
       const list: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
       const $wrapElement = CheerioAPI('<span>');
-
-      // Append a clone of the element to the wrap element
-      $wrapElement.append($element.clone());
-
-      let typeOfEdit: string = diffAction;
+      let isComment = false;
+      if ($element.find('.ve-ce-commentNode').length) {
+        $wrapElement.text(elementInnerText);
+        isComment = true;
+        list.push(elementInnerText);
+        typeOfEdit = 'comment-insert';
+      } else {
+        // Append a clone of the element to the wrap element
+        $wrapElement.append($element.clone());
+      }
 
       // Wrapping related changes: Check if next node is an element (Not a text node)
       // AND if the current element has "change-remove" | "remove" diffAction
       const node = $element[0].next as ChildNodeData | null;
       if (
+        !isComment &&
         !node?.data?.trim() &&
         (diffAction === 'change-remove' || diffAction === 'remove')
       ) {
@@ -173,7 +182,8 @@ export async function refineArticleChanges(
       | 'insert'
       | 'remove'
       | 'remove-insert'
-      | 'structural-change';
+      | 'structural-change'
+      | 'comment-insert';
 
     for (const change of changes) {
       const $changeContent = load(change.content, null, false);

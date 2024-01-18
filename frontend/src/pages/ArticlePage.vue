@@ -24,18 +24,20 @@
 </template>
 
 <script setup lang="ts">
-import {
-  getArticleParsedContent,
-  getChanges,
-  getUsers,
-} from 'src/api/supabaseHelper';
+import { getChanges, getUsers } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { ChangeItem, SupabaseArticle, UserRole } from 'src/types';
 import { useSessionStore } from 'src/stores/useSessionStore';
-import { ChangesItem, UserRole } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import supabase from 'src/api/supabase';
+
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 
 const route = useRoute();
 const router = useRouter();
@@ -44,36 +46,41 @@ const articlesStore = useArticlesStore();
 const { params } = route;
 
 const users = ref();
-
 const articleId = ref('');
-const article = computed(() => articlesStore.getArticleById(articleId.value));
+const loading = ref(true);
 
 const role = ref<UserRole>(UserRole.Viewer);
 const editorPermission = ref<boolean | null>(null);
-
-const changesList = ref<ChangesItem[]>([]);
+const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
 
-const loading = ref(true);
+const article = computed(() => articlesStore.getArticleById(articleId.value));
 
-let pollTimer: number;
+const realtimeChannel: RealtimeChannel = supabase.channel('changes');
 
-async function fetchChanges() {
-  try {
-    const updatedChangesList = (await getChanges(articleId.value)) ?? [];
+function initializeRealtimeSubscription(
+  channel: RealtimeChannel,
+  articleId: string
+) {
+  channel
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'articles',
+        filter: `id=eq.${articleId}`,
+      },
+      async (payload: RealtimePostgresChangesPayload<SupabaseArticle>) => {
+        const updatedArticle = payload.new as SupabaseArticle;
 
-    if (
-      JSON.stringify(changesList.value) !== JSON.stringify(updatedChangesList)
-    ) {
-      changesList.value = updatedChangesList;
-      changesContent.value = await getArticleParsedContent(articleId.value);
-    }
-    if (!changesList.value.length) {
-      changesContent.value = '';
-    }
-  } catch (error) {
-    console.error(error);
-  }
+        changesList.value = await getChanges(articleId);
+        changesContent.value = changesList.value.length
+          ? updatedArticle.current_html_content
+          : '';
+      }
+    )
+    .subscribe();
 }
 
 onBeforeMount(async () => {
@@ -86,7 +93,8 @@ onBeforeMount(async () => {
   }
 
   // Access the article id parameter from the route's params object
-  articleId.value = params.articleId as string;
+  const { articleId: articleIdFromParams } = params;
+  articleId.value = articleIdFromParams as string;
 
   await articlesStore.fetchArticles(user.id);
 
@@ -95,23 +103,30 @@ onBeforeMount(async () => {
     router.push({ name: '404' });
     return;
   }
-  if (article.value) {
-    role.value = article.value.role;
-    users.value = await getUsers(articleId.value);
-    editorPermission.value =
-      article.value.role === UserRole.Editor ||
-      article.value.role === UserRole.Owner;
-  }
 
-  await fetchChanges();
-  // keep calling fetchChanges to implement long polling
-  pollTimer = window.setInterval(async () => {
-    await fetchChanges();
-  }, 2000);
+  role.value = article.value.role;
+  users.value = await getUsers(articleId.value);
+  editorPermission.value =
+    article.value.role === UserRole.Editor ||
+    article.value.role === UserRole.Owner;
+
+  changesList.value = await getChanges(articleId.value);
+  changesContent.value = changesList.value.length
+    ? (
+        await supabase
+          .from('articles')
+          .select('current_html_content')
+          .eq('id', articleId.value)
+          .single()
+      ).data?.current_html_content
+    : null;
+
+  initializeRealtimeSubscription(realtimeChannel, articleId.value);
+
   loading.value = false;
 });
 
 onBeforeUnmount(() => {
-  clearInterval(pollTimer);
+  realtimeChannel.unsubscribe();
 });
 </script>

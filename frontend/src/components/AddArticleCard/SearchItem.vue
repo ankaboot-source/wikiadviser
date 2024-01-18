@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { QSpinnerGrid, useQuasar } from 'quasar';
-import { createNewArticle } from 'src/api/supabaseHelper';
+import { importArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 import { Article, SearchResult } from 'src/types';
 import { ref } from 'vue';
@@ -81,7 +81,7 @@ async function itemOnClick() {
     });
 
     //NEW ARTICLE
-    articleId.value = await createNewArticle(
+    articleId.value = await importArticle(
       props.item.title,
       user.id,
       props.articleLanguage,
@@ -89,7 +89,7 @@ async function itemOnClick() {
     );
     $q.loading.hide();
     $q.notify({
-      message: 'Article successfully created.',
+      message: 'Article successfully created',
       icon: 'check',
       color: 'positive',
     });
@@ -106,7 +106,7 @@ async function itemOnClick() {
   } catch (error) {
     $q.loading.hide();
     $q.notify({
-      message: 'Failed importing or creating article',
+      message: 'Failed importing article',
       color: 'negative',
     });
   }

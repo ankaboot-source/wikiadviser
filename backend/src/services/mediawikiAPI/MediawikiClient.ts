@@ -1,6 +1,9 @@
 import { AxiosInstance } from 'axios';
 import mediawikiApiInstances from '../../api/mediawikiApiInstances';
-import { refineArticleChanges } from '../../helpers/parsingHelper';
+import {
+  parseArticle,
+  refineArticleChanges
+} from '../../helpers/parsingHelper';
 import {
   insertRevision,
   updateCurrentHtmlContent,
@@ -174,7 +177,7 @@ export default class MediawikiClient {
     this.logout(csrftoken);
   }
 
-  async importNewArticle(articleId: string, title: string): Promise<void> {
+  async importArticle(articleId: string, title: string): Promise<void> {
     try {
       // Export
       logger.info(`Exporting file ${title}`);
@@ -228,10 +231,9 @@ export default class MediawikiClient {
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');
 
-    logger.info('Getting the Diff HTML of Revids:', {
-      originalRevid,
-      latestRevid
-    });
+    logger.info(
+      `Getting the Diff HTML of Revids: ${originalRevid} -> ${latestRevid}`
+    );
 
     const diff = await this.mediawikiAutomator.getMediaWikiDiffHtml(
       articleId,
@@ -267,8 +269,12 @@ export default class MediawikiClient {
       revisionId
     );
 
+    const parsedArticleHtml = parseArticle(
+      { current_html_content: htmlContent },
+      changesToUpsert
+    );
     await upsertChanges(changesToUpsert);
-    await updateCurrentHtmlContent(articleId, htmlContent);
+    await updateCurrentHtmlContent(articleId, parsedArticleHtml as string);
   }
 
   /**
@@ -304,6 +310,36 @@ export default class MediawikiClient {
       throw new Error(
         `Failed to delete revision with id ${revisionId}: ${error}`
       );
+    }
+
+    return data;
+  }
+
+  async createArticle(articleId: string, title: string) {
+    const csrftoken = await this.loginAndGetCsrf();
+
+    const { data } = await this.mediawikiApiInstance.post(
+      '',
+      {
+        action: 'edit',
+        title: articleId,
+        appendtext: `{{DISPLAYTITLE:${title}}}`,
+        token: csrftoken,
+        createonly: true,
+        format: 'json'
+      },
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    this.logout(csrftoken);
+    const error = data.error?.info;
+
+    if (error) {
+      throw new Error(`Failed to create new article id ${articleId}: ${error}`);
     }
 
     return data;

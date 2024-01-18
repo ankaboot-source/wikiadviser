@@ -25,7 +25,7 @@
         v-if="role === UserRole.Owner"
         icon="link"
         outline
-        label="Share link"
+        label="Share article"
         no-caps
         class="q-mr-xs"
         @click="copyShareLinkToClipboard()"
@@ -34,7 +34,7 @@
         v-if="role != UserRole.Viewer"
         icon="o_group"
         outline
-        label="Sharing settings"
+        label="Share settings"
         no-caps
         class="q-pr-lg"
         @click="share = !share"
@@ -67,8 +67,8 @@
           There are currently no changes
         </div>
         <div class="q-pb-sm text-body2">
-          Easily navigate through changes using the changes tab once the article
-          has been edited.
+          After the article is edited, the changes will be displayed here for
+          your review.
         </div>
       </div>
     </template>
@@ -175,7 +175,7 @@ async function copyShareLinkToClipboard() {
   const token = await createLink(`${props.article.article_id}`);
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
-    message: 'Share link copied to clipboard',
+    message: 'Share article link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',
   });
@@ -208,10 +208,8 @@ const toggleOptions = computed(() =>
 );
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
-  if (props.editorPermission === true && props.changesContent === '') {
-    return 'edit';
-  }
-  return 'view';
+  const emptyContent = !props.changesContent || !props.changesContent.length;
+  return props.editorPermission && emptyContent ? 'edit' : 'view';
 });
 
 watch(

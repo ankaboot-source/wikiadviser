@@ -26,7 +26,7 @@
                   inputLabelText: '#263238' /* dark */,
                   defaultButtonText: '#263238' /* dark */,
                   messageTextDanger: '#b71c1c' /* negative */,
-                  messageText: '#1b5e200' /* positive */,
+                  messageText: '#1b5e20' /* positive */,
                 },
               },
             },
@@ -53,7 +53,7 @@ const authView = ref<ViewType>('sign_in');
 const callbackURL = computed(() => {
   return authView.value === 'forgotten_password'
     ? `${location.origin}/auth/update_password`
-    : `${location.origin}/auth/callback`;
+    : `${location.href}`;
 });
 
 const message = computed(() => {

@@ -9,12 +9,23 @@
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
           <q-btn
-            icon="add"
+            icon="note_add"
+            no-caps
+            outline
+            unelevated
+            class="q-ml-sm"
+            color="primary"
+            label="Create a new Article"
+            @click="showCreateArticleDialog = !showCreateArticleDialog"
+          />
+          <q-btn
+            icon="cloud_download"
             no-caps
             unelevated
+            class="q-ml-sm"
             color="primary"
-            label="Add a new article"
-            @click="showNewArticleDialog = !showNewArticleDialog"
+            label="Import Article from Wikipedia"
+            @click="showImportArticleDialog = !showImportArticleDialog"
           />
         </q-card-section>
 
@@ -59,9 +70,9 @@
                 Try another term or
                 <span
                   style="color: #0645ad; cursor: pointer"
-                  @click="showNewArticleDialog = !showNewArticleDialog"
+                  @click="showImportArticleDialog = !showImportArticleDialog"
                 >
-                  add a new article
+                  import a new article
                 </span>
               </div>
             </div>
@@ -87,20 +98,24 @@
             unelevated
             color="primary"
             label="Add a new article"
-            @click="showNewArticleDialog = !showNewArticleDialog"
+            @click="showImportArticleDialog = !showImportArticleDialog"
           />
         </q-card-section>
       </q-card>
     </div>
   </div>
-  <q-dialog v-model="showNewArticleDialog">
-    <search-article />
+  <q-dialog v-model="showImportArticleDialog">
+    <import-article-card />
+  </q-dialog>
+  <q-dialog v-model="showCreateArticleDialog">
+    <create-article-card />
   </q-dialog>
 </template>
 <script setup lang="ts">
 import { computed, onBeforeMount, ref } from 'vue';
 import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
-import SearchArticle from 'src/components/SearchArticle/SearchArticle.vue';
+import ImportArticleCard from 'src/components/AddArticleCard/ImportArticleCard.vue';
+import CreateArticleCard from 'src/components/AddArticleCard/CreateArticleCard.vue';
 import { Article } from 'src/types';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSessionStore } from 'src/stores/useSessionStore';
@@ -110,7 +125,8 @@ const articlesStore = useArticlesStore();
 
 const term = ref('');
 const loading = ref(true);
-const showNewArticleDialog = ref(false);
+const showImportArticleDialog = ref(false);
+const showCreateArticleDialog = ref(false);
 
 const articles = computed(() => articlesStore.articles);
 

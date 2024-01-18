@@ -1,7 +1,7 @@
 <template>
   <q-card style="min-width: 30vw">
     <q-toolbar class="bg-white borders">
-      <q-toolbar-title class="merriweather">Sharing settings</q-toolbar-title>
+      <q-toolbar-title class="merriweather">Share settings</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
@@ -125,7 +125,7 @@ async function handleApplyChanges() {
         await deletePermission(permission);
       }
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });
@@ -152,7 +152,7 @@ async function handleApplyChanges() {
     try {
       await updatePermission(permissionsToUpdate.value);
       $q.notify({
-        message: 'Permission updated.',
+        message: 'Permission updated',
         icon: 'check',
         color: 'positive',
       });

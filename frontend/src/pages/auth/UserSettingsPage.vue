@@ -22,7 +22,7 @@ const deletingAccount = ref(false);
 
 const showDeleteModal = ref(false);
 
-onMounted(async () => {
+onMounted(() => {
   const sessionStore = useSessionStore();
   userStore.fetchUser();
   supabase.auth.onAuthStateChange((_, _session) => {
@@ -37,7 +37,7 @@ async function revertImage() {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
     userStore.fetchUser();
     $q.notify({
-      message: 'Reverted to default avatar picture.',
+      message: 'Reverted to default avatar picture',
       icon: 'check',
       color: 'positive',
     });
@@ -72,7 +72,7 @@ async function deleteAccount() {
   try {
     await deleteUser();
     $q.notify({
-      message: 'User deleted.',
+      message: 'User deleted',
       icon: 'check',
       color: 'positive',
     });

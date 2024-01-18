@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangesItem, Permission, User } from 'src/types';
+import { Article, ChangeItem, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
 
@@ -35,13 +35,28 @@ export async function getUsers(articleId: string): Promise<User[]> {
   return users;
 }
 
-export async function createNewArticle(
+export async function createArticle(
   title: string,
   userId: string,
   language: wikiadviserLanguage,
   description?: string
 ) {
   const response = await api.post('article', {
+    title,
+    userId,
+    language,
+    description,
+  });
+  return response.data.articleId;
+}
+
+export async function importArticle(
+  title: string,
+  userId: string,
+  language: wikiadviserLanguage,
+  description?: string
+) {
+  const response = await api.post('article/import', {
     title,
     userId,
     language,
@@ -59,7 +74,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       id,
       article_id,
       role,
-      articles(title,description,created_at,language,web_publication)
+      articles(title,description,created_at,language,web_publication,imported)
       `
     )
     .eq('user_id', userId);
@@ -83,6 +98,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       language: article.articles.language,
       created_at: new Date(article.articles.created_at),
       web_publication: article.articles.web_publication,
+      imported: article.articles.imported,
     }));
 
   return articles;
@@ -107,12 +123,8 @@ export async function updatePermission(
 
   await Promise.all(updatedPermissionsPromises);
 }
-export async function getArticleParsedContent(articleId: string) {
-  const response = await api.get(`article/${articleId}`);
-  return response.data.content;
-}
 
-export async function getChanges(articleId: string): Promise<ChangesItem[]> {
+export async function getChanges(articleId: string): Promise<ChangeItem[]> {
   const response = await api.get(`article/${articleId}/changes`);
   return response.data.changes;
 }
@@ -202,34 +214,6 @@ export async function verifyLink(token: string): Promise<string> {
   return articleId;
 }
 
-export async function deleteChangeDB(changeId: string) {
-  const { data: change, error } = await supabase
-    .from('changes')
-    .select('*')
-    .eq('id', changeId)
-    .single();
-
-  if (error) {
-    throw Error(error.message);
-  }
-
-  if (!change) {
-    throw new Error(`Change with id(${changeId}) not found.`);
-  }
-
-  if (change.index !== null) {
-    throw new Error("Change can't be deleted.");
-  }
-
-  const { error: deleteError } = await supabase
-    .from('changes')
-    .delete()
-    .eq('id', change.id);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-}
 export async function updateArticleWebPublication(
   web_publication: boolean,
   articleId: string
@@ -250,4 +234,33 @@ export async function deleteUser() {
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);
+}
+
+export async function hideChanges(changeId: string) {
+  const { data: change, error } = await supabase
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
+    .single();
+
+  if (error) {
+    throw Error(error.message);
+  }
+
+  if (!change) {
+    throw new Error(`Change with id(${changeId}) not found`);
+  }
+
+  if (change.index !== null) {
+    throw new Error('Cannot hide this change');
+  }
+
+  const { error: hideError } = await supabase
+    .from('changes')
+    .update({ hidden: true })
+    .eq('id', change.id);
+
+  if (hideError) {
+    throw new Error(hideError.message);
+  }
 }

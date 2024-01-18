@@ -27,7 +27,8 @@ const loading = ref<boolean>(true);
 const userStore = useUserStore();
 const sessionStore = useSessionStore();
 
-onMounted(() => {
+onMounted(async () => {
+  session.value = (await supabaseClient.auth.getSession()).data.session;
   supabaseClient.auth.onAuthStateChange((_, _session) => {
     sessionStore.session = _session as Session;
     setSession();

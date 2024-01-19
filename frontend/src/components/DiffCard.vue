@@ -138,7 +138,7 @@ watch(
     await nextTick();
     handleTabIndexes();
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(
@@ -146,7 +146,7 @@ watch(
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
       const element = document.querySelector(
-        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`
+        `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`,
       );
 
       if (element) {
@@ -166,7 +166,7 @@ watch(
         element.classList.remove('hovered');
       });
     }
-  }
+  },
 );
 
 const $q = useQuasar();
@@ -175,13 +175,12 @@ async function copyShareLinkToClipboard() {
   const token = await createLink(`${props.article.article_id}`);
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
-    message: 'Share link copied to clipboard',
+    message: `Share link copied to clipboard. This link will expire in ${
+      EXPIRATION_DAYS * HOURS_IN_DAY
+    } hours.`,
     color: 'positive',
+    multiLine: true,
     icon: 'content_copy',
-  });
-  $q.notify({
-    message: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
-    color: 'positive',
   });
 }
 
@@ -204,7 +203,7 @@ const toggleOptions = computed(() =>
     props.editorPermission
   )
     ? [viewButton]
-    : [viewButton, editButton]
+    : [viewButton, editButton],
 );
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
@@ -222,7 +221,7 @@ watch(
     }
     buttonToggle.value = newToggle;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const onSwitchTabEmitChange = (tab: string) => {
@@ -232,7 +231,7 @@ const onSwitchTabEmitChange = (tab: string) => {
 function viewArticleInNewTab() {
   window.open(
     `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
-    '_blank'
+    '_blank',
   );
 }
 </script>

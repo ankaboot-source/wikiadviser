@@ -12,7 +12,9 @@
               v-if="props.article.web_publication"
               name="public"
               class="q-mr-xs"
-            />
+            >
+              <q-tooltip>This article is published on the Web</q-tooltip>
+            </q-icon>
             {{ article.title }}
           </div>
           <div v-if="article.description">
@@ -155,7 +157,7 @@ async function removeArticle(articleId: string) {
     await deleteArticle(articleId);
     deletingArticle.value = false;
     $q.notify({
-      message: 'Article deleted.',
+      message: 'Article deleted',
       icon: 'check',
       color: 'positive',
     });
@@ -163,7 +165,7 @@ async function removeArticle(articleId: string) {
     const user = data.session?.user;
 
     if (!user) {
-      throw new Error('User is not logged in.');
+      throw new Error('User is not logged in');
     }
 
     await articlesStore.fetchArticles(user.id);
@@ -188,7 +190,7 @@ async function removeArticle(articleId: string) {
 const language = computed(
   () =>
     wikiadviserLanguages.find(
-      (option) => props.article.language === option.lang
-    )?.label
+      (option) => props.article.language === option.lang,
+    )?.label,
 );
 </script>

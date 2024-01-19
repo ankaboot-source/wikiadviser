@@ -32,6 +32,7 @@
                 text: 'This change was manually archived.',
               }"
             />
+            <q-separator />
             <diff-item
               v-for="item in unindexedChanges"
               :key="item.id"
@@ -43,7 +44,6 @@
                 disable: true,
               }"
             />
-            <q-separator />
           </q-list>
         </q-item-section>
       </q-expansion-item>
@@ -54,8 +54,8 @@
           There are currently no changes
         </div>
         <div class="text-body2">
-          Easily navigate through changes using the changes tab once the article
-          has been edited.
+          After the article is edited, the changes will be displayed here for
+          your review.
         </div>
       </div>
     </template>
@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { ChangesItem, UserRole } from 'src/types';
+import { ChangeItem, UserRole } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import RevisionItem from './RevisionItem.vue';
@@ -74,7 +74,7 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   articleId: string;
   role: UserRole;
-  changesList: ChangesItem[];
+  changesList: ChangeItem[];
 }>();
 
 const groupedChanges = computed(() => {
@@ -83,7 +83,7 @@ const groupedChanges = computed(() => {
     {
       revid: number;
       summary: string;
-      items: ChangesItem[];
+      items: ChangeItem[];
     }
   >();
 
@@ -102,7 +102,7 @@ const groupedChanges = computed(() => {
   });
 
   const sortedGrouped = Array.from(grouped.values()).sort(
-    (a, b) => b.revid - a.revid
+    (a, b) => b.revid - a.revid,
   );
 
   return sortedGrouped.map((item, index) => ({
@@ -117,22 +117,21 @@ const groupedIndexedChanges = computed(() =>
     .map((groupedItem) => ({
       ...groupedItem,
       items: groupedItem.items.filter(
-        (item) => item.index !== null && !item.archived
+        (item) => item.index !== null && !item.archived,
       ),
     }))
-    .filter((groupedItem) => groupedItem.items.length > 0)
+    .filter((groupedItem) => groupedItem.items.length > 0),
 );
 
 const archivedChanges = computed(() =>
-  props.changesList.filter((item) => item.archived)
+  props.changesList.filter((item) => item.archived),
 );
 const unindexedChanges = computed(() =>
-  props.changesList.filter((item) => item.index === null)
+  props.changesList.filter((item) => item.index === null && !item.hidden),
 );
 const pastChanges = computed(() =>
-  archivedChanges.value.concat(unindexedChanges.value)
+  archivedChanges.value.concat(unindexedChanges.value),
 );
-
 const expanded = ref(false);
 
 watch(
@@ -143,9 +142,9 @@ watch(
     }
 
     expanded.value = archivedChanges.value.some(
-      (item) => item.status !== 0 && item.id === selectedChangeId
+      (item) => item.status !== 0 && item.id === selectedChangeId,
     );
-  }
+  },
 );
 </script>
 <style>

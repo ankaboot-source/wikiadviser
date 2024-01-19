@@ -26,35 +26,6 @@ export async function insertArticle(
   return articleId;
 }
 
-export async function createNewChange(permissionId: string): Promise<string> {
-  const { data: permissionData, error: permissionError } = await supabase
-    .from('permissions')
-    .select('article_id, user_id')
-    .eq('id', permissionId)
-    .single();
-
-  if (permissionError) {
-    throw new Error(permissionError.message);
-  }
-
-  // Insert
-  const { data: changeData, error: changeError } = await supabase
-    .from('changes')
-    .insert({
-      article_id: permissionData.article_id,
-      contributor_id: permissionData.user_id
-    })
-    .select();
-
-  if (changeError) {
-    throw new Error(changeError.message);
-  }
-
-  const username = changeData[0].id;
-
-  return username;
-}
-
 export async function updateChange(toChange: Change): Promise<void> {
   const { id, ...updateData } = toChange;
   const { error: changeError } = await supabase
@@ -118,6 +89,7 @@ export async function getChanges(articleId: string) {
       contributor_id,
       revision_id,
       archived,
+      hidden,
       user: users(id, email, picture: raw_user_meta_data->>"picture"), 
       comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
       revision: revisions(summary, revid)
@@ -130,27 +102,6 @@ export async function getChanges(articleId: string) {
     throw new Error(changesError.message);
   }
   return changesData;
-}
-
-export async function removeChanges(permissionId: string) {
-  const { data: articleData, error: articleError } = await supabase
-    .from('permissions')
-    .select('article_id')
-    .eq('id', permissionId)
-    .single();
-
-  if (articleError) {
-    throw new Error(articleError.message);
-  }
-
-  const { error } = await supabase
-    .from('changes')
-    .delete()
-    .eq('article_id', articleData.article_id);
-
-  if (error) {
-    throw new Error(error.message);
-  }
 }
 
 export async function deleteArticleDB(articleId: string) {

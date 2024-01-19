@@ -2,14 +2,14 @@
   <q-card class="column fit" style="max-width: 60vw; max-height: 80vh" flat>
     <q-toolbar class="borders">
       <q-toolbar-title class="merriweather">
-        Add a new article
+        Import a new article
       </q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
-
     <q-card-section>
       <q-input
         v-model="term"
+        class="q-mt-sm q-mx-sm"
         bg-color="white"
         dense
         outlined
@@ -44,7 +44,7 @@
 
     <q-scroll-area
       v-if="searchResults?.length"
-      class="col-grow q-pt-none q-pb-lg"
+      class="col-grow q-pt-none q-pb-lg q-mx-sm"
     >
       <q-list class="q-mx-md">
         <search-item
@@ -74,11 +74,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { SearchResult } from 'src/types';
 import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { SearchResult } from 'src/types';
+import { ref, watch } from 'vue';
 import SearchItem from './SearchItem.vue';
 
 const $q = useQuasar();
@@ -88,7 +88,7 @@ const searchResults = ref<SearchResult[]>();
 
 const defaultArticleLanguage =
   wikiadviserLanguages.find(
-    (option) => window.navigator.language.split('-')[0] === option.lang
+    (option) => window.navigator.language.split('-')[0] === option.lang,
   ) || wikiadviserLanguages[0];
 
 const articleLanguage = ref(defaultArticleLanguage);

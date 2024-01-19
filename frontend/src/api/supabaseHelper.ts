@@ -136,11 +136,10 @@ export async function getParsedChanges(
   id: string,
   single = false,
 ): Promise<ChangeItem[]> {
-  try {
-    const { data, error } = await supabase
-      .from('changes')
-      .select(
-        `
+  const { data, error } = await supabase
+    .from('changes')
+    .select(
+      `
         id,
         content,
         created_at,
@@ -157,19 +156,14 @@ export async function getParsedChanges(
         comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
         revision: revisions(summary, revid)
         `,
-      )
-      .order('index')
-      .eq(single ? 'id' : 'article_id', id);
+    )
+    .order('index')
+    .eq(single ? 'id' : 'article_id', id);
 
-    if (!data || error) {
-      throw new Error(error?.message ?? 'Could not get parsed changes');
-    }
-    return data.map((change) =>
-      parseChangeHtml(change as unknown as ChangeItem),
-    );
-  } catch (error) {
-    throw error;
+  if (!data || error) {
+    throw new Error(error?.message ?? 'Could not get parsed changes');
   }
+  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
 }
 
 export async function updateChange(

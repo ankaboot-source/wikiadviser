@@ -70,6 +70,46 @@ const activeChanges = computed(
   () => changesList.value.map((item) => !item.hidden).length > 0,
 );
 
+function handleArticleRealtime(
+  payload: RealtimePostgresChangesPayload<SupabaseArticle>,
+) {
+  const updatedArticle = payload.new as SupabaseArticle;
+
+  if (!Object.keys(updatedArticle).length) {
+    return;
+  }
+
+  changesContent.value = parseArticleHtml(
+    updatedArticle.current_html_content as string,
+    changesList.value,
+  );
+}
+
+async function handleChangesRealtime(
+  payload: RealtimePostgresChangesPayload<SupabaseChange>,
+) {
+  const event = payload.eventType;
+  const oldChange = payload.old as SupabaseChange;
+  const newChange = payload.new as SupabaseChange;
+
+  if (!Object.keys(oldChange).length && !Object.keys(newChange).length) {
+    return;
+  }
+
+  if (event === 'DELETE') {
+    cachedChanges.delete(oldChange.id);
+  } else {
+    const [change] = await getParsedChanges(newChange.id, true);
+    cachedChanges.set(newChange.id, change);
+  }
+
+  changesList.value = Array.from(cachedChanges.values());
+  changesContent.value = parseArticleHtml(
+    changesContent.value as string,
+    changesList.value,
+  );
+}
+
 onBeforeMount(async () => {
   const user = (await supabase.auth.getSession()).data.session?.user;
 
@@ -137,44 +177,4 @@ onBeforeMount(async () => {
 onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
 });
-
-async function handleArticleRealtime(
-  payload: RealtimePostgresChangesPayload<SupabaseArticle>,
-) {
-  const updatedArticle = payload.new as SupabaseArticle;
-
-  if (!Object.keys(updatedArticle).length) {
-    return;
-  }
-
-  changesContent.value = parseArticleHtml(
-    updatedArticle.current_html_content as string,
-    changesList.value,
-  );
-}
-
-async function handleChangesRealtime(
-  payload: RealtimePostgresChangesPayload<SupabaseChange>,
-) {
-  const event = payload.eventType;
-  const oldChange = payload.old as SupabaseChange;
-  const newChange = payload.new as SupabaseChange;
-
-  if (!Object.keys(oldChange).length && !Object.keys(newChange).length) {
-    return;
-  }
-
-  if (event === 'DELETE') {
-    cachedChanges.delete(oldChange.id);
-  } else {
-    const [change] = await getParsedChanges(newChange.id, true);
-    cachedChanges.set(newChange.id, change);
-  }
-
-  changesList.value = Array.from(cachedChanges.values());
-  changesContent.value = parseArticleHtml(
-    changesContent.value as string,
-    changesList.value,
-  );
-}
 </script>

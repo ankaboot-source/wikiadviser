@@ -26,7 +26,14 @@ export async function importArticle(
 ) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
-  const articleId = await insertArticle(title, user.id, language, description);
+  const imported = true;
+  const articleId = await insertArticle(
+    title,
+    user.id,
+    language,
+    description,
+    imported
+  );
   try {
     const mediawiki = new MediawikiClient(
       language,
@@ -57,7 +64,14 @@ export async function createArticle(
 ) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
-  const articleId = await insertArticle(title, user.id, language, description);
+  const imported = false;
+  const articleId = await insertArticle(
+    title,
+    user.id,
+    language,
+    description,
+    imported
+  );
 
   try {
     const mediawiki = new MediawikiClient(

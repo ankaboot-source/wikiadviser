@@ -32,19 +32,25 @@
       <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />
       <q-space />
       <q-btn
-        icon="note_add"
         no-caps
         unelevated
         color="primary"
         label="Create"
+        :icon="!loadingCreation ? 'note_add' : ''"
+        :loading="loadingCreation"
         @click="addArticle()"
-      />
+      >
+        <template #loading>
+          <q-spinner class="on-left" />
+          Create
+        </template>
+      </q-btn>
     </q-card-actions>
   </q-card>
 </template>
 
 <script setup lang="ts">
-import { QSpinnerGrid, useQuasar } from 'quasar';
+import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { createArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
@@ -54,7 +60,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const $q = useQuasar();
-
+const loadingCreation = ref(false);
 const defaultArticleLanguage =
   wikiadviserLanguages.find(
     (option) => window.navigator.language.split('-')[0] === option.lang,
@@ -71,6 +77,7 @@ const newArticle = ref({
 });
 async function addArticle() {
   try {
+    loadingCreation.value = true;
     newArticle.value.title = newArticle.value.title
       ? newArticle.value.title
       : 'Untitled';
@@ -97,19 +104,6 @@ async function addArticle() {
       });
     }
 
-    $q.loading.show({
-      boxClass: 'bg-white text-dark q-pa-xl',
-
-      spinner: QSpinnerGrid,
-      spinnerColor: 'primary',
-      spinnerSize: 140,
-
-      message: `
-      <div class='text-h6'> 🕵️🔐 Anonymously and Safely Creating “${newArticle.value.title}”. </div></br>
-      <div class='text-body1'>Please wait…</div>`,
-      html: true,
-    });
-
     //NEW ARTICLE
     articleId.value = await createArticle(
       newArticle.value.title,
@@ -117,7 +111,7 @@ async function addArticle() {
       newArticle.value.language.value,
       newArticle.value.description,
     );
-    $q.loading.hide();
+    loadingCreation.value = false;
     $q.notify({
       message: 'Article successfully created',
       icon: 'check',
@@ -134,6 +128,7 @@ async function addArticle() {
       },
     });
   } catch (error) {
+    loadingCreation.value = false;
     $q.loading.hide();
     $q.notify({
       message: 'Failed creating article',

@@ -25,7 +25,7 @@
         v-if="role === UserRole.Owner"
         icon="link"
         outline
-        label="Share link"
+        label="Share article"
         no-caps
         class="q-mr-xs"
         @click="copyShareLinkToClipboard()"
@@ -34,7 +34,7 @@
         v-if="role != UserRole.Viewer"
         icon="o_group"
         outline
-        label="Sharing settings"
+        label="Share settings"
         no-caps
         class="q-pr-lg"
         @click="share = !share"

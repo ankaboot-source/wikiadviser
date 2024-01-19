@@ -74,7 +74,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       id,
       article_id,
       role,
-      articles(title,description,created_at,language,web_publication)
+      articles(title,description,created_at,language,web_publication,imported)
       `,
     )
     .eq('user_id', userId);
@@ -98,6 +98,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       language: article.articles.language,
       created_at: new Date(article.articles.created_at),
       web_publication: article.articles.web_publication,
+      imported: article.articles.imported,
     }));
 
   return articles;

@@ -13,12 +13,13 @@
             no-caps
             outline
             unelevated
+            class="q-ml-sm"
             color="primary"
             label="Create a new Article"
             @click="showCreateArticleDialog = !showCreateArticleDialog"
           />
           <q-btn
-            icon="add"
+            icon="cloud_download"
             no-caps
             unelevated
             class="q-ml-sm"

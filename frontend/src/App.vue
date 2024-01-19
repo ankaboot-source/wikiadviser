@@ -20,11 +20,9 @@ import supabaseClient from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 import AuthenticationPage from 'src/pages/auth/AuthPage.vue';
 import { onMounted, ref } from 'vue';
-import { useUserStore } from './stores/useUserStore';
 import { useSessionStore } from './stores/useSessionStore';
 
 const loading = ref<boolean>(true);
-const userStore = useUserStore();
 const sessionStore = useSessionStore();
 
 onMounted(() => {
@@ -38,10 +36,10 @@ onMounted(() => {
 
 async function setSession() {
   if (sessionStore.session) {
-    if (!userStore.user?.user_metadata.user_avatar) {
+    if (!sessionStore.user?.user_metadata.user_avatar) {
       await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });
     }
-    userStore.fetchUser();
+    sessionStore.fetchUser();
   }
 }
 

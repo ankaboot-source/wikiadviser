@@ -6,13 +6,12 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { deleteUser } from 'src/api/supabaseHelper';
-import { useUserStore } from 'src/stores/useUserStore';
 import { useSessionStore } from 'src/stores/useSessionStore';
 
 const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
-const userStore = useUserStore();
+const sessionStore = useSessionStore();
 const articlesStore = useArticlesStore();
 
 const $router = useRouter();
@@ -24,14 +23,14 @@ const showDeleteModal = ref(false);
 onMounted(() => {
   const sessionStore = useSessionStore();
   email.value = sessionStore.session?.user.email as string;
-  userStore.fetchUser();
+  sessionStore.fetchUser();
 });
 
 async function revertImage() {
   revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    userStore.fetchUser();
+    sessionStore.fetchUser();
     $q.notify({
       message: 'Reverted to default avatar picture',
       icon: 'check',
@@ -94,10 +93,10 @@ async function deleteAccount() {
   }
 }
 
-const picture = computed(() => userStore.user?.user_metadata.user_avatar);
+const picture = computed(() => sessionStore.user?.user_metadata.user_avatar);
 
 const defaultAvatar = computed(
-  () => userStore.user?.user_metadata.default_avatar,
+  () => sessionStore.user?.user_metadata.default_avatar,
 );
 </script>
 

@@ -45,7 +45,7 @@ import { User } from '@supabase/supabase-js';
 import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useUserStore } from 'src/stores/useUserStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
 import { Article } from 'src/types';
 import { computed, ref, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -57,8 +57,8 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const userStore = useUserStore();
-const supabaseUser = ref<User | null>(userStore.user as User);
+const sessionStore = useSessionStore();
+const supabaseUser = ref<User | null>(sessionStore.user as User);
 const avatarURL = computed(() => supabaseUser.value?.user_metadata.user_avatar);
 
 watch([useRoute(), articles], ([newRoute]) => {
@@ -71,7 +71,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 });
 
 watchEffect(() => {
-  supabaseUser.value = userStore.user as User;
+  supabaseUser.value = sessionStore.user as User;
 });
 
 async function signOut() {

@@ -1,10 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import supabaseClient from '../api/supabase';
-import { parseChanges } from '../helpers/parsingHelper';
 import {
   deleteArticleDB,
   getArticle,
-  getChanges,
   getUserPermission,
   insertArticle
 } from '../helpers/supabaseHelper';
@@ -118,31 +116,6 @@ export async function deleteArticle(
 }
 
 /**
- * Retrieves the changes made to a specified article.
- *
- * @param {Request} req - The Express request object.
- * @param {Response} res - The Express response object.
- */
-export async function getArticleChanges(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const { id: articleId } = req.params;
-  try {
-    const changes = await getChanges(articleId);
-    const articleChanges = parseChanges(changes);
-    logger.debug(`Getting Parsed Changes for article: ${articleId}`);
-    return res.status(200).json({
-      message: 'Getting article changes succeeded.',
-      changes: articleChanges
-    });
-  } catch (error) {
-    return next(error);
-  }
-}
-
-/**
  * Updates the changes made to a specified article in a MediaWiki instance.
  *
  * @param {Request} req - The Express request object.
@@ -229,8 +202,8 @@ export async function deleteArticleRevision(
     const revision = await mediawiki.deleteRevision(articleId, revisionId);
 
     // Update changes in article_html
-    await supabaseClient.from('revisions').delete().eq('revid', revisionId);
     await mediawiki.updateChanges(articleId, user.id);
+    await supabaseClient.from('revisions').delete().eq('revid', revisionId);
 
     return res
       .status(200)

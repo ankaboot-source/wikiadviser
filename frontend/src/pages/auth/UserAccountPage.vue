@@ -12,6 +12,7 @@ const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
 const sessionStore = useSessionStore();
+
 const articlesStore = useArticlesStore();
 
 const $router = useRouter();

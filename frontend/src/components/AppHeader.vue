@@ -20,7 +20,7 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated @click="settings">
+      <q-btn v-if="supabaseUser" no-caps unelevated @click="account">
         <q-avatar size="sm">
           <img :src="avatarURL" />
         </q-avatar>
@@ -86,9 +86,9 @@ async function signOut() {
   }
 }
 
-function settings() {
+function account() {
   router.push({
-    path: '/settings',
+    path: '/account',
   });
 }
 </script>

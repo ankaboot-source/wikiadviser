@@ -12,7 +12,7 @@ CREATE POLICY select_revisions_policy
       auth.uid() IN (
         SELECT user_id
         FROM private.get_all_permissions_by_article_id(article_id) p
-        WHERE p.role IN ('owner', 'editor', 'reviewer')
+        WHERE p.role IN ('owner', 'editor', 'reviewer', 'viewer')
       )
   );
 
@@ -27,7 +27,7 @@ CREATE POLICY select_comments_policy
           FROM changes c
           INNER JOIN permissions p ON 
               p.article_id = c.article_id
-              AND p.role IN ('owner', 'reviewer', 'editor')
+              AND p.role IN ('owner', 'reviewer', 'editor', 'viewer')
           WHERE c.id = change_id
     )
   );

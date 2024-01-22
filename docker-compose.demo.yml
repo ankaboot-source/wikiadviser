@@ -19,6 +19,7 @@ services:
       - caddy-data:/data
       - ./Caddyfile.demo:/etc/caddy/Caddyfile:ro
       - ./robots.txt:/etc/caddy/robots.txt:ro
+      - /var/log/caddy/:/var/log/caddy/
     build:
       context: frontend
       args:

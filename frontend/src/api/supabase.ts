@@ -12,4 +12,5 @@ const supabaseClient = createBrowserClient(
     },
   },
 );
+
 export default supabaseClient;

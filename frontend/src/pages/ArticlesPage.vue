@@ -117,8 +117,9 @@ import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
 import ImportArticleCard from 'src/components/AddArticleCard/ImportArticleCard.vue';
 import CreateArticleCard from 'src/components/AddArticleCard/CreateArticleCard.vue';
 import { Article } from 'src/types';
-import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
+import { User } from '@supabase/supabase-js';
 
 const articlesStore = useArticlesStore();
 
@@ -130,8 +131,10 @@ const showCreateArticleDialog = ref(false);
 const articles = computed(() => articlesStore.articles);
 
 onBeforeMount(async () => {
-  const { data } = await supabase.auth.getSession();
-  await articlesStore.fetchArticles(data.session!.user.id);
+  const sessionStore = useSessionStore();
+  const user = sessionStore.session?.user as User;
+
+  await articlesStore.fetchArticles(user.id);
   loading.value = false;
 });
 

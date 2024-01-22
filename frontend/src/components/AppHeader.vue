@@ -20,7 +20,7 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated @click="settings">
+      <q-btn v-if="supabaseUser" no-caps unelevated @click="account">
         <q-avatar size="sm">
           <img :src="avatarURL" />
         </q-avatar>
@@ -45,22 +45,20 @@ import { User } from '@supabase/supabase-js';
 import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useSessionStore } from 'src/stores/useSessionStore';
 import { Article } from 'src/types';
 import { computed, ref, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const props = defineProps<{
-  user: User | null;
-}>();
-
 const $q = useQuasar();
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const supabaseUser = ref<User | null>(props.user);
+const sessionStore = useSessionStore();
+const supabaseUser = ref<User | null>(sessionStore.user as User);
 const avatarURL = computed(() => supabaseUser.value?.user_metadata.user_avatar);
 
 watch([useRoute(), articles], ([newRoute]) => {
@@ -73,7 +71,7 @@ watch([useRoute(), articles], ([newRoute]) => {
 });
 
 watchEffect(() => {
-  supabaseUser.value = props.user;
+  supabaseUser.value = sessionStore.user as User;
 });
 
 async function signOut() {
@@ -88,9 +86,9 @@ async function signOut() {
   }
 }
 
-function settings() {
+function account() {
   router.push({
-    path: '/settings',
+    path: '/account',
   });
 }
 </script>

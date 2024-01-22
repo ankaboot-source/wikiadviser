@@ -262,10 +262,9 @@ import {
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
-import { Session } from '@supabase/supabase-js';
-import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
+import { useSessionStore } from 'src/stores/useSessionStore';
 
 const $quasar = useQuasar();
 
@@ -280,7 +279,6 @@ const props = defineProps<{
   };
 }>();
 const expanded = ref(false);
-const session = ref<Session | null>();
 const email = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
@@ -324,14 +322,10 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
-onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  session.value = data.session;
-  supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
-    userId.value = session.value?.user.id as string;
-  });
+onMounted(() => {
+  const sessionStore = useSessionStore();
+  email.value = sessionStore.session?.user.email as string;
+  userId.value = sessionStore.session?.user.id as string;
 });
 
 const previewDescription = computed(() => {
@@ -369,11 +363,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)!.icon,
+  () => statusDictionary.get(props.item?.status)?.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)!.message,
+  () => statusDictionary.get(props.item?.status)?.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:

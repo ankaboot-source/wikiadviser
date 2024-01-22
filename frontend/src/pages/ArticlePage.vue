@@ -24,14 +24,15 @@
 </template>
 
 <script setup lang="ts">
-import supabase from 'src/api/supabase';
 import { getChanges, getUsers } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/DiffList/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { ChangeItem, SupabaseArticle, UserRole } from 'src/types';
+import { useSessionStore } from 'src/stores/useSessionStore';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import supabase from 'src/api/supabase';
 
 import {
   RealtimeChannel,
@@ -83,7 +84,8 @@ function initializeRealtimeSubscription(
 }
 
 onBeforeMount(async () => {
-  const user = (await supabase.auth.getSession()).data.session?.user;
+  const sessionStore = useSessionStore();
+  const user = sessionStore.session?.user;
 
   if (!user) {
     router.push('/');

@@ -11,8 +11,9 @@
               roll_keep_for 24h
           }
         }
-        handle /* {
-          respond 404
+        handle_errors {
+          rewrite * /404.html
+          file_server
         }
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }

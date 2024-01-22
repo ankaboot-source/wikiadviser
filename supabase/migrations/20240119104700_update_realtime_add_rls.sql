@@ -3,7 +3,7 @@ ALTER publication supabase_realtime ADD TABLE public.changes;
 
 -- Add read policy for revisions
 CREATE POLICY select_revisions_policy
-  ON changes
+  ON revisions
   FOR SELECT
   TO authenticated
   USING (

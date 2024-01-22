@@ -119,7 +119,7 @@ const defaultAvatar = computed(
             :show="!defaultAvatar"
             :loading="revertingImage"
             outline
-            class-name="text-sm"
+            class-name="text-sm q-mt-md"
             icon="no_photography"
             color="primary"
             label="Revert to default avatar"

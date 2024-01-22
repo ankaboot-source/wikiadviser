@@ -38,8 +38,6 @@ import {
 } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import supabase from 'src/api/supabase';
-
 import {
   RealtimeChannel,
   RealtimePostgresChangesPayload,

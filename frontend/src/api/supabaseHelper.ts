@@ -1,8 +1,9 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Permission, User } from 'src/types';
+import { Article, ChangeItem, Comment, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
+import { parseChangeHtml } from 'src/utils/parsing';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -124,9 +125,45 @@ export async function updatePermission(
   await Promise.all(updatedPermissionsPromises);
 }
 
-export async function getChanges(articleId: string): Promise<ChangeItem[]> {
-  const response = await api.get(`article/${articleId}/changes`);
-  return response.data.changes;
+/**
+ * Retrieves and parses changes from the database based on the provided ID.
+ *
+ * @param id - The ID of the changes or the article ID depending on the context.
+ * @param single - Retrieve single change or all, default "false"
+ * @throws {Error} Throws an error on fail.
+ */
+export async function getParsedChanges(
+  id: string,
+  single = false,
+): Promise<ChangeItem[]> {
+  const { data, error } = await supabase
+    .from('changes')
+    .select(
+      `
+        id,
+        content,
+        created_at,
+        description,
+        status,
+        type_of_edit,
+        index,
+        article_id,
+        contributor_id,
+        revision_id,
+        archived,
+        hidden,
+        user: users(id, email, picture: raw_user_meta_data->>"picture"), 
+        comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
+        revision: revisions(summary, revid)
+        `,
+    )
+    .order('index')
+    .eq(single ? 'id' : 'article_id', id);
+
+  if (!data || error) {
+    throw new Error(error?.message ?? 'Could not get parsed changes');
+  }
+  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
 }
 
 export async function updateChange(
@@ -150,13 +187,18 @@ export async function insertComment(
   commenterId: string,
   content: string,
 ) {
-  const { error: changeError } = await supabase
+  const { data, error: changeError } = await supabase
     .from('comments')
-    .insert({ change_id: changeId, commenter_id: commenterId, content });
+    .insert({ change_id: changeId, commenter_id: commenterId, content })
+    .select(
+      '*, user: users(id, email, picture: raw_user_meta_data->>"picture")',
+    );
 
   if (changeError) {
     throw new Error(changeError.message);
   }
+
+  return data as Comment[];
 }
 
 export async function deletePermission(permissionId: string) {

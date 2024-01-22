@@ -1,7 +1,7 @@
 import { load } from 'cheerio';
 import { encode } from 'html-entities';
 import Parsoid from '../services/mediawikiAPI/ParsoidApi';
-import { Article, Change, ChildNodeData, TypeOfEditDictionary } from '../types';
+import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
 
 function addPermissionDataToChanges(
@@ -233,49 +233,6 @@ export async function refineArticleChanges(
 
   const htmlContent = CheerioAPI.html();
   return { changesToUpsert, htmlContent };
-}
-
-export function parseArticle(article: Article, changes: Change[]) {
-  const content = article.current_html_content;
-  if (!content) {
-    return null;
-  }
-
-  const CheerioAPI = load(content);
-  CheerioAPI('[data-id]').each((index, element) => {
-    // Add more data
-
-    if (!changes[index]) {
-      // In case article html and changes not synced
-      return;
-    }
-
-    const $element = CheerioAPI(element);
-    $element.attr('data-type-of-edit', String(changes[index].type_of_edit));
-    $element.attr('data-status', String(changes[index].status));
-    $element.attr('data-index', String(changes[index].index));
-    $element.attr('data-id', changes[index].id);
-  });
-  return CheerioAPI.html();
-}
-
-export function parseChanges(changes: Change[]) {
-  const parsedChanges = changes.map((change) => {
-    if (change.content) {
-      const CheerioAPI = load(change.content);
-      CheerioAPI('[data-diff-action]').each((_, element) => {
-        const $element = CheerioAPI(element);
-        $element.attr('data-status', String(change.status));
-      });
-      const modifiedContent = CheerioAPI.html();
-      return {
-        ...change,
-        content: modifiedContent
-      };
-    }
-    return change;
-  });
-  return parsedChanges;
 }
 
 function generateOuterMostSelectors(classes: string[]) {

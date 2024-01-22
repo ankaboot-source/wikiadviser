@@ -17,7 +17,7 @@ CREATE POLICY select_revisions_policy
 -- Add read policy for comments
 CREATE POLICY select_comments_policy
   ON comments
-  FOR INSERT
+  FOR SELECT
   TO authenticated
   USING (
     auth.uid() IN (

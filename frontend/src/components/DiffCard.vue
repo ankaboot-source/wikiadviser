@@ -175,13 +175,12 @@ async function copyShareLinkToClipboard() {
   const token = await createLink(`${props.article.article_id}`);
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
-    message: 'Share article link copied to clipboard',
+    message: 'Share link copied to clipboard',
+    caption: `This link will expire in ${
+      EXPIRATION_DAYS * HOURS_IN_DAY
+    } hours`,
     color: 'positive',
     icon: 'content_copy',
-  });
-  $q.notify({
-    message: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
-    color: 'positive',
   });
 }
 

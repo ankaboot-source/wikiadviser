@@ -14,8 +14,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('pages/auth/UpdatePasswordPage.vue'),
   },
   {
-    path: '/settings',
-    component: () => import('pages/auth/UserSettingsPage.vue'),
+    path: '/account',
+    component: () => import('pages/auth/UserAccountPage.vue'),
   },
   {
     path: '/articles',

@@ -5,14 +5,14 @@ import { useQuasar } from 'quasar';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Session, User } from '@supabase/supabase-js';
 import { deleteUser } from 'src/api/supabaseHelper';
+import { useSessionStore } from 'src/stores/useSessionStore';
 
-const session = ref<Session | null>();
-const user = ref<User | null>();
 const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
+const sessionStore = useSessionStore();
+
 const articlesStore = useArticlesStore();
 
 const $router = useRouter();
@@ -21,21 +21,17 @@ const deletingAccount = ref(false);
 
 const showDeleteModal = ref(false);
 
-onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  user.value = (await supabase.auth.getUser()).data.user;
-  session.value = data.session;
-  supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
-  });
+onMounted(() => {
+  const sessionStore = useSessionStore();
+  email.value = sessionStore.session?.user.email as string;
+  sessionStore.fetchUser();
 });
 
 async function revertImage() {
   revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    user.value = (await supabase.auth.getUser()).data.user;
+    sessionStore.fetchUser();
     $q.notify({
       message: 'Reverted to default avatar picture',
       icon: 'check',
@@ -98,9 +94,11 @@ async function deleteAccount() {
   }
 }
 
-const picture = computed(() => user.value?.user_metadata.user_avatar);
+const picture = computed(() => sessionStore.user?.user_metadata.user_avatar);
 
-const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
+const defaultAvatar = computed(
+  () => sessionStore.user?.user_metadata.default_avatar,
+);
 </script>
 
 <template>
@@ -121,7 +119,7 @@ const defaultAvatar = computed(() => user.value?.user_metadata.default_avatar);
             :show="!defaultAvatar"
             :loading="revertingImage"
             outline
-            class-name="text-sm"
+            class-name="text-sm q-mt-md"
             icon="no_photography"
             color="primary"
             label="Revert to default avatar"

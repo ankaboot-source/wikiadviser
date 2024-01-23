@@ -3,7 +3,6 @@ import {
   createArticle,
   deleteArticle,
   deleteArticleRevision,
-  getArticleChanges,
   hasPermissions,
   importArticle,
   updateArticleChanges
@@ -24,12 +23,6 @@ articleRouter.delete(
 
 articleRouter.delete('/article/:id', hasPermissions(['owner']), deleteArticle);
 
-/* Changes */
-articleRouter.get(
-  '/article/:id/changes',
-  hasPermissions(['viewer', 'reviewer', 'owner', 'editor']),
-  getArticleChanges
-);
 articleRouter.put(
   '/article/:id/changes',
   hasPermissions(['owner', 'editor']),

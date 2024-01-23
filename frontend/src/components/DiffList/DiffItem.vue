@@ -111,7 +111,7 @@
           style="height: 9.5rem; width: 100%"
           class="q-px-sm q-pb-sm"
         >
-          <template v-for="comment in item.comments" :key="comment.id">
+          <template v-for="comment in comments" :key="comment.id">
             <q-chat-message
               :name="comment.user.email"
               :text="[comment.content]"
@@ -262,10 +262,9 @@ import {
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
-import { Session } from '@supabase/supabase-js';
-import supabase from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
+import { useSessionStore } from 'src/stores/useSessionStore';
 
 const $quasar = useQuasar();
 
@@ -280,7 +279,6 @@ const props = defineProps<{
   };
 }>();
 const expanded = ref(false);
-const session = ref<Session | null>();
 const email = ref('');
 const userId = ref<string>('');
 const toSendComment = ref('');
@@ -324,14 +322,12 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
-onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  session.value = data.session;
-  supabase.auth.onAuthStateChange((_, _session) => {
-    session.value = _session;
-    email.value = session.value?.user.email as string;
-    userId.value = session.value?.user.id as string;
-  });
+const comments = ref(props.item.comments);
+
+onMounted(() => {
+  const sessionStore = useSessionStore();
+  email.value = sessionStore.session?.user.email as string;
+  userId.value = sessionStore.session?.user.id as string;
 });
 
 const previewDescription = computed(() => {
@@ -361,7 +357,12 @@ const previewItem = computed(() => {
 
 async function handleComment() {
   if (toSendComment.value.length > 0) {
-    await insertComment(props.item.id, userId.value, toSendComment.value);
+    const comment = await insertComment(
+      props.item.id,
+      userId.value,
+      toSendComment.value,
+    );
+    comments.value.push(...comment);
     toSendComment.value = '';
   }
 }
@@ -369,11 +370,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)!.icon,
+  () => statusDictionary.get(props.item?.status)?.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)!.message,
+  () => statusDictionary.get(props.item?.status)?.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:

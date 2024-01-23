@@ -355,3 +355,46 @@ b {
   background-color: transparent !important;
 }
 </style>
+
+<style>
+/* Styles for the exclamation mark icon */
+[data-type-of-edit='5']:before {
+  font-family: 'Material Icons';
+  content: 'error';
+  vertical-align: middle;
+  font-size: 2em;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'liga';
+}
+
+[data-type-of-edit='5'] {
+  position: relative;
+}
+
+/* Tooltip */
+[data-type-of-edit='5']::after {
+  content: attr(data-content);
+
+  font-size: 10px;
+  color: #fafafa;
+  background: #757575;
+  border-radius: 4px;
+  text-transform: none;
+  font-weight: 400;
+
+  padding: 6px 10px;
+  position: absolute;
+  bottom: 100%;
+
+  visibility: hidden;
+}
+
+[data-type-of-edit='5']:hover::after {
+  visibility: visible;
+}
+
+/* Hide the inner element containing the text */
+[data-type-of-edit='5'] > span {
+  display: none;
+}
+</style>

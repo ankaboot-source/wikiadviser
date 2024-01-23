@@ -71,9 +71,11 @@ export async function refineArticleChanges(
       const $wrapElement = CheerioAPI('<span>');
       let isComment = false;
       if ($element.find('.ve-ce-commentNode').length) {
-        $wrapElement.text(elementInnerText);
+        const $commentElement = CheerioAPI('<span>').text(elementInnerText);
+        $wrapElement.append($commentElement);
         isComment = true;
         list.push(elementInnerText);
+        $wrapElement.attr('data-content', elementInnerText);
         typeOfEdit = 'comment-insert';
       } else {
         // Append a clone of the element to the wrap element

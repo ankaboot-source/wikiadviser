@@ -371,7 +371,7 @@ b {
 /* Tooltip */
 [data-type-of-edit='5']::after {
   content: attr(data-content);
-
+  font-family: 'Lexend Deca', ui-sans-serif;
   font-size: 10px;
   color: #fafafa;
   background: #757575;

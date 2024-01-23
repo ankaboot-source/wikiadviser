@@ -210,6 +210,10 @@ $wgExternalLinkTarget = '_blank';
 # Enable parsoid API
 wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );
 
+# Parser Hooks Extensions
+wfLoadExtension( 'Babel' );
+
+
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;
 $wgRestrictDisplayTitle = false;

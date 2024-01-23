@@ -65,16 +65,15 @@ export async function refineArticleChanges(
       }
       const diffAction: string = $element.data('diff-action') as string;
       let typeOfEdit: string = diffAction;
-      const list: string[] = [];
+      const descriptionList: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
       const $wrapElement = CheerioAPI('<span>');
-      let isComment = false;
-      if ($element.find('.ve-ce-commentNode').length) {
-        const $commentElement = CheerioAPI('<span>').text(elementInnerText);
-        $wrapElement.append($commentElement);
-        isComment = true;
-        list.push(elementInnerText);
+
+      const isComment = $element.find('.ve-ce-commentNode').length;
+      if (isComment) {
+        $wrapElement.append(CheerioAPI('<span>').text(elementInnerText));
+        descriptionList.push(elementInnerText);
         $wrapElement.attr('data-content', elementInnerText);
         typeOfEdit = 'comment-insert';
       } else {
@@ -101,13 +100,15 @@ export async function refineArticleChanges(
           typeOfEdit = nextTypeOfEdit === 'insert' ? 'remove-insert' : 'change';
 
           if (nextTypeOfEdit === 'change-insert') {
-            const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
+            const descriptionListItems = CheerioAPI(
+              '.ve-ui-diffElement-sidebar >'
+            )
               .children()
               .eq((changeid += 1))
               .children()
               .children();
-            listItems.each((i, elem) => {
-              list.push(CheerioAPI(elem).text());
+            descriptionListItems.each((i, elem) => {
+              descriptionList.push(CheerioAPI(elem).text());
             });
           }
           // Remove the last element
@@ -118,12 +119,12 @@ export async function refineArticleChanges(
       if (diffAction === 'structural-change') {
         typeOfEdit = 'structural-change';
 
-        const listItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
+        const descriptionListItems = CheerioAPI('.ve-ui-diffElement-sidebar >')
           .children()
           .eq((changeid += 1))
           .children()
           .children();
-        listItems.each((i, elem) => {
+        descriptionListItems.each((i, elem) => {
           let description = '';
           CheerioAPI(elem)
             .find('del')
@@ -141,7 +142,7 @@ export async function refineArticleChanges(
 
           description = description || CheerioAPI(elem).text();
 
-          list.push(description);
+          descriptionList.push(description);
         });
       }
 
@@ -154,7 +155,7 @@ export async function refineArticleChanges(
       });
 
       // Add the description and the type of edit and update the element.
-      $wrapElement.attr('data-description', list.join('\n'));
+      $wrapElement.attr('data-description', descriptionList.join('\n'));
       $wrapElement.attr('data-type-of-edit', typeOfEdit);
 
       $element.replaceWith($wrapElement);

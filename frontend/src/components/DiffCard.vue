@@ -176,9 +176,7 @@ async function copyShareLinkToClipboard() {
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',
-    caption: `This link will expire in ${
-      EXPIRATION_DAYS * HOURS_IN_DAY
-    } hours`,
+    caption: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
     color: 'positive',
     icon: 'content_copy',
   });
@@ -383,7 +381,19 @@ b {
 
   padding: 6px 10px;
   position: absolute;
-  bottom: 100%;
+  bottom: 120%;
+  left: 10%;
+
+  z-index: 9000;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 6px 10px;
+  max-width: 300px;
+  max-height: 300px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
   visibility: hidden;
 }

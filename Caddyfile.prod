@@ -2,7 +2,6 @@
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
 	root * /usr/share/caddy/html
 	encode gzip
-	try_files {path} /index.html
 	file_server
         log {
           output file /var/log/caddy/access-app-prod.log {
@@ -11,8 +10,8 @@
               roll_keep_for 24h
           }
         }
-        handle /* {
-          respond 404
+        handle_errors {
+              respond "{err.status_code} {err.status_text}"
         }
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }

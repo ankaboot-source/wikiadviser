@@ -2,7 +2,6 @@
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
 	root * /usr/share/caddy/html
 	encode gzip
-	try_files {path} /index.html
 	file_server
         log {
           output file /var/log/caddy/access-app-demo.log {
@@ -12,8 +11,7 @@
           }
         }
         handle_errors {
-          rewrite * /404.html
-          file_server
+            respond "{err.status_code} {err.status_text}"
         }
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }

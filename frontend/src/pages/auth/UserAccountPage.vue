@@ -113,7 +113,11 @@ const defaultAvatar = computed(
       <div class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
         <div>
-          <img :src="picture" style="width: 168px" />
+          <img
+            :src="picture"
+            referrerpolicy="no-referrer"
+            style="width: 168px"
+          />
           <br />
           <Button
             :show="!defaultAvatar"

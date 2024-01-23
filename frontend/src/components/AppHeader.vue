@@ -22,7 +22,7 @@
       <q-space />
       <q-btn v-if="supabaseUser" no-caps unelevated @click="account">
         <q-avatar size="sm">
-          <img :src="avatarURL" />
+          <img :src="avatarURL" referrerpolicy="no-referrer" />
         </q-avatar>
         <div class="q-pl-sm">
           {{ supabaseUser.email }}

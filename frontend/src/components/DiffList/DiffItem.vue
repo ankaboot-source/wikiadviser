@@ -111,7 +111,7 @@
           style="height: 9.5rem; width: 100%"
           class="q-px-sm q-pb-sm"
         >
-          <template v-for="comment in item.comments" :key="comment.id">
+          <template v-for="comment in comments" :key="comment.id">
             <q-chat-message
               :name="comment.user.email"
               :text="[comment.content]"
@@ -322,6 +322,8 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
+const comments = ref(props.item.comments);
+
 onMounted(() => {
   const sessionStore = useSessionStore();
   email.value = sessionStore.session?.user.email as string;
@@ -355,7 +357,12 @@ const previewItem = computed(() => {
 
 async function handleComment() {
   if (toSendComment.value.length > 0) {
-    await insertComment(props.item.id, userId.value, toSendComment.value);
+    const comment = await insertComment(
+      props.item.id,
+      userId.value,
+      toSendComment.value,
+    );
+    comments.value.push(...comment);
     toSendComment.value = '';
   }
 }

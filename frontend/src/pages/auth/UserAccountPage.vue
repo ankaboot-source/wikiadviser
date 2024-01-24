@@ -6,12 +6,12 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { deleteUser } from 'src/api/supabaseHelper';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
 
 const email = ref('');
 const revertingImage = ref(false);
 const $q = useQuasar();
-const sessionStore = useSessionStore();
+const userStore = useUserStore();
 
 const articlesStore = useArticlesStore();
 
@@ -21,17 +21,16 @@ const deletingAccount = ref(false);
 
 const showDeleteModal = ref(false);
 
-onMounted(() => {
-  const sessionStore = useSessionStore();
-  email.value = sessionStore.session?.user.email as string;
-  sessionStore.fetchUser();
+onMounted(async () => {
+  await userStore.updateProfile();
+  email.value = userStore.user?.email as string;
 });
 
 async function revertImage() {
   revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    sessionStore.fetchUser();
+    await userStore.updateProfile();
     $q.notify({
       message: 'Reverted to default avatar picture',
       icon: 'check',
@@ -94,11 +93,9 @@ async function deleteAccount() {
   }
 }
 
-const picture = computed(() => sessionStore.user?.user_metadata.user_avatar);
+const picture = computed(() => userStore.user?.avatar_url);
 
-const defaultAvatar = computed(
-  () => sessionStore.user?.user_metadata.default_avatar,
-);
+const defaultAvatar = computed(() => userStore.user?.default_avatar);
 </script>
 
 <template>
@@ -113,7 +110,11 @@ const defaultAvatar = computed(
       <div class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
         <div>
-          <img :src="picture" style="width: 168px" />
+          <img
+            :src="picture"
+            style="width: 168px"
+            referrerpolicy="no-referrer"
+          />
           <br />
           <Button
             :show="!defaultAvatar"

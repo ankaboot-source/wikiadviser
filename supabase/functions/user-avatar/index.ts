@@ -30,38 +30,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userId = user.id;
-    const userEmail = user.email;
-    const userAvatarURL = user.user_metadata.user_avatar;
+    const profile = (await supabaseClient.from('profiles').select('*').eq('id', user.id).single()).data
+    const userAvatarURL = profile.avatar_url;
     const backgrounds = Deno.env
       .get("WIKIADVISER_BACKGROUND_COLORS")
       .split(", ");
 
     switch (req.method) {
       case "POST": {
-        if (userAvatarURL) {
-          return new Response("Avatar already exists", {
-            headers: corsHeaders,
-            status: 409,
-          });
-        }
-
         let avatar =
-          user.user_metadata.picture ?? (await getGravatar(userEmail));
+          user.user_metadata.picture ?? (await getGravatar(profile.email));
         let defaultAvatar = false;
 
         if (!avatar) {
-          avatar = generateAvatar(userEmail, backgrounds);
+          avatar = generateAvatar(profile.email, backgrounds);
           defaultAvatar = true;
         }
 
         const { error: updateError } =
-          await supabaseAdmin.auth.admin.updateUserById(userId, {
-            user_metadata: {
-              user_avatar: avatar,
+          await supabaseClient.from('profiles').update(
+            {
+              avatar_url: avatar,
               default_avatar: defaultAvatar,
-            },
-          });
+            }
+          ).eq('id', profile.id);
 
         if (updateError) {
           throw new Error(updateError.message);
@@ -71,16 +63,13 @@ Deno.serve(async (req) => {
       }
 
       case "DELETE": {
-        if (!userAvatarURL) {
-          return new Response("Avatar doesn't exist", { headers: corsHeaders });
-        }
         const { error: deleteError } =
-          await supabaseAdmin.auth.admin.updateUserById(userId, {
-            user_metadata: {
-              user_avatar: generateAvatar(userEmail, backgrounds),
+          await supabaseClient.from('profiles').update(
+            {
+              avatar_url: generateAvatar(profile.email, backgrounds),
               default_avatar: true,
-            },
-          });
+            }
+          ).eq('id', profile.id);
 
         if (deleteError) {
           throw new Error(deleteError.message);

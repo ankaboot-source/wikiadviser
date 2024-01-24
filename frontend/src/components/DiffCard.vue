@@ -79,7 +79,7 @@
 import { copyToClipboard, useQuasar } from 'quasar';
 import { createLink } from 'src/api/supabaseHelper';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
-import ShareCard from 'src/components/ShareCard.vue';
+import ShareCard from 'src/components/Share/ShareCard.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
@@ -176,9 +176,7 @@ async function copyShareLinkToClipboard() {
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',
-    caption: `This link will expire in ${
-      EXPIRATION_DAYS * HOURS_IN_DAY
-    } hours`,
+    caption: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
     color: 'positive',
     icon: 'content_copy',
   });

@@ -124,7 +124,8 @@ import { Article, UserRole } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
+
 const props = defineProps<{
   article: Article;
 }>();
@@ -163,7 +164,7 @@ async function removeArticle(articleId: string) {
       color: 'positive',
     });
 
-    const sessionStore = useSessionStore();
+    const sessionStore = useUserStore();
     const user = sessionStore.session?.user;
 
     if (!user) {

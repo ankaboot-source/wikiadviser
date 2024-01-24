@@ -27,9 +27,9 @@
 import supabase from 'src/api/supabase';
 import { getParsedChanges, getUsers } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
-import DiffList from 'src/components/DiffList/DiffList.vue';
+import DiffList from 'src/components/Diff/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
 import {
   ChangeItem,
   SupabaseArticle,
@@ -111,7 +111,7 @@ async function handleChangesRealtime(
 }
 
 onBeforeMount(async () => {
-  const sessionStore = useSessionStore();
+  const sessionStore = useUserStore();
   const user = sessionStore.session?.user;
 
   if (!user) {

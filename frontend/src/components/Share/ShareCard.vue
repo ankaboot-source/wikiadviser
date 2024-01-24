@@ -64,7 +64,7 @@ import {
 import { copyToClipboard, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useRouter } from 'vue-router';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
 const articlesStore = useArticlesStore();
 
 const $q = useQuasar();
@@ -219,7 +219,7 @@ async function handleApplyChanges() {
       }
     }
 
-    const sessionStore = useSessionStore();
+    const sessionStore = useUserStore();
     const user = sessionStore.session?.user;
 
     if (!user?.id) {

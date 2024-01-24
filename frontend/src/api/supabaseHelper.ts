@@ -14,10 +14,8 @@ export async function getUsers(articleId: string): Promise<User[]> {
       id,
       article_id,
       role,
-      user: users(
-      raw_user_meta_data,
-      email
-      )`,
+      user: profiles(id, email, avatar_url, default_avatar, allowed_articles)
+      `,
     )
     .order('created_at')
     .eq('article_id', articleId);
@@ -28,7 +26,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = permissionsData.map((permission: any) => ({
-    picture: permission.user.raw_user_meta_data.picture,
+    picture: permission.user.avatar_url,
     email: permission.user.email,
     role: permission.role,
     permissionId: permission.id,
@@ -152,8 +150,8 @@ export async function getParsedChanges(
         revision_id,
         archived,
         hidden,
-        user: users(id, email, picture: raw_user_meta_data->>"picture"), 
-        comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
+        user: profiles(id, email, avatar_url), 
+        comments(content,created_at, user: profiles(id, email, avatar_url)),
         revision: revisions(summary, revid)
         `,
     )
@@ -190,9 +188,7 @@ export async function insertComment(
   const { data, error: changeError } = await supabase
     .from('comments')
     .insert({ change_id: changeId, commenter_id: commenterId, content })
-    .select(
-      '*, user: users(id, email, picture: raw_user_meta_data->>"picture")',
-    );
+    .select('*, user: profiles(id, email, avatar_url)');
 
   if (changeError) {
     throw new Error(changeError.message);

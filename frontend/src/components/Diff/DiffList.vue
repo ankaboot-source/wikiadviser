@@ -4,7 +4,7 @@
       <q-icon size="sm" name="thumbs_up_down" /> Changes to review
     </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
-      <revision-item
+      <diff-revision
         v-for="revision in groupedIndexedChanges"
         :key="revision.revid"
         :revision="revision"
@@ -67,7 +67,7 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, UserRole } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
-import RevisionItem from './RevisionItem.vue';
+import DiffRevision from './DiffRevision.vue';
 
 const store = useSelectedChangeStore();
 

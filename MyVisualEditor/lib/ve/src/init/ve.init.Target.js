@@ -157,6 +157,10 @@ ve.init.Target.static.toolbarGroups = [
 		include: [ 'specialCharacter' ]
 	},
 	{
+		name: 'comment',
+		include: [ 'comment' ]
+	},
+	{
 		name: 'pageMenu',
 		type: 'list',
 		align: 'after',

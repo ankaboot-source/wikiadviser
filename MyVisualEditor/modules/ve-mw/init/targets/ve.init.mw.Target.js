@@ -98,13 +98,17 @@ ve.init.mw.Target.static.toolbarGroups = [
 			icon: 'add'
 		},
 		include: '*',
-		forceExpand: [ 'media', 'transclusion', 'insertTable' ],
-		promote: [ 'media', 'transclusion', 'insertTable' ]
+		forceExpand: [ 'comment', 'media', 'transclusion', 'insertTable' ],
+		promote: [ 'comment', 'media', 'transclusion', 'insertTable' ]
 	},
 	{
 		name: 'specialCharacter',
 		include: [ 'specialCharacter' ]
-	}
+	},
+	{
+		name: 'comment',
+		include: [ 'comment' ]
+	},
 ];
 
 ve.init.mw.Target.static.importRules = ve.copy( ve.init.mw.Target.static.importRules );

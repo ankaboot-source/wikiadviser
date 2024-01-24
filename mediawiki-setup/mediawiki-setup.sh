@@ -20,6 +20,8 @@ TemplateStyle_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | g
 ULS_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "UniversalLanguageSelector-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Babel_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Babel-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 CharInsert_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "CharInsert-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+Kartographer_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Kartographer-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+JsonConfig_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "JsonConfig-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
 fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
@@ -241,6 +243,22 @@ done
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
        git clone -b REL$extension_version https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git    /var/www/wiki-$environment/$lang/extensions/timeline
+    done
+done
+
+# Kartographer
+wget https://extdist.wmflabs.org/dist/extensions/Kartographer-REL$extension_version-$Kartographer_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf Kartographer-REL$extension_version-$Kartographer_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# JsonConfig (Required for Kartographer)
+wget https://extdist.wmflabs.org/dist/extensions/JsonConfig-REL$extension_version-$JsonConfig_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf JsonConfig-REL$extension_version-$JsonConfig_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
     done
 done
 

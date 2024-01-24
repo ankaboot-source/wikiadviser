@@ -214,12 +214,13 @@ wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );
 wfLoadExtension( 'Babel' );
 wfLoadExtension( 'CategoryTree' );
 wfLoadExtension( 'CharInsert' );
-
 wfLoadExtension( "timeline" );
 $wgTimelinePloticusCommand = "/usr/bin/ploticus";
 $wgTimelinePerlCommand = "/usr/bin/perl";
 $wgTimelineFontDirectory = "/usr/share/fonts/truetype/freefont";
 putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
+wfLoadExtension( 'Kartographer' );
+wfLoadExtension( 'JsonConfig' );
 
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;

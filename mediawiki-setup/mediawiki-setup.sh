@@ -19,6 +19,7 @@ PageForms_version="$PAGEFORMS_VERSION" # Unlike other extensions you need to add
 TemplateStyle_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "TemplateStyles-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 ULS_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "UniversalLanguageSelector-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Babel_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Babel-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+CharInsert_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "CharInsert-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
 fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
@@ -214,6 +215,14 @@ wget https://extdist.wmflabs.org/dist/extensions/Babel-REL$extension_version-$Ba
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf Babel-REL$extension_version-$Babel_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# CharInsert
+wget https://extdist.wmflabs.org/dist/extensions/CharInsert-REL$extension_version-$CharInsert_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf CharInsert-REL$extension_version-$CharInsert_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
     done
 done
 

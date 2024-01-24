@@ -221,6 +221,7 @@ $wgTimelineFontDirectory = "/usr/share/fonts/truetype/freefont";
 putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
 wfLoadExtension( 'Kartographer' );
 wfLoadExtension( 'JsonConfig' );
+wfLoadExtension( 'ImageMap' );
 
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;

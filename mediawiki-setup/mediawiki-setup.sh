@@ -22,6 +22,7 @@ Babel_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "
 CharInsert_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "CharInsert-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Kartographer_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Kartographer-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 JsonConfig_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "JsonConfig-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+LabeledSectionTransclusion_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "LabeledSectionTransclusion-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
 fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
@@ -259,6 +260,14 @@ wget https://extdist.wmflabs.org/dist/extensions/JsonConfig-REL$extension_versio
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf JsonConfig-REL$extension_version-$JsonConfig_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# LabeledSectionTransclusion 
+wget https://extdist.wmflabs.org/dist/extensions/LabeledSectionTransclusion-REL$extension_version-$LabeledSectionTransclusion_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf LabeledSectionTransclusion-REL$extension_version-$LabeledSectionTransclusion_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
     done
 done
 

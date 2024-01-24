@@ -222,6 +222,7 @@ putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
 wfLoadExtension( 'Kartographer' );
 wfLoadExtension( 'JsonConfig' );
 wfLoadExtension( 'ImageMap' );
+wfLoadExtension( 'LabeledSectionTransclusion' );
 
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;

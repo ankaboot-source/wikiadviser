@@ -212,6 +212,7 @@ wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );
 
 # Parser Hooks Extensions
 wfLoadExtension( 'Babel' );
+wfLoadExtension( 'CategoryTree' );
 
 
 # Enable DisplayTitle as different than Article's ID

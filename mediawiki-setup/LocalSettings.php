@@ -215,6 +215,12 @@ wfLoadExtension( 'Babel' );
 wfLoadExtension( 'CategoryTree' );
 wfLoadExtension( 'CharInsert' );
 
+wfLoadExtension( "timeline" );
+$wgTimelinePloticusCommand = "/usr/bin/ploticus";
+$wgTimelinePerlCommand = "/usr/bin/perl";
+$wgTimelineFontDirectory = "/usr/share/fonts/truetype/freefont";
+putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
+
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;
 $wgRestrictDisplayTitle = false;

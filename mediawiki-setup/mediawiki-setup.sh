@@ -54,6 +54,11 @@ chown -R $user:$user /home/$user/.ssh
 ############# Installation #############################
 apt -y update && apt -y upgrade
 
+# Perl & Ploticus (required for EasyTimeline extension)
+apt install -y perl
+apt install -y ploticus
+apt install -y fonts-freefont-ttf
+
 # Wikiadviser GitHub Repo
 git clone git@github.com:ankaboot-source/wikiadviser.git /home/$user/wikiadviser
 
@@ -158,6 +163,12 @@ for environment in "${environments[@]}"; do
     done
 done
 
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        mkdir /var/www/wiki-"$environment"/"$lang"/images/timeline
+    done
+done
+
 
 for env in "${environments[@]}"; do
 
@@ -223,6 +234,13 @@ wget https://extdist.wmflabs.org/dist/extensions/CharInsert-REL$extension_versio
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf CharInsert-REL$extension_version-$CharInsert_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# EasyTimeline
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+       git clone -b REL$extension_version https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git    /var/www/wiki-$environment/$lang/extensions/timeline
     done
 done
 

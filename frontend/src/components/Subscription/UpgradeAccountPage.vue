@@ -17,7 +17,7 @@
         <q-btn
           no-caps
           unelevated
-          color="primary"
+          color="positive"
           label="↗️ Upgrade account"
           @click="upgrade()"
         />

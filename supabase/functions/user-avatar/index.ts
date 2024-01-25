@@ -28,16 +28,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    const profile = (await supabaseClient.from('profiles').select('*').eq('id', user.id).single()).data
-    const userAvatarURL = profile.avatar_url;
+    const profile = (
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single()
+    ).data;
     const backgrounds = Deno.env
       .get("WIKIADVISER_BACKGROUND_COLORS")
       .split(", ");
 
     switch (req.method) {
       case "POST": {
-        let avatar =
-          user.user_metadata.picture ?? (await getGravatar(profile.email));
+        let avatar = profile.avatar_url ?? (await getGravatar(profile.email));
         let defaultAvatar = false;
 
         if (!avatar) {
@@ -45,13 +49,13 @@ Deno.serve(async (req) => {
           defaultAvatar = true;
         }
 
-        const { error: updateError } =
-          await supabaseClient.from('profiles').update(
-            {
-              avatar_url: avatar,
-              default_avatar: defaultAvatar,
-            }
-          ).eq('id', profile.id);
+        const { error: updateError } = await supabaseClient
+          .from("profiles")
+          .update({
+            avatar_url: avatar,
+            default_avatar: defaultAvatar,
+          })
+          .eq("id", profile.id);
 
         if (updateError) {
           throw new Error(updateError.message);
@@ -61,13 +65,13 @@ Deno.serve(async (req) => {
       }
 
       case "DELETE": {
-        const { error: deleteError } =
-          await supabaseClient.from('profiles').update(
-            {
-              avatar_url: generateAvatar(profile.email, backgrounds),
-              default_avatar: true,
-            }
-          ).eq('id', profile.id);
+        const { error: deleteError } = await supabaseClient
+          .from("profiles")
+          .update({
+            avatar_url: generateAvatar(profile.email, backgrounds),
+            default_avatar: true,
+          })
+          .eq("id", profile.id);
 
         if (deleteError) {
           throw new Error(deleteError.message);

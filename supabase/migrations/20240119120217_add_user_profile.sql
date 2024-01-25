@@ -1,6 +1,12 @@
 -- DROP INSERT POLICY ON TABLE PERMISSIONS
 DROP POLICY IF EXISTS insert_permissions_policy ON permissions;
 
+-- DROP FUNCTION "add_user_to_article"
+DROP FUNCTION IF EXISTS public.add_user_to_article;
+
+-- DROP FUNCTION "create_share_links"
+DROP FUNCTION IF EXISTS public.create_share_links;
+
 -- CREATE TABLE PROFILE
 CREATE TABLE public.profiles (
     id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,

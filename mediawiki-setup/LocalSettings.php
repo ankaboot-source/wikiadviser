@@ -86,7 +86,6 @@ $wgMemCachedServers = [];
 $wgEnableUploads = true;
 $wgUseImageMagick = true;
 $wgImageMagickConvertCommand = "/usr/bin/convert";
-
 # InstantCommons allows wiki to use images from https://commons.wikimedia.org
 $wgUseInstantCommons = true;
 
@@ -210,15 +209,17 @@ $wgExternalLinkTarget = '_blank';
 # Enable parsoid API
 wfLoadExtension( 'Parsoid', "$IP/vendor/wikimedia/parsoid/extension.json" );
 
-# Parser Hooks Extensions
+# Parser Hooks Extensions #####################################
 wfLoadExtension( 'Babel' );
 wfLoadExtension( 'CategoryTree' );
 wfLoadExtension( 'CharInsert' );
 wfLoadExtension( "timeline" );
+
 $wgTimelinePloticusCommand = "/usr/bin/ploticus";
 $wgTimelinePerlCommand = "/usr/bin/perl";
 $wgTimelineFontDirectory = "/usr/share/fonts/truetype/freefont";
 putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
+
 wfLoadExtension( 'Kartographer' );
 wfLoadExtension( 'JsonConfig' );
 wfLoadExtension( 'ImageMap' );
@@ -227,6 +228,8 @@ wfLoadExtension( 'Math' );
 wfLoadExtension( 'PageAssessments' );
 wfLoadExtension( 'Phonos' );
 wfLoadExtension( 'Poem' );
+wfLoadExtension( 'wikihiero' );
+##############################################################
 
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;

@@ -25,6 +25,7 @@ JsonConfig_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep
 LabeledSectionTransclusion_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "LabeledSectionTransclusion-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 PageAssessments_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "PageAssessments-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Phonos_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Phonos-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+wikihiero_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "wikihiero-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
 fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
@@ -294,6 +295,14 @@ wget https://extdist.wmflabs.org/dist/extensions/Phonos-REL$extension_version-$P
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf Phonos-REL$extension_version-$Phonos_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# wikihiero
+wget https://extdist.wmflabs.org/dist/extensions/wikihiero-REL$extension_version-$wikihiero_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf wikihiero-REL$extension_version-$wikihiero_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
     done
 done
 

@@ -30,7 +30,8 @@ export enum TypeOfEditDictionary {
   insert = 1,
   remove = 2,
   'structural-change' = 3,
-  'remove-insert' = 4
+  'remove-insert' = 4,
+  'comment-insert' = 5
 }
 
 export interface ErrorResponse {

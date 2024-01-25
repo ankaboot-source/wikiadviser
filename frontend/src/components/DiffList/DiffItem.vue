@@ -66,13 +66,13 @@
           class="row justify-center"
           @click="preventLinkVisit($event)"
           v-html="props.item.content"
-        ></div>
+        />
         <div
           v-else
           class="q-pl-md text-left text-body-2 word_break_all"
           @click="preventLinkVisit($event)"
           v-html="props.item.content"
-        ></div>
+        />
       </div>
     </q-item-section>
     <q-separator />

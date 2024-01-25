@@ -10,7 +10,7 @@ export async function authorizeUser(
   next: NextFunction
 ) {
   const supabaseClient = createSupabaseClient(req.headers["authorization"]);
-  const { user: user } = (await supabaseClient.auth.getUser()).data;
+  const { user } = (await supabaseClient.auth.getUser()).data;
   const { data: profile }: Profile = await supabaseClient
     .from("profiles")
     .select("*")

@@ -101,6 +101,6 @@ export async function verifyShareLink(req: Request, res: Response) {
 
     return res.status(200).json({ ...shareRecord });
   } catch (error) {
-    res.status(500).send(error.message);
+    return res.status(500).send(error.message);
   }
 }

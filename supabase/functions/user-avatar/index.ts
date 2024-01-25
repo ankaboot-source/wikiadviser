@@ -1,7 +1,6 @@
 import { Database } from "shared/types.ts";
 import corsHeaders from "shared/cors.ts";
 import createSupabaseClient from "shared/supabaseClient.ts";
-import createSupabaseAdmin from "shared/supabaseAdmin.ts";
 
 import generateAvatar from "./external-avatars/authUi.ts";
 import getGravatar from "./external-avatars/gravatar.ts";
@@ -17,7 +16,6 @@ Deno.serve(async (req) => {
     const supabaseClient = createSupabaseClient(
       req.headers.get("Authorization")
     );
-    const supabaseAdmin = createSupabaseAdmin();
 
     const {
       data: { user },

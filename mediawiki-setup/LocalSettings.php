@@ -225,6 +225,8 @@ wfLoadExtension( 'ImageMap' );
 wfLoadExtension( 'LabeledSectionTransclusion' );
 wfLoadExtension( 'Math' );
 wfLoadExtension( 'PageAssessments' );
+wfLoadExtension( 'Phonos' );
+wfLoadExtension( 'Poem' );
 
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;

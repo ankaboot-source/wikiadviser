@@ -28,7 +28,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const users = permissionsData.map((permission: any) => ({
-    picture: permission.user.raw_user_meta_data.picture,
+    picture: permission.user.raw_user_meta_data.user_avatar,
     email: permission.user.email,
     role: permission.role,
     permissionId: permission.id,
@@ -152,8 +152,8 @@ export async function getParsedChanges(
         revision_id,
         archived,
         hidden,
-        user: users(id, email, picture: raw_user_meta_data->>"picture"), 
-        comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
+        user: users(id, email, picture: raw_user_meta_data->>"user_avatar"), 
+        comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"user_avatar")),
         revision: revisions(summary, revid)
         `,
     )
@@ -191,7 +191,7 @@ export async function insertComment(
     .from('comments')
     .insert({ change_id: changeId, commenter_id: commenterId, content })
     .select(
-      '*, user: users(id, email, picture: raw_user_meta_data->>"picture")',
+      '*, user: users(id, email, picture: raw_user_meta_data->>"user_avatar")',
     );
 
   if (changeError) {

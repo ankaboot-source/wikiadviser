@@ -47,7 +47,7 @@
       >
         <div class="text-black">
           <q-avatar size="sm">
-            <img :src="props.item?.user.picture" />
+            <img :src="props.item?.user.picture" referrerpolicy="no-referrer" />
           </q-avatar>
           {{ props.item?.user.email }}
         </div>

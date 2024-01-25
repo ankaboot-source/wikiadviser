@@ -200,6 +200,10 @@
       .vector-toc-landmark {
         display: none !important;
       }
+      /* Hide save dialog's licence */
+      .ve-ui-mwSaveDialog-foot {
+        display: none !important;
+      }
       ```
 
       </details>

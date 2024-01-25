@@ -226,30 +226,18 @@ export async function createLink(articleId: string) {
   const expiredAt = new Date();
   expiredAt.setDate(expiredAt.getDate() + EXPIRATION_DAYS);
 
-  const { data: token, error: tokenCreationError } = await supabase.rpc(
-    'create_share_links',
-    {
-      p_article_id: articleId,
-      expired_at: expiredAt.toISOString(),
-    },
-  );
+  const { data: shareLink, error: tokenCreationError } =
+    await supabase.functions.invoke('share_links', {
+      method: 'POST',
+      body: {
+        article_id: articleId,
+        expired_at: expiredAt.toISOString(),
+      },
+    });
 
   if (tokenCreationError) throw new Error(tokenCreationError.message);
 
-  return token;
-}
-
-export async function verifyLink(token: string): Promise<string> {
-  const { data: articleId, error: validationError } = await supabase.rpc(
-    'add_viewer_to_article',
-    {
-      token,
-    },
-  );
-
-  if (validationError) throw new Error(validationError.message);
-
-  return articleId;
+  return shareLink.id;
 }
 
 export async function updateArticleWebPublication(

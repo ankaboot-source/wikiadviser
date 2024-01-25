@@ -1,28 +1,6 @@
-<script setup lang="ts">
-import { verifyLink } from 'src/api/supabaseHelper';
-import { ref, onBeforeMount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-const router = useRouter();
-const valid = ref(true);
-
-onBeforeMount(async () => {
-  try {
-    const { params } = useRoute();
-    const token = params.token;
-    const articleId = await verifyLink(`${token}`);
-
-    router.push({
-      path: `/articles/${articleId}`,
-    });
-  } catch (error) {
-    valid.value = false;
-  }
-});
-</script>
-
 <template>
-  <div class="col q-panel q-py-lg">
+  <upgrade-page v-if="reachedLimits" />
+  <div v-else class="col q-panel q-py-lg">
     <div class="row justify-center">
       <q-card class="q-pa-sm column" flat style="width: 80vw">
         <q-card-section v-if="!valid" class="text-center" padding>
@@ -43,3 +21,39 @@ onBeforeMount(async () => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import UpgradePage from 'src/components/Subscription/UpgradeAccountPage.vue';
+import { ref, onBeforeMount } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import supabase from 'src/api/supabase';
+
+const router = useRouter();
+const valid = ref(true);
+
+const reachedLimits = ref(false);
+
+onBeforeMount(async () => {
+  try {
+    const { params } = useRoute();
+    const token = params.token;
+    const { data: shareLink, error: validationError } =
+      await supabase.functions.invoke(`share_links/${token}`, {
+        method: 'GET',
+      });
+
+    console.log(shareLink);
+
+    if (validationError) {
+      reachedLimits.value = validationError.context.status === 402;
+      throw new Error(validationError.message);
+    }
+
+    router.push({
+      path: `/articles/${shareLink.article_id}`,
+    });
+  } catch (error) {
+    valid.value = false;
+  }
+});
+</script>

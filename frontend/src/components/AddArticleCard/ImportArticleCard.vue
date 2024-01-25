@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import UpgradeAccount from '../Subscription/UpgradeAccount.vue';
+import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
 import { ref, watch } from 'vue';
 import { AxiosError } from 'axios';
 import { api } from 'src/boot/axios';

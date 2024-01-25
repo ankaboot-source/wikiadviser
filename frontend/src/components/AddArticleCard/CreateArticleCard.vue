@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import UpgradeAccount from '../Subscription/UpgradeAccount.vue';
+import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
 import { useQuasar } from 'quasar';
 import { createArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';

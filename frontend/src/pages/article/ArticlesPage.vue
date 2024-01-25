@@ -114,10 +114,10 @@
   </template>
 </template>
 <script setup lang="ts">
+import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
 import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
 import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
 import CreateArticle from 'src/components/AddArticleCard/CreateArticleCard.vue';
-import UpgradeAccount from 'src/components/Subscription/UpgradeAccount.vue';
 import { Article } from 'src/types';
 import { computed, onBeforeMount, ref } from 'vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
@@ -134,7 +134,9 @@ const showCreateArticleDialog = ref(false);
 const articles = computed(() => articlesStore.articles);
 
 const reachedLimits = computed(
-  () => articlesStore.articles.length >= (user?.allowed_articles ?? 0),
+  () =>
+    (!showImportArticleDialog.value || !showCreateArticleDialog.value) &&
+    articlesStore.articles.length >= (user?.allowed_articles ?? 0),
 );
 
 onBeforeMount(async () => {

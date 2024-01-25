@@ -1,4 +1,3 @@
-import corsHeaders from "shared/cors.ts";
 import express from "express";
 import cors from "cors";
 

@@ -3,8 +3,8 @@ import createSupabaseAdmin from "shared/supabaseAdmin.ts";
 import { Request, Response } from "express";
 import { Database } from "shared/types.ts";
 
-type ShareLink = Databse["public"]["tables"]["share_links"]["row"];
-type Permission = Databse["public"]["tables"]["permissions"]["row"];
+type ShareLink = Database["public"]["tables"]["share_links"]["row"];
+type Permission = Database["public"]["tables"]["permissions"]["row"];
 
 export async function createShareLink(req: Request, res: Response) {
   try {
@@ -18,7 +18,7 @@ export async function createShareLink(req: Request, res: Response) {
     }
 
     const hasPermission = await supabaseAdmin
-      .from("permissions")
+      .from<Permission>("permissions")
       .select("id")
       .eq("user_id", user.id)
       .eq("article_id", articleId)
@@ -71,7 +71,7 @@ export async function verifyShareLink(req: Request, res: Response) {
 
     const { data: articlePermissions, error: articlesError } =
       await supabaseAdmin
-        .from("permissions")
+        .from<Permission>("permissions")
         .select("*")
         .eq("user_id", user.id);
 
@@ -93,7 +93,7 @@ export async function verifyShareLink(req: Request, res: Response) {
       });
     }
 
-    await supabaseAdmin.from<Permissions>("permissions").insert({
+    await supabaseAdmin.from<Permission>("permissions").insert({
       user_id: user.id,
       article_id: articleId,
       role: "viewer",

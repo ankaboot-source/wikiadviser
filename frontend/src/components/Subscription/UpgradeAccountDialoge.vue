@@ -8,8 +8,8 @@
         <q-btn v-close-popup flat round dense icon="close" size="sm" />
       </q-toolbar>
       <q-card-section>
-        You're only allowed to have {{ allowedCountMessage }}. For more
-        articles, please upgrade your account.
+        You're only allowed to have {{ allowedArticles }}. For more articles,
+        please upgrade your account.
       </q-card-section>
       <q-card-actions class="borders">
         <q-space />
@@ -18,7 +18,7 @@
           unelevated
           color="positive"
           no-caps
-          label="Upgrade account"
+          label="↗️ Upgrade account"
           @click="upgrade()"
         >
         </q-btn>
@@ -28,20 +28,18 @@
 </template>
 
 <script setup lang="ts">
+import { WIKIADVISER_PRICING_PAGE } from 'src/utils/consts';
 import { useUserStore } from 'src/stores/userStore';
 import { Profile } from 'src/types';
 import { computed } from 'vue';
 
 const user = useUserStore().user as Profile;
-const allowedCountMessage = computed(
+const allowedArticles = computed(
   () =>
     `${user.allowed_articles} article${user.allowed_articles > 1 ? 's' : ''}`,
 );
 
 function upgrade() {
-  window.open(
-    'https://www.wikiadviser.io/#oQgNgFoThyItKVpXykVyFzgOCQwFPVvfh',
-    '_blank',
-  );
+  window.open(WIKIADVISER_PRICING_PAGE, '_blank');
 }
 </script>

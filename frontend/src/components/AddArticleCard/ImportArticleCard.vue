@@ -215,7 +215,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
     return router.push({
       name: 'article',
       params: {
-        articleId
+        articleId,
       },
     });
   } catch (error) {

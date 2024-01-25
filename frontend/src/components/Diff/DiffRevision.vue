@@ -23,7 +23,10 @@
           <q-item-section side caption class="text-right">
             <div class="text-black">
               <q-avatar size="sm">
-                <img :src="revision.items[0]?.user.avatar_url" referrerpolicy="no-referrer" />
+                <img
+                  :src="revision.items[0]?.user.avatar_url"
+                  referrerpolicy="no-referrer"
+                />
               </q-avatar>
               {{ revision.items[0]?.user.email }}
             </div>

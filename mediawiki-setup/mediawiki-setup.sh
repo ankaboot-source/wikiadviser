@@ -18,6 +18,14 @@ extension_version=${mediawiki_version[0]//./_} # Convert 1.40 => 1_40
 PageForms_version="$PAGEFORMS_VERSION" # Unlike other extensions you need to add this variable to Github Secrets since it not same way of download, please choose PageForms Version according to your mediawiki version!
 TemplateStyle_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "TemplateStyles-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 ULS_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "UniversalLanguageSelector-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+Babel_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Babel-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+CharInsert_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "CharInsert-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+Kartographer_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Kartographer-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+JsonConfig_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "JsonConfig-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+LabeledSectionTransclusion_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "LabeledSectionTransclusion-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+PageAssessments_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "PageAssessments-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+Phonos_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Phonos-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+wikihiero_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "wikihiero-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
 fr_dump_token_prod="$FR_DUMP_TOKEN_PROD"
@@ -51,6 +59,11 @@ chown -R $user:$user /home/$user/.ssh
 
 ############# Installation #############################
 apt -y update && apt -y upgrade
+
+# Perl & Ploticus (required for EasyTimeline extension)
+apt install -y perl
+apt install -y ploticus
+apt install -y fonts-freefont-ttf
 
 # Wikiadviser GitHub Repo
 git clone git@github.com:ankaboot-source/wikiadviser.git /home/$user/wikiadviser
@@ -156,6 +169,12 @@ for environment in "${environments[@]}"; do
     done
 done
 
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        mkdir /var/www/wiki-"$environment"/"$lang"/images/timeline
+    done
+done
+
 
 for env in "${environments[@]}"; do
 
@@ -208,11 +227,82 @@ for environment in "${environments[@]}"; do
     done
 done
 
+# Babel
+wget https://extdist.wmflabs.org/dist/extensions/Babel-REL$extension_version-$Babel_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf Babel-REL$extension_version-$Babel_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# CharInsert
+wget https://extdist.wmflabs.org/dist/extensions/CharInsert-REL$extension_version-$CharInsert_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf CharInsert-REL$extension_version-$CharInsert_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# EasyTimeline
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+       git clone -b REL$extension_version https://gerrit.wikimedia.org/r/mediawiki/extensions/timeline.git    /var/www/wiki-$environment/$lang/extensions/timeline
+    done
+done
+
+# Kartographer
+wget https://extdist.wmflabs.org/dist/extensions/Kartographer-REL$extension_version-$Kartographer_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf Kartographer-REL$extension_version-$Kartographer_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# JsonConfig (Required for Kartographer)
+wget https://extdist.wmflabs.org/dist/extensions/JsonConfig-REL$extension_version-$JsonConfig_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf JsonConfig-REL$extension_version-$JsonConfig_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# LabeledSectionTransclusion 
+wget https://extdist.wmflabs.org/dist/extensions/LabeledSectionTransclusion-REL$extension_version-$LabeledSectionTransclusion_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf LabeledSectionTransclusion-REL$extension_version-$LabeledSectionTransclusion_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
 # Wikibase
 wget https://extdist.wmflabs.org/dist/extensions/Wikibase-REL$extension_version-$Wikibase_version.tar.gz
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         tar -xzf Wikibase-REL$extension_version-$Wikibase_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# PageAssessments
+wget https://extdist.wmflabs.org/dist/extensions/PageAssessments-REL$extension_version-$PageAssessments_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf PageAssessments-REL$extension_version-$PageAssessments_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# Phonos
+wget https://extdist.wmflabs.org/dist/extensions/Phonos-REL$extension_version-$Phonos_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf Phonos-REL$extension_version-$Phonos_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
+    done
+done
+
+# wikihiero
+wget https://extdist.wmflabs.org/dist/extensions/wikihiero-REL$extension_version-$wikihiero_version.tar.gz
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        tar -xzf wikihiero-REL$extension_version-$wikihiero_version.tar.gz -C /var/www/wiki-$environment/$lang/extensions/
     done
 done
 

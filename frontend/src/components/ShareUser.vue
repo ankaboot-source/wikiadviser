@@ -2,7 +2,7 @@
   <q-item v-show="!removed" bordered>
     <q-item-section avatar>
       <q-avatar size="md">
-        <img :src="user.picture" />
+        <img :src="user.picture" referrerpolicy="no-referrer" />
       </q-avatar>
     </q-item-section>
     <q-item-section>

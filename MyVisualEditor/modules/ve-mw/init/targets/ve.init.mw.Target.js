@@ -90,6 +90,17 @@ ve.init.mw.Target.static.toolbarGroups = [
 		demote: [ 'outdent', 'indent' ]
 	},
 	{
+		name: 'comment',
+		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		narrowConfig: {
+			invisibleLabel: true,
+			icon: 'notice'
+		},
+		include: [ 'comment' ],
+		forceExpand: [ 'comment' ]
+	},
+	{
 		name: 'insert',
 		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
 		title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
@@ -98,17 +109,13 @@ ve.init.mw.Target.static.toolbarGroups = [
 			icon: 'add'
 		},
 		include: '*',
-		forceExpand: [ 'comment', 'media', 'transclusion', 'insertTable' ],
-		promote: [ 'comment', 'media', 'transclusion', 'insertTable' ]
+		forceExpand: [ 'media', 'transclusion', 'insertTable' ],
+		promote: [ 'media', 'transclusion', 'insertTable' ]
 	},
 	{
 		name: 'specialCharacter',
 		include: [ 'specialCharacter' ]
-	},
-	{
-		name: 'comment',
-		include: [ 'comment' ]
-	},
+	}
 ];
 
 ve.init.mw.Target.static.importRules = ve.copy( ve.init.mw.Target.static.importRules );

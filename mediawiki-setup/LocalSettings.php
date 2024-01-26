@@ -231,6 +231,8 @@ wfLoadExtension( 'Poem' );
 wfLoadExtension( 'wikihiero' );
 ##############################################################
 
+wfLoadExtension( 'Gadgets' );
+
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;
 $wgRestrictDisplayTitle = false;

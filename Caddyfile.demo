@@ -11,7 +11,9 @@
           }
         }
         handle_errors {
-            respond "{err.status_code} {err.status_text}"
+            rewrite * /index.html
+            templates
+            file_server
         }
 	rewrite /robots.txt ./robots.txt # Disable search engine indexing
 }

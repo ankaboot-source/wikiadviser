@@ -43,16 +43,26 @@ ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- TABLE PROFILE POLOCIES
 CREATE POLICY "Public profiles are viewable by everyone."
-    ON public.profiles FOR SELECT
+    ON public.profiles
+    FOR SELECT
+    TO authenticated
     USING (TRUE);
 
 CREATE POLICY "Users can update own profile."
-    ON public.profiles FOR UPDATE
+    ON public.profiles
+    FOR UPDATE
+    TO authenticated
     USING (
         auth.uid() = id
         AND
-        allowed_articles IS NULL
-);
+        (
+            EXISTS (
+                SELECT 1
+                FROM profiles p
+                WHERE p.id =  public.profiles.id and p.allowed_articles =  public.profiles.allowed_articles
+            )
+        )
+    );
 
 
 -- UPDATE FOREIGN KEY REFERENCES TO POINT TO profiles.id INSTEAD OF users.id

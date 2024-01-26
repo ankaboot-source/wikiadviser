@@ -22,7 +22,7 @@
           </q-item-section>
         </template>
         <q-item-section>
-          <q-list>
+          <q-list class="q-mt-md">
             <diff-item
               v-for="item in archivedChanges"
               :key="item.id"

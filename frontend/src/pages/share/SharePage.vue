@@ -42,8 +42,6 @@ onBeforeMount(async () => {
         method: 'GET',
       });
 
-    console.log(shareLink);
-
     if (validationError) {
       reachedLimits.value = validationError.context.status === 402;
       throw new Error(validationError.message);

@@ -4,7 +4,7 @@
     v-model="expanded"
     :class="{ highlighted: highlighted }"
     style="background-color: white"
-    class="q-mb-md q-mx-sm borders rounded-borders"
+    class="q-mb-md q-mx-sm borders rounded-borders diffItem"
     @after-show="scrollToItem(!store.selectedChangeId)"
     @mouseenter="setHovered(props.item.id)"
     @mouseleave="setHovered('')"
@@ -478,5 +478,11 @@ async function hideChange() {
   100% {
     background-color: transparent;
   }
+}
+</style>
+<style>
+.diffItem > * > .q-item {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 </style>

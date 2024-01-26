@@ -98,8 +98,7 @@ ve.init.mw.Target.static.toolbarGroups = [
 			invisibleLabel: true,
 			icon: 'notice'
 		},
-		include: [ 'comment' ],
-		forceExpand: [ 'comment' ]
+		include: 'comment'
 	},
 	/* End WikiAdviser */
 	{

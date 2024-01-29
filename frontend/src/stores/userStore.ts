@@ -15,14 +15,17 @@ export const useUserStore = defineStore('session', () => {
   }
 
   async function updateProfile() {
-    user.value =
-      ((
-        await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.value?.user.id)
-          .single()
-      ).data as Profile) ?? null;
+    const userId = session.value?.user.id;
+
+    user.value = userId
+      ? ((
+          await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.value?.user.id)
+            .single()
+        ).data as Profile)
+      : null;
   }
 
   return {

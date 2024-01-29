@@ -67,7 +67,7 @@ const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
 
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const activeChanges = computed(
-  () => changesList.value.map((item) => item && item.hidden).length > 0
+  () => changesList.value.map((item) => item?.hidden).length > 0,
 );
 
 function handleArticleRealtime(

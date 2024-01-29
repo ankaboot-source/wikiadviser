@@ -229,6 +229,7 @@ wfLoadExtension( 'PageAssessments' );
 wfLoadExtension( 'Phonos' );
 wfLoadExtension( 'Poem' );
 wfLoadExtension( 'wikihiero' );
+wfLoadExtension( 'GeoData' );
 ##############################################################
 
 wfLoadExtension( 'Gadgets' );

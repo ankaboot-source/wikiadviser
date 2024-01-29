@@ -6,12 +6,13 @@ import { ref } from 'vue';
 
 export const useUserStore = defineStore('session', () => {
   // States
-  const session = ref<Session>();
+  const session = ref<Session | null>(null);
   const user = ref<Profile | null>(null);
 
   // Actions
   async function getSession() {
     session.value = (await supabase.auth.getSession()).data.session as Session;
+    return session.value;
   }
 
   async function updateProfile() {
@@ -28,10 +29,16 @@ export const useUserStore = defineStore('session', () => {
       : null;
   }
 
+  function resetUser() {
+    session.value = null;
+    user.value = null;
+  }
+
   return {
     session,
     user,
     getSession,
     updateProfile,
+    resetUser,
   };
 });

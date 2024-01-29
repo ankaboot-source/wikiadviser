@@ -21,17 +21,17 @@ const routes: RouteRecordRaw[] = [
     path: '/articles',
     alias: '/',
     name: 'articles',
-    component: () => import('pages/ArticlesPage.vue'),
+    component: () => import('pages/article/ArticlesPage.vue'),
   },
   {
     path: '/articles/:articleId',
     name: 'article',
-    component: () => import('pages/ArticlePage.vue'),
+    component: () => import('pages/article/ArticlePage.vue'),
   },
   {
     path: '/shares/:token',
     name: 'share',
-    component: () => import('pages/SharePage.vue'),
+    component: () => import('pages/share/SharePage.vue'),
   },
   // Always leave this as last one,
   // but you can also remove it

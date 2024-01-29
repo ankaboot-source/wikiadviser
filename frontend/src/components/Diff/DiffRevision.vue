@@ -24,7 +24,7 @@
             <div class="text-black">
               <q-avatar size="sm">
                 <img
-                  :src="revision.items[0]?.user.picture"
+                  :src="revision.items[0]?.user.avatar_url"
                   referrerpolicy="no-referrer"
                 />
               </q-avatar>

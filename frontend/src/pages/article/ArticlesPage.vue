@@ -49,7 +49,7 @@
           class="col-grow q-pt-none q-pb-lg"
         >
           <q-list class="q-mx-md">
-            <owned-article-item
+            <owned-article
               v-for="article in articlesFiltered"
               :key="article.article_id"
               :article="article"
@@ -104,23 +104,26 @@
       </q-card>
     </div>
   </div>
-  <q-dialog v-model="showImportArticleDialog">
-    <import-article-card />
-  </q-dialog>
-  <q-dialog v-model="showCreateArticleDialog">
-    <create-article-card />
-  </q-dialog>
+  <template v-if="reachedLimits">
+    <upgrade-account v-model="showImportArticleDialog" />
+    <upgrade-account v-model="showCreateArticleDialog" />
+  </template>
+  <template v-else>
+    <import-article v-model="showImportArticleDialog" />
+    <create-article v-model="showCreateArticleDialog" />
+  </template>
 </template>
 <script setup lang="ts">
-import { computed, onBeforeMount, ref } from 'vue';
-import OwnedArticleItem from 'src/components/OwnedArticleItem.vue';
-import ImportArticleCard from 'src/components/AddArticleCard/ImportArticleCard.vue';
-import CreateArticleCard from 'src/components/AddArticleCard/CreateArticleCard.vue';
+import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
+import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
+import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
+import CreateArticle from 'src/components/AddArticleCard/CreateArticleCard.vue';
 import { Article } from 'src/types';
+import { computed, onBeforeMount, ref } from 'vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSessionStore } from 'src/stores/useSessionStore';
-import { User } from '@supabase/supabase-js';
+import { useUserStore } from 'src/stores/userStore';
 
+const { session, user } = useUserStore();
 const articlesStore = useArticlesStore();
 
 const term = ref('');
@@ -130,11 +133,14 @@ const showCreateArticleDialog = ref(false);
 
 const articles = computed(() => articlesStore.articles);
 
-onBeforeMount(async () => {
-  const sessionStore = useSessionStore();
-  const user = sessionStore.session?.user as User;
+const reachedLimits = computed(
+  () =>
+    (!showImportArticleDialog.value || !showCreateArticleDialog.value) &&
+    articlesStore.articles.length >= (user?.allowed_articles ?? 0),
+);
 
-  await articlesStore.fetchArticles(user.id);
+onBeforeMount(async () => {
+  await articlesStore.fetchArticles(session?.user.id as string);
   loading.value = false;
 });
 

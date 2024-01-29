@@ -27,9 +27,9 @@
 import supabase from 'src/api/supabase';
 import { getParsedChanges, getUsers } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
-import DiffList from 'src/components/DiffList/DiffList.vue';
+import DiffList from 'src/components/Diff/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
 import {
   ChangeItem,
   SupabaseArticle,
@@ -67,7 +67,7 @@ const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
 
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const activeChanges = computed(
-  () => changesList.value.map((item) => !item.hidden).length > 0,
+  () => changesList.value.map((item) => item?.hidden).length > 0,
 );
 
 function handleArticleRealtime(
@@ -111,7 +111,7 @@ async function handleChangesRealtime(
 }
 
 onBeforeMount(async () => {
-  const sessionStore = useSessionStore();
+  const sessionStore = useUserStore();
   const user = sessionStore.session?.user;
 
   if (!user) {

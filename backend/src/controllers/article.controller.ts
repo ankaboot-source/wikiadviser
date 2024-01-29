@@ -3,6 +3,7 @@ import supabaseClient from '../api/supabase';
 import {
   deleteArticleDB,
   getArticle,
+  getUserArticlesCount,
   getUserPermission,
   insertArticle
 } from '../helpers/supabaseHelper';
@@ -24,15 +25,33 @@ export async function importArticle(
 ) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
-  const imported = true;
-  const articleId = await insertArticle(
-    title,
-    user.id,
-    language,
-    description,
-    imported
-  );
+
+  let articleId = null;
+
   try {
+    const totalUserArticles = await getUserArticlesCount(user.id);
+    const { allowed_articles: allowedArticles } = (
+      await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+    ).data;
+
+    if (totalUserArticles >= allowedArticles) {
+      return res.status(402).json({
+        message: 'You have reached the maximum number of articles allowed.'
+      });
+    }
+
+    articleId = await insertArticle(
+      title,
+      user.id,
+      language,
+      description,
+      true
+    );
+
     const mediawiki = new MediawikiClient(
       language,
       wikipediaApi,
@@ -44,7 +63,9 @@ export async function importArticle(
       .status(201)
       .json({ message: 'Importing new article succeeded.', articleId });
   } catch (error) {
-    await deleteArticleDB(articleId);
+    if (articleId) {
+      await deleteArticleDB(articleId);
+    }
     return next(error);
   }
 }
@@ -62,16 +83,33 @@ export async function createArticle(
 ) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
-  const imported = false;
-  const articleId = await insertArticle(
-    title,
-    user.id,
-    language,
-    description,
-    imported
-  );
+
+  let articleId = null;
 
   try {
+    const totalUserArticles = await getUserArticlesCount(user.id);
+    const { allowed_articles: allowedArticles } = (
+      await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+    ).data;
+
+    if (totalUserArticles >= allowedArticles) {
+      return res.status(402).json({
+        message: 'You have reached the maximum number of articles allowed.'
+      });
+    }
+
+    articleId = await insertArticle(
+      title,
+      user.id,
+      language,
+      description,
+      false
+    );
+
     const mediawiki = new MediawikiClient(
       language,
       wikipediaApi,
@@ -83,7 +121,9 @@ export async function createArticle(
       .status(201)
       .json({ message: 'Creating new article succeeded.', articleId });
   } catch (error) {
-    await deleteArticleDB(articleId);
+    if (articleId) {
+      await deleteArticleDB(articleId);
+    }
     return next(error);
   }
 }

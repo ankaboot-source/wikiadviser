@@ -91,8 +91,8 @@ export async function getChanges(articleId: string) {
       revision_id,
       archived,
       hidden,
-      user: users(id, email, picture: raw_user_meta_data->>"picture"), 
-      comments(content,created_at, user: users(id, email, picture: raw_user_meta_data->>"picture")),
+      user: profiles(id, email, avatar_url, default_avatar, allowed_articles), 
+      comments(content,created_at, user: profiles(id, email, avatar_url, default_avatar, allowed_articles)),
       revision: revisions(summary, revid)
       `
     )
@@ -144,4 +144,17 @@ export async function insertRevision(
   }
   const [revision] = revisionsData;
   return revision.id;
+}
+
+export async function getUserArticlesCount(userId: string) {
+  const { data: articlesData, error: articlesError } = await supabase
+    .from('permissions')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (articlesError) {
+    throw new Error(articlesError.message);
+  }
+
+  return articlesData ? articlesData.length : 0;
 }

@@ -24,11 +24,7 @@ export type SupabaseChange = {
 };
 
 export interface ChangeItem extends SupabaseChange {
-  user: {
-    id: string;
-    email: string;
-    picture: string;
-  };
+  user: Profile;
   comments: Comment[];
   revision: {
     revid: number;
@@ -64,11 +60,7 @@ export type Article = {
 export type Comment = {
   content: string;
   created_at: Date;
-  user: {
-    id: string;
-    email: string;
-    picture: string;
-  };
+  user: Profile;
 };
 
 export enum UserRole {
@@ -94,4 +86,12 @@ export interface Revision {
   summary: string;
   items: ChangeItem[];
   isRecent: boolean;
+}
+
+export interface Profile {
+  id: string;
+  email: string;
+  default_avatar: boolean;
+  avatar_url?: string;
+  allowed_articles: number;
 }

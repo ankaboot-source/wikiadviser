@@ -47,7 +47,10 @@
       >
         <div class="text-black">
           <q-avatar size="sm">
-            <img :src="props.item?.user.picture" referrerpolicy="no-referrer" />
+            <img
+              :src="props.item?.user.avatar_url"
+              referrerpolicy="no-referrer"
+            />
           </q-avatar>
           {{ props.item?.user.email }}
         </div>
@@ -117,7 +120,7 @@
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
-              :avatar="comment.user.picture"
+              :avatar="comment.user.avatar_url"
               :bg-color="comment.user.email == email ? 'green' : 'accent'"
             />
           </template>
@@ -264,7 +267,7 @@ import {
 } from 'src/api/supabaseHelper';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
-import { useSessionStore } from 'src/stores/useSessionStore';
+import { useUserStore } from 'src/stores/userStore';
 
 const $quasar = useQuasar();
 
@@ -325,7 +328,7 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 const comments = ref(props.item.comments);
 
 onMounted(() => {
-  const sessionStore = useSessionStore();
+  const sessionStore = useUserStore();
   email.value = sessionStore.session?.user.email as string;
   userId.value = sessionStore.session?.user.id as string;
 });

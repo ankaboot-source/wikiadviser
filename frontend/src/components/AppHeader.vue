@@ -20,16 +20,16 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <q-btn v-if="supabaseUser" no-caps unelevated @click="account">
+      <q-btn v-if="user" no-caps unelevated @click="account">
         <q-avatar size="sm">
           <img :src="avatarURL" referrerpolicy="no-referrer" />
         </q-avatar>
         <div class="q-pl-sm">
-          {{ supabaseUser.email }}
+          {{ user.email }}
         </div>
       </q-btn>
       <q-btn
-        v-if="supabaseUser"
+        v-if="user"
         clickable
         icon="logout"
         no-caps
@@ -41,12 +41,11 @@
 </template>
 
 <script setup lang="ts">
-import { User } from '@supabase/supabase-js';
 import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useSessionStore } from 'src/stores/useSessionStore';
-import { Article } from 'src/types';
+import { useUserStore } from 'src/stores/userStore';
+import { Article, Profile } from 'src/types';
 import { computed, ref, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -57,9 +56,9 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const sessionStore = useSessionStore();
-const supabaseUser = ref<User | null>(sessionStore.user as User);
-const avatarURL = computed(() => supabaseUser.value?.user_metadata.user_avatar);
+const userStore = useUserStore();
+const user = ref<Profile | null>(userStore.user);
+const avatarURL = computed(() => user.value?.avatar_url);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -71,13 +70,13 @@ watch([useRoute(), articles], ([newRoute]) => {
 });
 
 watchEffect(() => {
-  supabaseUser.value = sessionStore.user as User;
+  user.value = userStore.user;
 });
 
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    supabaseUser.value = null;
+    user.value = null;
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
     if (error) throw error;

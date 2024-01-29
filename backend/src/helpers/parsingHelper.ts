@@ -53,7 +53,7 @@ function handleComment(
 ) {
   const typeOfEdit = 'comment-insert';
   $wrapElement.append($CheerioAPI('<span>').text(elementInnerText));
-  $wrapElement.attr('data-content', elementInnerText);
+  $wrapElement.attr('title', elementInnerText);
   descriptionList.push(elementInnerText);
   return typeOfEdit;
 }

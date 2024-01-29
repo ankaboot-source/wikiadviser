@@ -9,7 +9,7 @@
               <q-badge
                 outline
                 rounded
-                class="q-mt-s text-capitalize"
+                class="q-mt-s text-capitalize text-dark"
                 :label="revision.items.length"
                 size="sm"
               >

@@ -1,6 +1,6 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-sm q-pb-sm">
+    <div class="text-h6 q-px-md q-pb-sm">
       <q-icon size="sm" name="thumbs_up_down" /> Changes to review
     </div>
     <q-scroll-area v-if="props.changesList.length" class="col-grow">
@@ -22,7 +22,7 @@
           </q-item-section>
         </template>
         <q-item-section>
-          <q-list>
+          <q-list class="q-mt-md">
             <diff-item
               v-for="item in archivedChanges"
               :key="item.id"

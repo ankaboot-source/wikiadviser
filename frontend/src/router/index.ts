@@ -46,7 +46,7 @@ export default route((/* { store, ssrContext } */) => {
     if (!authorized && to.meta.requiresAuth) {
       return '/auth';
     }
-    return true
+    return true;
   });
 
   return Router;

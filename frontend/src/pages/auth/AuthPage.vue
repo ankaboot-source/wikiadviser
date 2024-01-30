@@ -5,9 +5,8 @@
         <p class="text-h5 text-center merriweather q-pb-md">
           {{ message }}
         </p>
-        <!-- skipcq: JS-0664 - v-model:view is needed here  -->
         <Auth
-          v-model:view="authView"
+        v-model:view="authView"
           social-layout="vertical"
           :supabase-client="supabaseClient"
           :redirect-to="callbackURL"

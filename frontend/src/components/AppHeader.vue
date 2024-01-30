@@ -81,7 +81,6 @@ async function signOut() {
       throw error;
     }
 
-    user.value = null;
     userStore.resetUser();
     await router.push('/auth');
     articlesStore.resetArticles();

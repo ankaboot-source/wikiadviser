@@ -328,9 +328,9 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 const comments = ref(props.item.comments);
 
 onMounted(() => {
-  const sessionStore = useUserStore();
-  email.value = sessionStore.session?.user.email as string;
-  userId.value = sessionStore.session?.user.id as string;
+  const { user } = useUserStore();
+  email.value = user?.email as string;
+  userId.value = user?.id as string;
 });
 
 const previewDescription = computed(() => {

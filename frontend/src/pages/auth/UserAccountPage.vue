@@ -38,19 +38,13 @@ async function revertImage() {
     });
     revertingImage.value = false;
   } catch (error) {
+    let message = 'Whoops, something went wrong while reverting picture';
+
     if (error instanceof Error) {
-      console.error(error.message);
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
-    } else {
-      console.error(error);
-      $q.notify({
-        message: 'Whoops, something went wrong while reverting picture',
-        color: 'negative',
-      });
+      message = error.message;
     }
+
+    $q.notify({ message, color: 'negative' });
   }
 }
 
@@ -66,30 +60,24 @@ async function deleteAccount() {
   deletingAccount.value = true;
   try {
     await deleteUser();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+    userStore.resetUser();
+    articlesStore.resetArticles();
+    $router.push('/auth');
     $q.notify({
-      message: 'User deleted',
+      message: 'Your account is successfully deleted',
       icon: 'check',
       color: 'positive',
     });
-    deletingAccount.value = false;
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    articlesStore.resetArticles();
-    document.location.href = '/';
   } catch (error) {
+    let message = 'Whoops, something went wrong while deleting article';
+
     if (error instanceof Error) {
-      console.error(error.message);
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
-    } else {
-      console.error(error);
-      $q.notify({
-        message: 'Whoops, something went wrong while deleting article',
-        color: 'negative',
-      });
+      message = error.message;
     }
+
+    $q.notify({ message, color: 'negative' });
   }
 }
 
@@ -133,7 +121,7 @@ const defaultAvatar = computed(() => userStore.user?.default_avatar);
 
       <!-- Change Password Section -->
       <div class="q-my-lg">
-        <a class="text-h6 merriweather q-mb-xs" href="/auth/update_password">
+        <a class="text-h6 merriweather q-mb-xs" href="/auth/update-password">
           Change Password
           <q-icon name="open_in_new" style="top: -2px" />
         </a>

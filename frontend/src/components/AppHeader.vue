@@ -50,8 +50,8 @@ import { computed, ref, watch, watchEffect } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
-
 const $q = useQuasar();
+
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
@@ -76,10 +76,15 @@ watchEffect(() => {
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
-    user.value = null;
+
+    if (error) {
+      throw error;
+    }
+
+    userStore.resetUser();
+    await router.push('/auth');
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });
-    if (error) throw error;
   } catch (error) {
     console.error(error);
   }

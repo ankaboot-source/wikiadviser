@@ -133,7 +133,7 @@ const defaultAvatar = computed(() => userStore.user?.default_avatar);
 
       <!-- Change Password Section -->
       <div class="q-my-lg">
-        <a class="text-h6 merriweather q-mb-xs" href="/auth/update_password">
+        <a class="text-h6 merriweather q-mb-xs" href="/auth/update-password">
           Change Password
           <q-icon name="open_in_new" style="top: -2px" />
         </a>

@@ -111,19 +111,12 @@ async function handleChangesRealtime(
 }
 
 onBeforeMount(async () => {
-  const sessionStore = useUserStore();
-  const user = sessionStore.session?.user;
-
-  if (!user) {
-    router.push('/');
-    return;
-  }
-
+  const { user } = useUserStore();
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;
   articleId.value = articleIdFromParams as string;
 
-  await articlesStore.fetchArticles(user.id);
+  await articlesStore.fetchArticles(user?.id as string);
 
   if (!article.value) {
     // Article does not exist for this user

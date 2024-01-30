@@ -140,6 +140,7 @@ const reachedLimits = computed(
 );
 
 onBeforeMount(async () => {
+  await useUserStore().updateProfile();
   await articlesStore.fetchArticles(session?.user.id as string);
   loading.value = false;
 });

@@ -111,6 +111,7 @@ async function handleChangesRealtime(
 }
 
 onBeforeMount(async () => {
+  await useUserStore().updateProfile();
   const { user } = useUserStore();
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;

@@ -18,7 +18,7 @@ import { useUserStore } from 'src/stores/userStore';
  * with the Router instance.
  */
 
-export default route(function (/* { store, ssrContext } */) {
+export default route((/* { store, ssrContext } */) => {
   const createHistory = process.env.SERVER
     ? createMemoryHistory
     : process.env.VUE_ROUTER_MODE === 'history'
@@ -46,6 +46,7 @@ export default route(function (/* { store, ssrContext } */) {
     if (!authorized && to.meta.requiresAuth) {
       return '/auth';
     }
+    return true
   });
 
   return Router;

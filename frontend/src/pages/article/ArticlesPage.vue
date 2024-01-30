@@ -92,7 +92,7 @@
           <div class="text-body2 q-mt-md q-mb-lg">
             Add a new article to get started
           </div>
-          <div class="q-mx-auto" style="max-width: 300px;">
+          <div class="q-mx-auto" style="max-width: 300px">
             <q-btn
               icon="note_add"
               no-caps
@@ -103,7 +103,7 @@
               label="Create a new Article"
               @click="showCreateArticleDialog = !showCreateArticleDialog"
             />
-            <br>
+            <br />
             <q-btn
               icon="cloud_download"
               no-caps

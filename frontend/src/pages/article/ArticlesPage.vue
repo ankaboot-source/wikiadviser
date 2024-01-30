@@ -92,14 +92,28 @@
           <div class="text-body2 q-mt-md q-mb-lg">
             Add a new article to get started
           </div>
-          <q-btn
-            icon="add"
-            no-caps
-            unelevated
-            color="primary"
-            label="Add a new article"
-            @click="showImportArticleDialog = !showImportArticleDialog"
-          />
+          <div class="q-mx-auto" style="max-width: 300px;">
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              class="q-my-sm full-width"
+              color="primary"
+              label="Create a new Article"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <br>
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              class="q-my-sm full-width"
+              color="primary"
+              label="Import Article from Wikipedia"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
         </q-card-section>
       </q-card>
     </div>

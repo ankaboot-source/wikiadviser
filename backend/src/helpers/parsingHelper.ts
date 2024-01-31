@@ -70,11 +70,7 @@ export async function refineArticleChanges(
     (index, element) => {
       const $element = $CheerioAPI(element);
       const elementInnerText = $element.prop('innerText')?.trim();
-      if (!elementInnerText) {
-        // If element is empty of innerText Destroy it
-        $element.remove();
-        return;
-      }
+
       const diffAction: string = $element.data('diff-action') as string;
       let typeOfEdit: string = diffAction;
       const descriptionList: string[] = [];
@@ -86,7 +82,7 @@ export async function refineArticleChanges(
       if (isComment) {
         typeOfEdit = handleComment(
           $wrapElement,
-          elementInnerText,
+          elementInnerText ?? '',
           descriptionList,
           $CheerioAPI
         );

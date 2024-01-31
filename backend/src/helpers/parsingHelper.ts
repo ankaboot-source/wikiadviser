@@ -70,7 +70,11 @@ export async function refineArticleChanges(
     (index, element) => {
       const $element = $CheerioAPI(element);
       const elementInnerText = $element.prop('innerText')?.trim();
-
+      if (!elementInnerText && $element.get(0)?.tagName !== 'figure') {
+        // If element is empty of innerText Destroy it And if its not a figure
+        $element.remove();
+        return;
+      }
       const diffAction: string = $element.data('diff-action') as string;
       let typeOfEdit: string = diffAction;
       const descriptionList: string[] = [];

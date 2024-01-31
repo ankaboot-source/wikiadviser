@@ -186,14 +186,12 @@ export async function insertComment(
   articleId: string,
   content: string,
 ) {
-  const { error: changeError } = await supabase
-    .from('comments')
-    .insert({
-      change_id: changeId,
-      commenter_id: commenterId,
-      article_id: articleId,
-      content,
-    });
+  const { error: changeError } = await supabase.from('comments').insert({
+    change_id: changeId,
+    commenter_id: commenterId,
+    article_id: articleId,
+    content,
+  });
 
   if (changeError) {
     throw new Error(changeError.message);

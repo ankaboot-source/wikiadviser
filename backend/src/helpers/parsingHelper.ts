@@ -70,8 +70,8 @@ export async function refineArticleChanges(
     (index, element) => {
       const $element = $CheerioAPI(element);
       const elementInnerText = $element.prop('innerText')?.trim();
-      if (!elementInnerText) {
-        // If element is empty of innerText Destroy it
+      if (!elementInnerText && $element.get(0)?.tagName !== 'figure') {
+        // If element is empty of innerText Destroy it And if its not a figure
         $element.remove();
         return;
       }
@@ -86,7 +86,7 @@ export async function refineArticleChanges(
       if (isComment) {
         typeOfEdit = handleComment(
           $wrapElement,
-          elementInnerText,
+          elementInnerText ?? '',
           descriptionList,
           $CheerioAPI
         );

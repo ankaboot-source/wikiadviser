@@ -299,6 +299,13 @@ b {
   border-top: 3px solid rgba(18, 109, 31, 0.5);
 }
 
+figure[data-diff-action='insert'] {
+  border: 3px solid rgba(30, 174, 49, 0.45) !important;
+}
+[data-diff-action='change-insert']:hover {
+  border: 3px solid rgba(18, 109, 31, 0.5) !important;
+}
+
 /* data-status */
 [data-status] {
   cursor: pointer;
@@ -351,9 +358,7 @@ b {
 .q-list [data-id] {
   background-color: transparent !important;
 }
-</style>
 
-<style>
 /* Styles for the exclamation mark icon */
 [data-type-of-edit='5']:before {
   font-family: 'Material Icons';

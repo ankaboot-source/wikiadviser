@@ -325,7 +325,7 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
   ],
 ]);
 
-const comments = ref(props.item.comments);
+const comments = computed(() => props.item.comments);
 
 onMounted(() => {
   const { user } = useUserStore();
@@ -360,12 +360,12 @@ const previewItem = computed(() => {
 
 async function handleComment() {
   if (toSendComment.value.length > 0) {
-    const comment = await insertComment(
+    await insertComment(
       props.item.id,
       userId.value,
+      props.item.article_id,
       toSendComment.value,
     );
-    comments.value.push(...comment);
     toSendComment.value = '';
   }
 }

@@ -58,9 +58,12 @@ export type Article = {
 };
 
 export type Comment = {
-  content: string;
+  id: string;
   created_at: Date;
   user: Profile;
+  content: string | null;
+  commenter_id: string;
+  change_id: string;
 };
 
 export enum UserRole {

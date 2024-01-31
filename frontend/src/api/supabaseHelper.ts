@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Comment, Permission, User } from 'src/types';
+import { Article, ChangeItem, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
 import { parseChangeHtml } from 'src/utils/parsing';
@@ -151,7 +151,7 @@ export async function getParsedChanges(
         archived,
         hidden,
         user: profiles(id, email, avatar_url), 
-        comments(content,created_at, user: profiles(id, email, avatar_url)),
+        comments: comments(content,created_at, user: profiles(id, email, avatar_url)),
         revision: revisions(summary, revid)
         `,
     )
@@ -183,18 +183,21 @@ export async function updateChange(
 export async function insertComment(
   changeId: string,
   commenterId: string,
+  articleId: string,
   content: string,
 ) {
-  const { data, error: changeError } = await supabase
+  const { error: changeError } = await supabase
     .from('comments')
-    .insert({ change_id: changeId, commenter_id: commenterId, content })
-    .select('*, user: profiles(id, email, avatar_url)');
+    .insert({
+      change_id: changeId,
+      commenter_id: commenterId,
+      article_id: articleId,
+      content,
+    });
 
   if (changeError) {
     throw new Error(changeError.message);
   }
-
-  return data as Comment[];
 }
 
 export async function deletePermission(permissionId: string) {

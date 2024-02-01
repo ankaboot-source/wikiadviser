@@ -136,10 +136,11 @@ const articles = computed(() => articlesStore.articles);
 const reachedLimits = computed(
   () =>
     (!showImportArticleDialog.value || !showCreateArticleDialog.value) &&
-    articlesStore.articles.length >= (user.value.allowed_articles ?? 0),
+    articlesStore.articles.length >= (user.value?.allowed_articles ?? 0),
 );
 
 onBeforeMount(async () => {
+  await useUserStore().fetchProfile();
   await articlesStore.fetchArticles(user.value.id);
   loading.value = false;
 });

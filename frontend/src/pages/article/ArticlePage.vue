@@ -116,8 +116,6 @@ async function handleCommentRealtime(
 ) {
   const updatedComment = payload.new as Comment;
 
-  console.log(updatedComment);
-
   if (!Object.keys(updatedComment).length) {
     return;
   }

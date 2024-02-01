@@ -213,6 +213,18 @@
         padding-bottom: 11px !important;
         padding-right: 11px !important;
       }
+      /* Hide Header */
+      .mw-body-header {
+        display: none !important;
+      }
+      /* Hide Tools */
+      .vector-page-tools-landmark {
+        display: none !important;
+      }
+      /* Hide user guide & feedback in "?" */
+      .oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {
+        display: none !important;
+      }
       ```
 
       </details>

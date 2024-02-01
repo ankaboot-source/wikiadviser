@@ -11,12 +11,12 @@ export const useUserStore = defineStore('session', () => {
 
   // Actions
   async function getSession() {
-    session.value = (await supabase.auth.getSession()).data.session as Session;
+    session.value = (await supabase.auth.getSession())?.data.session as Session;
     return session.value;
   }
 
   async function fetchProfile() {
-    const userId = session.value?.user.id;
+    const userId = await getSession();
 
     user.value = userId
       ? ((

@@ -27,6 +27,7 @@ export const useUserStore = defineStore('session', () => {
             .single()
         ).data as Profile)
       : null;
+    return user.value;
   }
 
   function $resetUser() {

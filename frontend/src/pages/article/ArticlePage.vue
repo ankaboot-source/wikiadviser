@@ -32,6 +32,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import {
   ChangeItem,
+  Comment,
   Profile,
   SupabaseArticle,
   SupabaseChange,
@@ -111,6 +112,25 @@ async function handleChangesRealtime(
   );
 }
 
+async function handleCommentRealtime(
+  payload: RealtimePostgresChangesPayload<Comment>,
+) {
+  const updatedComment = payload.new as Comment;
+
+  if (!Object.keys(updatedComment).length) {
+    return;
+  }
+
+  const [change] = await getParsedChanges(updatedComment.change_id, true);
+  cachedChanges.set(updatedComment.change_id, change);
+
+  changesList.value = Array.from(cachedChanges.values());
+  changesContent.value = parseArticleHtml(
+    changesContent.value as string,
+    changesList.value,
+  );
+}
+
 onBeforeMount(async () => {
   const user = (await useUserStore().fetchProfile()) as Profile;
   // Access the article id parameter from the route's params object
@@ -163,6 +183,16 @@ onBeforeMount(async () => {
         filter: `article_id=eq.${articleId.value}`,
       },
       handleChangesRealtime,
+    )
+    .on<Comment>(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'comments',
+        filter: `article_id=eq.${articleId.value}`,
+      },
+      handleCommentRealtime,
     )
     .subscribe();
 

@@ -59,7 +59,7 @@ const message = ref('Welcome back to WikiAdviser');
 const callbackURL = computed(() => {
   return authView.value === 'forgotten_password'
     ? `${location.origin}/auth/update-password`
-    : `${location.href}`;
+    : `${location.href}/`;
 });
 
 const convretToMicrosoftButton = () => {

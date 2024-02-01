@@ -354,12 +354,12 @@ const previewItem = computed(() => {
 
 async function handleComment() {
   if (toSendComment.value.length > 0) {
-    const comment = await insertComment(
+    await insertComment(
       props.item.id,
       userId.value,
+      props.item.article_id,
       toSendComment.value,
     );
-    comments.value.push(...comment);
     toSendComment.value = '';
   }
 }

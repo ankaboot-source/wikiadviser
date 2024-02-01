@@ -258,8 +258,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { ChangeItem, UserRole, Status } from 'src/types';
+import { computed, ref, watch } from 'vue';
+import { ChangeItem, UserRole, Status, Profile } from 'src/types';
 import {
   hideChanges,
   insertComment,
@@ -270,7 +270,7 @@ import { useQuasar } from 'quasar';
 import { useUserStore } from 'src/stores/userStore';
 
 const $quasar = useQuasar();
-
+const userStore = useUserStore();
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangeItem;
@@ -282,8 +282,6 @@ const props = defineProps<{
   };
 }>();
 const expanded = ref(false);
-const email = ref('');
-const userId = ref<string>('');
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
@@ -326,12 +324,8 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 ]);
 
 const comments = computed(() => props.item.comments);
-
-onMounted(() => {
-  const { user } = useUserStore();
-  email.value = user?.email as string;
-  userId.value = user?.id as string;
-});
+const email = computed(() => (userStore.user as Profile).email);
+const userId = computed(() => (userStore.user as Profile).id);
 
 const previewDescription = computed(() => {
   const { item } = props;

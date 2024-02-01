@@ -23,11 +23,11 @@ const userStore = useUserStore();
 
 onMounted(async () => {
   await userStore.getSession();
-  await userStore.updateProfile();
+  await userStore.fetchProfile();
 
   if (userStore.session && !userStore.user?.avatar_url) {
     await supabaseClient.functions.invoke('user-avatar', { method: 'POST' });
-    await userStore.updateProfile();
+    await userStore.fetchProfile();
   }
 
   supabaseClient.auth.onAuthStateChange((_, _session) => {

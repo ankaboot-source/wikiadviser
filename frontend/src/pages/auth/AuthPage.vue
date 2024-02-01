@@ -44,6 +44,10 @@ import { Auth } from '@nuxtbase/auth-ui-vue';
 import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useUserStore } from 'src/stores/userStore';
+
+const { session } = storeToRefs(useUserStore());
 
 const providerScopes = {
   azure: 'email',
@@ -83,31 +87,38 @@ const convretToMicrosoftButton = () => {
   }
 };
 
+watch(session, (currentSession) => {
+  if (currentSession) {
+    window.location.href = '/';
+  }
+});
+
+watch(authView, (view) => {
+  switch (view) {
+    case 'sign_in':
+      message.value = 'Welcome back to WikiAdviser';
+      nextTick(() => {
+        convretToMicrosoftButton();
+      });
+      return;
+
+    case 'sign_up':
+      message.value = 'Create your account';
+      return;
+
+    case 'forgotten_password':
+      message.value = 'Reset your password';
+      return;
+    default:
+      return;
+  }
+});
+
 onBeforeRouteLeave(() => {
   authView.value = 'sign_in';
 });
 
 onMounted(() => {
   convretToMicrosoftButton();
-  watch(authView, (view) => {
-    switch (view) {
-      case 'sign_in':
-        message.value = 'Welcome back to WikiAdviser';
-        nextTick(() => {
-          convretToMicrosoftButton();
-        });
-        return;
-
-      case 'sign_up':
-        message.value = 'Create your account';
-        return;
-
-      case 'forgotten_password':
-        message.value = 'Reset your password';
-        return;
-      default:
-        return;
-    }
-  });
 });
 </script>

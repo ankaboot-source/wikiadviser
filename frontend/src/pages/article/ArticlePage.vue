@@ -33,6 +33,7 @@ import { useUserStore } from 'src/stores/userStore';
 import {
   ChangeItem,
   Comment,
+  Profile,
   SupabaseArticle,
   SupabaseChange,
   UserRole,
@@ -131,13 +132,12 @@ async function handleCommentRealtime(
 }
 
 onBeforeMount(async () => {
-  await useUserStore().updateProfile();
-  const { user } = useUserStore();
+  const user = useUserStore().user as Profile;
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;
   articleId.value = articleIdFromParams as string;
 
-  await articlesStore.fetchArticles(user?.id as string);
+  await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
     // Article does not exist for this user

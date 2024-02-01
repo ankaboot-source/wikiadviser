@@ -93,11 +93,22 @@
             Add a new article to get started
           </div>
           <q-btn
-            icon="add"
+            icon="note_add"
+            no-caps
+            outline
+            unelevated
+            class="q-mx-sm"
+            color="primary"
+            label="Create a new Article"
+            @click="showCreateArticleDialog = !showCreateArticleDialog"
+          />
+          <q-btn
+            icon="cloud_download"
             no-caps
             unelevated
+            class="q-mx-sm"
             color="primary"
-            label="Add a new article"
+            label="Import Article from Wikipedia"
             @click="showImportArticleDialog = !showImportArticleDialog"
           />
         </q-card-section>

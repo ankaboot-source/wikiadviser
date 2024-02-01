@@ -11,12 +11,12 @@ export const useUserStore = defineStore('session', () => {
 
   // Actions
   async function getSession() {
-    session.value = (await supabase.auth.getSession()).data.session as Session;
+    session.value = (await supabase.auth.getSession())?.data.session as Session;
     return session.value;
   }
 
-  async function updateProfile() {
-    const userId = session.value?.user.id;
+  async function fetchProfile() {
+    const userId = await getSession();
 
     user.value = userId
       ? ((
@@ -29,7 +29,7 @@ export const useUserStore = defineStore('session', () => {
       : null;
   }
 
-  function resetUser() {
+  function $resetUser() {
     session.value = null;
     user.value = null;
   }
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('session', () => {
     session,
     user,
     getSession,
-    updateProfile,
-    resetUser,
+    fetchProfile,
+    $resetUser,
   };
 });

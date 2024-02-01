@@ -30,13 +30,15 @@
 <script setup lang="ts">
 import { WIKIADVISER_PRICING_PAGE } from 'src/utils/consts';
 import { useUserStore } from 'src/stores/userStore';
-import { Profile } from 'src/types';
 import { computed } from 'vue';
+import { Profile } from 'src/types';
 
-const user = useUserStore().user as Profile;
+const user = computed(() => useUserStore().user as Profile);
 const allowedArticles = computed(
   () =>
-    `${user.allowed_articles} article${user.allowed_articles > 1 ? 's' : ''}`,
+    `${user.value.allowed_articles} article${
+      user.value.allowed_articles > 1 ? 's' : ''
+    }`,
 );
 
 function upgrade() {

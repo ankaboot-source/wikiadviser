@@ -129,12 +129,12 @@ import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vu
 import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
 import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
 import CreateArticle from 'src/components/AddArticleCard/CreateArticleCard.vue';
-import { Article } from 'src/types';
+import { Article, Profile } from 'src/types';
 import { computed, onBeforeMount, ref } from 'vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 
-const { session, user } = useUserStore();
+const user = computed(() => useUserStore().user as Profile);
 const articlesStore = useArticlesStore();
 
 const term = ref('');
@@ -147,12 +147,12 @@ const articles = computed(() => articlesStore.articles);
 const reachedLimits = computed(
   () =>
     (!showImportArticleDialog.value || !showCreateArticleDialog.value) &&
-    articlesStore.articles.length >= (user?.allowed_articles ?? 0),
+    articlesStore.articles.length >= (user.value?.allowed_articles ?? 0),
 );
 
 onBeforeMount(async () => {
-  await useUserStore().updateProfile();
-  await articlesStore.fetchArticles(session?.user.id as string);
+  await useUserStore().fetchProfile();
+  await articlesStore.fetchArticles(user.value.id);
   loading.value = false;
 });
 

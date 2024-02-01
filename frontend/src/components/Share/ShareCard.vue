@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User, UserRole, Permission, Article } from 'src/types';
+import { User, UserRole, Permission, Article, Profile } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import {
   deletePermission,
@@ -63,12 +63,10 @@ import {
 } from 'src/api/supabaseHelper';
 import { copyToClipboard, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useRouter } from 'vue-router';
 import { useUserStore } from 'src/stores/userStore';
-const articlesStore = useArticlesStore();
 
 const $q = useQuasar();
-const router = useRouter();
+const articlesStore = useArticlesStore();
 
 const props = defineProps<{
   article: Article;
@@ -219,14 +217,7 @@ async function handleApplyChanges() {
       }
     }
 
-    const sessionStore = useUserStore();
-    const user = sessionStore.session?.user;
-
-    if (!user?.id) {
-      router.push('/');
-      throw new Error('User session not found.');
-    }
-
+    const user = useUserStore().user as Profile;
     await articlesStore.fetchArticles(user.id);
   }
 }

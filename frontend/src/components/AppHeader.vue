@@ -45,8 +45,8 @@ import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { Article, Profile } from 'src/types';
-import { computed, ref, watch, watchEffect } from 'vue';
+import { Article } from 'src/types';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -56,9 +56,9 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const userStore = useUserStore();
-const user = ref<Profile | null>(userStore.user);
-const avatarURL = computed(() => user.value?.avatar_url);
+const { $resetUser } = useUserStore();
+const user = computed(() => useUserStore().user);
+const avatarURL = computed(() => user?.value?.avatar_url);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
@@ -69,10 +69,6 @@ watch([useRoute(), articles], ([newRoute]) => {
   }
 });
 
-watchEffect(() => {
-  user.value = userStore.user;
-});
-
 async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();
@@ -81,7 +77,7 @@ async function signOut() {
       throw error;
     }
 
-    userStore.resetUser();
+    $resetUser();
     await router.push('/auth');
     articlesStore.resetArticles();
     $q.notify({ message: 'Signed out', icon: 'logout' });

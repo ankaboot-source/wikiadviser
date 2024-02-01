@@ -15,7 +15,7 @@ export const useUserStore = defineStore('session', () => {
     return session.value;
   }
 
-  async function updateProfile() {
+  async function fetchProfile() {
     const userId = session.value?.user.id;
 
     user.value = userId
@@ -29,7 +29,7 @@ export const useUserStore = defineStore('session', () => {
       : null;
   }
 
-  function resetUser() {
+  function $resetUser() {
     session.value = null;
     user.value = null;
   }
@@ -38,7 +38,7 @@ export const useUserStore = defineStore('session', () => {
     session,
     user,
     getSession,
-    updateProfile,
-    resetUser,
+    fetchProfile,
+    $resetUser,
   };
 });

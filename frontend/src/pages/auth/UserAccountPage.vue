@@ -2,35 +2,29 @@
 import supabase from 'src/api/supabase';
 import Button from 'src/components/LoadingButton.vue';
 import { useQuasar } from 'quasar';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { deleteUser } from 'src/api/supabaseHelper';
 import { useUserStore } from 'src/stores/userStore';
 
-const email = ref('');
-const revertingImage = ref(false);
 const $q = useQuasar();
+const $router = useRouter();
 const userStore = useUserStore();
-
 const articlesStore = useArticlesStore();
 
-const $router = useRouter();
-
+const revertingImage = ref(false);
 const deletingAccount = ref(false);
-
 const showDeleteModal = ref(false);
 
-onMounted(async () => {
-  await userStore.updateProfile();
-  email.value = userStore.user?.email as string;
-});
+const picture = computed(() => userStore.user?.avatar_url);
+const defaultAvatar = computed(() => userStore.user?.default_avatar);
 
 async function revertImage() {
   revertingImage.value = true;
   try {
     await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    await userStore.updateProfile();
+    await userStore.fetchProfile();
     $q.notify({
       message: 'Reverted to default avatar picture',
       icon: 'check',
@@ -62,7 +56,7 @@ async function deleteAccount() {
     await deleteUser();
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    userStore.resetUser();
+    userStore.$resetUser();
     articlesStore.resetArticles();
     $router.push('/auth');
     $q.notify({
@@ -80,10 +74,6 @@ async function deleteAccount() {
     $q.notify({ message, color: 'negative' });
   }
 }
-
-const picture = computed(() => userStore.user?.avatar_url);
-
-const defaultAvatar = computed(() => userStore.user?.default_avatar);
 </script>
 
 <template>

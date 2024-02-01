@@ -120,7 +120,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import { Article, UserRole } from 'src/types';
+import { Article, UserRole, Profile } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
@@ -164,12 +164,7 @@ async function removeArticle(articleId: string) {
       color: 'positive',
     });
 
-    const sessionStore = useUserStore();
-    const user = sessionStore.session?.user;
-
-    if (!user) {
-      throw new Error('User is not logged in');
-    }
+    const user = useUserStore().user as Profile;
 
     await articlesStore.fetchArticles(user.id);
   } catch (error) {

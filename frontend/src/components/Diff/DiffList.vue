@@ -32,7 +32,6 @@
                 text: 'This change was manually archived.',
               }"
             />
-            <q-separator />
             <diff-item
               v-for="item in unindexedChanges"
               :key="item.id"

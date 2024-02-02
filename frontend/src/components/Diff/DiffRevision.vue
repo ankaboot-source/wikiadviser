@@ -50,13 +50,16 @@
     <!-- Current Changes -->
     <q-list>
       <diff-item
-        v-for="item in revision.items"
+        v-for="(item, index) in revision.items"
         :key="item.id"
         :item="item"
         :role="role"
+        :is-last-recent-item="
+          revision.isRecent && index === revision.items.length - 1
+        "
       />
     </q-list>
-    <div v-if="$props.revision.isRecent" class="q-pb-sm q-pr-xs text-right">
+    <div v-if="$props.revision.isRecent" class="q-pb-md q-pr-xs text-right">
       <q-btn
         no-caps
         unelevated

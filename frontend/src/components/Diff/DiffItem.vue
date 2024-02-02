@@ -2,9 +2,12 @@
   <q-expansion-item
     ref="expansionItem"
     v-model="expanded"
-    :class="{ highlighted: highlighted }"
     style="background-color: white"
-    class="q-mb-md q-mx-sm borders rounded-borders diffItem"
+    class="q-mx-sm borders rounded-borders diffItem"
+    :class="[
+      { highlighted: highlighted },
+      isLastRecentItem ? 'q-mb-sm' : 'q-mb-md',
+    ]"
     @after-show="scrollToItem(!store.selectedChangeId)"
     @mouseenter="setHovered(props.item.id)"
     @mouseleave="setHovered('')"
@@ -280,6 +283,7 @@ const props = defineProps<{
     text: string;
     disable?: boolean;
   };
+  isLastRecentItem?: boolean;
 }>();
 const expanded = ref(false);
 const toSendComment = ref('');

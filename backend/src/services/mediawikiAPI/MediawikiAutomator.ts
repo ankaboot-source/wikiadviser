@@ -88,8 +88,7 @@ export class MediawikiAutomator {
     const page = await this.getPageInContext();
 
     await page.goto(
-      `${this.mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`,
-      { waitUntil: 'networkidle' }
+      `${this.mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`
     );
 
     const timeoutInMinutes = 10;

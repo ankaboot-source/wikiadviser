@@ -253,10 +253,14 @@ export default class MediawikiClient {
   async updateChanges(articleId: string, userId: string) {
     const { diff, latestRevision } = await this.getArticleDiffHtml(articleId);
 
+    const revisionSummary = latestRevision.summary.includes('[[Special:Diff')
+      ? latestRevision.summary.split('[[')[0]
+      : latestRevision.summary;
+
     const revisionId = await insertRevision(
       articleId,
       latestRevision.id,
-      latestRevision.summary
+      revisionSummary
     );
 
     const { changesToUpsert, htmlContent } = await refineArticleChanges(

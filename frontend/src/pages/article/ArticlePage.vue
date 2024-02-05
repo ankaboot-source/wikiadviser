@@ -63,7 +63,6 @@ const editorPermission = ref<boolean | null>(null);
 
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
-const cachedChanges = new Map<string, ChangeItem>();
 
 const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
 
@@ -72,7 +71,7 @@ const activeChanges = computed(
   () => changesList.value.map((item) => item?.hidden).length > 0,
 );
 
-function handleArticleRealtime(
+async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<SupabaseArticle>,
 ) {
   const updatedArticle = payload.new as SupabaseArticle;
@@ -81,31 +80,24 @@ function handleArticleRealtime(
     return;
   }
 
+  changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(
     updatedArticle.current_html_content as string,
     changesList.value,
   );
 }
 
-async function handleChangesRealtime(
+async function handleChangeRealtime(
   payload: RealtimePostgresChangesPayload<SupabaseChange>,
 ) {
-  const event = payload.eventType;
   const oldChange = payload.old as SupabaseChange;
   const newChange = payload.new as SupabaseChange;
 
-  if (!Object.keys(oldChange).length && !Object.keys(newChange).length) {
+  if (oldChange.index !== newChange.index) {
     return;
   }
 
-  if (event === 'DELETE') {
-    cachedChanges.delete(oldChange.id);
-  } else {
-    const [change] = await getParsedChanges(newChange.id, true);
-    cachedChanges.set(newChange.id, change);
-  }
-
-  changesList.value = Array.from(cachedChanges.values()).filter(Boolean);
+  changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(
     changesContent.value as string,
     changesList.value,
@@ -115,20 +107,20 @@ async function handleChangesRealtime(
 async function handleCommentRealtime(
   payload: RealtimePostgresChangesPayload<Comment>,
 ) {
-  const updatedComment = payload.new as Comment;
-
-  if (!Object.keys(updatedComment).length) {
-    return;
-  }
-
-  const [change] = await getParsedChanges(updatedComment.change_id, true);
-  cachedChanges.set(updatedComment.change_id, change);
-
-  changesList.value = Array.from(cachedChanges.values());
-  changesContent.value = parseArticleHtml(
-    changesContent.value as string,
-    changesList.value,
-  );
+  const insertedComment = payload.new as Comment;
+  changesList.value.forEach(async (change) => {
+    if (change.id === insertedComment.change_id) {
+      insertedComment.user = (
+        await supabase
+          .from('profiles')
+          .select()
+          .eq('id', insertedComment.commenter_id)
+          .single()
+      ).data;
+      change.comments.push(insertedComment);
+      return;
+    }
+  });
 }
 
 onBeforeMount(async () => {
@@ -177,17 +169,17 @@ onBeforeMount(async () => {
     .on<SupabaseChange>(
       'postgres_changes',
       {
-        event: '*',
+        event: 'UPDATE',
         schema: 'public',
         table: 'changes',
         filter: `article_id=eq.${articleId.value}`,
       },
-      handleChangesRealtime,
+      handleChangeRealtime,
     )
     .on<Comment>(
       'postgres_changes',
       {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
         table: 'comments',
         filter: `article_id=eq.${articleId.value}`,

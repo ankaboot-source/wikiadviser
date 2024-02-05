@@ -90,10 +90,12 @@ async function handleArticleRealtime(
 async function handleChangeRealtime(
   payload: RealtimePostgresChangesPayload<SupabaseChange>,
 ) {
-  const oldChange = payload.old as SupabaseChange;
   const newChange = payload.new as SupabaseChange;
+  const oldChangeIndex = changesList.value.find(
+    (change) => change.id === newChange.id,
+  )?.index;
 
-  if (oldChange.index !== newChange.index) {
+  if (oldChangeIndex !== newChange.index) {
     return;
   }
 

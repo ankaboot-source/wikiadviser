@@ -91,7 +91,7 @@ export class MediawikiAutomator {
       `${this.mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`
     );
 
-    const timeoutInMinutes = 10;
+    const timeoutInMinutes = 4;
     const timeoutInMillis = timeoutInMinutes * 60 * 1000;
     const diffSelector = '.ve-init-mw-diffPage-diff';
 

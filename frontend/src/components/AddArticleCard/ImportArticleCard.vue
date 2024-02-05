@@ -206,7 +206,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
 
     $q.loading.hide();
     $q.notify({
-      message: 'Article successfully created',
+      message: 'Article successfully imported',
       icon: 'check',
       color: 'positive',
     });

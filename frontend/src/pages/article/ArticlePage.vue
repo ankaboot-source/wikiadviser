@@ -105,7 +105,7 @@ async function handleChangesRealtime(
     cachedChanges.set(newChange.id, change);
   }
 
-  changesList.value = Array.from(cachedChanges.values());
+  changesList.value = Array.from(cachedChanges.values()).filter(Boolean);
   changesContent.value = parseArticleHtml(
     changesContent.value as string,
     changesList.value,

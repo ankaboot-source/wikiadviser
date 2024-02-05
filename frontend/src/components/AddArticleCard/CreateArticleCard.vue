@@ -7,46 +7,49 @@
         </q-toolbar-title>
         <q-btn v-close-popup flat round dense icon="close" size="sm" />
       </q-toolbar>
-      <q-card-section>
-        Title
-        <q-input
-          v-model="newArticle.title"
-          bg-color="white"
-          dense
-          outlined
-          class="q-mb-sm"
-        />
-        <div class="row">
-          <div>Description</div>
+      <q-form @submit="addArticle">
+        <q-card-section>
+          Title
+          <q-input
+            v-model="newArticle.title"
+            bg-color="white"
+            dense
+            outlined
+            class="q-mb-sm"
+            :rules="[(title) => !!title || 'Title is required']"
+          />
+          <div class="row">
+            <div>Description</div>
+            <q-space />
+            <div class="text-grey-7">Optional</div>
+          </div>
+          <q-input
+            v-model="newArticle.description"
+            bg-color="white"
+            dense
+            outlined
+            class="q-mb-sm"
+          />
+        </q-card-section>
+        <q-card-actions class="borders">
+          <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />
           <q-space />
-          <div class="text-grey-7">Optional</div>
-        </div>
-        <q-input
-          v-model="newArticle.description"
-          bg-color="white"
-          dense
-          outlined
-          class="q-mb-sm"
-        />
-      </q-card-section>
-      <q-card-actions class="borders">
-        <q-btn v-close-popup no-caps outline color="primary" label="Cancel" />
-        <q-space />
-        <q-btn
-          no-caps
-          unelevated
-          color="primary"
-          label="Create"
-          :icon="!loadingCreation ? 'note_add' : ''"
-          :loading="loadingCreation"
-          @click="addArticle()"
-        >
-          <template #loading>
-            <q-spinner class="on-left" />
-            Create
-          </template>
-        </q-btn>
-      </q-card-actions>
+          <q-btn
+            no-caps
+            unelevated
+            type="submit"
+            color="primary"
+            label="Create"
+            :icon="!loadingCreation ? 'note_add' : ''"
+            :loading="loadingCreation"
+          >
+            <template #loading>
+              <q-spinner class="on-left" />
+              Create
+            </template>
+          </q-btn>
+        </q-card-actions>
+      </q-form>
     </q-card>
     <upgrade-account v-model="hasReachedLimits" />
   </q-dialog>
@@ -83,8 +86,6 @@ const hasReachedLimits = ref(false);
 async function addArticle() {
   try {
     loadingCreation.value = true;
-    newArticle.value.title = newArticle.value.title ?? 'Untitled';
-
     const user = userStore.user as Profile;
     const article = articlesStore.articles?.find(
       (article: Article) =>
@@ -104,7 +105,7 @@ async function addArticle() {
     articleId.value = await createArticle(
       newArticle.value.title,
       user.id,
-      newArticle.value.language.value,
+      '',
       newArticle.value.description,
     );
     await articlesStore.fetchArticles(user.id);
@@ -125,15 +126,18 @@ async function addArticle() {
       },
     });
   } catch (error) {
+    let message = 'Failed to create article';
     loadingCreation.value = false;
-    if (error instanceof AxiosError && error.response?.status === 402) {
-      hasReachedLimits.value = true;
-    } else {
-      $q.notify({
-        message: 'Failed creating article',
-        color: 'negative',
-      });
+
+    if (error instanceof AxiosError) {
+      hasReachedLimits.value = error.response?.status === 402;
+      message = error.response?.data.message ?? message;
     }
+
+    $q.notify({
+      message,
+      color: 'negative',
+    });
   }
   return undefined;
 }

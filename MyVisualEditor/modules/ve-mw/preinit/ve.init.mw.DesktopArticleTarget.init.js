@@ -37,7 +37,9 @@
 		active = false,
 		targetLoaded = false,
 		plugins = [],
-		welcomeDialogDisabled = false,
+		/* Custom WikiAdviser */
+		welcomeDialogDisabled = true,
+		/* End Custom WikiAdviser */
 		educationPopupsDisabled = false,
 		// Defined after document-ready below
 		$targetContainer = null;

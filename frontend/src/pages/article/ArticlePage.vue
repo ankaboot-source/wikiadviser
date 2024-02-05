@@ -108,7 +108,7 @@ async function handleCommentRealtime(
   payload: RealtimePostgresChangesPayload<Comment>,
 ) {
   const insertedComment = payload.new as Comment;
-  changesList.value.forEach(async (change) => {
+  for (const change of changesList.value) {
     if (change.id === insertedComment.change_id) {
       insertedComment.user = (
         await supabase
@@ -118,9 +118,9 @@ async function handleCommentRealtime(
           .single()
       ).data;
       change.comments.push(insertedComment);
-      return;
+      break;
     }
-  });
+  }
 }
 
 onBeforeMount(async () => {

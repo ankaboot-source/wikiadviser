@@ -409,6 +409,11 @@ function scrollToItem(smooth: boolean) {
   expansionItem.value.$el.scrollIntoView({ behavior });
 }
 
+function scrollChatToBottom() {
+  const scrollTarget = chatScroll.value.getScrollTarget();
+  chatScroll.value.setScrollPosition('vertical', scrollTarget.scrollHeight, 0);
+}
+
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -440,11 +445,6 @@ watch(expanded, () => {
     });
   }
 });
-
-function scrollChatToBottom() {
-  const scrollTarget = chatScroll.value.getScrollTarget();
-  chatScroll.value.setScrollPosition('vertical', scrollTarget.scrollHeight, 0);
-}
 
 function setHovered(value: string) {
   store.hoveredChangeId = value;

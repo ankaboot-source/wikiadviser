@@ -20,15 +20,15 @@
               </q-badge>
             </q-item-label>
           </q-item-section>
-          <q-item-section side caption class="text-right">
-            <div class="text-black">
+          <q-item-section side caption class="text-right" style="width: 66%">
+            <div class="text-black ellipsis">
               <q-avatar size="sm">
                 <img
                   :src="revision.items[0]?.user.avatar_url"
                   referrerpolicy="no-referrer"
                 />
               </q-avatar>
-              {{ revision.items[0]?.user.email }}
+              <p style="width: 8rem">{{ revision.items[0]?.user.email }}</p>
             </div>
 
             <div style="size: 0.5rem">

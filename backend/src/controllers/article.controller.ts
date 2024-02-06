@@ -83,8 +83,19 @@ export async function createArticle(
 ) {
   const { title, language, description } = req.body;
   const { user } = res.locals;
-
   let articleId = null;
+
+  if (typeof title !== 'string' || !title.length) {
+    return res.status(400).json({
+      message: 'Title is required and must be a string.'
+    });
+  }
+
+  if (typeof language !== 'string' || !language.length) {
+    return res.status(400).json({
+      message: 'Language is required and must be a string.'
+    });
+  }
 
   try {
     const totalUserArticles = await getUserArticlesCount(user.id);

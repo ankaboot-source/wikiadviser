@@ -105,7 +105,7 @@ async function addArticle() {
     articleId.value = await createArticle(
       newArticle.value.title,
       user.id,
-      '',
+      newArticle.value.language.value,
       newArticle.value.description,
     );
     await articlesStore.fetchArticles(user.id);

@@ -237,3 +237,22 @@ wfLoadExtension( 'Gadgets' );
 # Enable DisplayTitle as different than Article's ID
 $wgAllowDisplayTitle = true;
 $wgRestrictDisplayTitle = false;
+
+# $wgRateLimits['<action>']['<usergroup>'] = [ <maximum number of action>, <timespan in second> ];
+$wgRateLimits = [
+	// Page edits
+	'edit' => [
+		'anon' => [ 90, 60 ],
+		'newbie' => [ 90, 60 ],
+	],
+	// Stashing edits into cache before save
+	'stashedit' => [
+		'anon' => [ 90, 60 ],
+		'newbie' => [ 90, 60 ],
+	],
+	// Stash base HTML for VE edits
+	'stashbasehtml' => [
+		'anon' => [ 90, 60 ],
+		'newbie' => [ 90, 60 ],
+	],
+];

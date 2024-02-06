@@ -114,6 +114,7 @@
     <q-item-section>
       <q-item-section class="q-pa-md row justify-center bg-secondary">
         <q-scroll-area
+          ref="chatScroll"
           style="height: 9.5rem; width: 100%"
           class="q-px-sm q-pb-sm"
         >
@@ -261,7 +262,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { ChangeItem, UserRole, Status, Profile } from 'src/types';
 import {
   hideChanges,
@@ -289,7 +290,7 @@ const expanded = ref(false);
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
-
+const chatScroll = ref();
 type StatusInfo = {
   message: string;
   icon: string;
@@ -425,6 +426,25 @@ watch(
     }
   },
 );
+
+watch(comments.value, () => {
+  nextTick(() => {
+    scrollChatToBottom();
+  });
+});
+
+watch(expanded, () => {
+  if (expanded.value) {
+    nextTick(() => {
+      scrollChatToBottom();
+    });
+  }
+});
+
+function scrollChatToBottom() {
+  const scrollTarget = chatScroll.value.getScrollTarget();
+  chatScroll.value.setScrollPosition('vertical', scrollTarget.scrollHeight, 0);
+}
 
 function setHovered(value: string) {
   store.hoveredChangeId = value;

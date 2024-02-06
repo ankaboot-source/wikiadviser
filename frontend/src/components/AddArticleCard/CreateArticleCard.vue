@@ -61,7 +61,7 @@ import { useQuasar } from 'quasar';
 import { createArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { Article, Profile } from 'src/types';
+import { Profile } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { AxiosError } from 'axios';
@@ -87,19 +87,6 @@ async function addArticle() {
   try {
     loadingCreation.value = true;
     const user = userStore.user as Profile;
-    const article = articlesStore.articles?.find(
-      (article: Article) =>
-        article.title === newArticle.value.title &&
-        article.language === newArticle.value.language.value,
-    );
-
-    if (article) {
-      // GOTO ARTICLE PAGE
-      return router.push({
-        name: 'article',
-        params: { articleId: article.article_id },
-      });
-    }
 
     //NEW ARTICLE
     articleId.value = await createArticle(

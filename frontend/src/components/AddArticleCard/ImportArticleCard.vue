@@ -107,7 +107,7 @@ import { AxiosError } from 'axios';
 import { api } from 'src/boot/axios';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
-import { Article, Profile, SearchResult } from 'src/types';
+import { Profile, SearchResult } from 'src/types';
 import { useUserStore } from 'src/stores/userStore';
 import { importArticle } from 'src/api/supabaseHelper';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
@@ -166,21 +166,7 @@ watch([term, articleLanguage], async ([term]) => {
 async function importSelectedArticle(searchedArticle: SearchResult) {
   try {
     const user = userStore.user as Profile;
-
     const currentLanguage = articleLanguage.value.lang;
-    const existingArticle = articlesStore.articles?.find(
-      (article: Article) =>
-        article.title === searchedArticle.title &&
-        article.language === currentLanguage,
-    );
-
-    if (existingArticle) {
-      // GOTO ARTICLE PAGE
-      return router.push({
-        name: 'article',
-        params: { articleId: existingArticle.article_id },
-      });
-    }
 
     $q.loading.show({
       boxClass: 'bg-white text-dark q-pa-xl',

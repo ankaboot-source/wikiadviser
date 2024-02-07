@@ -256,3 +256,6 @@ $wgRateLimits = [
 		'newbie' => [ 90, 60 ],
 	],
 ];
+
+# Solves lua error attempt to index field 'TitleBlacklist' (a nil value)
+wfLoadExtension( 'TitleBlacklist' );

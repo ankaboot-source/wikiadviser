@@ -259,3 +259,5 @@ $wgRateLimits = [
 
 # Solves lua error attempt to index field 'TitleBlacklist' (a nil value)
 wfLoadExtension( 'TitleBlacklist' );
+
+$wgUsePathInfo = TRUE;

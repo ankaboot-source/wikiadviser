@@ -21,12 +21,17 @@
       </q-toolbar-title>
       <q-space />
       <q-btn v-if="user" no-caps unelevated @click="account">
-        <q-avatar size="sm">
+        <user-diff
+          :avatar-url="avatarURL"
+          :email="user.email"
+          class-name="user profile"
+        />
+        <!-- <q-avatar size="sm">
           <img :src="avatarURL" referrerpolicy="no-referrer" />
         </q-avatar>
         <div class="q-pl-sm">
           {{ user.email }}
-        </div>
+        </div> -->
       </q-btn>
       <q-btn
         v-if="user"
@@ -48,6 +53,7 @@ import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import UserDiff from './UserDiff.vue';
 
 const router = useRouter();
 const $q = useQuasar();

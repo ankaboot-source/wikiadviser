@@ -21,16 +21,13 @@
             </q-item-label>
           </q-item-section>
           <q-item-section side caption class="text-right" style="width: 66%">
-            <div class="text-black ellipsis">
-              <q-avatar size="sm">
-                <img
-                  :src="revision.items[0]?.user.avatar_url"
-                  referrerpolicy="no-referrer"
-                />
-              </q-avatar>
-              <p style="width: 8rem">{{ revision.items[0]?.user.email }}</p>
+            <div class="text-black">
+              <user-diff
+                :avatar-url="revision.items[0]?.user.avatar_url"
+                :email="revision.items[0]?.user.email"
+                class-name="user revision ellipsis"
+              />
             </div>
-
             <div style="size: 0.5rem">
               {{ localeDateString }} at {{ localeTimeString }}
             </div>
@@ -120,6 +117,7 @@ import { UserRole, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
+import UserDiff from '../UserDiff.vue';
 
 const props = defineProps<{
   role: UserRole;

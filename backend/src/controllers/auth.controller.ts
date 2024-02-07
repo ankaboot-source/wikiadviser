@@ -25,12 +25,12 @@ export default async function restrictMediawikiAccess(
     const user = await authHandler.verifyCookie(req);
 
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php\\?title=([0-9a-f-]{36})(&|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$)`,
       'i'
     );
 
     const allowedPrefixRegEx = new RegExp(
-      `^(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json&meta=(filerepoinfo|siteinfo)|(skins|resources|extensions/UniversalLanguageSelector)/|extensions/Kartographer)))`,
+      `^(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|prop=imageinfo\\&indexpageids=1&iiprop=size\\|mediatype\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector)/|extensions/Kartographer)))`,
       'i'
     );
 
@@ -40,7 +40,7 @@ export default async function restrictMediawikiAccess(
         .send('You are not authorized to access this content');
     }
 
-    const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[2];
+    const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3];
 
     const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
       (lang: string) => `/${lang}/api.php`
@@ -94,7 +94,7 @@ export default async function restrictMediawikiAccess(
           );
       }
 
-      const isViewArticle = forwardedUri.match(articleIdRegEx)?.[3] === '';
+      const isViewArticle = forwardedUri.match(articleIdRegEx)?.[4] === '';
       const isViewer = permission
         ? ['viewer', 'reviewer'].includes(permission)
         : isPublicArticle;

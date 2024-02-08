@@ -6,7 +6,7 @@ ADD COLUMN article_id uuid NOT NULL;
 ALTER TABLE comments
 ADD CONSTRAINT fk_comments_article_id
 FOREIGN KEY (article_id)
-REFERENCES articles(id);
+REFERENCES articles(id) ON DELETE CASCADE;
 
 
 -- Add realtime for table comments

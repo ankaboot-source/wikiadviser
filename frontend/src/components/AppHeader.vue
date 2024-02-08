@@ -26,12 +26,6 @@
           :email="user.email"
           class-name="user profile"
         />
-        <!-- <q-avatar size="sm">
-          <img :src="avatarURL" referrerpolicy="no-referrer" />
-        </q-avatar>
-        <div class="q-pl-sm">
-          {{ user.email }}
-        </div> -->
       </q-btn>
       <q-btn
         v-if="user"

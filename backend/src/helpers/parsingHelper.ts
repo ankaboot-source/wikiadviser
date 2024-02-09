@@ -277,7 +277,8 @@ async function parseWikidataTemplate(
   const newParsedContentXML = pageContentXML;
   const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
-  const wikidataTemplateRegex = /{{(Infobox|Taxobox)[\s\S]*?}}/;
+  const wikidataTemplateRegex =
+    /{{(Infobox|Taxobox)((?:[^{}]*|{{[^{}]*}})*)}}/g;
 
   const hasInfoboxTemplate = wikidataTemplateRegex.test(newParsedContentXML);
 
@@ -317,7 +318,7 @@ async function parseWikidataTemplate(
   const parsedInfoboxes = await Promise.all(promises);
 
   const infoboxUpdatedContent = newParsedContentXML.replace(
-    /{{(Infobox|Taxobox)[\s\S]*?}}/g,
+    wikidataTemplateRegex,
     () => {
       const escapedInfobox = parsedInfoboxes.shift();
       if (escapedInfobox === undefined) {

@@ -24,7 +24,7 @@
         <user-diff
           :avatar-url="avatarURL"
           :email="user.email"
-          class-name="user profile"
+          section="profile"
         />
       </q-btn>
       <q-btn

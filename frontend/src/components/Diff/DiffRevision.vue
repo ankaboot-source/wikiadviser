@@ -25,7 +25,7 @@
               <user-diff
                 :avatar-url="revision.items[0]?.user.avatar_url"
                 :email="revision.items[0]?.user.email"
-                class-name="user revision ellipsis"
+                section="revision"
               />
             </div>
             <div style="size: 0.5rem">

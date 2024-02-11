@@ -1,21 +1,21 @@
-<script setup lang="ts">
-const { avatarUrl, email } = defineProps<{
-  avatarUrl: string | undefined;
-  email: string;
-  className: string;
-}>();
-</script>
-
 <template>
-  <div :class="className">
+  <div :class="`${section} user`">
     <q-avatar size="sm">
       <img :src="avatarUrl" referrerpolicy="no-referrer" />
     </q-avatar>
-    <span class="username q-ml-sm">
+    <span class="username q-ml-sm ellipsis">
       {{ email }}
     </span>
   </div>
 </template>
+
+<script setup lang="ts">
+const { avatarUrl, email } = defineProps<{
+  avatarUrl: string | undefined;
+  email: string;
+  section: 'profile' | 'revision';
+}>();
+</script>
 
 <style scoped>
 .user {
@@ -23,35 +23,38 @@ const { avatarUrl, email } = defineProps<{
   align-items: center;
   overflow: hidden;
 }
+
 .profile {
-  width: 20rem;
+  width: auto;
+  max-width: 20rem;
 }
 
 .revision {
-  width: 13vw;
+  width: auto;
+  max-width: 13vw;
 }
 
 @media screen and (max-width: 672px) {
   .revision {
-    width: 2rem;
+    max-width: 2rem;
   }
 }
 
 @media screen and (min-width: 601px) and (max-width: 1024px) {
   .revision {
-    width: 7vw;
+    max-width: 7vw;
   }
 }
 
 @media screen and (min-width: 1025px) and (max-width: 1440px) {
   .revision {
-    width: 10vw;
+    max-width: 10vw;
   }
 }
 
 @media screen and (min-width: 1441px) and (max-width: 1920px) {
   .revision {
-    width: 12vw;
+    max-width: 12vw;
   }
 }
 </style>

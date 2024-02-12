@@ -120,12 +120,13 @@
         >
           <template v-for="comment in comments" :key="comment.id">
             <q-chat-message
-              :name="comment.user.email"
+              :name="getName(comment.user.email)"
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
               :avatar="comment.user.avatar_url"
               :bg-color="comment.user.email == email ? 'green' : 'accent'"
+              :class="comment.user.email == email ? 'q-mr-xs' : ''"
             />
           </template>
         </q-scroll-area>
@@ -272,6 +273,7 @@ import {
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useQuasar } from 'quasar';
 import { useUserStore } from 'src/stores/userStore';
+import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 
 const $quasar = useQuasar();
 const userStore = useUserStore();
@@ -350,6 +352,13 @@ const previewDescription = computed(() => {
 
   return '';
 });
+
+function getName(email: string) {
+  return (
+    email.substring(0, MAX_EMAIL_LENGTH) +
+    (email.length > MAX_EMAIL_LENGTH ? '...' : '')
+  );
+}
 
 const previewItem = computed(() => {
   return previewDescription.value

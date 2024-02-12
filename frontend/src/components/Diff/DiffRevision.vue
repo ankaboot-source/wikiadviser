@@ -20,17 +20,14 @@
               </q-badge>
             </q-item-label>
           </q-item-section>
-          <q-item-section side caption class="text-right">
+          <q-item-section side caption class="text-right" style="width: 66%">
             <div class="text-black">
-              <q-avatar size="sm">
-                <img
-                  :src="revision.items[0]?.user.avatar_url"
-                  referrerpolicy="no-referrer"
-                />
-              </q-avatar>
-              {{ revision.items[0]?.user.email }}
+              <user-component
+                :avatar-url="revision.items[0]?.user.avatar_url"
+                :email="revision.items[0]?.user.email"
+                section="revision"
+              />
             </div>
-
             <div style="size: 0.5rem">
               {{ localeDateString }} at {{ localeTimeString }}
             </div>
@@ -120,6 +117,7 @@ import { UserRole, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
+import UserComponent from '../UserComponent.vue';
 
 const props = defineProps<{
   role: UserRole;

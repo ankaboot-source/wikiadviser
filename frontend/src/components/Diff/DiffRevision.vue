@@ -22,7 +22,7 @@
           </q-item-section>
           <q-item-section side caption class="text-right" style="width: 66%">
             <div class="text-black">
-              <user-diff
+              <user-component
                 :avatar-url="revision.items[0]?.user.avatar_url"
                 :email="revision.items[0]?.user.email"
                 section="revision"
@@ -117,7 +117,7 @@ import { UserRole, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
-import UserDiff from '../UserDiff.vue';
+import UserComponent from '../UserComponent.vue';
 
 const props = defineProps<{
   role: UserRole;

@@ -11,7 +11,7 @@ jobs:
       - uses: trstringer/manual-approval@v1
         with:
           secret: ${{ github.TOKEN }}
-          approvers: baderdean
+          approvers: baderdean,zieddhf
           minimum-approvals: 1
           issue-title: "Deploy to Prod"
           issue-body: "Please approve or deny the deployment, comment LGTM! or approved to approve | deny or Denied! to deny"

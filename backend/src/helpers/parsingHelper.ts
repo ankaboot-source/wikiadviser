@@ -268,6 +268,35 @@ function generateOuterMostSelectors(classes: string[]) {
     .join(', ');
 }
 
+function extractInfoboxes(input: string) {
+  const infoboxes = [];
+  let count = 0;
+  let start = -1;
+  for (let i = 0; i < input.length; i += 1) {
+    if (input[i] === '{' && input[i + 1] === '{') {
+      if (count === 0) {
+        start = i;
+      }
+      count += 1;
+      i += 1; // skip next '{'
+    } else if (input[i] === '}' && input[i + 1] === '}') {
+      count -= 1;
+      if (count === 0 && start !== -1) {
+        const infobox = input.substring(start, i + 2);
+        if (
+          infobox.startsWith('{{Infobox') ||
+          infobox.startsWith('{{Taxobox')
+        ) {
+          infoboxes.push(infobox);
+        }
+        start = -1;
+      }
+      i += 1; // skip next '}'
+    }
+  }
+  return infoboxes;
+}
+
 async function parseWikidataTemplate(
   pageContentXML: string,
   pageContentHTML: string,
@@ -277,17 +306,15 @@ async function parseWikidataTemplate(
   const newParsedContentXML = pageContentXML;
   const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
-  const wikidataTemplateRegex = /{{(Infobox|Taxobox)[\s\S]*?}}/;
+  const infoboxesWikitext = extractInfoboxes(newParsedContentXML);
 
-  const hasInfoboxTemplate = wikidataTemplateRegex.test(newParsedContentXML);
-
-  if (!hasInfoboxTemplate) {
+  if (!infoboxesWikitext) {
     return newParsedContentXML;
   }
 
   const $CheerioAPI = load(pageContentHTML);
-  const infoboxes = $CheerioAPI(generateOuterMostSelectors(infoboxClasses));
-  const isWikidataTemplate = infoboxes
+  const infoboxesHTML = $CheerioAPI(generateOuterMostSelectors(infoboxClasses));
+  const isWikidataTemplate = infoboxesHTML
     .html()
     ?.toLowerCase()
     .includes('wikidata');
@@ -296,9 +323,9 @@ async function parseWikidataTemplate(
     return newParsedContentXML;
   }
 
-  infoboxes.find('.wikidata-linkback, .navbar').remove();
+  infoboxesHTML.find('.wikidata-linkback, .navbar').remove();
 
-  const promises = Array.from(infoboxes).map(async (infobox) => {
+  const promises = Array.from(infoboxesHTML).map(async (infobox) => {
     const infoboxHtml = $CheerioAPI.html(infobox);
     const wikiText = await parsoidInstance.ParsoidHtmlToWikitext(
       infoboxHtml,
@@ -316,17 +343,19 @@ async function parseWikidataTemplate(
 
   const parsedInfoboxes = await Promise.all(promises);
 
-  const infoboxUpdatedContent = newParsedContentXML.replace(
-    /{{(Infobox|Taxobox)[\s\S]*?}}/g,
-    () => {
-      const escapedInfobox = parsedInfoboxes.shift();
-      if (escapedInfobox === undefined) {
-        throw new Error('Failed to parse all wikidata template');
-      }
-      return escapedInfobox;
+  for (const infobox in infoboxesWikitext) {
+    if (infobox) {
+      newParsedContentXML.replace(infobox, () => {
+        const escapedInfobox = parsedInfoboxes.shift();
+        if (escapedInfobox === undefined) {
+          throw new Error('Failed to parse all wikidata template');
+        }
+        return escapedInfobox;
+      });
     }
-  );
-  return infoboxUpdatedContent;
+  }
+
+  return newParsedContentXML;
 }
 
 function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {

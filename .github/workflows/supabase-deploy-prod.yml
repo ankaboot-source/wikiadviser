@@ -1,9 +1,8 @@
 name: Supabase Deploy Prod
 
 on:
-  push:
-    branches:
-      - release
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:

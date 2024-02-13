@@ -365,6 +365,39 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
       `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
 }
+
+/**
+ * Redirects MediaWiki articles to Wikipedia with the specified source language prefix.
+ * This function modifies the following templates:
+ *   - Main
+ *   - See also
+ *   - Article (détaillé, général, ...)
+ *
+ * @param pageContent The content of the page containing templates.
+ * @param sourceLanguage The source language prefix for Wikipedia articles.
+ * @returns The updated page content with modified templates.
+ */
+function addSourceTemplate(pageContent: string, sourceLanguage: string) {
+  const pattern =
+    /{{([mM]ain|[Ss]ee\salso|[aA]rticle\s\S*)\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+
+  return pageContent.replace(pattern, (_, templateType, articles) => {
+    const parsedArticles = articles
+      .split('|')
+      .map((article: string, index: number) => {
+        if (/^l\d+=/.test(article)) {
+          return article.trim();
+        }
+        const label = `l${index + 1}=`;
+        return `wikipedia:${sourceLanguage}:${article.trim()}${
+          articles.includes(label) ? '' : `|${label}${article.trim()}`
+        }`;
+      });
+
+    return `{{${templateType}|${parsedArticles.join('|')}}}`;
+  });
+}
+
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
@@ -410,6 +443,7 @@ export async function processExportedArticle(
     updatedPageContent,
     sourceLanguage
   );
+  updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
   processedData =
     processedData.substring(0, pageStartIndex) +
     updatedPageContent +

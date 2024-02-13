@@ -230,6 +230,10 @@ wfLoadExtension( 'Phonos' );
 wfLoadExtension( 'Poem' );
 wfLoadExtension( 'wikihiero' );
 wfLoadExtension( 'GeoData' );
+wfLoadExtension( 'MultimediaViewer' );
+wfLoadExtension( 'TimedMediaHandler' );
+$wgFFmpegLocation = '/usr/bin/ffmpeg';
+
 ##############################################################
 
 wfLoadExtension( 'Gadgets' );

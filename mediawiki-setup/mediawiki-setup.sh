@@ -344,6 +344,13 @@ for environment in "${environments[@]}"; do
     done
 done
 
+# ExternalData
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/$lang/extensions/ExternalData
+    done
+done
+
 # RegularToolTips
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do

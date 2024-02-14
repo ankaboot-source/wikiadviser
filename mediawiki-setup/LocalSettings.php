@@ -233,7 +233,6 @@ wfLoadExtension( 'GeoData' );
 wfLoadExtension( 'MultimediaViewer' );
 wfLoadExtension( 'TimedMediaHandler' );
 $wgFFmpegLocation = '/usr/bin/ffmpeg';
-wfLoadExtension( 'EmbedVideo' );
 wfLoadExtension( 'ExternalData' );
 wfLoadExtension( 'RegularTooltips' );
 wfLoadExtension( 'HTMLTags' );

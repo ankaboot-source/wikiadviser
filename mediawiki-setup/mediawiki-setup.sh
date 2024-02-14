@@ -337,13 +337,6 @@ for environment in "${environments[@]}"; do
     done
 done
 
-# EmbedVideo
-for environment in "${environments[@]}"; do
-    for lang in "${languages[@]}"; do
-         git clone https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo.git /var/www/wiki-$environment/$lang/extensions/EmbedVideo
-    done
-done
-
 # ExternalData
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do

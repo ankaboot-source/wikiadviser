@@ -29,6 +29,7 @@ wikihiero_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep 
 Gadgets_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Gadgets-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | head -n 1)
 GeoData_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "GeoData-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
 TimedMediaHandler_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "TimedMediaHandler-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u)
+
 Wikibase_version=$(curl -s https://extdist.wmflabs.org/dist/extensions/ | grep -o "Wikibase-REL"$extension_version"-[0-9a-f]*.tar.gz" | awk -F'-' '{print $3}' | sed 's/.tar.gz//' | sort -u | tail -n 1)
 
 fr_dump_token_demo="$FR_DUMP_TOKEN_DEMO"
@@ -68,7 +69,8 @@ apt -y update && apt -y upgrade
 apt install -y perl
 apt install -y ploticus
 apt install -y fonts-freefont-ttf
-apt install ffmpeg # required for TimedMediaHandler
+apt install -y ffmpeg # required for TimedMediaHandler
+apt install -y php-curl # Required for EmbedVideo
 
 # Wikiadviser GitHub Repo
 git clone git@github.com:ankaboot-source/wikiadviser.git /home/$user/wikiadviser
@@ -335,6 +337,26 @@ for environment in "${environments[@]}"; do
     done
 done
 
+# EmbedVideo
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://github.com/StarCitizenWiki/mediawiki-extensions-EmbedVideo.git /var/www/wiki-$environment/$lang/extensions/EmbedVideo
+    done
+done
+
+# RegularToolTips
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/$lang/extensions/RegularTooltips
+    done
+done
+
+# HTMLTags
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/$lang/extensions/HTMLTags
+    done
+done
 
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do

@@ -25,6 +25,7 @@
     </q-card>
   </div>
 </template>
+
 <script setup lang="ts">
 import { WIKIADVISER_PRICING_PAGE } from 'src/utils/consts';
 import { useUserStore } from 'src/stores/userStore';

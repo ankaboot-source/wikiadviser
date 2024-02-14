@@ -25,7 +25,7 @@ export default async function restrictMediawikiAccess(
     const user = await authHandler.verifyCookie(req);
 
     const articleIdRegEx = new RegExp(
-      `^/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$)`,
+      `^/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
       'i'
     );
 

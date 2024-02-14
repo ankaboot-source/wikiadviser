@@ -1,18 +1,3 @@
-<script setup lang="ts">
-defineProps<{
-  show: boolean;
-  icon?: string;
-  loading: boolean;
-  closePopup?: boolean;
-  outline?: boolean;
-  color: 'primary' | 'negative';
-  label: string;
-  styling?: string;
-  onClick: () => void;
-  className?: string;
-}>();
-</script>
-
 <template>
   <q-btn
     v-if="show"
@@ -34,3 +19,18 @@ defineProps<{
     </template>
   </q-btn>
 </template>
+
+<script setup lang="ts">
+defineProps<{
+  show: boolean;
+  icon?: string;
+  loading: boolean;
+  closePopup?: boolean;
+  outline?: boolean;
+  color: 'primary' | 'negative';
+  label: string;
+  styling?: string;
+  onClick: () => void;
+  className?: string;
+}>();
+</script>

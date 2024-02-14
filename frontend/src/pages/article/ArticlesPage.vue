@@ -124,6 +124,7 @@
     <create-article v-model="showCreateArticleDialog" />
   </template>
 </template>
+
 <script setup lang="ts">
 import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
 import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';

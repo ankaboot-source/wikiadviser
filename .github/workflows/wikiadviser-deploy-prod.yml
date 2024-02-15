@@ -46,8 +46,8 @@ jobs:
           MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD }}
 
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SENTRY_DSN_FRONTEND: ${SENTRY_DSN_FRONTEND}
-          SENTRY_ENV_FRONTEND: ${SENTRY_DSN_ENV_FRONTEND}
+          SENTRY_DSN_FRONTEND: ${secrets.SENTRY_DSN_FRONTEND}
+          SENTRY_ENV_FRONTEND: ${secrets.SENTRY_DSN_ENV_FRONTEND}
 
         with:
           host: ${{ vars.WIKIADVISER_PROD_HOST }}

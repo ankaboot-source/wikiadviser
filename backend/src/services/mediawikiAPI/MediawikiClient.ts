@@ -159,10 +159,20 @@ export default class MediawikiClient {
       }
     );
     if (data.error) {
-      this.logout(csrftoken);
-      throw new Error(
-        `Failed to delete article with id ${articleId}: ${data.error.info}`
-      );
+      if (data.error.code === 'missingtitle') {
+        /**
+         * This code block handles synchronization issues between the database and MediaWiki during
+         * article deletion. Skips error code 'missingtitle' to continue with the deletion process.
+         */
+        logger.error(
+          `Article '${articleId}' does not exist. The error is skipped, likely due to synchronization issues.`
+        );
+      } else {
+        await this.logout(csrftoken);
+        throw new Error(
+          `Failed to delete article with id ${articleId}: ${data.error.info}`
+        );
+      }
     }
     this.logout(csrftoken);
   }

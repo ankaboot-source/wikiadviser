@@ -64,8 +64,8 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Profile } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { AxiosError } from 'axios';
 import { useUserStore } from 'src/stores/userStore';
+import { AxiosError } from 'axios';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -113,19 +113,13 @@ async function addArticle() {
       },
     });
   } catch (error) {
-    let message = 'Failed to create article';
     loadingCreation.value = false;
 
     if (error instanceof AxiosError) {
       hasReachedLimits.value = error.response?.status === 402;
-      message = error.response?.data.message ?? message;
     }
 
-    $q.notify({
-      message,
-      color: 'negative',
-    });
+    throw error;
   }
-  return undefined;
 }
 </script>

@@ -117,8 +117,8 @@ const onPermissionChange = (permission: EmittedPermission) => {
 };
 
 async function handleApplyChanges() {
-  if (permissionsToDelete.value.length) {
-    try {
+  try {
+    if (permissionsToDelete.value.length) {
       for (const permission of permissionsToDelete.value) {
         await deletePermission(permission);
       }
@@ -128,26 +128,9 @@ async function handleApplyChanges() {
         color: 'positive',
       });
       permissionsToDelete.value = [];
-    } catch (error) {
-      $q.loading.hide();
-      if (error instanceof Error) {
-        console.error(error.message);
-        $q.notify({
-          message: error.message,
-          color: 'negative',
-        });
-      } else {
-        console.error(error);
-        $q.notify({
-          message: 'Whoops, something went wrong while changing permissions',
-          color: 'negative',
-        });
-      }
     }
-  }
 
-  if (permissionsToUpdate.value.length) {
-    try {
+    if (permissionsToUpdate.value.length) {
       await updatePermission(permissionsToUpdate.value);
       $q.notify({
         message: 'Permission updated',
@@ -156,33 +139,21 @@ async function handleApplyChanges() {
       });
       users.value = await getUsers(props.article.article_id);
       permissionsToUpdate.value = [];
-    } catch (error) {
-      $q.loading.hide();
-      if (error instanceof Error) {
-        console.error(error.message);
-        $q.notify({
-          message: error.message,
-          color: 'negative',
-        });
-      } else {
-        console.error(error);
-        $q.notify({
-          message: 'Whoops, something went wrong while changing permissions',
-          color: 'negative',
-        });
-      }
     }
-  }
 
-  // Publish Article
-  if (web_publication_toggle.value !== props.article.web_publication) {
-    try {
+    // Publish Article
+    if (web_publication_toggle.value !== props.article.web_publication) {
       await updateArticleWebPublication(
         web_publication_toggle.value,
         props.article.article_id,
       );
-      if (web_publication_toggle.value) {
-        // Publish
+      if (!web_publication_toggle.value) {
+        $q.notify({
+          message: 'Article set to private',
+          color: 'positive',
+          icon: 'public_off',
+        });
+      } else {
         copyToClipboard(
           `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
         );
@@ -192,33 +163,13 @@ async function handleApplyChanges() {
           color: 'positive',
           icon: 'public',
         });
-      } else {
-        // Unpublish
-        $q.notify({
-          message: 'Article set to private',
-          color: 'positive',
-          icon: 'public_off',
-        });
       }
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-        $q.notify({
-          message: error.message,
-          color: 'negative',
-        });
-      } else {
-        console.error(error);
-        $q.notify({
-          message:
-            'Whoops, something went wrong while applying article publishing changes',
-          color: 'negative',
-        });
-      }
+      const user = useUserStore().user as Profile;
+      await articlesStore.fetchArticles(user.id);
     }
-
-    const user = useUserStore().user as Profile;
-    await articlesStore.fetchArticles(user.id);
+  } catch (error) {
+    $q.loading.hide();
+    throw error;
   }
 }
 

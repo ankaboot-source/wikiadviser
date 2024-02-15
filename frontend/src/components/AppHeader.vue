@@ -70,20 +70,16 @@ watch([useRoute(), articles], ([newRoute]) => {
 });
 
 async function signOut() {
-  try {
-    const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
 
-    if (error) {
-      throw error;
-    }
-
-    $resetUser();
-    await router.push('/auth');
-    articlesStore.resetArticles();
-    $q.notify({ message: 'Signed out', icon: 'logout' });
-  } catch (error) {
-    console.error(error);
+  if (error) {
+    throw error;
   }
+
+  $resetUser();
+  await router.push('/auth');
+  articlesStore.resetArticles();
+  $q.notify({ message: 'Signed out', icon: 'logout' });
 }
 
 function account() {

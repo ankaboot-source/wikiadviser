@@ -172,15 +172,9 @@ async function deleteRevision() {
       color: 'positive',
     });
   } catch (error) {
-    let message = 'Failed to cancel revision';
-
-    if (error instanceof Error) {
-      message = error.message;
-    }
-    $quasar.notify({
-      message,
-      color: 'negative',
-    });
+    deletingRevision.value = false;
+    deleteRevisionDialog.value = false;
+    throw error;
   }
   deletingRevision.value = false;
   deleteRevisionDialog.value = false;

@@ -177,19 +177,8 @@ async function removeArticle(articleId: string) {
     await articlesStore.fetchArticles(user.id);
   } catch (error) {
     deletingArticle.value = false;
-    if (error instanceof Error) {
-      console.error(error.message);
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
-    } else {
-      console.error(error);
-      $q.notify({
-        message: 'Whoops, something went wrong while deleting article',
-        color: 'negative',
-      });
-    }
+    deleteArticleDialog.value = false;
+    throw error;
   }
 }
 

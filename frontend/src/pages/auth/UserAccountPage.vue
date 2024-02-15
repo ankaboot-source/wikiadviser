@@ -97,7 +97,6 @@
     </q-page>
   </div>
 </template>
-
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
 import Button from 'src/components/LoadingButton.vue';
@@ -122,24 +121,14 @@ const defaultAvatar = computed(() => userStore.user?.default_avatar);
 
 async function revertImage() {
   revertingImage.value = true;
-  try {
-    await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
-    await userStore.fetchProfile();
-    $q.notify({
-      message: 'Reverted to default avatar picture',
-      icon: 'check',
-      color: 'positive',
-    });
-    revertingImage.value = false;
-  } catch (error) {
-    let message = 'Whoops, something went wrong while reverting picture';
-
-    if (error instanceof Error) {
-      message = error.message;
-    }
-
-    $q.notify({ message, color: 'negative' });
-  }
+  await supabase.functions.invoke('user-avatar', { method: 'DELETE' });
+  await userStore.fetchProfile();
+  $q.notify({
+    message: 'Reverted to default avatar picture',
+    icon: 'check',
+    color: 'positive',
+  });
+  revertingImage.value = false;
 }
 
 function showWarning() {
@@ -165,13 +154,11 @@ async function deleteAccount() {
       color: 'positive',
     });
   } catch (error) {
-    let message = 'Whoops, something went wrong while deleting article';
-
-    if (error instanceof Error) {
-      message = error.message;
-    }
-
-    $q.notify({ message, color: 'negative' });
+    showDeleteModal.value = false;
+    deletingAccount.value = false;
+    throw error;
+  } finally {
+    deletingAccount.value = false;
   }
 }
 </script>

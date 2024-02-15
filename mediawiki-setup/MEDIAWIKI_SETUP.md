@@ -225,6 +225,11 @@
       .oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {
         display: none !important;
       }
+      /* Hide "Edit Source" until #552 is resolved */
+      #ca-edit,
+      [title="Switch editor"] {
+        display: none !important;
+      }
       ```
 
       </details>

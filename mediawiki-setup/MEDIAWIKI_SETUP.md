@@ -227,7 +227,7 @@
       }
       /* Hide "Edit Source" until #552 is resolved */
       #ca-edit,
-      [title="Switch editor"] {
+      .ve-ui-toolbar-group-editMode {
         display: none !important;
       }
       ```

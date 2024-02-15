@@ -33,7 +33,7 @@ const props = defineProps({
 });
 const title = computed(() =>
   props.article.title.length > 15
-    ? props.article.title.slice(0, 15) + '...'
+    ? `${props.article.title.slice(0, 15)}...`
     : props.article.title,
 );
 const $q = useQuasar();

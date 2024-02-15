@@ -160,16 +160,9 @@ export default class MediawikiClient {
     );
     if (data.error) {
       this.logout(csrftoken);
-      if (data.error.code !== 'missingtitle') {
-        // Throw error only when its other than "The page you specified doesn't exist." else log error.
-        throw new Error(
-          `Failed to delete article with id ${articleId}: ${data.error.info}`
-        );
-      } else {
-        logger.error(
-          `Failed to delete article with id ${articleId}: ${data.error.info}`
-        );
-      }
+      throw new Error(
+        `Failed to delete article with id ${articleId}: ${data.error.info}`
+      );
     }
     this.logout(csrftoken);
   }

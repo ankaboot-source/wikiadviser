@@ -15,7 +15,7 @@ const ERROR_STATUS_MESSAGES: ErrorStatusMessages = {
   503: 'Oops! Service is temporarily unavailable. Please check your connection or try again later.',
 };
 
-export default boot(async ({ app }) => {
+export default boot(({ app }) => {
   // Register global error handler
   app.config.errorHandler = (error, instance, info) => {
     let message = ERROR_STATUS_MESSAGES[500];
@@ -28,7 +28,7 @@ export default boot(async ({ app }) => {
       message = ERROR_STATUS_MESSAGES[error.response.status];
     }
 
-    console.error({info, error});
+    console.error({ info, error });
     instance?.$q.notify({
       message,
       color: 'negative',

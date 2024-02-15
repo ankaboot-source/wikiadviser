@@ -112,6 +112,7 @@ import { importArticle } from 'src/api/supabaseHelper';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { getDefaultUserLanguage } from 'src/utils/language';
+import { AxiosError } from 'axios';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -194,6 +195,9 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
     });
   } catch (error) {
     $q.loading.hide();
+    if (error instanceof AxiosError) {
+      hasReachedLimits.value = error.response?.status === 402;
+    }
     throw error;
   }
 }

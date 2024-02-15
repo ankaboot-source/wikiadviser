@@ -65,6 +65,7 @@ import { Profile } from 'src/types';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from 'src/stores/userStore';
+import { AxiosError } from 'axios';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -113,6 +114,11 @@ async function addArticle() {
     });
   } catch (error) {
     loadingCreation.value = false;
+
+    if (error instanceof AxiosError) {
+      hasReachedLimits.value = error.response?.status === 402;
+    }
+
     throw error;
   }
 }

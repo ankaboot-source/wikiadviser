@@ -37,7 +37,7 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['axios', 'errorHandler'],
+    boot: ['axios', 'errorHandler', 'sentry'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -82,6 +82,8 @@ module.exports = configure(function (/* ctx */) {
         WIKIADVISER_ROOT_DOMAIN: process.env.WIKIADVISER_ROOT_DOMAIN,
         WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
         SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT,
+        SENTRY_DSN_FRONTEND: process.env.SENTRY_DSN_FRONTEND,
+        SENTRY_ENV_FRONTEND: process.env.SENTRY_ENV_FRONTEND,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

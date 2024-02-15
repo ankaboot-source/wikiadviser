@@ -62,7 +62,12 @@ done
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/$lang/
+        mv composer.local.json-sample composer.local.json
+        composer install --no-dev --no-interaction
         php maintenance/run.php ./maintenance/update.php
+        php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
+        php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
+        php maintenance/run.php ./maintenance/populateInterwiki.php
     done
 done
 

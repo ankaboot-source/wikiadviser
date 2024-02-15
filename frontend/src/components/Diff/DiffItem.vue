@@ -480,14 +480,9 @@ async function hideChange() {
       color: 'positive',
     });
   } catch (e) {
-    let message = 'Failed to hide change';
-    if (e instanceof Error) {
-      message = e.message;
-    }
-    $quasar.notify({
-      message,
-      color: 'negative',
-    });
+    hidingChange.value = false;
+    hideChangeDialoge.value = false;
+    throw e;
   }
   hidingChange.value = false;
   hideChangeDialoge.value = false;

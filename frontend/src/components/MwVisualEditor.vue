@@ -70,14 +70,9 @@ async function loadingChanges() {
       color: 'positive',
     });
   } catch (error) {
-    let message = 'Creating changes failed';
-    if (error instanceof Error) {
-      message = error.message;
-    }
-    $q.notify({
-      message,
-      color: 'negative',
-    });
+    loading.value = loader.editor;
+    loading.value.value = true;
+    throw error;
   } finally {
     loading.value = loader.editor;
     loading.value.value = true;

@@ -103,7 +103,6 @@
 <script setup lang="ts">
 import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
 import { ref, watch } from 'vue';
-import { AxiosError } from 'axios';
 import { api } from 'src/boot/axios';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
@@ -145,19 +144,8 @@ watch([term, articleLanguage], async ([term]) => {
     });
     searchResults.value = response.data.searchResults;
   } catch (error) {
-    if (error instanceof Error) {
-      console.error(error.message);
-      $q.notify({
-        message: error.message,
-        color: 'negative',
-      });
-    } else {
-      console.error(error);
-      $q.notify({
-        message: 'Whoops, something went wrong while searching for articles',
-        color: 'negative',
-      });
-    }
+    isSearching.value = false;
+    throw error;
   } finally {
     isSearching.value = false;
   }
@@ -198,7 +186,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
     });
 
     // GOTO ARTICLE PAGE, EDIT TAB
-    return router.push({
+    await router.push({
       name: 'article',
       params: {
         articleId,
@@ -206,15 +194,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
     });
   } catch (error) {
     $q.loading.hide();
-    if (error instanceof AxiosError && error.response?.status === 402) {
-      hasReachedLimits.value = true;
-    } else {
-      $q.notify({
-        message: 'Failed importing article',
-        color: 'negative',
-      });
-    }
+    throw error;
   }
-  return undefined;
 }
 </script>

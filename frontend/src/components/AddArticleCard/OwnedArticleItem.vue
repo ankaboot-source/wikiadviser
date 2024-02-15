@@ -6,8 +6,8 @@
   >
     <q-item-section>
       <div class="row items-center q-gutter-sm">
-        <div class="col q-pl-sm">
-          <div class="text-weight-bold">
+        <div class="col q-pl-sm" style="width: 50vw">
+          <div class="text-weight-bold ellipsis">
             <q-icon
               v-if="props.article.web_publication"
               name="public"
@@ -17,7 +17,7 @@
             </q-icon>
             {{ article.title }}
           </div>
-          <div v-if="article.description">
+          <div v-if="article.description" class="ellipsis">
             {{ article.description }}
           </div>
           <div class="row">
@@ -78,8 +78,16 @@
                   />
                 </q-toolbar>
                 <q-card-section>
-                  Are you sure you want to delete “{{ article.title }}” and
-                  permanently lose all of your changes?
+                  Are you sure you want to delete “
+                  <span
+                    class="ellipsis"
+                    style="
+                      max-width: -webkit-fill-available;
+                      display: inline-block;
+                    "
+                    >{{ article.title }}</span
+                  >
+                  ” and permanently lose all of your changes?
                 </q-card-section>
                 <q-card-actions class="borders">
                   <q-space />

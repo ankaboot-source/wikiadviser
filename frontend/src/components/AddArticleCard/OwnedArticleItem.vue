@@ -6,8 +6,8 @@
   >
     <q-item-section>
       <div class="row items-center q-gutter-sm">
-        <div class="col q-pl-sm">
-          <div class="text-weight-bold">
+        <div class="col q-pl-sm" style="width: 50vw">
+          <div class="text-weight-bold ellipsis">
             <q-icon
               v-if="props.article.web_publication"
               name="public"
@@ -17,7 +17,7 @@
             </q-icon>
             {{ article.title }}
           </div>
-          <div v-if="article.description">
+          <div v-if="article.description" class="ellipsis">
             {{ article.description }}
           </div>
           <div class="row">

@@ -10,7 +10,7 @@ export default function errorHandler(
   res: Response,
   __next: NextFunction // eslint-disable-line @typescript-eslint/no-unused-vars
 ) {
-  const code = res.statusCode ?? 401;
+  const code = res.statusCode !== 200 ? res.statusCode : 500;
 
   const response: ErrorResponse = {
     message: error.message

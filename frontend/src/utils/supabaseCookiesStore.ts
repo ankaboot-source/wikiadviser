@@ -3,8 +3,8 @@ import { CookieOptions } from '@supabase/ssr';
 
 const SupabaseCookiesStore = {
   set(key: string, value: string, options: CookieOptions) {
-    const cookie = JSON.parse(value);
-    if (cookie?.user?.id) {
+    if (value.includes('user:')) {
+      const cookie = JSON.parse(value);
       cookie.user = {
         id: cookie.user.id,
       };

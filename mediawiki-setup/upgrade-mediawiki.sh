@@ -41,6 +41,35 @@ for environment in "${environments[@]}"; do
     done
 done
 
+# Install Additional extensions
+# PageForms
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/$lang/extensions/PageForms
+    done
+done
+
+# ExternalData
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/$lang/extensions/ExternalData
+    done
+done
+
+# RegularToolTips
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/$lang/extensions/RegularTooltips
+    done
+done
+
+# HTMLTags
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/$lang/extensions/HTMLTags
+    done
+done
+
 # Update extensions to latest branch changes & fetch external libraries
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do

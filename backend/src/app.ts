@@ -11,13 +11,13 @@ import articleRouter from './routes/article.routes';
 import authRouter from './routes/auth.routes';
 import wikipediaRouter from './routes/wikipedia.routes';
 
-const { WIKIADVISER_API_PORT, SENTRY_DSN } = process.env;
+const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = process.env;
 const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
 
 const app = express();
 
 if (SENTRY_DSN) {
-  initializeSentry(app, SENTRY_DSN);
+  initializeSentry(app, SENTRY_DSN, SENTRY_ENV_BACKEND);
   app.use(Sentry.Handlers.requestHandler());
   app.use(Sentry.Handlers.tracingHandler());
 }

@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.16.9",
+    "@sentry/vue": "^7.101.1",
     "@supabase/ssr": "^0.0.10",
     "axios": "^1.6.5",
     "cheerio": "^1.0.0-rc.12",

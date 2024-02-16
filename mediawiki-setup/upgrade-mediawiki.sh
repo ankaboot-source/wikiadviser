@@ -2,6 +2,7 @@
 
 set -e
 curl -s "https://en.wikipedia.org/wiki/Special:Version" > version_page.html
+ulimit -n 4096
 
 ##########envs############
 languages=("${LANGUAGES[@]}")
@@ -22,7 +23,7 @@ done
 # Create Database dumps
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        echo $mediawiki_password | sudo -S mysqldump -u root $environment_wiki_$lang > /home/$user/$dump_path/$environment-dump-$lang.sql
+        echo $mediawiki_password | sudo -S mysqldump -u root "$environment"_wiki_"$lang" > /home/$user/$dump_path/$environment-dump-$lang.sql
     done
 done
 
@@ -40,12 +41,41 @@ for environment in "${environments[@]}"; do
     done
 done
 
+# Install Additional extensions
+# PageForms
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/$lang/extensions/PageForms
+    done
+done
+
+# ExternalData
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/$lang/extensions/ExternalData
+    done
+done
+
+# RegularToolTips
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/$lang/extensions/RegularTooltips
+    done
+done
+
+# HTMLTags
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/$lang/extensions/HTMLTags
+    done
+done
+
 # Update extensions to latest branch changes & fetch external libraries
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/$lang
         git submodule update --init --recursive # update extensions
-        composer update --no-dev # fetch external libs
+        composer update --no-dev --ignore-platform-req=ext-ldap # fetch external libs
     done
 done
 
@@ -63,7 +93,7 @@ for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/$lang/
         mv composer.local.json-sample composer.local.json
-        composer install --no-dev --no-interaction
+        composer install --no-dev --no-interaction --ignore-platform-req=ext-ldap
         php maintenance/run.php ./maintenance/update.php
         php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
         php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php

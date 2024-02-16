@@ -2,7 +2,7 @@
 
 ## MediaWiki
 
-To set up MediaWiki locallay, you must follow these [steps](/mediawiki-setup/MEDIAWIKI_SETUP.md).
+To set up MediaWiki locally, follow these [steps](/mediawiki-setup/MEDIAWIKI_SETUP.md).
 
 ## Pre-requisites
 

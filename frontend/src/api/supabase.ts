@@ -1,11 +1,11 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { Cookies } from 'quasar';
+import SupabaseCookieStore from 'src/utils/supabaseCookiesStore';
 
 const supabaseClient = createBrowserClient(
   process.env.SUPABASE_PROJECT_URL!,
   process.env.SUPABASE_SECRET_PROJECT_TOKEN!,
   {
-    cookies: Cookies,
+    cookies: SupabaseCookieStore,
     cookieOptions: {
       domain: process.env.WIKIADVISER_ROOT_DOMAIN ?? 'localhost',
       secure: true,

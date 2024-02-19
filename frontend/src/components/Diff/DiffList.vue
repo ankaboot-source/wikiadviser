@@ -48,7 +48,7 @@
       </q-expansion-item>
     </q-scroll-area>
     <template v-else>
-      <div class="q-pl-sm q-py-sm">
+      <div class="q-pa-sm">
         <div class="q-pb-sm text-body1 text-weight-medium">
           There are currently no changes
         </div>

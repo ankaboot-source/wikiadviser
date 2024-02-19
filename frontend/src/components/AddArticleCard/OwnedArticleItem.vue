@@ -78,16 +78,8 @@
                   />
                 </q-toolbar>
                 <q-card-section>
-                  Are you sure you want to delete “
-                  <span
-                    class="ellipsis"
-                    style="
-                      max-width: -webkit-fill-available;
-                      display: inline-block;
-                    "
-                    >{{ article.title }}</span
-                  >
-                  ” and permanently lose all of your changes?
+                  Are you sure you want to delete this article and permanently
+                  lose all of your changes?
                 </q-card-section>
                 <q-card-actions class="borders">
                   <q-space />

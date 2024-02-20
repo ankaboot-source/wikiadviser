@@ -164,8 +164,8 @@
       .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
         display: none !important;
       }
-      /* hide footer */
-      .mw-footer-container {
+      /* hide footer-places */
+      #footer-places {
         display: none !important;
       }
       /* hide header */

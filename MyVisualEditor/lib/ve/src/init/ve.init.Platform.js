@@ -1,7 +1,7 @@
 /*!
  * VisualEditor Initialization Platform class.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see http://ve.mit-license.org
+ * @copyright See AUTHORS.txt
  */
 
 /**
@@ -70,18 +70,6 @@ ve.init.Platform.static.initializedPromise = ve.init.Platform.static.deferredPla
  */
 ve.init.Platform.static.getSystemPlatform = function () {
 	return $.client.profile().platform;
-};
-
-/**
- * Check whether we are running in Internet Explorer.
- *
- * @deprecated Always returns false
- * @static
- * @inheritable
- * @return {boolean} We are in IE
- */
-ve.init.Platform.static.isInternetExplorer = function () {
-	return false;
 };
 
 /**

@@ -1,7 +1,7 @@
 /*!
  * VisualEditor UserInterface DiffElement styles.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see http://ve.mit-license.org
+ * @copyright See AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
 
@@ -29,9 +29,11 @@
 	border-right: 1px solid #c8ccd1;
 }
 
-@media ( max-width: 400px ) {
+@media ( max-width: 640px ) {
 	.ve-ui-diffElement-hasDescriptions .ve-ui-diffElement-content {
-		margin-right: 6em;
+		padding-right: 0;
+		margin-right: 5.5em;
+		border-right: 0;
 	}
 }
 
@@ -42,7 +44,7 @@
 	width: 15em;
 }
 
-@media ( max-width: 400px ) {
+@media ( max-width: 640px ) {
 	.ve-ui-diffElement-hasDescriptions .ve-ui-diffElement-sidebar {
 		width: 5em;
 	}
@@ -53,14 +55,6 @@
 	opacity: 0.5;
 	z-index: 2;
 	pointer-events: none;
-}
-
-.ve-ui-diffElement-warning {
-	font-style: italic;
-}
-
-.ve-ui-diffElement-warning > .oo-ui-iconWidget {
-	margin-right: 0.3em;
 }
 
 .ve-ui-changeDescriptionsSelectWidget > .oo-ui-optionWidget {
@@ -126,7 +120,11 @@
 /* Prevent collapsing added/removed spaces (T170114), but only inline (T300444) */
 ins[ data-diff-action='insert' ],
 del[ data-diff-action='remove' ] {
+	/* Support: Chrome<76, Firefox<69 */
+	/* Fallback for browsers which don't support break-spaces */
 	white-space: pre-wrap;
+	/* T348006 - ensure all removed/inserted spaces are shown, even at the end of a line */
+	white-space: break-spaces;
 }
 
 [ data-diff-action='insert' ],

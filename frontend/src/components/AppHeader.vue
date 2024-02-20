@@ -11,6 +11,7 @@
           <q-breadcrumbs-el
             v-if="article?.title"
             :label="article.title"
+            class="article-title"
             to="."
             @click="$router.go(0)"
           />
@@ -19,7 +20,6 @@
           </q-icon>
         </q-breadcrumbs>
       </q-toolbar-title>
-      <q-space />
       <q-btn v-if="user" no-caps unelevated @click="account">
         <user-component
           :avatar-url="avatarURL"
@@ -89,9 +89,34 @@ function account() {
 }
 </script>
 
-<style>
+<style scoped>
 .q-breadcrumbs__el {
   text-decoration: none !important;
   color: black !important;
 }
+
+.article-title {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@media screen and (max-width: 672px) {
+  .article-title {
+    max-width: 21vw;
+  }
+}
+
+@media screen and (min-width: 601px) and (max-width: 1024px) {
+  .article-title {
+    max-width: 32vw;
+  }
+}
+
+@media screen and (min-width: 1025px) {
+  .article-title {
+    max-width: 40vw;
+  }
+}
+
 </style>

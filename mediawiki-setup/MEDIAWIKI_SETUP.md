@@ -235,7 +235,7 @@
       [aria-label="Namespaces"] {
         display: none !important;
       }
-      /* Hide Read/Edit toolbar (Show it when edit) */
+      /* Hide Read/Edit toolbar (Show it when iframe/edit) */
       .vector-page-toolbar {
         display: none !important;
       }

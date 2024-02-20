@@ -1,0 +1,28 @@
+/*!
+ * VisualEditor UserInterface CompletionWidget styles.
+ *
+ * @copyright See AUTHORS.txt
+ */
+
+.ve-ui-completionWidget {
+	position: absolute;
+	margin-top: 0.5em;
+}
+
+.ve-ui-completionWidget .oo-ui-menuSelectWidget {
+	position: static;
+	border: 0;
+	box-shadow: none;
+}
+
+.ve-ui-completionWidget .oo-ui-popupWidget-body {
+	/* The contained MenuSelectWidget is already clipped (T330401) */
+	/* TODO: This could be done in JS if OO.ui.ClippableElement provided a way to disable clipping */
+	overflow: hidden !important; /* stylelint-disable-line declaration-no-important */
+	scrollbar-gutter: auto;
+}
+
+.ve-ui-completionWidget .oo-ui-textInputWidget {
+	min-width: 15em;
+	margin-bottom: -1px;
+}

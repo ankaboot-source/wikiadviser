@@ -245,7 +245,7 @@
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
-    - <details> <summary> Add JS: right under <code>mw.loader.using( [ 'mediawiki.util' ] ).done( function () { </code> </summary>
+    - <details> <summary> Add JS: right above the last <code>} );</code> </summary>
 
       ```js
       // Add a stylesheet rule when Iframe (Editor)

@@ -118,5 +118,4 @@ function account() {
     max-width: 40vw;
   }
 }
-
 </style>

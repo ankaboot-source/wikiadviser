@@ -48,7 +48,7 @@ $wgLogos = [
 ];
 $wgFavicon = "$wgResourceBasePath/resources/assets/icons/favicon.ico";
 
-## Footer "Powered by"
+## Footer "Powered by", https://www.mediawiki.org/wiki/Manual:$wgFooterIcons
 # Copy the repo's `docs/assets` folder into mediawiki's `$wgResourceBasePath/resources/assets`
 
 $wgFooterIcons = [

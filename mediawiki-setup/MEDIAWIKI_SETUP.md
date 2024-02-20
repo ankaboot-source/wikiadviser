@@ -245,6 +245,28 @@
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
+    - <details> <summary> Add JS: </summary>
+
+      ```js
+      // Add a stylesheet rule when Iframe (Editor)
+      var iframeCssRules = mw.util.addCSS(
+        `/*  Hide Header when Iframe / Editor. */
+      .vector-header-container,
+      .vector-column-start {
+        display: none !important;
+      }
+      /* Show Toolbar when Iframe / Editor. */
+      .vector-page-toolbar {
+        display: block !important;
+      }`
+      );
+
+      const isIframe = window.location !== window.parent.location;
+      iframeCssRules.disabled = !isIframe;
+      ```
+
+      </details>
+
   Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
 
 - Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`

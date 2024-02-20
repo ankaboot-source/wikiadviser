@@ -239,6 +239,10 @@
       .mw-editsection {
         display: none !important;
       }
+      /* Hide left-navigation like 'Article' & 'Talk' */
+      [aria-label="Namespaces"] {
+        display: none !important;
+      }
       ```
 
       </details>

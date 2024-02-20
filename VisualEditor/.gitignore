@@ -5,16 +5,20 @@
 sublime-*
 .project
 .settings
+\#*#
+.#*
+/.idea
+.vscode
 
 # Install and build artifacts
-/coverage
-/dist
 /docs
 node_modules
-npm-debug.log
-rebaser/config.yaml
-rebaser/rebaser.log
+composer.lock
+vendor
+screenshots/*.png
 .eslintcache
+tests/selenium/log
+.api-testing.config.json
 
 # OS
 .DS_Store

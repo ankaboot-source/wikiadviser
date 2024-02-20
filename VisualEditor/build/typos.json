@@ -15,9 +15,6 @@
 		[ "overriden", "overridden" ],
 		[ "begining", "beginning" ],
 		[ "detatched", "detached" ],
-		[ "descendent", "descendant" ],
-		[ "sepcific", "specific" ],
-		[ "connet", "connect" ],
-		[ "emtpy", "empty" ]
+		[ "paramter", "parameter" ]
 	]
 }

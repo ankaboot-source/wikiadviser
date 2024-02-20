@@ -1,5 +1,6 @@
 [gerrit]
 host=gerrit.wikimedia.org
 port=29418
-project=VisualEditor/VisualEditor.git
+project=mediawiki/extensions/VisualEditor.git
 track=1
+defaultrebase=0

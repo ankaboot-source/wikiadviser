@@ -1,9 +1,109 @@
 [
 	{
-		"name": "General",
+		"name": "VisualEditor (MediaWiki extension)",
 		"groups": [
 			{
-				"name": "Utilities",
+				"name": "Initialization",
+				"classes": [
+					"mw.libs.ve*",
+					"ve.init.mw*"
+				]
+			},
+			{
+				"name": "Switching",
+				"classes": [
+					"mw.libs.ve.MWEditMode*Tool"
+				]
+			},
+			{
+				"name": "User Interface",
+				"classes": [
+					"ve.ui.MWAriaDescribe",
+					"ve.ui.MW*Action",
+					"ve.ui.MW*Command",
+					"ve.ui.MW*ContextItem",
+					"ve.ui.MW*Dialog",
+					"ve.ui.MW*Element",
+					"ve.ui.MW*Factory",
+					"ve.ui.MW*Inspector",
+					"ve.ui.MW*Layout",
+					"ve.ui.MW*Page",
+					"ve.ui.MW*Registry",
+					"ve.ui.MW*Surface",
+					"ve.ui.MW*Tool",
+					"ve.ui.MW*ToolGroup",
+					"ve.ui.MW*TransferHandler",
+					"ve.ui.MW*Widget",
+					"ve.ui.MW*Window"
+				]
+			},
+			{
+				"name": "Visual Diffing",
+				"classes": [
+					"ve.dm.VisualDiff",
+					"ve.DiffMatchPatch",
+					"ve.DiffTreeNode",
+					"ve.ui.DiffDialog",
+					"ve.ui.DiffElement"
+				]
+			},
+			{
+				"name": "Data Model",
+				"classes": [
+					"ve.dm.MW*Annotation",
+					"ve.dm.MW*MetaItem",
+					"ve.dm.MW*Model",
+					"ve.dm.MW*Node",
+					"ve.dm.MW*Surface",
+					"ve.dm.MW*SurfaceFragment"
+				]
+			},
+			{
+				"name": "ContentEditable",
+				"classes": [
+					"ve.ce.MW*Annotation",
+					"ve.ce.MW*Node",
+					"ve.ce.MW*Surface"
+				]
+			}
+		]
+	},
+	{
+		"name": "VisualEditor (core) unused parts",
+		"groups": [
+			{
+				"name": "Standalone",
+				"classes": [
+					"ve.init.sa*"
+				]
+			}
+		]
+	},
+	{
+		"name": "Upstream (MediaWiki)",
+		"groups": [
+			{
+				"name": "MediaWiki",
+				"classes": [
+					"mw.Api",
+					"mw.Message",
+					"mw.Title",
+					"mw.widgets.*Widget"
+				]
+			},
+			{
+				"name": "MobileFrontend",
+				"classes": [
+					"VisualEditorOverlay"
+				]
+			}
+		]
+	},
+	{
+		"name": "VisualEditor (core)",
+		"groups": [
+			{
+				"name": "General",
 				"classes": [
 					"ve",
 					"ve.Range",
@@ -12,39 +112,26 @@
 					"ve.EventSequencer",
 					"ve.Filibuster",
 					"ve.TriggerListener",
-					"ve.Scheduler"
+					"ve.Scheduler",
+					"ve.Node",
+					"ve.BranchNode",
+					"ve.LeafNode",
+					"ve.Document"
 				]
 			},
 			{
-				"name": "Nodes",
-				"classes": ["ve.Node", "ve.BranchNode", "ve.LeafNode", "ve.Document"]
-			}
-		]
-	},
-	{
-		"name": "Initialization",
-		"groups": [
-			{
-				"name": "General",
+				"name": "Initialization",
 				"classes": [
 					"ve.init",
 					"ve.init.Platform",
 					"ve.init.Target",
 					"ve.init.*Storage",
-					"global"
+					"global",
+					"ve.init.sa*"
 				]
 			},
 			{
-				"name": "Stand-alone",
-				"classes": ["ve.init.sa*"]
-			}
-		]
-	},
-	{
-		"name": "DataModel",
-		"groups": [
-			{
-				"name": "General",
+				"name": "DataModel",
 				"classes": [
 					"ve.dm",
 					"ve.dm.Model",
@@ -65,56 +152,27 @@
 					"ve.dm.TreeCursor",
 					"ve.dm.TreeModifier",
 					"ve.dm.TransactionProcessor",
-					"ve.dm.TransactionProcessor.*"
-				]
-			},
-			{
-				"name": "Annotations",
-				"classes": ["ve.dm.*Annotation", "ve.dm.AnnotationSet"]
-			},
-			{
-				"name": "Meta items",
-				"classes": ["ve.dm.*MetaItem", "ve.dm.MetaList"]
-			},
-			{
-				"name": "Internal list",
-				"classes": ["ve.dm.InternalList"]
-			},
-			{
-				"name": "Nodes and documents",
-				"classes": ["ve.dm.Document", "ve.dm.*Slice", "ve.dm.*Node"]
-			},
-			{
-				"name": "Linear data",
-				"classes": ["ve.dm.*LinearData*"]
-			},
-			{
-				"name": "Models",
-				"classes": ["ve.dm.*Model"]
-			},
-			{
-				"name": "Table model",
-				"classes": [
+					"ve.dm.TransactionProcessor.*",
+					"ve.dm.*Annotation",
+					"ve.dm.AnnotationSet",
+					"ve.dm.*MetaItem",
+					"ve.dm.MetaList",
+					"ve.dm.InternalList",
+					"ve.dm.Document",
+					"ve.dm.*Slice",
+					"ve.dm.*Node",
+					"ve.dm.*LinearData*",
+					"ve.dm.*Model",
 					"ve.dm.TableMatrix",
 					"ve.dm.TableMatrixCell",
-					"ve.dm.TableNodeCellIterator"
-				]
-			},
-			{
-				"name": "Rebasing",
-				"classes": [
+					"ve.dm.TableNodeCellIterator",
 					"ve.dm.Change",
 					"ve.dm.RebaseClient",
 					"ve.dm.SurfaceSynchronizer"
 				]
-			}
-		]
-	},
-	{
-		"name": "ContentEditable",
-		"groups": [
+			},
 			{
-				"name": "General",
+				"name": "ContentEditable",
 				"classes": [
 					"ve.ce",
 					"ve.ce.View",
@@ -125,36 +183,17 @@
 					"ve.ce.*Selection",
 					"ve.ce.RangeState",
 					"ve.ce.TextState",
-					"ve.ce.TextStateChunk"
+					"ve.ce.TextStateChunk",
+					"ve.ce.*Annotation",
+					"ve.ce.MetaItem",
+					"ve.ce.*Factory",
+					"ve.ce.*KeyDownHandler",
+					"ve.ce.Document",
+					"ve.ce.*Node"
 				]
 			},
 			{
-				"name": "Annotations",
-				"classes": ["ve.ce.*Annotation"]
-			},
-			{
-				"name": "Meta items",
-				"classes": ["ve.ce.MetaItem"]
-			},
-			{
-				"name": "Factories",
-				"classes": ["ve.ce.*Factory"]
-			},
-			{
-				"name": "Key down handlers",
-				"classes": ["ve.ce.*KeyDownHandler"]
-			},
-			{
-				"name": "Nodes",
-				"classes": ["ve.ce.Document", "ve.ce.*Node"]
-			}
-		]
-	},
-	{
-		"name": "User Interface",
-		"groups": [
-			{
-				"name": "General",
+				"name": "User Interface",
 				"classes": [
 					"ve.ui",
 					"ve.ui.*Surface",
@@ -163,75 +202,23 @@
 					"ve.ui.*Toolbar",
 					"ve.ui.DebugBar",
 					"ve.ui.Trigger",
-					"ve.ui.TabIndexScope"
-				]
-			},
-			{
-				"name": "Actions",
-				"classes": ["ve.ui.*Action"]
-			},
-			{
-				"name": "Commands",
-				"classes": ["ve.ui.*Command"]
-			},
-			{
-				"name": "Context items",
-				"classes": ["ve.ui.*ContextItem"]
-			},
-			{
-				"name": "Data transfer handlers",
-				"classes": ["ve.ui.*TransferHandler", "ve.ui.DataTransferItem"]
-			},
-			{
-				"name": "Elements",
-				"classes": ["ve.ui.*Element"]
-			},
-			{
-				"name": "Factories",
-				"classes": ["ve.ui.*Factory"]
-			},
-			{
-				"name": "Pages",
-				"classes": ["ve.ui.*Page"]
-			},
-			{
-				"name": "Registries",
-				"classes": ["ve.ui.*Registry"]
-			},
-			{
-				"name": "Sequences",
-				"classes": ["ve.ui.*Sequence"]
-			},
-			{
-				"name": "Tools",
-				"classes": ["ve.ui.*Tool"]
-			},
-			{
-				"name": "Widgets",
-				"classes": ["ve.ui.*Widget"]
-			},
-			{
-				"name": "Windows",
-				"classes": [
+					"ve.ui.TabIndexScope",
+					"ve.ui.*Action",
+					"ve.ui.*Command",
+					"ve.ui.*ContextItem",
+					"ve.ui.*TransferHandler",
+					"ve.ui.DataTransferItem",
+					"ve.ui.*Element",
+					"ve.ui.*Factory",
+					"ve.ui.*Page",
+					"ve.ui.*Registry",
+					"ve.ui.*Sequence",
+					"ve.ui.*Tool",
+					"ve.ui.*Widget",
 					"ve.ui.*WindowManager",
 					"ve.ui.*Window",
 					"ve.ui.*Dialog",
 					"ve.ui.*Inspector"
-				]
-			}
-		]
-	},
-	{
-		"name": "Diffing",
-		"groups": [
-			{
-				"name": "Diffing",
-				"classes": [
-					"ve.dm.VisualDiff",
-					"ve.DiffMatchPatch",
-					"ve.DiffTreeNode",
-					"ve.ui.DiffDialog",
-					"ve.ui.DiffElement"
 				]
 			}
 		]
@@ -276,47 +263,77 @@
 			},
 			{
 				"name": "OOjs UI Mixins",
-				"classes": ["OO.ui.mixin", "OO.ui.mixin.*"]
+				"classes": [
+					"OO.ui.mixin",
+					"OO.ui.mixin.*"
+				]
 			},
 			{
 				"name": "OOjs UI Factories",
-				"classes": ["OO.ui.*Factory"]
+				"classes": [
+					"OO.ui.*Factory"
+				]
 			},
 			{
 				"name": "OOjs UI Layouts",
-				"classes": ["OO.ui.*Layout"]
+				"classes": [
+					"OO.ui.*Layout"
+				]
 			},
 			{
 				"name": "OOjs UI Tool groups",
-				"classes": ["OO.ui.*ToolGroup"]
+				"classes": [
+					"OO.ui.*ToolGroup"
+				]
 			},
 			{
 				"name": "OOjs UI Tools",
-				"classes": ["OO.ui.*Tool"]
+				"classes": [
+					"OO.ui.*Tool"
+				]
 			},
 			{
 				"name": "OOjs UI Widgets",
-				"classes": ["OO.ui.*Widget"]
+				"classes": [
+					"OO.ui.*Widget"
+				]
 			},
 			{
 				"name": "OOjs UI Dialogs",
-				"classes": ["OO.ui.*Dialog"]
+				"classes": [
+					"OO.ui.*Dialog"
+				]
 			},
 			{
 				"name": "OOjs UI Themes",
-				"classes": ["OO.ui.*Theme"]
+				"classes": [
+					"OO.ui.*Theme"
+				]
 			},
 			{
 				"name": "jQuery",
-				"classes": ["jQuery", "jQuery.Event", "jQuery.Promise", "jQuery.Deferred", "jQuery.jqXHR", "QUnit"]
+				"classes": [
+					"jQuery",
+					"jQuery.Event",
+					"jQuery.Promise",
+					"jQuery.Deferred",
+					"jQuery.jqXHR",
+					"QUnit"
+				]
 			},
 			{
 				"name": "treeDiffer",
-				"classes": ["treeDiffer.Differ", "treeDiffer.Tree", "treeDiffer.TreeNode"]
+				"classes": [
+					"treeDiffer.Differ",
+					"treeDiffer.Tree",
+					"treeDiffer.TreeNode"
+				]
 			},
 			{
 				"name": "DiffMatchPatch",
-				"classes": ["diff_match_patch"]
+				"classes": [
+					"diff_match_patch"
+				]
 			},
 			{
 				"name": "JavaScript",

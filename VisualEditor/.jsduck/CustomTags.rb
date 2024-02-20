@@ -34,7 +34,7 @@ end
 class SourceTag < CommonTag
   def initialize
     @tagname = :source
-    @pattern = 'source'
+    @pattern = "source"
     super
   end
 
@@ -51,7 +51,7 @@ end
 class SeeTag < CommonTag
   def initialize
     @tagname = :see
-    @pattern = 'see'
+    @pattern = "see"
     super
   end
 
@@ -66,7 +66,7 @@ class SeeTag < CommonTag
     <<-EOHTML
       <h3 class="pa">Related</h3>
       <ul>
-      #{ context[@tagname].map { |tag| tag[:doc] }.join("\n") }
+      #{ context[@tagname].map {|tag| tag[:doc] }.join("\n") }
       </ul>
     EOHTML
   end
@@ -77,7 +77,7 @@ class SeeTag < CommonTag
       doc = $2 ? ': ' + $2 : ''
       return formatter.format("{@link #{name}} #{doc}")
     else
-      JsDuck::Logger.warn(nil, 'Unexpected @see argument: "' + tag + '"', position)
+      JsDuck::Logger.warn(nil, 'Unexpected @see argument: "'+tag+'"', position)
       return tag
     end
   end
@@ -109,7 +109,7 @@ class ContextTag < CommonTag
       name = $1
       return formatter.format("`this` : {@link #{name}}")
     else
-      JsDuck::Logger.warn(nil, 'Unexpected @this argument: "' + tag + '"', position)
+      JsDuck::Logger.warn(nil, 'Unexpected @this argument: "'+tag+'"', position)
       return tag
     end
   end

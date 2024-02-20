@@ -1,29 +1,45 @@
 # VisualEditor
 
-VisualEditor provides a rich-text editor for HTML documents. It is written in
+VisualEditor provides a visual editor for wiki pages. It is written in
 JavaScript and runs in a web browser.
 
-* [Live demo][]
-* [API documentation][]
+It uses the Parsoid parser to convert wikitext documents to annotated HTML
+which the VisualEditor is able to load, modify and emit back to Parsoid at
+which point it is converted back into wikitext.
 
-For more information about the project, check out the [VisualEditor][]
-page on mediawiki.org.
+For more information about these projects, check out the [VisualEditor][]
+and [Parsoid][] pages on mediawiki.
 
 
-## Installing
+## Developing and installing
 
-For information on setting up VisualEditor, please see
-https://www.mediawiki.org/wiki/VisualEditor/Setup
-
-## Developing
+For information on installing VisualEditor on a local wiki, please
+see https://www.mediawiki.org/wiki/Extension:VisualEditor
 
 For information about running tests and contributing code to VisualEditor,
-see [CONTRIBUTING.md][].  Patch submissions are reviewed and managed with
+see [CONTRIBUTING.md](./CONTRIBUTING.md).  Patch submissions are reviewed and managed with
 [Gerrit][].  There is also [API documentation][] available for the
 VisualEditor.
 
-[Live demo]:         https://doc.wikimedia.org/VisualEditor/master/js/lib/ve/demos/ve/desktop-wikimediaui.html
+
+## Terminology
+
+* Apex: See https://www.mediawiki.org/wiki/Skin:Apex
+* CE: ContentEditable
+* DM: Data model
+* Invocation: Here the act of calling a template from a page, visible as e.g. `{{reflist}}` in the wikitext.
+* MW: MediaWiki
+* Page: See https://www.mediawiki.org/wiki/OOUI/Layouts/Booklets_and_Pages
+* Parameter: A template parameter. Can be known (i.e. documented via TemplateData) or unknown.
+* Part: A template-level entity in a transclusion, i.e. either a template, template placeholder, or wikitext snippet.
+* SA: Standalone
+* Template: See https://www.mediawiki.org/wiki/Help:Templates
+* Transclusion: A sequence of one or more template invocations, possibly mixed with raw wikitext snippets.
+* UI: User interface
+* VE: VisualEditor
+* WT: Wikitext
+
 [VisualEditor]:      https://www.mediawiki.org/wiki/VisualEditor
-[CONTRIBUTING.md]:   CONTRIBUTING.md
+[Parsoid]:           https://www.mediawiki.org/wiki/Parsoid
 [API documentation]: https://doc.wikimedia.org/VisualEditor/master/
-[Gerrit]:            https://www.mediawiki.org/wiki/Developer_account
+[Gerrit]:            https://www.mediawiki.org/wiki/Gerrit

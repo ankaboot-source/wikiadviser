@@ -1,0 +1,18 @@
+{
+	"@metadata": {
+		"authors": [
+			"Sebranik",
+			"Игорь Бродский",
+			"Лариса Чиркова"
+		]
+	},
+	"tooltip-ca-ve-edit": "Sab redaktiruida necidä lehtpol't.",
+	"visualeditor-ca-createlocaldescriptionsource": "Ližada penen kirjutusen lähte",
+	"visualeditor-ca-createsource": "Tege lähte",
+	"visualeditor-ca-editsource": "Vajehta lähte",
+	"visualeditor-ca-editsource-section": "vajehtada lähte",
+	"visualeditor-descriptionpagelink": "Project:Vizualine toimitai",
+	"visualeditor-dialog-meta-languages-label": "Keled",
+	"visualeditor-dialog-meta-languages-section": "Keled",
+	"visualeditor-languages-tool": "Keled"
+}

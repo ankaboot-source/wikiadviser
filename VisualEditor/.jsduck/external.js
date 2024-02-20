@@ -1,80 +1,34 @@
 /**
- * @class jQuery
- * @source <http://api.jquery.com/>
+ * @class mw.Api
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api>
  */
 
 /**
- * @method ajax
- * @source <http://api.jquery.com/jQuery.ajax/>
- * @return {jqXHR}
+ * @class mw.Message
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Message>
  */
 
 /**
- * @class jQuery.Event
- * @source <http://api.jquery.com/Types/#Event>
+ * @class mw.Title
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title>
  */
 
 /**
- * @class jQuery.Promise
- * @source <http://api.jquery.com/Types/#Promise>
+ * @class mw.widgets.TitleInputWidget
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.widgets.TitleInputWidget>
  */
 
 /**
- * @class jQuery.Deferred
- * @mixins jQuery.Promise
- * @source <http://api.jquery.com/jQuery.Deferred/>
+ * @class mw.widgets.MediaSearchWidget
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.widgets.MediaSearchWidget>
  */
 
 /**
- * @class jQuery.jqXHR
- * @source <http://api.jquery.com/Types/#jqXHR>
- * @alternateClassName jqXHR
+ * @class mw.widgets.MediaResultWidget
+ * @source <https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.widgets.MediaResultWidget>
  */
 
 /**
- * @class QUnit
- * @source <http://api.qunitjs.com/>
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.html>
- * @class OO
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.EventEmitter.html>
- * @class OO.EventEmitter
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.EmitterList.html>
- * @class OO.EmitterList
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.Factory.html>
- * @class OO.Factory
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.Registry.html>
- * @class OO.Registry
- */
-
-/**
- * Source: <https://doc.wikimedia.org/oojs/master/OO.SortedEmitterList.html>
- * @class OO.SortedEmitterList
- */
-
-/**
- * @class diff_match_patch
- * @source <http://github.com/edg2s/google-diff-match-patch>
- */
-
-/**
- * @class Map
- */
-
-/**
- * @class Set
+ * @class VisualEditorOverlay
+ * @source <https://doc.wikimedia.org/MobileFrontend/master/js/VisualEditorOverlay.html>
  */

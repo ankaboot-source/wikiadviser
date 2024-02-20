@@ -1,51 +1,41 @@
 {
 	"name": "visualeditor",
 	"version": "0.0.0",
-	"description": "Stand-alone contentEditable-based rich Web editor.",
-	"license": "MIT",
 	"private": true,
+	"description": "Build tools for the VisualEditor-MediaWiki extension.",
 	"scripts": {
-		"minify:svg": "svgo --config=.svgo.config.js --quiet --folder src/ui/styles/images/ --folder demos/ve/",
+		"eslint": "eslint --cache --ext .js,.json .",
+		"eslint-fix": "eslint --cache --ext .js,.json --fix .",
+		"api-testing": "mocha --timeout 0 --parallel --recursive tests/api-testing",
 		"test": "grunt test",
-		"prepare": "grunt build",
-		"postinstall": "cd rebaser && npm ci",
-		"doc": "jsduck"
+		"doc": "jsduck",
+		"postdoc": "grunt copy:jsduck",
+		"screenshots-all": "grunt screenshots-all",
+		"selenium-daily": "npm run selenium-test -- --mochaOpts.grep @daily",
+		"selenium-test": "wdio tests/selenium/wdio.conf.js"
 	},
-	"homepage": "https://www.mediawiki.org/wiki/VisualEditor",
-	"repository": {
-		"type": "git",
-		"url": "https://gerrit.wikimedia.org/r/VisualEditor/VisualEditor"
-	},
-	"licenses": [
-		{
-			"type": "MIT",
-			"url": "https://gerrit.wikimedia.org/g/VisualEditor/VisualEditor/+/master/LICENSE.txt"
-		}
-	],
 	"devDependencies": {
+		"@wdio/cli": "7.16.13",
+		"@wdio/junit-reporter": "7.16.13",
+		"@wdio/local-runner": "7.16.13",
+		"@wdio/mocha-framework": "7.16.13",
+		"@wdio/spec-reporter": "7.16.13",
+		"api-testing": "1.6.0",
 		"eslint-config-wikimedia": "0.26.0",
-		"eslint-plugin-html": "7.1.0",
 		"grunt": "1.6.1",
 		"grunt-banana-checker": "0.11.1",
-		"grunt-contrib-clean": "2.0.1",
-		"grunt-contrib-concat": "2.1.0",
 		"grunt-contrib-copy": "1.0.0",
 		"grunt-contrib-watch": "1.1.0",
-		"grunt-css-url-embed": "1.11.1",
-		"grunt-cssjanus": "1.0.0",
 		"grunt-eslint": "24.3.0",
-		"grunt-karma": "4.0.2",
+		"grunt-image": "5.0.1",
+		"grunt-mocha-test": "0.13.3",
 		"grunt-stylelint": "0.19.0",
 		"grunt-tyops": "0.1.1",
-		"karma": "6.4.2",
-		"karma-chrome-launcher": "3.2.0",
-		"karma-coverage": "2.2.0",
-		"karma-firefox-launcher": "2.1.2",
-		"karma-mocha-reporter": "2.2.5",
-		"karma-qunit": "4.1.2",
-		"qunit": "2.20.0",
-		"stringify-object": "3.3.0",
+		"jimp": "0.13.0",
+		"mocha": "5.2.0",
+		"selenium-webdriver": "3.6.0",
+		"stringify-object": "3.2.2",
 		"stylelint-config-wikimedia": "0.16.1",
-		"svgo": "3.2.0"
+		"wdio-mediawiki": "2.5.0"
 	}
 }

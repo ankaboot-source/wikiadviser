@@ -4,19 +4,22 @@
 	"--categories": ".jsduck/categories.json",
 	"--eg-iframe": ".jsduck/eg-iframe.html",
 	"--tags": ".jsduck/CustomTags.rb",
-	"--warnings": [ "-nodoc(class,public)", "-global", "-inheritdoc" ],
-	"--builtin-classes": true,
 	"--processes": "0",
 	"--warnings-exit-nonzero": true,
-	"--external": "HTMLDocument,HTMLBodyElement,HTMLHtmlElement,Window,Node,Text,Map,Set,Range,Selection,ClientRect,File,FileList,Blob,DataTransfer,DataTransferItem,KeyboardEvent,MouseEvent,Promise,Storage",
+	"--builtin-classes": true,
+	"--external": "HTMLDocument,HTMLBodyElement,HTMLHtmlElement,Window,Node,Text,Set,Range,Selection,ClientRect,File,FileList,Blob,DataTransfer,DataTransferItem,KeyboardEvent,MouseEvent,Promise,Storage,URL",
+	"--warnings": [ "-nodoc(class,public)", "-global", "-inheritdoc" ],
 	"--exclude": [
-		"rebaser/src/dm/"
+		"lib/ve/rebaser/src/dm/",
+		"modules/ve-mw/tests/"
 	],
 	"--": [
 		".jsduck/external.js",
-		".jsduck/external-ooui.js",
-		"lib/unicodejs/unicodejs.js",
-		"lib/treeDiffer/treeDiffer-dist.js",
-		"src"
+		"lib/ve/.jsduck/external.js",
+		"lib/ve/.jsduck/external-ooui.js",
+		"lib/ve/lib/unicodejs/unicodejs.js",
+		"lib/ve/lib/treeDiffer/treeDiffer-dist.js",
+		"lib/ve/src",
+		"modules/ve-mw"
 	]
 }

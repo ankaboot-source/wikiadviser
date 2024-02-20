@@ -18,8 +18,8 @@ const SupabaseCookiesStore = {
     return Cookies.get(key);
   },
 
-  remove(key: string) {
-    Cookies.remove(key);
+  remove(key: string, options: CookieOptions) {
+    Cookies.remove(key, options);
   },
 };
 

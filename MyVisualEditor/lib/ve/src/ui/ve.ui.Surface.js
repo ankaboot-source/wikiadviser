@@ -1,7 +1,7 @@
 /*!
  * VisualEditor UserInterface Surface class.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see http://ve.mit-license.org
+ * @copyright See AUTHORS.txt
  */
 
 /**
@@ -47,6 +47,10 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	this.inDialog = config.inDialog || '';
 	this.inTargetWidget = !!config.inTargetWidget;
 	this.mode = config.mode;
+	this.collab = !!config.collab;
+	if ( ve.debug ) {
+		this.collab = true;
+	}
 
 	// The following classes are used here:
 	// * ve-ui-overlay-global-mobile
@@ -236,8 +240,7 @@ ve.ui.Surface.prototype.destroy = function () {
  * @chainable
  */
 ve.ui.Surface.prototype.initialize = function () {
-	// Attach globalOverlay to the global <body>, not the local frame's <body>
-	$( document.body ).append( this.globalOverlay.$element );
+	$( OO.ui.getTeleportTarget() ).append( this.globalOverlay.$element );
 
 	if ( ve.debug ) {
 		this.setupDebugBar();
@@ -250,6 +253,11 @@ ve.ui.Surface.prototype.initialize = function () {
 
 	this.getView().initialize();
 	this.getModel().initialize();
+
+	if ( this.collab && ve.collab ) {
+		setTimeout( ve.collab.setup );
+	}
+
 	this.emit( 'ready' );
 	return this;
 };
@@ -376,16 +384,6 @@ ve.ui.Surface.prototype.getViewportDimensions = function () {
 		bottom: bottom,
 		height: bottom - top
 	};
-};
-
-/**
- * Check if editing is enabled.
- *
- * @deprecated Use #isDisabled
- * @return {boolean} Editing is enabled
- */
-ve.ui.Surface.prototype.isEnabled = function () {
-	return !this.isDisabled();
 };
 
 /**

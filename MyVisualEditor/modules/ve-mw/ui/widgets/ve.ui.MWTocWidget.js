@@ -1,7 +1,7 @@
 /*!
  * VisualEditor UserInterface MWTocWidget class.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see AUTHORS.txt
+ * @copyright See AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
 
@@ -22,7 +22,7 @@ ve.ui.MWTocWidget = function VeUiMWTocWidget( surface, config ) {
 	// Properties
 	this.surface = surface;
 	this.doc = surface.getModel().getDocument();
-	this.metaList = surface.getModel().metaList;
+	this.metaList = this.doc.getMetaList();
 	// Topic level 0 lives inside of a toc item
 	this.rootLength = 0;
 	this.initialized = false;

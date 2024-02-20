@@ -5,7 +5,7 @@
  * for MediaWiki itself (see mediawiki/core:/resources/startup.js).
  * Avoid use of: SVG, HTML5 DOM, ContentEditable etc.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see AUTHORS.txt
+ * @copyright See AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
 
@@ -134,7 +134,7 @@
 
 	function hideToolbarPlaceholder() {
 		if ( $toolbarPlaceholder ) {
-			window.removeEventListener( 'scroll', onWindowScrollListener, { passive: true } );
+			window.removeEventListener( 'scroll', onWindowScrollListener );
 			$toolbarPlaceholder.detach();
 			$toolbarPlaceholder.removeClass( 've-init-mw-desktopArticleTarget-toolbarPlaceholder-open' );
 		}
@@ -326,21 +326,41 @@
 		mw.libs.ve.activationStart = ve.now();
 	}
 
-	function getTabMessage( key ) {
-		var tabMsgKey = tabMessages[ key ];
-		if ( !tabMsgKey && ( key === 'edit' || key === 'create' || key === 'edit-local' || key === 'create-local' ) ) {
-			// Some skins don't use the default 'edit' and 'create' message keys.
-			// e.g. vector-view-edit, vector-view-create
-			tabMsgKey = mw.config.get( 'skin' ) + '-view-' + key;
+	function getTabMessage( tabMsg ) {
+		var tabMsgKey = tabMessages[ tabMsg ];
+		var skinMsgKeys = {
+			edit: 'edit',
+			create: 'create',
+			editlocaldescription: 'edit-local',
+			createlocaldescription: 'create-local'
+		};
+		var key = skinMsgKeys[ tabMsg ];
+		if ( !tabMsgKey && key ) {
+			// Some skins don't use the default skin message keys.
 			// The following messages can be used here:
 			// * vector-view-edit
 			// * vector-view-create
+			// * vector-view-edit-local
+			// * vector-view-create-local
 			// * messages for other skins
+			tabMsgKey = mw.config.get( 'skin' ) + '-view-' + key;
 			if ( !mw.message( tabMsgKey ).exists() ) {
+				// The following messages can be used here:
+				// * skin-view-edit
+				// * skin-view-create
+				// * skin-view-edit-local
+				// * skin-view-create-local
 				tabMsgKey = 'skin-view-' + key;
 			}
 		}
-		return mw.msg( tabMsgKey );
+		// eslint-disable-next-line mediawiki/msg-doc
+		var msg = mw.message( tabMsgKey );
+		if ( !msg.isParseable() ) {
+			mw.log.warn( 'VisualEditor: MediaWiki:' + tabMsgKey + ' contains unsupported syntax. ' +
+				'https://www.mediawiki.org/wiki/Manual:Messages_API#Feature_support_in_JavaScript' );
+			return undefined;
+		}
+		return msg.text();
 	}
 
 	/**
@@ -896,11 +916,9 @@
 		},
 
 		setupMultiTabs: function () {
-			var
-				isMinerva = mw.config.get( 'skin' ) === 'minerva',
-				// Minerva puts the '#ca-...' ids on <a> nodes
-				$caEdit = $( '#ca-edit, li#page-actions-edit' ),
-				$caVeEdit = $( '#ca-ve-edit' );
+			// Minerva puts the '#ca-...' ids on <a> nodes, other skins put them on <li>
+			var $caEdit = $( '#ca-edit' );
+			var $caVeEdit = $( '#ca-ve-edit' );
 
 			if ( pageCanLoadEditor ) {
 				// Allow instant switching to edit mode, without refresh
@@ -914,20 +932,6 @@
 				// Only bind "Add topic" tab if NWE is available, because VE doesn't support section
 				// so we never have to switch from it when editing a section
 				$( '#ca-addsection' ).off( '.ve-target' ).on( 'click.ve-target', init.onEditTabClick.bind( init, 'source' ) );
-			}
-
-			if ( isMinerva ) {
-				// Minerva hides the link text - display tiny icons instead
-				mw.loader.load( [ 'oojs-ui.styles.icons-editing-advanced', 'oojs-ui.styles.icons-accessibility' ] );
-				$caEdit.find( '.mw-ui-icon' ).each( function () {
-					// Use <b> to dodge some styles targeting <span> to hide labels
-					var $icon = $( '<b>' ).addClass( 'mw-ui-icon mw-ui-icon-element mw-ui-icon-wikiText' );
-					$( this ).addClass( 've-edit-source' ).prepend( $icon );
-				} );
-				$caVeEdit.find( '.mw-ui-icon' ).each( function () {
-					var $icon = $( '<b>' ).addClass( 'mw-ui-icon mw-ui-icon-element mw-ui-icon-eye' );
-					$( this ).addClass( 've-edit-visual' ).prepend( $icon );
-				} );
 			}
 
 			if ( init.isVisualAvailable ) {
@@ -948,22 +952,6 @@
 			if ( $editsections.css( 'direction' ) !== bodyDir ) {
 				// Avoid creating inline style attributes if the inherited value is already correct
 				$editsections.css( 'direction', bodyDir );
-			}
-
-			var isMinerva = mw.config.get( 'skin' ) === 'minerva';
-
-			if ( isMinerva ) {
-				// Minerva hides the link text - display tiny icons instead
-				mw.loader.load( [ 'oojs-ui.styles.icons-editing-advanced', 'oojs-ui.styles.icons-accessibility' ] );
-				$( '#mw-content-text .mw-editsection a:not(.mw-editsection-visualeditor)' ).each( function () {
-					// Use <b> to dodge some styles targeting <span> to hide labels
-					var $icon = $( '<b>' ).addClass( 'mw-ui-icon mw-ui-icon-element mw-ui-icon-wikiText' );
-					$( this ).addClass( 've-edit-source' ).prepend( $icon );
-				} );
-				$( '#mw-content-text .mw-editsection a.mw-editsection-visualeditor' ).each( function () {
-					var $icon = $( '<b>' ).addClass( 'mw-ui-icon mw-ui-icon-element mw-ui-icon-eye' );
-					$( this ).addClass( 've-edit-visual' ).prepend( $icon );
-				} );
 			}
 
 			if ( pageCanLoadEditor ) {
@@ -1428,7 +1416,7 @@
 				$( '#wpTextbox1' ).length
 			) {
 				mw.loader.load( 'ext.visualEditor.switching' );
-				$( '#wpTextbox1' ).on( 'wikiEditor-toolbar-doneInitialSections', function () {
+				mw.hook( 'wikiEditor.toolbarReady' ).add( function ( $textarea ) {
 					mw.loader.using( 'ext.visualEditor.switching' ).done( function () {
 						var windowManager, editingTabDialog, switchToolbar, popup,
 							showPopup = url.searchParams.has( 'veswitched' ) && !mw.user.options.get( 'visualeditor-hidesourceswitchpopup' ),
@@ -1463,7 +1451,17 @@
 						switchToolbar.tools.editModeVisual.toolGroup.$element.append( popup.$element );
 						switchToolbar.emit( 'updateState' );
 
-						$( '.wikiEditor-ui-toolbar' ).prepend( switchToolbar.$element );
+						$textarea.wikiEditor( 'addToToolbar', {
+							section: 'secondary',
+							group: 'default',
+							tools: {
+								veEditSwitch: {
+									type: 'element',
+									element: switchToolbar.$element
+								}
+							}
+						} );
+
 						popup.toggle( showPopup );
 
 						// Duplicate of this code in ve.init.mw.DesktopArticleTarget.js
@@ -1472,7 +1470,7 @@
 							$( '#ca-edit' ).removeClass( 'visualeditor-showtabdialog' );
 							// Set up a temporary window manager
 							windowManager = new OO.ui.WindowManager();
-							$( document.body ).append( windowManager.$element );
+							$( OO.ui.getTeleportTarget() ).append( windowManager.$element );
 							editingTabDialog = new mw.libs.ve.EditingTabDialog();
 							windowManager.addWindows( [ editingTabDialog ] );
 							windowManager.openWindow( editingTabDialog )
@@ -1523,7 +1521,7 @@
 				}
 				windowManager = new OO.ui.WindowManager();
 				welcomeDialog = new mw.libs.ve.WelcomeDialog();
-				$( document.body ).append( windowManager.$element );
+				$( OO.ui.getTeleportTarget() ).append( windowManager.$element );
 				windowManager.addWindows( [ welcomeDialog ] );
 				windowManager.openWindow(
 					welcomeDialog,

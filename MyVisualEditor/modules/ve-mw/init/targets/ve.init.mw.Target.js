@@ -1,7 +1,7 @@
 /*!
  * VisualEditor MediaWiki Initialization Target class.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see AUTHORS.txt
+ * @copyright See AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
 
@@ -89,18 +89,18 @@ ve.init.mw.Target.static.toolbarGroups = [
 		include: [ { group: 'structure' } ],
 		demote: [ 'outdent', 'indent' ]
 	},
-	/* Custom WikiAdviser */
-	{
-		name: 'comment',
-		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
-		title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
-		narrowConfig: {
-			invisibleLabel: true,
-			icon: 'notice'
+		/* Custom WikiAdviser */
+		{
+			name: 'comment',
+			label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+			title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+			narrowConfig: {
+				invisibleLabel: false,
+				icon: 'notice'
+			},
+			include: 'comment'
 		},
-		include: 'comment'
-	},
-	/* End WikiAdviser */
+		/* End WikiAdviser */
 	{
 		name: 'insert',
 		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
@@ -141,8 +141,6 @@ ve.init.mw.Target.static.importRules.external.htmlBlacklist.remove = ve.extendOb
 	'sup.reference:not( [typeof] )': true,
 	// ...sometimes we need a looser match if the HTML has been mangled
 	// in a third-party editor e.g. LibreOffice (T232461)
-	// This selector would fail if the "cite_reference_link_prefix" message
-	// were ever modified, but currently it isn't.
 	'a[ href *= "#cite_note" ]': true
 }, ve.init.mw.Target.static.importRules.external.htmlBlacklist.remove );
 

@@ -37,7 +37,7 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: ['axios', 'errorHandler', 'sentry'],
+    boot: ['axios', 'errorHandler', 'sentry', 'posthog'],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],
@@ -84,6 +84,8 @@ module.exports = configure(function (/* ctx */) {
         SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT,
         SENTRY_DSN_FRONTEND: process.env.SENTRY_DSN_FRONTEND,
         SENTRY_ENV_FRONTEND: process.env.SENTRY_ENV_FRONTEND,
+        POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+        POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

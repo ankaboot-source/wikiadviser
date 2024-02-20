@@ -303,7 +303,7 @@ async function parseWikidataTemplate(
   articleId: string,
   parsoidInstance: Parsoid
 ) {
-  const newParsedContentXML = pageContentXML;
+  let newParsedContentXML = pageContentXML;
   const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
   const infoboxesWikitext = extractInfoboxes(newParsedContentXML);
@@ -342,10 +342,9 @@ async function parseWikidataTemplate(
   });
 
   const parsedInfoboxes = await Promise.all(promises);
-
-  for (const infobox in infoboxesWikitext) {
+  for (const infobox of infoboxesWikitext) {
     if (infobox) {
-      newParsedContentXML.replace(infobox, () => {
+      newParsedContentXML = newParsedContentXML.replace(infobox, () => {
         const escapedInfobox = parsedInfoboxes.shift();
         if (escapedInfobox === undefined) {
           throw new Error('Failed to parse all wikidata template');
@@ -354,7 +353,6 @@ async function parseWikidataTemplate(
       });
     }
   }
-
   return newParsedContentXML;
 }
 

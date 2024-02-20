@@ -235,6 +235,10 @@
       .oo-ui-tool-name-mwFeedbackDialog {
         display: none !important;
       }
+      /* Hide Edit section that is next to each paragraph title */
+      .mw-editsection {
+        display: none !important;
+      }
       ```
 
       </details>

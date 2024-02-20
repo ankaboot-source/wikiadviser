@@ -245,14 +245,15 @@
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
-    - <details> <summary> Add JS: </summary>
+    - <details> <summary> Add JS: right under <code>mw.loader.using( [ 'mediawiki.util' ] ).done( function () { </code> </summary>
 
       ```js
       // Add a stylesheet rule when Iframe (Editor)
       var iframeCssRules = mw.util.addCSS(
         `/*  Hide Header when Iframe / Editor. */
       .vector-header-container,
-      .vector-column-start {
+      .vector-column-start,
+      .vector-page-titlebar {
         display: none !important;
       }
       /* Show Toolbar when Iframe / Editor. */

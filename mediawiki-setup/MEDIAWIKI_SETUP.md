@@ -230,6 +230,11 @@
       .ve-ui-toolbar-group-editMode {
         display: none !important;
       }
+      /* Hide some of "Help" elements */
+      .oo-ui-tool-name-mwUserGuide,
+      .oo-ui-tool-name-mwFeedbackDialog {
+        display: none !important;
+      }
       ```
 
       </details>

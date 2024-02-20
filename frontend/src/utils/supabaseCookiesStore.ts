@@ -1,16 +1,28 @@
 import { Cookies } from 'quasar';
 import { CookieOptions } from '@supabase/ssr';
 
+const SB_COOKIE_SIGNATURE_REGEX = /^(sb-.+?auth)/;
+
 const SupabaseCookiesStore = {
   set(key: string, value: string, options: CookieOptions) {
-    if (value.includes('user:')) {
-      const cookie = JSON.parse(value);
-      cookie.user = {
-        id: cookie.user.id,
-      };
-      Cookies.set(key, JSON.stringify(cookie), options);
-    } else {
+    try {
       Cookies.set(key, value, options);
+      /**
+       * Remove Supabase cookies from other environments
+       */
+      const currentSupabaseSignature = key.match(SB_COOKIE_SIGNATURE_REGEX);
+      Object.keys(Cookies.getAll()).forEach((cookieKey) => {
+        const sbSignature = cookieKey.match(SB_COOKIE_SIGNATURE_REGEX);
+        if (
+          sbSignature &&
+          currentSupabaseSignature &&
+          sbSignature[1] !== currentSupabaseSignature[1]
+        ) {
+          Cookies.remove(cookieKey, options);
+        }
+      });
+    } catch (e) {
+      console.error(e);
     }
   },
 

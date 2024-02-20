@@ -168,8 +168,8 @@
       #footer-places {
         display: none !important;
       }
-      /* hide header */
-      .vector-header-container {
+      /* hide left side header */
+      .vector-header-end {
         display: none !important;
       }
       /* hide Menu */
@@ -188,16 +188,12 @@
       .mw-watchlink.mw-list-item {
         display: none !important;
       }
-      /* hide  tools: special pages */
+      /* hide tools: special pages */
       #t-specialpages {
         display: none !important;
       }
       /* hide fullscreen button */
       #p-dock-bottom {
-        display: none !important;
-      }
-      /* Hide Sandwich */
-      .vector-toc-landmark {
         display: none !important;
       }
       /* Hide save dialog's licence */
@@ -212,10 +208,6 @@
         display: block !important;
         padding-bottom: 11px !important;
         padding-right: 11px !important;
-      }
-      /* Hide Header */
-      .mw-body-header {
-        display: none !important;
       }
       /* Hide Tools */
       .vector-page-tools-landmark {
@@ -241,6 +233,10 @@
       }
       /* Hide left-navigation like 'Article' & 'Talk' */
       [aria-label="Namespaces"] {
+        display: none !important;
+      }
+      /* Hide Read/Edit toolbar (Show it when edit) */
+      .vector-page-toolbar {
         display: none !important;
       }
       ```

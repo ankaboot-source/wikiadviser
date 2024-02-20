@@ -172,6 +172,10 @@
       .vector-header-end {
         display: none !important;
       }
+      /* hide sticky header */
+      .vector-sticky-header-container {
+        display: none !important;
+      }
       /* hide Menu */
       .vector-main-menu-landmark {
         display: none !important;

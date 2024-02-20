@@ -61,7 +61,7 @@ $wgFooterIcons = [
 			"srcset" =>
 			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_132x47.png 1.5x, " .
 			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_176x62.png 2x",
-			"url" => "https://app.wikiadviser.io/",
+			"url" => "https://www.wikiadviser.io/",
 			"alt" => "Powered by WikiAdviser",
 		]
 	],

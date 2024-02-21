@@ -1,6 +1,5 @@
 {
 	"name": "VisualEditor",
-	"version": "0.1.2",
 	"author": [
 		"Alex Monk",
 		"Bartosz Dziewoński",
@@ -24,7 +23,7 @@
 	"license-name": "MIT",
 	"type": "editor",
 	"requires": {
-		"MediaWiki": ">= 1.41"
+		"MediaWiki": ">= 1.42"
 	},
 	"callback": "MediaWiki\\Extension\\VisualEditor\\Hooks::onRegistration",
 	"ServiceWiringFiles": [
@@ -130,9 +129,9 @@
 				"editsource": "visualeditor-ca-editsource",
 				"create": null,
 				"createsource": "visualeditor-ca-createsource",
-				"editlocaldescription": "edit-local",
+				"editlocaldescription": null,
 				"editlocaldescriptionsource": "visualeditor-ca-editlocaldescriptionsource",
-				"createlocaldescription": "create-local",
+				"createlocaldescription": null,
 				"createlocaldescriptionsource": "visualeditor-ca-createlocaldescriptionsource",
 				"editsection": "editsection",
 				"editsectionhint": "editsectionhint",
@@ -142,9 +141,6 @@
 		},
 		"VisualEditorTabPosition": {
 			"value": "before"
-		},
-		"VisualEditorTransitionDefault": {
-			"value": false
 		},
 		"VisualEditorUseChangeTagging": {
 			"value": true,
@@ -157,6 +153,10 @@
 		"VisualEditorEditCheck": {
 			"value": false,
 			"description": "Enable experimental Edit Check feature. Can also be enabled using ?ecenable=1."
+		},
+		"VisualEditorEditCheckABTest": {
+			"value": false,
+			"description": "A/B test Edit Check for all users. A/B bucket status will override VisualEditorEditCheck."
 		},
 		"VisualEditorUseSingleEditTab": {
 			"value": false
@@ -183,7 +183,7 @@
 		"visualeditoredit": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\ApiVisualEditorEdit",
 			"services": [
-				"VisualEditorHookRunner",
+				"HookContainer",
 				"StatsdDataFactory",
 				"PageEditStash",
 				"SkinFactory",
@@ -200,7 +200,7 @@
 			"i18n/ve-mw/api",
 			"i18n/ve-mw/mwlanguagevariant",
 			"i18n/ve-wmf",
-			"modules/editcheck/i18n"
+			"editcheck/i18n"
 		]
 	},
 	"ExtensionMessagesFiles": {
@@ -327,10 +327,6 @@
 				],
 				"monobook": [
 					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-apextheme.css"
-				],
-				"minerva": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.css",
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-minerva.css"
 				]
 			},
 			"dependencies": [
@@ -567,16 +563,16 @@
 		"ext.visualEditor.editCheck": {
 			"group": "visualEditorA",
 			"packageFiles": [
-				"modules/editcheck/init.js",
-				"modules/editcheck/EditCheckContextItem.js",
-				"modules/editcheck/EditCheckInspector.js",
+				"editcheck/modules/init.js",
+				"editcheck/modules/EditCheckContextItem.js",
+				"editcheck/modules/EditCheckInspector.js",
 				{
-					"name": "modules/editcheck/config.json",
+					"name": "editcheck/modules/config.json",
 					"callback": "\\MediaWiki\\Extension\\VisualEditor\\EditCheck\\ResourceLoaderData::getConfig"
 				}
 			],
 			"styles": [
-				"modules/editcheck/EditCheck.less"
+				"editcheck/modules/EditCheck.less"
 			],
 			"dependencies": [
 				"ext.visualEditor.core",
@@ -597,10 +593,6 @@
 				"editcheck-dialog-addref-title",
 				"editcheck-dialog-title",
 				"visualeditor-backbutton-tooltip"
-			],
-			"targets": [
-				"desktop",
-				"mobile"
 			]
 		},
 		"ext.visualEditor.core.utils": {
@@ -693,7 +685,7 @@
 				"modules/ve-mw/ui/tools/ve.ui.MWSaveTool.js"
 			],
 			"styles": [
-				"modules/ve-mw/ui/styles/dialogs/ve.ui.MWSaveDialog.css"
+				"modules/ve-mw/ui/styles/dialogs/ve.ui.MWSaveDialog.less"
 			],
 			"dependencies": [
 				"mediawiki.diff",
@@ -1136,6 +1128,7 @@
 				"lib/ve/src/ce/styles/nodes/ve.ce.SectionNode.css",
 				"lib/ve/src/ce/styles/nodes/ve.ce.TableCellNode.css",
 				"lib/ve/src/ce/styles/nodes/ve.ce.TableNode.css",
+				"lib/ve/src/ce/styles/ve.ce.css",
 				"lib/ve/src/ce/styles/ve.ce.Surface.css",
 				"lib/ve/src/ui/styles/dialogs/ve.ui.ToolbarDialog.css",
 				"lib/ve/src/ui/styles/dialogs/ve.ui.CommandHelpDialog.css",
@@ -1160,6 +1153,7 @@
 				"lib/ve/src/ui/styles/contextitems/ve.ui.CommentContextItem.css",
 				"lib/ve/src/ui/styles/contextitems/ve.ui.LanguageContextItem.css",
 				"lib/ve/src/ui/styles/contextitems/ve.ui.LinkContextItem.css",
+				"lib/ve/src/ui/styles/contextitems/ve.ui.MergeCellsContextItem.css",
 				"lib/ve/src/ui/styles/contextitems/ve.ui.ToolContextItem.css",
 				"lib/ve/src/ui/styles/ve.ui.Overlay.css",
 				"lib/ve/src/ui/styles/ve.ui.Surface.css",
@@ -1194,7 +1188,6 @@
 				"visualeditor-align-desc-none",
 				"visualeditor-align-desc-right",
 				"visualeditor-align-widget-center",
-				"visualeditor-align-widget-default",
 				"visualeditor-align-widget-left",
 				"visualeditor-align-widget-right",
 				"visualeditor-alignablecontextitem-title",
@@ -1244,8 +1237,6 @@
 				"visualeditor-dialog-action-goback",
 				"visualeditor-dialog-action-insert",
 				"visualeditor-dialog-command-help-title",
-				"visualeditor-dialog-error",
-				"visualeditor-dialog-error-dismiss",
 				"visualeditor-dialog-table-caption",
 				"visualeditor-dialog-table-title",
 				"visualeditor-dimensionswidget-height",
@@ -1276,14 +1267,12 @@
 				"visualeditor-formatdropdown-format-heading6",
 				"visualeditor-formatdropdown-format-paragraph",
 				"visualeditor-formatdropdown-format-preformatted",
-				"visualeditor-formatdropdown-title",
 				"visualeditor-help-tool",
 				"visualeditor-historybutton-redo-tooltip",
 				"visualeditor-historybutton-undo-tooltip",
 				"visualeditor-horizontalrule-tooltip",
 				"visualeditor-indentationbutton-indent-tooltip",
 				"visualeditor-indentationbutton-outdent-tooltip",
-				"visualeditor-inspector-close-tooltip",
 				"visualeditor-inspector-remove-tooltip",
 				"visualeditor-key-alt",
 				"visualeditor-key-backspace",
@@ -1330,8 +1319,6 @@
 				"visualeditor-shortcuts-text-style",
 				"visualeditor-slug-insert",
 				"visualeditor-specialcharacter-button-tooltip",
-				"visualeditor-specialcharacterinspector-title",
-				"visualeditor-table-caption",
 				"visualeditor-table-context-col",
 				"visualeditor-table-context-row",
 				"visualeditor-table-contextitem-properties",
@@ -1354,6 +1341,7 @@
 				"visualeditor-table-move-row-after",
 				"visualeditor-table-move-row-before",
 				"visualeditor-table-sum",
+				"visualeditor-table-selection-dimensions",
 				"visualeditor-tablecell-tooltip",
 				"visualeditor-toolbar-format-tooltip",
 				"visualeditor-toolbar-history",
@@ -1439,9 +1427,6 @@
 			],
 			"dependencies": [
 				"ext.visualEditor.core"
-			],
-			"messages": [
-				"visualeditor-tablecell-contextitem"
 			]
 		},
 		"ext.visualEditor.welcome": {
@@ -1576,7 +1561,6 @@
 				"modules/ve-mw/ce/styles/nodes/ve.ce.MWTableNode.css",
 				"modules/ve-mw/ui/styles/dialogs/ve.ui.MWPreDialog.css",
 				"modules/ve-mw/ui/styles/inspectors/ve.ui.MWExtensionInspector.css",
-				"modules/ve-mw/ui/styles/inspectors/ve.ui.MWLiveExtensionInspector.css",
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWExpandableContentElement.css",
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWExpandableErrorElement.css",
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWFloatingHelpElement.css",
@@ -1591,12 +1575,10 @@
 					"modules/ve-mw/themes/wikimediaui.css"
 				],
 				"vector": [
-					"modules/ve-mw/themes/wikimediaui.css",
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWTargetWidget-vector.less"
+					"modules/ve-mw/themes/wikimediaui.css"
 				],
 				"vector-2022": [
-					"modules/ve-mw/themes/wikimediaui.css",
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWTargetWidget-vector.less"
+					"modules/ve-mw/themes/wikimediaui.css"
 				],
 				"monobook": [
 					"modules/ve-mw/themes/apex.css"
@@ -1633,7 +1615,6 @@
 				"visualeditor-feedback-tool",
 				"visualeditor-help-label",
 				"visualeditor-help-link",
-				"visualeditor-help-title",
 				"visualeditor-includes-documentation",
 				"visualeditor-includes-includeonly",
 				"visualeditor-includes-includeonly-description",
@@ -2192,6 +2173,7 @@
 				"visualeditor-changedesc-link-removed",
 				"visualeditor-changedesc-list-indent",
 				"visualeditor-changedesc-list-outdent",
+				"visualeditor-changedesc-list-style-indent",
 				"visualeditor-changedesc-no-key",
 				"visualeditor-changedesc-set",
 				"visualeditor-changedesc-textstyle-added",
@@ -2488,7 +2470,7 @@
 		},
 		"ext.visualEditor.moduleIcons": {
 			"group": "visualEditorA",
-			"class": "ResourceLoaderOOUIImageModule",
+			"class": "MediaWiki\\ResourceLoader\\OOUIImageModule",
 			"name": "ve.ui.Icons",
 			"rootPath": "modules/ve-mw/ui/styles",
 			"selectorWithoutVariant": ".oo-ui-icon-{name}",
@@ -2496,7 +2478,7 @@
 		},
 		"ext.visualEditor.moduleIndicators": {
 			"group": "visualEditorA",
-			"class": "ResourceLoaderOOUIImageModule",
+			"class": "MediaWiki\\ResourceLoader\\OOUIImageModule",
 			"name": "ve.ui.Indicators",
 			"rootPath": "modules/ve-mw/ui/styles",
 			"selectorWithoutVariant": ".oo-ui-indicator-{name}",
@@ -2593,6 +2575,9 @@
 			"lib/ve/tests/ce/nodes/ve.ce.ResizableNode.test.js",
 			"lib/ve/tests/ce/nodes/ve.ce.TextNode.test.js",
 			"lib/ve/tests/ce/nodes/ve.ce.TableNode.test.js",
+			"lib/ve/tests/init/ve.init.Target.test.js",
+			"lib/ve/tests/init/ve.init.ConflictableStorage.test.js",
+			"lib/ve/tests/ui/dialogs/ve.ui.FindAndReplaceDialog.test.js",
 			"lib/ve/tests/ui/ve.ui.Trigger.test.js",
 			"lib/ve/tests/ui/ve.ui.Sequence.test.js",
 			"lib/ve/tests/ui/ve.ui.DiffElement.test.js",
@@ -2617,6 +2602,7 @@
 			"modules/ve-mw/tests/ui/dialogs/ve.ui.MWTransclusionDialog.test.js",
 			"modules/ve-mw/tests/init/targets/ve.init.mw.DesktopArticleTarget.test.js",
 			"lib/ve/tests/ui/inspectors/ve.ui.FragmentInspector.test.js",
+			"lib/ve/tests/ui/dialogs/ve.ui.FindAndReplaceDialog.test.js",
 			"modules/ve-mw/tests/ui/inspectors/ve.ui.FragmentInspector.test.js",
 			"modules/ve-mw/tests/ui/layouts/ve.ui.MWTwoPaneTransclusionDialogLayout.test.js",
 			"modules/ve-mw/tests/ui/pages/ve.ui.MWAddParameterPage.test.js",
@@ -2712,7 +2698,8 @@
 		"CollabPad": "MediaWiki\\Extension\\VisualEditor\\SpecialCollabPad"
 	},
 	"AutoloadNamespaces": {
-		"MediaWiki\\Extension\\VisualEditor\\": "includes/"
+		"MediaWiki\\Extension\\VisualEditor\\": "includes/",
+		"MediaWiki\\Extension\\VisualEditor\\EditCheck\\": "editcheck/includes/"
 	},
 	"ConfigRegistry": {
 		"visualeditor": "GlobalVarConfig::newInstance"

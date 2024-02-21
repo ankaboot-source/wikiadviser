@@ -4,8 +4,10 @@
 			"2nd-player",
 			"A2y4",
 			"Aefgh39622",
+			"Ant176",
 			"Darklanlan",
 			"Delim",
+			"Dragoniez",
 			"Fryed-peach",
 			"Fumi37s",
 			"Hinaloe",
@@ -44,9 +46,7 @@
 			"Yusuke1109",
 			"しぃ",
 			"ネイ",
-			"春春眠眠",
-			"Dragoniez",
-			"Ant176"
+			"春春眠眠"
 		]
 	},
 	"collabpad-doctitle": "CollabPad: $1",
@@ -76,6 +76,7 @@
 	"visualeditor-ca-editlocaldescriptionsource": "ローカルの解説を編集",
 	"visualeditor-ca-editsource": "ソースを編集",
 	"visualeditor-ca-editsource-section": "ソースを編集",
+	"visualeditor-ca-editsource-section-hint": "節のソースコードを編集する: $1",
 	"visualeditor-categories-tool": "カテゴリ",
 	"visualeditor-changedesc-mwlanguagevariant": "言語変種のマークアップを変更しました",
 	"visualeditor-changedesc-mwredirect": "転送先を $1 から $2 へ変更しました",

@@ -16,7 +16,12 @@
             dense
             outlined
             class="q-mb-sm"
-            :rules="[(title) => !!title || 'Title is required']"
+            :rules="[
+              (title) => !!title || 'Title is required',
+              (title) =>
+                title.length <= 256 ||
+                'Title must contain 1 to 256 characters.',
+            ]"
           />
           <div class="row">
             <div>Description</div>

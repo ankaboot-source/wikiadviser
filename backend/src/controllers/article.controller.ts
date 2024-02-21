@@ -11,6 +11,7 @@ import logger from '../logger';
 import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
+import { MAX_TITLE_LENGTH } from '../utils/consts';
 
 /**
  * Imports a new article into a MediaWiki instance.
@@ -88,6 +89,12 @@ export async function createArticle(
   if (typeof title !== 'string' || !title.length) {
     return res.status(400).json({
       message: 'Title is required and must be a string.'
+    });
+  }
+
+  if (title.length > MAX_TITLE_LENGTH) {
+    return res.status(400).json({
+      message: `Title must contain 1 to ${MAX_TITLE_LENGTH} characters.`
     });
   }
 

@@ -1,7 +1,7 @@
 /*!
  * VisualEditor MediaWiki Initialization ArticleTarget class.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see AUTHORS.txt
+ * @copyright See AUTHORS.txt
  * @license The MIT License (MIT); see LICENSE.txt
  */
 
@@ -1820,7 +1820,9 @@ ve.init.mw.ArticleTarget.prototype.getSurfaceConfig = function ( config ) {
 			// * mw-textarea-sproteced
 			.concat( this.protectedClasses )
 			// addClass doesn't like empty strings
-			.filter( function ( c ) { return c; } )
+			.filter( function ( c ) {
+				return c;
+			} )
 	}, config ) );
 };
 

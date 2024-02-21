@@ -1,7 +1,7 @@
 /*!
  * VisualEditor parsing utilities, used when converting HTMLDocuments and strings.
  *
- * @copyright 2011-2020 VisualEditor Team and others; see http://ve.mit-license.org
+ * @copyright See AUTHORS.txt
  */
 
 /**
@@ -268,23 +268,6 @@ ve.normalizeAttributeValue = function ( name, value, nodeName ) {
 	var node = document.createElement( nodeName || 'div' );
 	node.setAttribute( name, value );
 	return node.getAttribute( name );
-};
-
-/**
- * Helper function for #parseXhtml and #serializeXhtml.
- *
- * Map attributes that are broken in IE to attributes prefixed with data-ve-
- * or vice versa. rowspan/colspan are also broken in Firefox 38 and below, but
- * we don't consider that serious enough to run this function for Firefox.
- *
- * @deprecated
- * @param {string} html HTML string. Must also be valid XML. Must only have
- *   one root node (e.g. be a complete document).
- * @param {boolean} unmask Map the masked attributes back to their originals
- * @return {string} HTML string modified to mask/unmask broken attributes
- */
-ve.transformStyleAttributes = function ( html ) {
-	return html;
 };
 
 /**

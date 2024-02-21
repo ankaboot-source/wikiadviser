@@ -15,7 +15,6 @@
             bg-color="white"
             dense
             outlined
-            :maxlength="MAX_TITLE_LENGTH"
             class="q-mb-sm"
             :rules="[(title) => !!title || 'Title is required']"
           />
@@ -67,7 +66,6 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from 'src/stores/userStore';
 import { AxiosError } from 'axios';
-import { MAX_TITLE_LENGTH } from 'src/utils/consts';
 
 const $q = useQuasar();
 const router = useRouter();

@@ -164,12 +164,16 @@
       .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
         display: none !important;
       }
-      /* hide footer */
-      .mw-footer-container {
+      /* hide footer-places */
+      #footer-places {
         display: none !important;
       }
-      /* hide header */
-      .vector-header-container {
+      /* hide left side header */
+      .vector-header-end {
+        display: none !important;
+      }
+      /* hide sticky header */
+      .vector-sticky-header-container {
         display: none !important;
       }
       /* hide Menu */
@@ -188,16 +192,12 @@
       .mw-watchlink.mw-list-item {
         display: none !important;
       }
-      /* hide  tools: special pages */
+      /* hide tools: special pages */
       #t-specialpages {
         display: none !important;
       }
       /* hide fullscreen button */
       #p-dock-bottom {
-        display: none !important;
-      }
-      /* Hide Sandwich */
-      .vector-toc-landmark {
         display: none !important;
       }
       /* Hide save dialog's licence */
@@ -213,10 +213,6 @@
         padding-bottom: 11px !important;
         padding-right: 11px !important;
       }
-      /* Hide Header */
-      .mw-body-header {
-        display: none !important;
-      }
       /* Hide Tools */
       .vector-page-tools-landmark {
         display: none !important;
@@ -230,11 +226,51 @@
       .ve-ui-toolbar-group-editMode {
         display: none !important;
       }
+      /* Hide some of "Help" elements */
+      .oo-ui-tool-name-mwUserGuide,
+      .oo-ui-tool-name-mwFeedbackDialog {
+        display: none !important;
+      }
+      /* Hide Edit section that is next to each paragraph title */
+      .mw-editsection {
+        display: none !important;
+      }
+      /* Hide left-navigation like 'Article' & 'Talk' */
+      [aria-label="Namespaces"] {
+        display: none !important;
+      }
+      /* Hide Read/Edit toolbar (Show it when iframe/edit) */
+      .vector-page-toolbar {
+        display: none !important;
+      }
       ```
 
       </details>
 
   - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
+
+    - <details> <summary> Add JS: right above the last <code>} );</code> </summary>
+
+      ```js
+      // Add a stylesheet rule when Iframe (Editor)
+      var iframeCssRules = mw.util.addCSS(
+        `/*  Hide Header when Iframe / Editor. */
+      .vector-header-container,
+      .vector-column-start,
+      .vector-page-titlebar {
+        display: none !important;
+      }
+      /* Show Toolbar when Iframe / Editor. */
+      .vector-page-toolbar {
+        display: block !important;
+      }`
+      );
+
+      const isIframe = window.location !== window.parent.location;
+      iframeCssRules.disabled = !isIframe;
+      ```
+
+      </details>
 
   Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
 

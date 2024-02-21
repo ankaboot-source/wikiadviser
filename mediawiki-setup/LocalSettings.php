@@ -39,7 +39,7 @@ $wgResourceBasePath = $wgScriptPath;
 ## The URL paths to the logo.  Make sure you change this from the default,
 ## or else you'll overwrite your logo when you upgrade!
 /* 
-Copy the repo's `docs/icons` folder into mediawiki's `$wgResourceBasePath/resources/assets`
+Copy the repo's `docs/assets/icons` folder into mediawiki's `$wgResourceBasePath/resources/assets`
 $wgResourceBasePath is where your mediawiki instance is installed. 
 */
 $wgLogos = [
@@ -47,6 +47,25 @@ $wgLogos = [
 	'icon' => "$wgResourceBasePath/resources/assets/icons/logo.svg",
 ];
 $wgFavicon = "$wgResourceBasePath/resources/assets/icons/favicon.ico";
+
+## Footer "Powered by", https://www.mediawiki.org/wiki/Manual:$wgFooterIcons
+# Copy the repo's `docs/assets` folder into mediawiki's `$wgResourceBasePath/resources/assets`
+
+$wgFooterIcons = [
+	"copyright" => [
+		"copyright" => [], // placeholder for the built in copyright icon
+	],
+	"poweredby" => [
+		"wikiadviser" => [
+			"src" => "$wgResourceBasePath/resources/assets/poweredby_wikiadviser_88x31.png",
+			"srcset" =>
+			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_132x47.png 1.5x, " .
+			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_176x62.png 2x",
+			"url" => "https://www.wikiadviser.io/",
+			"alt" => "Powered by WikiAdviser",
+		]
+	],
+];
 
 ## UPO means: this is also a user preference option
 

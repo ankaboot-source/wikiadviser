@@ -57,14 +57,14 @@ $wgFooterIcons = [
 	],
 	"poweredby" => [
 		"wikiadviser" => [
-			"src" => "$wgResourceBasePath/resources/assets/poweredby_wikiadviser_132x47.png",
+			"src" => "$wgResourceBasePath/resources/assets/poweredby_wikiadviser_176x62.png",
 			"srcset" =>
 			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_132x47.png 1.5x, " .
 			"$wgResourceBasePath/resources/assets/poweredby_wikiadviser_176x62.png 2x",
 			"url" => "https://www.wikiadviser.io/",
 			"alt" => "Powered by WikiAdviser",
-			"height" => "47",
-			"width" => "132",
+			"height" => "62",
+			"width" => "176",
 		]
 	],
 ];

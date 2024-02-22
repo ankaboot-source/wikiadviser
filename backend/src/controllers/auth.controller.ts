@@ -30,7 +30,7 @@ export default async function restrictMediawikiAccess(
     );
 
     const allowedPrefixRegEx = new RegExp(
-      `^/wiki/(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|prop=imageinfo\\&indexpageids=1&iiprop=size%7Cmediatype\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)))`,
+      `^/wiki/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|prop=imageinfo\\&indexpageids=1&iiprop=size%7Cmediatype\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)`,
       'i'
     );
 

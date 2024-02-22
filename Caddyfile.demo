@@ -10,7 +10,7 @@
 
         #### Mediawiki Demo ####
 
-	      handle /wiki/* {
+	handle /wiki/* {
           @publicip not client_ip private_ranges
           forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
             header_up Host {upstream_hostport}
@@ -62,9 +62,11 @@
               roll_keep_for 24h
           }
         }
-        header {
-          -X-Frame-Options
+        handle /wiki/* {
+            header {
+              -X-Frame-Options
+            }
+            rewrite /robots.txt ./robots.txt # Disable search engine indexing
+            reverse_proxy wiki:8081
         }
-        rewrite /robots.txt ./robots.txt # Disable search engine indexing
-        reverse_proxy wiki:8081
 }

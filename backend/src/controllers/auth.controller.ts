@@ -25,12 +25,12 @@ export default async function restrictMediawikiAccess(
     const user = await authHandler.verifyCookie(req);
 
     const articleIdRegEx = new RegExp(
-      `^wiki/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
+      `^/wiki/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
       'i'
     );
 
     const allowedPrefixRegEx = new RegExp(
-      `^wiki/(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|prop=imageinfo\\&indexpageids=1&iiprop=size%7Cmediatype\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)))`,
+      `^/wiki/(favicon.ico|(/(${wikiadviserLanguagesRegex})/(load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|prop=imageinfo\\&indexpageids=1&iiprop=size%7Cmediatype\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)))`,
       'i'
     );
 
@@ -43,10 +43,10 @@ export default async function restrictMediawikiAccess(
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3];
 
     const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
-      (lang: string) => `wiki/${lang}/api.php`
+      (lang: string) => `/wiki/${lang}/api.php`
     );
     const forwardUriStartsWith = wikiadviserLanguages.map(
-      (lang: string) => `wiki/${lang}/api.php?`
+      (lang: string) => `/wiki/${lang}/api.php?`
     );
 
     const hasAllowedPrefixes =

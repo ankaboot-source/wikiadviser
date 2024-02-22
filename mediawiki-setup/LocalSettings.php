@@ -274,3 +274,12 @@ define("NS_PORTAL", 3000);
 define("NS_PORTAL_TALK", 3001);
 $wgExtraNamespaces[NS_PORTAL] = "Portal";
 $wgExtraNamespaces[NS_PORTAL_TALK] = "Portal_talk";
+$wgForeignFileRepos[] = [
+	'class' => ForeignAPIRepo::class,
+	'name' => "images-wikipedia-${LANGUAGE}", // Must be a distinct name
+	'apibase' => "https://${LANGUAGE}.wikipedia.org/w/api.php",
+	'hashLevels' => 2,
+	'fetchDescription' => true, // Optional
+	'descriptionCacheExpiry' => 43200, // 12 hours, optional (values are seconds)
+	'apiThumbCacheExpiry' => 86400, // 24 hours, optional, but required for local thumb caching
+];

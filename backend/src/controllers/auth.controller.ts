@@ -19,6 +19,10 @@ export default async function restrictMediawikiAccess(
 ) {
   const forwardedUri = req.headers['x-forwarded-uri'];
   const forwardedMethod = req.headers['x-forwarded-method'];
+  logger.info({ req });
+  logger.info('---');
+  logger.info({ forwardedUri });
+  logger.info({ forwardedMethod });
 
   try {
     const authHandler = new SupabaseCookieAuthorization(logger);

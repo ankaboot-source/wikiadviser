@@ -297,12 +297,20 @@ function extractInfoboxes(input: string) {
   return infoboxes;
 }
 
+/**
+ * Parses Wikidata template from XML and HTML content of a Wikipedia page.
+ * @param pageContentXML - The XML content of the Wikipedia page.
+ * @param pageContentHTML - The HTML content of the Wikipedia page.
+ * @param articleId - The ID of the Wikipedia article.
+ * @param parsoidInstance - The instance of Parsoid for parsing.
+ * @returns The parsed Wikidata template.
+ */
 async function parseWikidataTemplate(
   pageContentXML: string,
   pageContentHTML: string,
   articleId: string,
   parsoidInstance: Parsoid
-) {
+): Promise<string> {
   let newParsedContentXML = pageContentXML;
   const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
@@ -333,9 +341,9 @@ async function parseWikidataTemplate(
     );
     const parsedWikitext = wikiText
       .replace(/<style[^>]*>.*<\/style>/g, '')
-      .replace(/\[\[.*\/wiki\/((File|Fichier):(.*?))\]\]/g, '[[$1]]') // Fix images
+      .replace(/\[\[.*(=|\/)((File|Fichier):(.*?))\]\]/g, '[[$2]]') // replace image links to wikitext
+      .replace(/(&lang=\w+)/g, '') // Remove '&lang=[value]' from wikipedia links
       .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // remove wikidata redundant links
-      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '')
       .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
 
     return encode(parsedWikitext);

@@ -205,10 +205,10 @@
         display: none !important;
       }
       /* Show "Comment" Label */
-      a[title="Comment"] {
+      .oo-ui-tool-name-comment > a {
         padding-top: 11px !important;
       }
-      a[title="Comment"] > .oo-ui-tool-title {
+      .oo-ui-tool-name-comment > a > .oo-ui-tool-title {
         display: block !important;
         padding-bottom: 11px !important;
         padding-right: 11px !important;

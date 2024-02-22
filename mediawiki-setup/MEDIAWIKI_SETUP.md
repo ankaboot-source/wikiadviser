@@ -168,8 +168,8 @@
       #footer-places {
         display: none !important;
       }
-      /* hide left side header */
-      .vector-header-end {
+      /* hide header */
+      .vector-header-container {
         display: none !important;
       }
       /* hide sticky header */
@@ -255,7 +255,6 @@
       // Add a stylesheet rule when Iframe (Editor)
       var iframeCssRules = mw.util.addCSS(
         `/*  Hide Header when Iframe / Editor. */
-      .vector-header-container,
       .vector-column-start,
       .vector-page-titlebar {
         display: none !important;

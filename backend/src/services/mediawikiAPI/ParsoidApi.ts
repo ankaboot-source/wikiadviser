@@ -32,7 +32,7 @@ export default class Parsoid {
     const domain = new URL(mediawikiBaseURL).hostname;
 
     return axios.create({
-      baseURL: `https://${domain}/${language}/rest.php/${domain}`,
+      baseURL: `https://${domain}/wiki/${language}/rest.php/${domain}`,
       headers: {
         'Content-Type': 'application/json'
       }

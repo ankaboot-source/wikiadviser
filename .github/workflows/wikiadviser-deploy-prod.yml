@@ -28,7 +28,6 @@ jobs:
 
           WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
           SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
-          WIKIADVISER_ROOT_DOMAIN: ${{ vars.WIKIADVISER_ROOT_DOMAIN }}
           WIKIADVISER_API_PORT: ${{ vars.WIKIADVISER_API_PORT }}
           MEDIAWIKI_PROD_ENDPOINT: ${{ vars.MEDIAWIKI_PROD_ENDPOINT }}
           WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
@@ -56,7 +55,7 @@ jobs:
           host: ${{ vars.WIKIADVISER_PROD_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER_PROD }}
           username: ${{ secrets.SSH_USERNAME_WIKIADVISER_PROD }}
-          envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_PROD_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROD_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_ROOT_DOMAIN,SENTRY_DSN,SENTRY_ENV_BACKEND,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV,POSTHOG_API_KEY,POSTHOG_API_HOST
+          envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_PROD_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROD_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN,SENTRY_ENV_BACKEND,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV,POSTHOG_API_KEY,POSTHOG_API_HOST
 
           script: |
             wikiadviser_path="/home/wikiadviser-prod/wikiadviser"
@@ -84,7 +83,6 @@ jobs:
             echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env
 
             echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" >> $wikiadviser_path/.env
-            echo "WIKIADVISER_ROOT_DOMAIN=$WIKIADVISER_ROOT_DOMAIN" >> $wikiadviser_path/.env
             echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
@@ -139,12 +137,12 @@ jobs:
             fi
 
             # Copy Visual Editor to Extensions
-            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
+            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
 
             # Copy assets
-            cp -r $wikiadviser_path/$assets_folder /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/resources/assets/
+            cp -r $wikiadviser_path/$assets_folder /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/wiki/resources/assets/
 
             # Run update.php in Maintenance Folder
             # https://www.mediawiki.org/wiki/Manual:Update.php
-            cd /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/maintenance/
+            cd /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/
             php update.php --quick

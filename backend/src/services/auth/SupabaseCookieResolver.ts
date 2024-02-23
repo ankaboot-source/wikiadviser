@@ -24,7 +24,7 @@ export default class SupabaseCookieAuthorization implements Authorization {
         }
       );
       const { data } = await supabase.auth.getSession();
-      return data?.session?.user;
+      return data?.session?.user ?? null;
     } catch (e) {
       this.logger.error(e);
       throw e;

@@ -115,18 +115,12 @@
       </q-card>
     </div>
   </div>
-  <template v-if="reachedLimits">
-    <upgrade-account v-model="showImportArticleDialog" />
-    <upgrade-account v-model="showCreateArticleDialog" />
-  </template>
-  <template v-else>
-    <import-article v-model="showImportArticleDialog" />
-    <create-article v-model="showCreateArticleDialog" />
-  </template>
+
+  <import-article v-model="showImportArticleDialog" />
+  <create-article v-model="showCreateArticleDialog" />
 </template>
 
 <script setup lang="ts">
-import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
 import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
 import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
 import CreateArticle from 'src/components/AddArticleCard/CreateArticleCard.vue';
@@ -144,12 +138,6 @@ const showImportArticleDialog = ref(false);
 const showCreateArticleDialog = ref(false);
 
 const articles = computed(() => articlesStore.articles);
-
-const reachedLimits = computed(
-  () =>
-    (!showImportArticleDialog.value || !showCreateArticleDialog.value) &&
-    articlesStore.articles.length >= (user.value?.allowed_articles ?? 0),
-);
 
 onBeforeMount(async () => {
   await useUserStore().fetchProfile();

@@ -1,5 +1,5 @@
 <template>
-  <q-dialog>
+  <q-dialog v-if="!reachedLimits">
     <q-card class="column" style="width: 60vw; max-height: 80vh" flat>
       <q-toolbar class="borders">
         <q-toolbar-title class="merriweather">
@@ -56,8 +56,8 @@
         </q-card-actions>
       </q-form>
     </q-card>
-    <upgrade-account v-model="hasReachedLimits" />
   </q-dialog>
+  <upgrade-account v-else />
 </template>
 
 <script setup lang="ts">
@@ -67,7 +67,7 @@ import { createArticle } from 'src/api/supabaseHelper';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { Profile } from 'src/types';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from 'src/stores/userStore';
 import { AxiosError } from 'axios';
@@ -87,10 +87,19 @@ const newArticle = ref({ title: '', description: '', language: articleLang });
 
 const loadingCreation = ref(false);
 const hasReachedLimits = ref(false);
+const creatingArticle = ref(false);
+const user = computed(() => useUserStore().user as Profile);
+const reachedLimits = computed(
+  () =>
+    (articlesStore.articles.length >= (user.value?.allowed_articles ?? 0) ||
+      hasReachedLimits.value) &&
+    !creatingArticle.value,
+);
 
 async function addArticle() {
   try {
     loadingCreation.value = true;
+    creatingArticle.value = true;
     const user = userStore.user as Profile;
 
     //NEW ARTICLE
@@ -119,6 +128,7 @@ async function addArticle() {
     });
   } catch (error) {
     loadingCreation.value = false;
+    creatingArticle.value = false;
 
     if (error instanceof AxiosError) {
       hasReachedLimits.value = error.response?.status === 402;

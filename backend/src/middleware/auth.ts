@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../logger';
-import SupabaseCookieAuthorization from '../services/auth/SupabaseCookieResolver';
+import SupabaseJwtAuthorization from '../services/auth/SupabaseJwtResolver';
 
 /**
  * Authorization middleware for verifying user sessions.
@@ -15,8 +15,8 @@ async function authorizationMiddleware(
   next: NextFunction
 ) {
   try {
-    const authHandler = new SupabaseCookieAuthorization(logger);
-    const user = await authHandler.verifyCookie(req);
+    const authHandler = new SupabaseJwtAuthorization(logger);
+    const user = await authHandler.verifyToken(req);
 
     if (!user) {
       return res.status(401).json({ message: 'Authorization denied' });

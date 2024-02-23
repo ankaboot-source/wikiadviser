@@ -18,6 +18,7 @@ import supabaseClient from 'src/api/supabase';
 import AppHeader from 'src/components/AppHeader.vue';
 import { onMounted } from 'vue';
 import { useUserStore } from './stores/userStore';
+import { api } from './boot/axios';
 
 const userStore = useUserStore();
 
@@ -32,6 +33,7 @@ onMounted(async () => {
 
   supabaseClient.auth.onAuthStateChange((_, _session) => {
     userStore.session = _session as Session;
+    api.defaults.headers.common['x-sb-jwt'] = _session?.access_token;
   });
 });
 

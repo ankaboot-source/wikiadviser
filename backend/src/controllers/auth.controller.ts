@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
 import logger from '../logger';
-import SupabaseCookieAuthorization from '../services/auth/SupabaseCookieResolver';
+import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 
 const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
@@ -21,7 +21,7 @@ export default async function restrictMediawikiAccess(
   const forwardedMethod = req.headers['x-forwarded-method'];
 
   try {
-    const authHandler = new SupabaseCookieAuthorization(logger);
+    const authHandler = new SupabaseAuthorization(logger);
     const user = await authHandler.verifyCookie(req);
 
     const articleIdRegEx = new RegExp(

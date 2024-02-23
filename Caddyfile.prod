@@ -10,7 +10,7 @@
 
         #### Mediawiki Prod ####
 
-	      handle /wiki/* {
+	 handle /wiki/* {
           @publicip not client_ip private_ranges
           forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
             header_up Host {upstream_hostport}

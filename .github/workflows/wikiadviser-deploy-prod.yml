@@ -137,12 +137,12 @@ jobs:
             fi
 
             # Copy Visual Editor to Extensions
-            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/extensions/
+            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
 
             # Copy assets
-            cp -r $wikiadviser_path/$assets_folder /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/resources/assets/
+            cp -r $wikiadviser_path/$assets_folder /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/wiki/resources/assets/
 
             # Run update.php in Maintenance Folder
             # https://www.mediawiki.org/wiki/Manual:Update.php
-            cd /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/maintenance/
+            cd /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/
             php update.php --quick

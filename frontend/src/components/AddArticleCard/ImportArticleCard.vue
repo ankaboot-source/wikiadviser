@@ -1,5 +1,5 @@
 <template>
-  <q-dialog>
+  <q-dialog v-if="!reachedLimits">
     <q-card class="column fit" style="max-width: 60vw; max-height: 80vh" flat>
       <q-toolbar class="borders">
         <q-toolbar-title class="merriweather">
@@ -96,13 +96,13 @@
         </div>
       </q-card-section>
     </q-card>
-    <upgrade-account v-model="hasReachedLimits" />
   </q-dialog>
+  <upgrade-account v-else />
 </template>
 
 <script setup lang="ts">
 import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { api } from 'src/boot/axios';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
@@ -123,6 +123,14 @@ const userStore = useUserStore();
 const term = ref('');
 const isSearching = ref(false);
 const hasReachedLimits = ref(false);
+const creatingArticle = ref(false);
+const user = computed(() => useUserStore().user as Profile);
+const reachedLimits = computed(
+  () =>
+    (articlesStore.articles.length >= (user.value?.allowed_articles ?? 0) ||
+      hasReachedLimits.value) &&
+    !creatingArticle.value,
+);
 
 const searchResults = ref<SearchResult[]>();
 const articleLanguage = ref(getDefaultUserLanguage());
@@ -154,6 +162,7 @@ watch([term, articleLanguage], async ([term]) => {
 
 async function importSelectedArticle(searchedArticle: SearchResult) {
   try {
+    creatingArticle.value = true;
     const user = userStore.user as Profile;
     const currentLanguage = articleLanguage.value.lang;
 
@@ -194,6 +203,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
       },
     });
   } catch (error) {
+    creatingArticle.value = false;
     $q.loading.hide();
     if (error instanceof AxiosError) {
       hasReachedLimits.value = error.response?.status === 402;

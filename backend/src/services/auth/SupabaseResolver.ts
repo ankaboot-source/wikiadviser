@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { Logger } from 'pino';
 import { Request } from 'express';
 import Authorization from './AuthResolver';
-import supabase from '../../api/supabase';
+import supabaseClient from '../../api/supabase';
 
 export default class SupabaseAuthorization implements Authorization {
   private readonly jwtKey = 'x-sb-jwt';
@@ -12,7 +12,7 @@ export default class SupabaseAuthorization implements Authorization {
   async verifyToken(context: Request) {
     try {
       const token = context.header(this.jwtKey);
-      const { data } = await supabase.auth.getUser(token);
+      const { data } = await supabaseClient.auth.getUser(token);
       return data?.user;
     } catch (e) {
       this.logger.error(e);

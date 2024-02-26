@@ -25,24 +25,20 @@
 import { QSpinner, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
-import { onBeforeUnmount, onMounted, ref, nextTick, computed } from 'vue';
+import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
   buttonToggle: { type: String, required: true },
 });
-const title = computed(() =>
-  props.article.title.length > 15
-    ? `${props.article.title.slice(0, 15)}...`
-    : props.article.title,
-);
+
 const $q = useQuasar();
 const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit`;
 const loader = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    message: `Processing new changes on “${title.value}”`,
+    message: 'Processing new changes',
   },
 };
 const loading = ref(loader.editor);

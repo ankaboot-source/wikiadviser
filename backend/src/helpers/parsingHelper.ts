@@ -344,7 +344,10 @@ async function parseWikidataTemplate(
       .replace(/\[\[.*(=|\/)((File|Fichier):(.*?))\]\]/g, '[[$2]]') // replace image links to wikitext
       .replace(/(&lang=\w+)/g, '') // Remove '&lang=[value]' from wikipedia links
       .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // remove wikidata redundant links
-      .replace(/\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]/g, '') // remove wikidata icon
+      .replace(
+        /\|-((?!(\|-))[\s\S])*\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]((?!(\|-))[\s\S])*\|-\n+/g,
+        ''
+      ) // remove wikidata row (modify/icon)
       .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
 
     return encode(parsedWikitext);

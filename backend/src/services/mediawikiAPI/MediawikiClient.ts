@@ -1,4 +1,4 @@
-import { AxiosInstance } from 'axios';
+import { AxiosInstance, AxiosResponse } from 'axios';
 import mediawikiApiInstances from '../../api/mediawikiApiInstances';
 import { refineArticleChanges } from '../../helpers/parsingHelper';
 import {
@@ -9,8 +9,9 @@ import {
 import logger from '../../logger';
 import { WikipediaApi } from '../wikipedia/WikipediaApi';
 import { MediawikiAutomator } from './MediawikiAutomator';
+import { env } from '../../schema/env.schema';
 
-const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = process.env;
+const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = env;
 
 type RevisionDeleted = {
   error?: {
@@ -35,11 +36,13 @@ export default class MediawikiClient {
     private readonly wikipediaApi: WikipediaApi,
     private readonly mediawikiAutomator: MediawikiAutomator
   ) {
-    this.mediawikiApiInstance = mediawikiApiInstances.get(this.language)!;
+    this.mediawikiApiInstance = mediawikiApiInstances.get(
+      this.language
+    ) as AxiosInstance;
   }
 
-  private static extractCookies(setCookieHeaders: any) {
-    const cookies = setCookieHeaders.reduce((acc: any, header: any) => {
+  private static extractCookies(setCookieHeaders: string[]) {
+    const cookies = setCookieHeaders.reduce((acc: any, header) => {
       const cookieKeyValue = header.split(';')[0];
       const [key, value] = cookieKeyValue.split('=');
       acc[key.trim()] = value.trim();
@@ -49,9 +52,11 @@ export default class MediawikiClient {
     return cookies;
   }
 
-  private setCookies(response: any) {
+  private setCookies(response: AxiosResponse) {
     const setCookieHeaders = response.headers['set-cookie'];
-    const cookies = MediawikiClient.extractCookies(setCookieHeaders);
+    const cookies = MediawikiClient.extractCookies(
+      setCookieHeaders as string[]
+    );
     const cookieHeader = Object.entries(cookies)
       .map(([key, value]) => `${key}=${value}`)
       .join('; ');

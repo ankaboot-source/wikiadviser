@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { processExportedArticle } from '../../helpers/parsingHelper';
 import { WikipediaSearchResult } from '../../types';
 import WikipediaInteractor from './WikipediaInteractor';
+import { env } from '../../schema/env.schema';
 
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy: string;
@@ -9,7 +10,7 @@ export class WikipediaApi implements WikipediaInteractor {
   private api: AxiosInstance;
 
   constructor() {
-    this.wpProxy = process.env.WIKIPEDIA_PROXY!;
+    this.wpProxy = env.WIKIPEDIA_PROXY;
     this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
   }
 

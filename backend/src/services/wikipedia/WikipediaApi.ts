@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from 'axios';
 import { processExportedArticle } from '../../helpers/parsingHelper';
 import { WikipediaSearchResult } from '../../types';
 import WikipediaInteractor from './WikipediaInteractor';
-import { env } from '../../schema/env.schema';
+import env from '../../schema/env.schema';
 
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy: string;

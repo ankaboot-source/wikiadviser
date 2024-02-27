@@ -1,5 +1,5 @@
 import cors, { CorsOptions } from 'cors';
-import { env } from '../schema/env.schema';
+import env from '../schema/env.schema';
 
 const corsOptions: CorsOptions = {
   origin: [env.WIKIADVISER_FRONTEND_ENDPOINT, env.MEDIAWIKI_ENDPOINT],

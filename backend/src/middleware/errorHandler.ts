@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../logger';
 import { ErrorResponse } from '../types';
-import { env } from '../schema/env.schema';
+import env from '../schema/env.schema';
 
 const { NODE_ENV } = env;
 

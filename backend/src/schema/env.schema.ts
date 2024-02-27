@@ -1,4 +1,5 @@
 import z from 'zod';
+import logger from '../logger';
 
 const envSchema = z.object({
   SUPABASE_PROJECT_URL: z
@@ -89,8 +90,8 @@ const envServer = envSchema.safeParse({
 });
 
 if (!envServer.success) {
-  console.error(envServer.error.issues);
+  logger.error(envServer.error.issues);
   process.exit(1);
 }
 
-export const env = envServer.data;
+export default envServer.data;

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import https from 'https';
-import { env } from '../schema/env.schema';
+import env from '../schema/env.schema';
 
 const wikiadviserLanguages = JSON.parse(env.WIKIADVISER_LANGUAGES) as string[];
 const mediawikiApiInstances = new Map<

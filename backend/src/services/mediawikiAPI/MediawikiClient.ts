@@ -9,7 +9,7 @@ import {
 import logger from '../../logger';
 import { WikipediaApi } from '../wikipedia/WikipediaApi';
 import { MediawikiAutomator } from './MediawikiAutomator';
-import { env } from '../../schema/env.schema';
+import env from '../../schema/env.schema';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = env;
 

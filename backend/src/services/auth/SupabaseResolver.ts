@@ -3,7 +3,7 @@ import { Logger } from 'pino';
 import { Request } from 'express';
 import Authorization from './AuthResolver';
 import supabaseClient from '../../api/supabase';
-import { env } from '../../schema/env.schema';
+import env from '../../schema/env.schema';
 
 export default class SupabaseAuthorization implements Authorization {
   private readonly jwtKey = 'x-sb-jwt';

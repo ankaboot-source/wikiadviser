@@ -2,8 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
 import logger from '../logger';
 import SupabaseAuthorization from '../services/auth/SupabaseResolver';
+import ENV from '../schema/env.schema';
 
-const wikiadviserLanguages = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
+const wikiadviserLanguages = JSON.parse(ENV.WIKIADVISER_LANGUAGES);
 const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
 
 /**

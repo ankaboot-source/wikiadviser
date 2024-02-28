@@ -10,9 +10,10 @@ import initializeSentry from './middleware/sentry';
 import articleRouter from './routes/article.routes';
 import authRouter from './routes/auth.routes';
 import wikipediaRouter from './routes/wikipedia.routes';
+import ENV from './schema/env.schema';
 
-const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = process.env;
-const port = WIKIADVISER_API_PORT ? parseInt(WIKIADVISER_API_PORT) : 3000;
+const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = ENV;
+const port = WIKIADVISER_API_PORT;
 
 const app = express();
 

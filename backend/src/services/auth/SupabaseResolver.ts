@@ -3,6 +3,7 @@ import { Logger } from 'pino';
 import { Request } from 'express';
 import Authorization from './AuthResolver';
 import supabaseClient from '../../api/supabase';
+import ENV from '../../schema/env.schema';
 
 export default class SupabaseAuthorization implements Authorization {
   private readonly jwtKey = 'x-sb-jwt';
@@ -23,10 +24,8 @@ export default class SupabaseAuthorization implements Authorization {
   async verifyCookie(context: Request) {
     try {
       const supabase = createServerClient(
-        // skipcq: JS-0339 - Skip this issue until we migrate to zod for ENV checking
-        process.env.SUPABASE_PROJECT_URL!,
-        // skipcq: JS-0339 - Skip this issue until we migrate to zod for ENV checking
-        process.env.SUPABASE_SECRET_PROJECT_TOKEN!,
+        ENV.SUPABASE_PROJECT_URL,
+        ENV.SUPABASE_SECRET_PROJECT_TOKEN,
         {
           cookies: {
             get: (key: string): string => {

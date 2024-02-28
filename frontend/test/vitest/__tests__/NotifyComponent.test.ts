@@ -7,7 +7,7 @@ import NotifyComponent from './demo/NotifyComponent.vue';
 installQuasarPlugin({ plugins: { Notify } });
 
 describe('notify example', () => {
-  it('should call notify on click', async () => {
+  it('should call notify on click', () => {
     expect(NotifyComponent).toBeTruthy();
 
     const wrapper = mount(NotifyComponent, {});

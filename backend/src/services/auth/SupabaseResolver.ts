@@ -3,7 +3,7 @@ import { Logger } from 'pino';
 import { Request } from 'express';
 import Authorization from './AuthResolver';
 import supabaseClient from '../../api/supabase';
-import env from '../../schema/env.schema';
+import ENV from '../../schema/env.schema';
 
 export default class SupabaseAuthorization implements Authorization {
   private readonly jwtKey = 'x-sb-jwt';
@@ -24,8 +24,8 @@ export default class SupabaseAuthorization implements Authorization {
   async verifyCookie(context: Request) {
     try {
       const supabase = createServerClient(
-        env.SUPABASE_PROJECT_URL,
-        env.SUPABASE_SECRET_PROJECT_TOKEN,
+        ENV.SUPABASE_PROJECT_URL,
+        ENV.SUPABASE_SECRET_PROJECT_TOKEN,
         {
           cookies: {
             get: (key: string): string => {

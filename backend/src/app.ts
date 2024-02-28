@@ -10,9 +10,9 @@ import initializeSentry from './middleware/sentry';
 import articleRouter from './routes/article.routes';
 import authRouter from './routes/auth.routes';
 import wikipediaRouter from './routes/wikipedia.routes';
-import env from './schema/env.schema';
+import ENV from './schema/env.schema';
 
-const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = env;
+const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = ENV;
 const port = WIKIADVISER_API_PORT;
 
 const app = express();

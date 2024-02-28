@@ -1,9 +1,9 @@
 import { BrowserContext, Page, chromium } from 'playwright';
 import logger from '../../logger';
-import env from '../../schema/env.schema';
+import ENV from '../../schema/env.schema';
 
 const { MEDIAWIKI_INTERNAL_ENDPOINT, MW_ADMIN_USERNAME, MW_ADMIN_PASSWORD } =
-  env;
+  ENV;
 
 export class MediawikiAutomator {
   private mediawikiBaseURL: string;

@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import logger from '../logger';
 import { ErrorResponse } from '../types';
-import env from '../schema/env.schema';
+import ENV from '../schema/env.schema';
 
-const { NODE_ENV } = env;
+const { NODE_ENV } = ENV;
 
 export default function errorHandler(
   error: Error,

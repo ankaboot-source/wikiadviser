@@ -9,9 +9,9 @@ import {
 import logger from '../../logger';
 import { WikipediaApi } from '../wikipedia/WikipediaApi';
 import { MediawikiAutomator } from './MediawikiAutomator';
-import env from '../../schema/env.schema';
+import ENV from '../../schema/env.schema';
 
-const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = env;
+const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
 type RevisionDeleted = {
   error?: {

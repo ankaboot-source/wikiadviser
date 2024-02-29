@@ -10,11 +10,15 @@
     "lint:fix": "npm run lint -- --fix",
     "prettier": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "prettier:fix": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "quasar build",
+    "test:unit:ui": "vitest --ui",
+    "test:unit": "vitest",
+    "test:unit:ci": "vitest run"
   },
   "dependencies": {
+    "@quasar/cli": "^2.3.0",
     "@quasar/extras": "^1.16.9",
     "@sentry/vue": "^7.101.1",
     "@supabase/ssr": "^0.0.10",
@@ -31,17 +35,20 @@
   "devDependencies": {
     "@nuxtbase/auth-ui-vue": "^0.3.6",
     "@quasar/app-vite": "^1.7.1",
+    "@quasar/quasar-app-extension-testing-unit-vitest": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.39.2",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^6.18.1",
     "@typescript-eslint/parser": "^6.18.1",
+    "@vue/test-utils": "^2.4.1",
     "autoprefixer": "^10.4.16",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.20.0",
     "prettier": "^3.1.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vitest": "^0.34.0"
   },
   "engines": {
     "node": "^24 || ^22 || ^20 || ^18 || ^16 || ^14.19",

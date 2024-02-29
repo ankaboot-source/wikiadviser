@@ -86,6 +86,7 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, UserRole } from 'src/types';
 import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
+import ENV from 'src/schema/env.schema';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -226,7 +227,7 @@ const onSwitchTabEmitChange = (tab: string) => {
 
 function viewArticleInNewTab() {
   window.open(
-    `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+    `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
     '_blank',
   );
 }

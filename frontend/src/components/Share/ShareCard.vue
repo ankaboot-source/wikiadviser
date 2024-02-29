@@ -64,6 +64,7 @@ import {
 import { copyToClipboard, useQuasar } from 'quasar';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import ENV from 'src/schema/env.schema';
 
 const $q = useQuasar();
 const articlesStore = useArticlesStore();
@@ -155,7 +156,7 @@ async function handleApplyChanges() {
         });
       } else {
         copyToClipboard(
-          `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+          `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
         );
         $q.notify({
           message: 'Published on the web',
@@ -176,7 +177,7 @@ async function handleApplyChanges() {
 function handlePublish() {
   if (web_publication_toggle.value) {
     copyToClipboard(
-      `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
+      `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
     );
     $q.notify({
       message: 'Publish link copied to clipboard',

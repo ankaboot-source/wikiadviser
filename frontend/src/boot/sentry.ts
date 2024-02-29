@@ -1,12 +1,13 @@
 import * as Sentry from '@sentry/vue';
 import { boot } from 'quasar/wrappers';
+import ENV from 'src/schema/env.schema';
 // "async" is optional;
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 export default boot(({ app, router }) => {
   Sentry.init({
     app,
-    environment: process.env.SENTRY_ENV_FRONTEND,
-    dsn: process.env.SENTRY_DSN_FRONTEND,
+    environment: ENV.SENTRY_ENV_FRONTEND,
+    dsn: ENV.SENTRY_DSN_FRONTEND,
     integrations: [
       Sentry.browserTracingIntegration({ router }),
       Sentry.replayIntegration(),

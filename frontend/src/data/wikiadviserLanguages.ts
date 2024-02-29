@@ -1,3 +1,5 @@
+import ENV from 'src/schema/env.schema';
+
 interface WikipediaLanguage {
   label: string;
   value: string;
@@ -87,7 +89,9 @@ const wikipediaLanguages: WikipediaLanguage[] = [
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
 ];
 
-const wikiadviserLanguagesList = JSON.parse(process.env.WIKIADVISER_LANGUAGES!);
+const wikiadviserLanguagesList = JSON.parse(
+  ENV.WIKIADVISER_LANGUAGES,
+) as string[];
 
 export const wikiadviserLanguages: WikipediaLanguage[] =
   wikipediaLanguages.filter((lang) =>

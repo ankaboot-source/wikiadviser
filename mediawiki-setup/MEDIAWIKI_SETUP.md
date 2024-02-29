@@ -253,20 +253,34 @@
 
       ```js
       // Add a stylesheet rule when Iframe (Editor)
+      const isIframe = window.location !== window.parent.location;
       var iframeCssRules = mw.util.addCSS(
         `/*  Hide Header when Iframe / Editor. */
-      .vector-column-start,
-      .vector-page-titlebar {
-        display: none !important;
-      }
-      /* Show Toolbar when Iframe / Editor. */
-      .vector-page-toolbar {
-        display: block !important;
-      }`
+        .vector-column-start,
+        .vector-page-titlebar {
+          display: none !important;
+        }
+        /* Show Toolbar when Iframe / Editor. */
+        .vector-page-toolbar {
+          display: block !important;
+        }`
       );
-
-      const isIframe = window.location !== window.parent.location;
       iframeCssRules.disabled = !isIframe;
+      // Launch Event on Edit Source's "Save"
+      if (mw.config.get("wgPostEdit") == "saved") {
+        if (isIframe) {
+          window.parent.postMessage("updateChanges", "*");
+        } else {
+          const wikiadviserApiHost = "https://api.wikiadviser.io";
+          const articleId = this.getPageName();
+          fetch(`${wikiadviserApiHost}/article/${articleId}/changes`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        }
+      }
       ```
 
       </details>

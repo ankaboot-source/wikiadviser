@@ -49,8 +49,7 @@ const envServer = envSchema.safeParse({
 });
 
 if (!envServer.success) {
-  console.error(envServer.error.issues);
-  process.exit(1);
+  throw new Error(envServer.error.issues.toString());
 }
 
 export default envServer.data;

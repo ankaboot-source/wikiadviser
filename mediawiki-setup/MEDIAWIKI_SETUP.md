@@ -140,14 +140,6 @@
     - <details> <summary> Add CSS rules: </summary>
 
       ```css
-      /* hide the discussion tab */
-      #ca-talk {
-        display: none !important;
-      }
-      /* hide the "View History" tab */
-      #ca-history {
-        display: none !important;
-      }
       /* hide "Notice" popup */
       .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
         display: none !important;
@@ -221,11 +213,6 @@
       .oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {
         display: none !important;
       }
-      /* Hide "Edit Source" until #552 is resolved */
-      #ca-edit,
-      .ve-ui-toolbar-group-editMode {
-        display: none !important;
-      }
       /* Hide some of "Help" elements */
       .oo-ui-tool-name-mwUserGuide,
       .oo-ui-tool-name-mwFeedbackDialog {
@@ -235,11 +222,7 @@
       .mw-editsection {
         display: none !important;
       }
-      /* Hide left-navigation like 'Article' & 'Talk' */
-      [aria-label="Namespaces"] {
-        display: none !important;
-      }
-      /* Hide Read/Edit toolbar (Show it when iframe/edit) */
+      /* Hide toolbar */
       .vector-page-toolbar {
         display: none !important;
       }
@@ -253,20 +236,30 @@
 
       ```js
       // Add a stylesheet rule when Iframe (Editor)
+      const isIframe = window.location !== window.parent.location;
       var iframeCssRules = mw.util.addCSS(
         `/*  Hide Header when Iframe / Editor. */
-      .vector-column-start,
-      .vector-page-titlebar {
-        display: none !important;
-      }
-      /* Show Toolbar when Iframe / Editor. */
-      .vector-page-toolbar {
-        display: block !important;
-      }`
+        .vector-column-start,
+        .vector-page-titlebar {
+          display: none !important;
+        }`
       );
-
-      const isIframe = window.location !== window.parent.location;
       iframeCssRules.disabled = !isIframe;
+      // Launch Event on Edit Source's "Save"
+      if (mw.config.get("wgPostEdit") == "saved") {
+        if (isIframe) {
+          window.parent.postMessage("updateChanges", "*");
+        } else {
+          const wikiadviserApiHost = "https://api.wikiadviser.io";
+          const articleId = this.getPageName();
+          fetch(`${wikiadviserApiHost}/article/${articleId}/changes`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        }
+      }
       ```
 
       </details>

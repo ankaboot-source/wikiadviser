@@ -25,7 +25,11 @@
 
 <script setup lang="ts">
 import supabase from 'src/api/supabase';
-import { getParsedChanges, getUsers } from 'src/api/supabaseHelper';
+import {
+  getParsedChanges,
+  getUsers,
+  isArticleHere,
+} from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/Diff/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
@@ -129,13 +133,22 @@ onBeforeMount(async () => {
   const user = (await useUserStore().fetchProfile()) as Profile;
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;
+
   articleId.value = articleIdFromParams as string;
+
+  const isArticle = await isArticleHere(articleId.value);
+
+  if (!isArticle) {
+    // Article does not exist
+    router.push({ name: '404' });
+    return;
+  }
 
   await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
     // Article does not exist for this user
-    router.push({ name: '404' });
+    router.push({ name: '403' });
     return;
   }
 

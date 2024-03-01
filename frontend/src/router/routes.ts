@@ -49,6 +49,11 @@ const routes: RouteRecordRaw[] = [
     },
     component: () => import('pages/share/SharePage.vue'),
   },
+  {
+    name: '403',
+    path: '/',
+    component: () => import('pages/ErrorNotAuthorized.vue'),
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

@@ -16,8 +16,14 @@ const envSchema = z.object({
     .string({
       required_error: '😱 You forgot to add a WikiAdviser languages!',
     })
-    .trim()
-    .min(1),
+    .transform((str, ctx) => {
+      try {
+        return JSON.parse(`${str}`) as string[];
+      } catch (err) {
+        ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
+        return z.NEVER;
+      }
+    }),
   WIKIADVISER_API_ENDPOINT: z
     .string({
       required_error: '😱 You forgot to add a front-end URL!',
@@ -49,6 +55,7 @@ const envServer = envSchema.safeParse({
 });
 
 if (!envServer.success) {
+  console.log(envServer.error.issues);
   throw new Error(envServer.error.issues.toString());
 }
 

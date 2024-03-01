@@ -89,12 +89,8 @@ const wikipediaLanguages: WikipediaLanguage[] = [
   { label: 'မြန်မာဘာသာ', value: 'my', description: 'Myanmarsar', lang: 'my' },
 ];
 
-const wikiadviserLanguagesList = JSON.parse(
-  ENV.WIKIADVISER_LANGUAGES,
-) as string[];
-
 export const wikiadviserLanguages: WikipediaLanguage[] =
   wikipediaLanguages.filter((lang) =>
-    wikiadviserLanguagesList.includes(lang.value),
+    ENV.WIKIADVISER_LANGUAGES.includes(lang.value),
   );
-export type wikiadviserLanguage = (typeof wikiadviserLanguagesList)[number];
+export type wikiadviserLanguage = (typeof ENV.WIKIADVISER_LANGUAGES)[number];

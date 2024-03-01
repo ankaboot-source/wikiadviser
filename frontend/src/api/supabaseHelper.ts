@@ -115,7 +115,7 @@ export async function isArticleHere(articleId: string): Promise<boolean> {
     return false;
   }
 
-  return !!articleData;
+  return Boolean(articleData);
 }
 
 export async function updatePermission(

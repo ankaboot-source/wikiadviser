@@ -2,13 +2,12 @@ import axios, { AxiosInstance } from 'axios';
 import https from 'https';
 import ENV from '../schema/env.schema';
 
-const wikiadviserLanguages = JSON.parse(ENV.WIKIADVISER_LANGUAGES) as string[];
 const mediawikiApiInstances = new Map<
-  (typeof wikiadviserLanguages)[number],
+  (typeof ENV.WIKIADVISER_LANGUAGES)[number],
   AxiosInstance
 >();
 
-for (const language of wikiadviserLanguages) {
+for (const language of ENV.WIKIADVISER_LANGUAGES) {
   const axiosInstance = axios.create({
     baseURL: `${ENV.MEDIAWIKI_ENDPOINT}/${language}/api.php`,
     httpsAgent: new https.Agent({

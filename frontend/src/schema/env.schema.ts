@@ -16,13 +16,8 @@ const envSchema = z.object({
     .string({
       required_error: '😱 You forgot to add a WikiAdviser languages!',
     })
-    .transform((str, ctx) => {
-      try {
-        return JSON.parse(`${str}`) as string[];
-      } catch (err) {
-        ctx.addIssue({ code: 'custom', message: 'Invalid JSON' });
-        return z.NEVER;
-      }
+    .transform((str) => {
+      return str.split(',').map((item) => item.trim());
     }),
   WIKIADVISER_API_ENDPOINT: z
     .string({

@@ -17,8 +17,9 @@ const envSchema = z.object({
     .string({
       required_error: '😱 You forgot to add a WikiAdviser languages!'
     })
-    .trim()
-    .min(1),
+    .transform((str) => {
+      return str.split(',').map((item) => item.trim());
+    }),
   WIKIADVISER_API_PORT: z.coerce
     .number()
     .positive()

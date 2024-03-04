@@ -180,14 +180,6 @@
       #p-lang-btn {
         display: none !important;
       }
-      /* hide Watch star */
-      .mw-watchlink.mw-list-item {
-        display: none !important;
-      }
-      /* hide tools: special pages */
-      #t-specialpages {
-        display: none !important;
-      }
       /* hide fullscreen button */
       #p-dock-bottom {
         display: none !important;
@@ -204,10 +196,6 @@
         display: block !important;
         padding-bottom: 11px !important;
         padding-right: 11px !important;
-      }
-      /* Hide Tools */
-      .vector-page-tools-landmark {
-        display: none !important;
       }
       /* Hide user guide & feedback in "?" */
       .oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {

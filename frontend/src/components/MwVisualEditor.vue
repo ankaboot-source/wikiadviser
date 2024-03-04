@@ -26,6 +26,7 @@ import { QSpinner, useQuasar } from 'quasar';
 import { updateChanges } from 'src/api/supabaseHelper';
 import { Article } from 'src/types';
 import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
+import ENV from 'src/schema/env.schema';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
@@ -33,7 +34,7 @@ const props = defineProps({
 });
 
 const $q = useQuasar();
-const articleLink = `${process.env.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit`;
+const articleLink = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit`;
 const loader = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {

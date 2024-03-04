@@ -1,5 +1,6 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosInstance } from 'axios';
+import ENV from 'src/schema/env.schema';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -15,7 +16,7 @@ declare module '@vue/runtime-core' {
 // for each client)
 const api = axios.create({
   withCredentials: true,
-  baseURL: `${process.env.WIKIADVISER_API_ENDPOINT}/`,
+  baseURL: `${ENV.WIKIADVISER_API_ENDPOINT}/`,
 });
 
 export default boot(({ app }) => {

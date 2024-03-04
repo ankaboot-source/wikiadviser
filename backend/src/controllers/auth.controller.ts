@@ -4,8 +4,7 @@ import logger from '../logger';
 import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 import ENV from '../schema/env.schema';
 
-const wikiadviserLanguages = JSON.parse(ENV.WIKIADVISER_LANGUAGES);
-const wikiadviserLanguagesRegex = wikiadviserLanguages.join('|');
+const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join('|');
 
 /**
  * Restricts access to MediaWiki endpoints based on user permissions and request details.
@@ -43,10 +42,10 @@ export default async function restrictMediawikiAccess(
 
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3];
 
-    const forwardUriAllowedPrefixes = wikiadviserLanguages.map(
+    const forwardUriAllowedPrefixes = ENV.WIKIADVISER_LANGUAGES.map(
       (lang: string) => `/wiki/${lang}/api.php`
     );
-    const forwardUriStartsWith = wikiadviserLanguages.map(
+    const forwardUriStartsWith = ENV.WIKIADVISER_LANGUAGES.map(
       (lang: string) => `/wiki/${lang}/api.php?`
     );
 

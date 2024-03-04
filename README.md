@@ -57,10 +57,6 @@ SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
 ...
 ```
 
-## Select languages
-
-In .env file, we have an environment variable entitled WIKIADVISER_LANGUAGES in both frontend and backend. The value of this value must be comma separated.
-
 ## Running the Project
 
 And finally, start frontend and backend servers by running this command.

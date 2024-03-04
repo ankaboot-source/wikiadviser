@@ -161,7 +161,7 @@
         display: none !important;
       }
       /* Hide header */
-      .vector-header-container {
+      .mw-header {
         display: none !important;
       }
       /* Keep sticky header's title & TOC */

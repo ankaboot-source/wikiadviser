@@ -140,55 +140,51 @@
     - <details> <summary> Add CSS rules: </summary>
 
       ```css
-      /* hide "Notice" popup */
+      /* Hide "Notice" popup */
       .oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
         display: none !important;
       }
-      /* hide "Notice" button in toolbar */
+      /* Hide "Notice" button in toolbar */
       .ve-ui-toolbar-group-notices {
         display: none !important;
       }
-      /* hide "Warning to log in" in edit source */
+      /* Hide "Warning to log in" in edit source */
       .mw-message-box-warning.mw-anon-edit-warning.mw-message-box {
         display: none !important;
       }
-      /* hide "Search bar" in edit source */
+      /* Hide "Search bar" in edit source */
       .vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
         display: none !important;
       }
-      /* hide footer-places */
+      /* Hide footer-places */
       #footer-places {
         display: none !important;
       }
-      /* hide header */
+      /* Hide header */
       .vector-header-container {
         display: none !important;
       }
-      /* hide sticky header */
-      .vector-sticky-header-container {
+      /* Keep sticky header's title & TOC */
+      .vector-sticky-header-end,
+      .vector-sticky-header-start > :not(.vector-sticky-header-context-bar) {
         display: none !important;
       }
-      /* hide Menu */
+      .vector-sticky-header-context-bar {
+        border-left: none !important;
+      }
+      /* Hide Menu */
       .vector-main-menu-landmark {
         display: none !important;
       }
-      /* hide right bar (Tools) */
+      /* Hide right bar (Tools) */
       .vector-column-end {
         display: none !important;
       }
-      /* hide "Add Languages" button */
+      /* Hide "Add Languages" button */
       #p-lang-btn {
         display: none !important;
       }
-      /* hide Watch star */
-      .mw-watchlink.mw-list-item {
-        display: none !important;
-      }
-      /* hide tools: special pages */
-      #t-specialpages {
-        display: none !important;
-      }
-      /* hide fullscreen button */
+      /* Hide fullscreen button */
       #p-dock-bottom {
         display: none !important;
       }
@@ -196,7 +192,7 @@
       .ve-ui-mwSaveDialog-foot {
         display: none !important;
       }
-      /* Show "Comment" Label */
+      /* Keep "Comment" Label */
       .oo-ui-tool-name-comment > a {
         padding-top: 11px !important;
       }
@@ -204,10 +200,6 @@
         display: block !important;
         padding-bottom: 11px !important;
         padding-right: 11px !important;
-      }
-      /* Hide Tools */
-      .vector-page-tools-landmark {
-        display: none !important;
       }
       /* Hide user guide & feedback in "?" */
       .oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {

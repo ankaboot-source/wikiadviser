@@ -24,7 +24,7 @@ const envSchema = z.object({
           '😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)'
         );
       }
-      return str.split(',').map((item) => item.trim());
+      return str.split(',');
     }),
   WIKIADVISER_API_PORT: z.coerce
     .number()

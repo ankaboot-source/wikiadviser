@@ -19,7 +19,9 @@ const envSchema = z.object({
     .transform((str) => {
       const regex = /^[a-z]{2,3}(,[a-z]{2,3})*$/g;
       if (!regex.test(str)) {
-        throw new Error('😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)');
+        throw new Error(
+          '😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)',
+        );
       }
       return str.split(',').map((item) => item.trim());
     }),

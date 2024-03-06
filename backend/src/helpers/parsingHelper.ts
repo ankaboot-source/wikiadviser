@@ -420,11 +420,11 @@ function convertSourceTemplateToLink(
   pageContent: string,
   sourceLanguage: string
 ) {
-  return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) => {
-    return group.includes('|')
+  return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) =>
+    group.includes('|')
       ? `[[wikipedia:${sourceLanguage}:${group}]]`
-      : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`;
-  });
+      : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
+  );
 }
 
 /**

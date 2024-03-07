@@ -349,7 +349,6 @@ async function parseWikidataTemplate(
         ''
       ) // Remove wikidata row (modify/icon) 👉 A wikitext table row start with | (if at the beginning) or |- and ends before the next |
       .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
-
     return encode(parsedWikitext);
   });
 
@@ -409,6 +408,26 @@ function addSourceTemplate(pageContent: string, sourceLanguage: string) {
 }
 
 /**
+ * Converts certain templates to links.
+ * This function modifies the following templates:
+ *  - lnobr
+ *
+ * @param pageContent The content of the page containing templates.
+ * @param sourceLanguage The source language prefix for Wikipedia articles.
+ * @returns The updated page content with links instead of certain templates.
+ */
+function convertSourceTemplateToLink(
+  pageContent: string,
+  sourceLanguage: string
+) {
+  return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) =>
+    group.includes('|')
+      ? `[[wikipedia:${sourceLanguage}:${group}]]`
+      : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
+  );
+}
+
+/**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
  * @returns {string} - The processed article data.
@@ -454,6 +473,11 @@ export async function processExportedArticle(
     sourceLanguage
   );
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
+  updatedPageContent = convertSourceTemplateToLink(
+    updatedPageContent,
+    sourceLanguage
+  );
+
   processedData =
     processedData.substring(0, pageStartIndex) +
     updatedPageContent +

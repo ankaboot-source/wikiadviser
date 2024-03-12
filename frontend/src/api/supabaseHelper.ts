@@ -103,6 +103,21 @@ export async function getArticles(userId: string): Promise<Article[]> {
   return articles;
 }
 
+export async function isArticleExists(articleId: string): Promise<boolean> {
+  const { data: articleData, error: articleError } = await supabase.rpc(
+    'is_article_exists',
+    {
+      article_id: articleId,
+    },
+  );
+
+  if (articleError) {
+    return false;
+  }
+
+  return Boolean(articleData);
+}
+
 export async function updatePermission(
   permissions: Permission[],
 ): Promise<void> {

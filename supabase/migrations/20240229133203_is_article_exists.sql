@@ -1,5 +1,5 @@
 -- add viewer function
-CREATE OR REPLACE FUNCTION is_article_in_exists(article_id uuid) RETURNS uuid
+CREATE OR REPLACE FUNCTION is_article_exists(article_id uuid) RETURNS uuid
 LANGUAGE plpgsql
 security definer set search_path = public AS $$
 DECLARE

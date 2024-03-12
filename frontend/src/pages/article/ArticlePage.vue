@@ -28,7 +28,7 @@ import supabase from 'src/api/supabase';
 import {
   getParsedChanges,
   getUsers,
-  isArticleHere,
+  isArticleExists,
 } from 'src/api/supabaseHelper';
 import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/Diff/DiffList.vue';
@@ -139,7 +139,7 @@ onBeforeMount(async () => {
   await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
-    const isArticle = await isArticleHere(articleId.value);
+    const isArticle = await isArticleExists(articleId.value);
 
     if (!isArticle) {
       // Article does not exist

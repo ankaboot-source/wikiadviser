@@ -103,9 +103,9 @@ export async function getArticles(userId: string): Promise<Article[]> {
   return articles;
 }
 
-export async function isArticleHere(articleId: string): Promise<boolean> {
+export async function isArticleExists(articleId: string): Promise<boolean> {
   const { data: articleData, error: articleError } = await supabase.rpc(
-    'is_article_in_articles',
+    'is_article_exists',
     {
       article_id: articleId,
     },

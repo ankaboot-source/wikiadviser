@@ -5,19 +5,10 @@
     </div>
     <div v-else class="q-panel scroll col">
       <div class="row justify-evenly q-pa-sm">
-        <diff-card
-          :article="article"
-          :changes-content="activeChanges ? changesContent : null"
-          :role="role"
-          :editor-permission="editorPermission"
-          class="col-9 q-mr-md"
-        />
-        <diff-list
-          :article-id="articleId"
-          :role="role"
-          :changes-list="changesList"
-          class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-        />
+        <diff-card :article="article" :changes-content="activeChanges ? changesContent : null" :role="role"
+          :editor-permission="editorPermission" class="col-9 q-mr-md" />
+        <diff-list :article-id="articleId" :role="role" :changes-list="changesList"
+          class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders" />
       </div>
     </div>
   </template>
@@ -136,17 +127,17 @@ onBeforeMount(async () => {
 
   articleId.value = articleIdFromParams as string;
 
-  const isArticle = await isArticleHere(articleId.value);
-
-  if (!isArticle) {
-    // Article does not exist
-    router.push({ name: '404' });
-    return;
-  }
-
   await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
+    const isArticle = await isArticleHere(articleId.value);
+
+    if (!isArticle) {
+      // Article does not exist
+      router.push({ name: '404' });
+      return;
+    }
+
     // Article does not exist for this user
     router.push({ name: '403' });
     return;

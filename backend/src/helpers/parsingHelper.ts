@@ -427,7 +427,7 @@ function convertSourceTemplateToLink(
   );
 }
 
-function fixSources(pageContent: string, sourceLanguage: string) {
+export function fixSources(pageContent: string, sourceLanguage: string) {
   let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
   updatedPageContent = convertSourceTemplateToLink(
@@ -486,4 +486,8 @@ export async function processExportedArticle(
     processedData.substring(pageEndIndex);
 
   return processedData;
+}
+
+export function ReturnsString(string: string) {
+  return string;
 }

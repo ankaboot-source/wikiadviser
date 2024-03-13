@@ -75,7 +75,7 @@ const envSchema = z.object({
     .min(1),
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENV_BACKEND: z.string().optional(),
-  NODE_ENV: z.enum(['development', 'production']).default('development')
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development')
 });
 
 const envServer = envSchema.safeParse({

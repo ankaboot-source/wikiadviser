@@ -427,6 +427,13 @@ function convertSourceTemplateToLink(
   );
 }
 
+function fixSources(pageContent: string, sourceLanguage: string) {
+  pageContent = addSourceExternalLinks(pageContent, sourceLanguage);
+  pageContent = addSourceTemplate(pageContent, sourceLanguage);
+  pageContent = convertSourceTemplateToLink(pageContent, sourceLanguage);
+  return pageContent;
+}
+
 /**
  * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
  * @param {string} exportData - The exported data of the article.
@@ -468,15 +475,7 @@ export async function processExportedArticle(
     articleId,
     new Parsoid(sourceLanguage)
   );
-  updatedPageContent = addSourceExternalLinks(
-    updatedPageContent,
-    sourceLanguage
-  );
-  updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
-  updatedPageContent = convertSourceTemplateToLink(
-    updatedPageContent,
-    sourceLanguage
-  );
+  updatedPageContent = fixSources(updatedPageContent, sourceLanguage);
 
   processedData =
     processedData.substring(0, pageStartIndex) +

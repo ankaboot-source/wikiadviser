@@ -428,10 +428,13 @@ function convertSourceTemplateToLink(
 }
 
 function fixSources(pageContent: string, sourceLanguage: string) {
-  pageContent = addSourceExternalLinks(pageContent, sourceLanguage);
-  pageContent = addSourceTemplate(pageContent, sourceLanguage);
-  pageContent = convertSourceTemplateToLink(pageContent, sourceLanguage);
-  return pageContent;
+  let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
+  updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
+  updatedPageContent = convertSourceTemplateToLink(
+    updatedPageContent,
+    sourceLanguage
+  );
+  return updatedPageContent;
 }
 
 /**

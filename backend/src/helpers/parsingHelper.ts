@@ -380,7 +380,7 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  * This function modifies the following templates:
  *   - Main
  *   - See also
- *   - Article (détaillé, général, ...)
+ *   - Article (détaillé, général)
  *
  * @param pageContent The content of the page containing templates.
  * @param sourceLanguage The source language prefix for Wikipedia articles.
@@ -388,7 +388,7 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  */
 function addSourceTemplate(pageContent: string, sourceLanguage: string) {
   const pattern =
-    /{{(Main|See also|Article détaillé)\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+    /{{(Main|See also|Article (?:détaillé|général))\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles

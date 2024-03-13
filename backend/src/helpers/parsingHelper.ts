@@ -388,7 +388,7 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  */
 function addSourceTemplate(pageContent: string, sourceLanguage: string) {
   const pattern =
-    /{{([mM]ain|[Ss]ee\salso|[aA]rticle\s\S*)\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+    /{{(Main|See also|Article détaillé)\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles

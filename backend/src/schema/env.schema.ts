@@ -1,5 +1,5 @@
 import z from 'zod';
-import logger from '../logger';
+// import logger from '../logger';
 
 const envSchema = z.object({
   SUPABASE_PROJECT_URL: z
@@ -97,7 +97,8 @@ const envServer = envSchema.safeParse({
 });
 
 if (!envServer.success) {
-  logger.error(envServer.error.issues);
+  // logger.error(envServer.error.issues);
+  console.error(envServer.error.issues);
   process.exit(1);
 }
 

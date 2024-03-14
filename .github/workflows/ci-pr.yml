@@ -1,4 +1,4 @@
-name: Run CI checks
+name: Run CI checks in Pull Request
 on:
   pull_request:
     branches:
@@ -42,6 +42,14 @@ jobs:
         run: cd backend && npm run lint
       - name: Check formatting
         run: cd backend && npm run prettier
+      - name: Run test coverage
+        run: cd backend && npm run test:coverage
+      - name: Report results to DeepSource
+        run: |
+          curl https://deepsource.io/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./backend/coverage/cobertura-coverage.xml
+        env:
+          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
 
   frontend:
     needs: changes

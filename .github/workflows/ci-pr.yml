@@ -1,4 +1,4 @@
-name: Run CI checks in Pull Request
+name: Run CI checks
 on:
   pull_request:
     branches:

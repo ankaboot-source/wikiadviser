@@ -1,4 +1,4 @@
-name: Run CI checks on Push
+name: Run CI checks
 on:
   push:
     branches:

@@ -487,7 +487,3 @@ export async function processExportedArticle(
 
   return processedData;
 }
-
-export function ReturnsString(string: string) {
-  return string;
-}

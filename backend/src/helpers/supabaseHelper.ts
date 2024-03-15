@@ -127,7 +127,7 @@ export async function getUserPermission(
     .select()
     .eq('user_id', userId)
     .eq('article_id', articleId)
-    .single();
+    .maybeSingle();
 
   return data?.role;
 }

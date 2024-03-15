@@ -1,4 +1,4 @@
-import { Tables } from './database.types';
+import { Enums, Tables } from './database.types';
 
 export interface ChangeItem extends Tables<'changes'> {
   user: Profile;
@@ -18,7 +18,7 @@ export type SearchResult = {
 export type User = {
   picture: string;
   email: string;
-  role: UserRole;
+  role: Enums<'role'>;
   permissionId: string;
 };
 
@@ -27,7 +27,7 @@ export type Article = {
   title: string;
   description: string;
   permission_id: string;
-  role: UserRole;
+  role: Enums<'role'>;
   created_at: Date;
   language: string;
   web_publication: boolean;
@@ -43,16 +43,9 @@ export type Comment = {
   change_id: string;
 };
 
-export enum UserRole {
-  Owner = 'owner',
-  Editor = 'editor',
-  Reviewer = 'reviewer',
-  Viewer = 'viewer',
-}
-
 export type Permission = {
   permissionId: string;
-  role: UserRole;
+  role: Enums<'role'>;
 };
 
 export enum Status {

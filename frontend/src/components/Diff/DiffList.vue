@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { ChangeItem, UserRole } from 'src/types';
+import { ChangeItem, Enums } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
@@ -72,7 +72,7 @@ const store = useSelectedChangeStore();
 
 const props = defineProps<{
   articleId: string;
-  role: UserRole;
+  role: Enums<'role'>;
   changesList: ChangeItem[];
 }>();
 

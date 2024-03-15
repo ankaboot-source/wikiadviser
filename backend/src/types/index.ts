@@ -39,8 +39,6 @@ export interface ErrorResponse {
   stack?: string;
 }
 
-export type Role = 'viewer' | 'reviewer' | 'editor' | 'owner';
-
 export type Acc = {
   [key: string]: string;
 };

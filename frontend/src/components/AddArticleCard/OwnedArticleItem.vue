@@ -52,7 +52,7 @@
             </div>
           </div>
         </div>
-        <div v-if="article.role === UserRole.Owner" class="col-auto">
+        <div v-if="article.role === 'owner'" class="col-auto">
           <q-btn
             round
             flat
@@ -120,7 +120,7 @@
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
-import { Article, UserRole, Profile } from 'src/types';
+import { Article, Profile } from 'src/types';
 import { deleteArticle } from 'src/api/supabaseHelper';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';

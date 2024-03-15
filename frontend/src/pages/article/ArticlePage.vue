@@ -34,7 +34,7 @@ import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/Diff/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { ChangeItem, Comment, Profile, Tables, UserRole } from 'src/types';
+import { ChangeItem, Comment, Enums, Profile, Tables } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -55,7 +55,7 @@ const articleId = ref('');
 
 const loading = ref(true);
 
-const role = ref<UserRole>(UserRole.Viewer);
+const role = ref<Enums<'role'>>('viewer');
 const editorPermission = ref<boolean | null>(null);
 
 const changesList = ref<ChangeItem[]>([]);
@@ -148,8 +148,7 @@ onBeforeMount(async () => {
   role.value = article.value.role;
   users.value = await getUsers(articleId.value);
   editorPermission.value =
-    article.value.role === UserRole.Editor ||
-    article.value.role === UserRole.Owner;
+    article.value.role === 'editor' || article.value.role === 'owner';
 
   changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(

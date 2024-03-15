@@ -40,3 +40,16 @@ export interface ErrorResponse {
 }
 
 export type Role = 'viewer' | 'reviewer' | 'editor' | 'owner';
+
+export type Acc = {
+  [key: string]: string;
+};
+
+export {
+  Json,
+  Database,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+  Enums
+} from './database.types';

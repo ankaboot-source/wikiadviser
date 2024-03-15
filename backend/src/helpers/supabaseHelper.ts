@@ -1,5 +1,5 @@
 import supabase from '../api/supabase';
-import { Change, Role } from '../types';
+import { Role, Tables } from '../types';
 
 export async function insertArticle(
   title: string,
@@ -27,7 +27,7 @@ export async function insertArticle(
   return articleId;
 }
 
-export async function updateChange(toChange: Change): Promise<void> {
+export async function updateChange(toChange: Tables<'changes'>): Promise<void> {
   const { id, ...updateData } = toChange;
   const { error: changeError } = await supabase
     .from('changes')
@@ -38,7 +38,9 @@ export async function updateChange(toChange: Change): Promise<void> {
   }
 }
 
-export async function upsertChanges(changesToUpsert: Change[]): Promise<void> {
+export async function upsertChanges(
+  changesToUpsert: Tables<'changes'>[]
+): Promise<void> {
   const { error } = await supabase.from('changes').upsert(changesToUpsert, {
     defaultToNull: false,
     onConflict: 'id'

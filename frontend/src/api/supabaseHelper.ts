@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Permission, User } from 'src/types';
+import { Article, ChangeItem, User, Tables } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import supabase from './supabase';
 import { parseChangeHtml } from 'src/utils/parsing';
@@ -24,13 +24,16 @@ export async function getUsers(articleId: string): Promise<User[]> {
     throw new Error(permissionsError.message);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const users = permissionsData.map((permission: any) => ({
-    picture: permission.user.avatar_url,
-    email: permission.user.email,
-    role: permission.role,
-    permissionId: permission.id,
-  }));
+  const users: User[] = permissionsData.map(
+    (permission) =>
+      ({
+        picture: permission.user?.avatar_url,
+        email: permission.user?.email,
+        role: permission.role,
+        permissionId: permission.id,
+      }) as User,
+  );
+
   return users;
 }
 
@@ -87,38 +90,38 @@ export async function getArticles(userId: string): Promise<Article[]> {
 
   const articles: Article[] = articleData
     .filter((article) => article.role !== null)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .map((article: any) => ({
-      article_id: article.article_id,
-      title: article.articles.title,
-      description: article.articles.description,
-      permission_id: article.id,
-      role: article.role,
-      language: article.articles.language,
-      created_at: new Date(article.articles.created_at),
-      web_publication: article.articles.web_publication,
-      imported: article.articles.imported,
-    }));
+    .map(
+      (article) =>
+        ({
+          article_id: article.article_id,
+          title: article.articles?.title,
+          description: article.articles?.description,
+          permission_id: article.id,
+          role: article.role,
+          language: article.articles?.language,
+          created_at: new Date(article.articles?.created_at as string),
+          web_publication: article.articles?.web_publication,
+          imported: article.articles?.imported,
+        }) as Article,
+    );
 
   return articles;
 }
 
 export async function updatePermission(
-  permissions: Permission[],
+  permissions: Tables<'permissions'>[],
 ): Promise<void> {
-  const updatedPermissionsPromises = permissions.map(
-    async ({ permissionId, role }) => {
-      // Update permissions where id matches permissionId
-      const { error } = await supabase
-        .from('permissions')
-        .update({ role })
-        .match({ id: permissionId });
+  const updatedPermissionsPromises = permissions.map(async ({ id, role }) => {
+    // Update permissions where id matches permissionId
+    const { error } = await supabase
+      .from('permissions')
+      .update({ role })
+      .match({ id: id });
 
-      if (error) {
-        throw new Error(error.message);
-      }
-    },
-  );
+    if (error) {
+      throw new Error(error.message);
+    }
+  });
 
   await Promise.all(updatedPermissionsPromises);
 }

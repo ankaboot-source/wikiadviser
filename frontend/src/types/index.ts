@@ -1,29 +1,6 @@
-export type SupabaseArticle = {
-  id: string;
-  created_at: Date | null;
-  title: string | null;
-  description: string | null;
-  current_html_content: string | null;
-  language: string | null;
-  web_publication: boolean;
-};
+import { Tables } from './database.types';
 
-export type SupabaseChange = {
-  id: string;
-  created_at: string;
-  status: number;
-  type_of_edit: number;
-  description: string;
-  content: string;
-  article_id: string;
-  contributor_id: string;
-  index: number;
-  archived: boolean;
-  revision_id: string;
-  hidden: boolean;
-};
-
-export interface ChangeItem extends SupabaseChange {
+export interface ChangeItem extends Tables<'changes'> {
   user: Profile;
   comments: Comment[];
   revision: {
@@ -98,3 +75,12 @@ export interface Profile {
   avatar_url?: string;
   allowed_articles: number;
 }
+
+export type {
+  Database,
+  Enums,
+  Json,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from './database.types';

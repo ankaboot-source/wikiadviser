@@ -1,11 +1,11 @@
 import { AnyNode, Cheerio, CheerioAPI, load } from 'cheerio';
 import { encode } from 'html-entities';
 import Parsoid from '../services/mediawikiAPI/ParsoidApi';
-import { Change, ChildNodeData, TypeOfEditDictionary } from '../types';
+import { ChildNodeData, Tables, TypeOfEditDictionary } from '../types';
 import { getChanges } from './supabaseHelper';
 
 function addPermissionDataToChanges(
-  changesToInsert: Change[],
+  changesToInsert: Tables<'changes'>[],
   articleId: string,
   userId: string
 ) {
@@ -17,13 +17,18 @@ function addPermissionDataToChanges(
   }
 }
 
-function unindexUnassignedChanges(changesToUpsert: Change[], changes: any) {
+function unindexUnassignedChanges(
+  changesToUpsert: Tables<'changes'>[],
+  changes: Tables<'changes'>[]
+) {
   for (const change of changes) {
     if (
       !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
     ) {
       changesToUpsert.push({
         index: null,
+        archived: change.archived,
+        hidden: change.hidden,
         id: change.id,
         status: change.status,
         content: change.content,
@@ -185,8 +190,8 @@ export async function refineArticleChanges(
   const changes = await getChanges(articleId);
   const changeElements = $CheerioAPI('[data-description]');
 
-  const changesToUpsert: Change[] = [];
-  const changesToInsert: Change[] = [];
+  const changesToUpsert: Tables<'changes'>[] = [];
+  const changesToInsert: Tables<'changes'>[] = [];
   let changeIndex = 0;
 
   for (const element of changeElements) {
@@ -214,6 +219,8 @@ export async function refineArticleChanges(
 
         changesToUpsert.push({
           id: change.id,
+          archived: change.archived,
+          hidden: change.hidden,
           index: changeIndex,
           status: change.status,
           content: change.content,
@@ -236,11 +243,11 @@ export async function refineArticleChanges(
       changesToInsert.push({
         content: $CheerioAPI.html($element),
         status: 0,
-        description,
-        type_of_edit: TypeOfEditDictionary[typeOfEdit],
+        description: description as string,
+        type_of_edit: TypeOfEditDictionary[typeOfEdit] as number,
         index: changeIndex,
         revision_id
-      });
+      } as Tables<'changes'>);
       changeIndex += 1;
     }
 

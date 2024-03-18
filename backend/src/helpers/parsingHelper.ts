@@ -367,7 +367,10 @@ async function parseWikidataTemplate(
   return newParsedContentXML;
 }
 
-function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
+export function addSourceExternalLinks(
+  pageContent: string,
+  sourceLanguage: string
+) {
   return pageContent.replace(
     /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
@@ -380,15 +383,15 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  * This function modifies the following templates:
  *   - Main
  *   - See also
- *   - Article (détaillé, général, ...)
+ *   - Article (détaillé, général)
  *
  * @param pageContent The content of the page containing templates.
  * @param sourceLanguage The source language prefix for Wikipedia articles.
  * @returns The updated page content with modified templates.
  */
-function addSourceTemplate(pageContent: string, sourceLanguage: string) {
+export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
   const pattern =
-    /{{([mM]ain|[Ss]ee\salso|[aA]rticle\s\S*)\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+    /{{(Main|See also|Article (?:détaillé|général))\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles
@@ -416,7 +419,7 @@ function addSourceTemplate(pageContent: string, sourceLanguage: string) {
  * @param sourceLanguage The source language prefix for Wikipedia articles.
  * @returns The updated page content with links instead of certain templates.
  */
-function convertSourceTemplateToLink(
+export function convertSourceTemplateToLink(
   pageContent: string,
   sourceLanguage: string
 ) {
@@ -425,6 +428,16 @@ function convertSourceTemplateToLink(
       ? `[[wikipedia:${sourceLanguage}:${group}]]`
       : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
   );
+}
+
+function fixSources(pageContent: string, sourceLanguage: string) {
+  let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
+  updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
+  updatedPageContent = convertSourceTemplateToLink(
+    updatedPageContent,
+    sourceLanguage
+  );
+  return updatedPageContent;
 }
 
 /**
@@ -468,15 +481,7 @@ export async function processExportedArticle(
     articleId,
     new Parsoid(sourceLanguage)
   );
-  updatedPageContent = addSourceExternalLinks(
-    updatedPageContent,
-    sourceLanguage
-  );
-  updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
-  updatedPageContent = convertSourceTemplateToLink(
-    updatedPageContent,
-    sourceLanguage
-  );
+  updatedPageContent = fixSources(updatedPageContent, sourceLanguage);
 
   processedData =
     processedData.substring(0, pageStartIndex) +

@@ -18,6 +18,14 @@ jobs:
         run: cd backend && npm run lint
       - name: Check formatting
         run: cd backend && npm run prettier
+      - name: Run test coverage
+        run: cd backend && npm run test:coverage
+      - name: Report results to DeepSource
+        run: |
+          curl https://deepsource.io/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./backend/coverage/cobertura-coverage.xml
+        env:
+          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
 
   frontend:
     runs-on: ubuntu-latest

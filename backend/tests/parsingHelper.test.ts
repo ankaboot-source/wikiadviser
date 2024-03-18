@@ -11,48 +11,48 @@ describe('Testing wikitext parsing (XML file)', () => {
   describe('Wikitext sources are fixed when', () => {
     const basePath = join(__dirname, './data/parsingWikitext/fixSources');
     const pageContentPath = join(basePath, 'pageContent.txt');
-    const expected_addSourceExternalLinksPath = join(
+    const expectedAddSourceExternalLinksPath = join(
       basePath,
-      'expected_addSourceExternalLinks.txt'
+      'expectedAddSourceExternalLinks.txt'
     );
-    const expected_addSourceTemplatePath = join(
+    const expectedAddSourceTemplatePath = join(
       basePath,
-      'expected_addSourceTemplate.txt'
+      'expectedAddSourceTemplate.txt'
     );
-    const expected_convertSourceTemplateToLinkPath = join(
+    const expectedConvertSourceTemplateToLinkPath = join(
       basePath,
-      'expected_convertSourceTemplateToLink.txt'
+      'expectedConvertSourceTemplateToLink.txt'
     );
 
     const sourceLanguage = 'fr';
     const pageContent = readFileSync(pageContentPath, 'utf-8');
-    const expected_addSourceExternalLinks = readFileSync(
-      expected_addSourceExternalLinksPath,
+    const expectedAddSourceExternalLinks = readFileSync(
+      expectedAddSourceExternalLinksPath,
       'utf-8'
     );
-    const expected_addSourceTemplate = readFileSync(
-      expected_addSourceTemplatePath,
+    const expectedAddSourceTemplate = readFileSync(
+      expectedAddSourceTemplatePath,
       'utf-8'
     );
-    const expected_convertSourceTemplateToLink = readFileSync(
-      expected_convertSourceTemplateToLinkPath,
+    const expectedConvertSourceTemplateToLink = readFileSync(
+      expectedConvertSourceTemplateToLinkPath,
       'utf-8'
     );
 
     it('Adds source to external links', () => {
       expect(addSourceExternalLinks(pageContent, sourceLanguage)).toBe(
-        expected_addSourceExternalLinks
+        expectedAddSourceExternalLinks
       );
     });
     it('Adds source to templates', () => {
       expect(
-        addSourceTemplate(expected_addSourceExternalLinks, sourceLanguage)
-      ).toBe(expected_addSourceTemplate);
+        addSourceTemplate(expectedAddSourceExternalLinks, sourceLanguage)
+      ).toBe(expectedAddSourceTemplate);
     });
     it('Converts certain templates to links', () => {
       expect(
-        convertSourceTemplateToLink(expected_addSourceTemplate, sourceLanguage)
-      ).toBe(expected_convertSourceTemplateToLink);
+        convertSourceTemplateToLink(expectedAddSourceTemplate, sourceLanguage)
+      ).toBe(expectedConvertSourceTemplateToLink);
     });
   });
 });

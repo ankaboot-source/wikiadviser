@@ -367,7 +367,10 @@ async function parseWikidataTemplate(
   return newParsedContentXML;
 }
 
-function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
+export function addSourceExternalLinks(
+  pageContent: string,
+  sourceLanguage: string
+) {
   return pageContent.replace(
     /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
@@ -386,7 +389,7 @@ function addSourceExternalLinks(pageContent: string, sourceLanguage: string) {
  * @param sourceLanguage The source language prefix for Wikipedia articles.
  * @returns The updated page content with modified templates.
  */
-function addSourceTemplate(pageContent: string, sourceLanguage: string) {
+export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
   const pattern =
     /{{(Main|See also|Article (?:détaillé|général))\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
 
@@ -416,7 +419,7 @@ function addSourceTemplate(pageContent: string, sourceLanguage: string) {
  * @param sourceLanguage The source language prefix for Wikipedia articles.
  * @returns The updated page content with links instead of certain templates.
  */
-function convertSourceTemplateToLink(
+export function convertSourceTemplateToLink(
   pageContent: string,
   sourceLanguage: string
 ) {
@@ -427,7 +430,7 @@ function convertSourceTemplateToLink(
   );
 }
 
-export function fixSources(pageContent: string, sourceLanguage: string) {
+function fixSources(pageContent: string, sourceLanguage: string) {
   let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
   updatedPageContent = convertSourceTemplateToLink(

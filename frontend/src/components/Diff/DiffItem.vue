@@ -300,7 +300,9 @@ type StatusInfo = {
 
 const editorPermission = props.role === 'editor' || props.role === 'owner';
 const reviewerPermission =
-  props.role === 'reviewer' || 'editor' || props.role === 'owner';
+  props.role === 'reviewer' ||
+  props.role === 'editor' ||
+  props.role === 'owner';
 const viewerPermission = props.role === 'viewer';
 
 const statusDictionary: Map<Status, StatusInfo> = new Map([
@@ -496,10 +498,12 @@ async function hideChange() {
 .highlighted {
   animation: fadeEffect 0.4s;
 }
+
 @keyframes fadeEffect {
   0% {
     background-color: lightgrey;
   }
+
   100% {
     background-color: transparent;
   }

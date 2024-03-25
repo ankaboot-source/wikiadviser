@@ -1,16 +1,3 @@
-export type Change = {
-  id?: string;
-  content?: string;
-  status?: 0 | 1 | 2;
-  description?: string;
-  type_of_edit?: TypeOfEditDictionary;
-  index?: number | null;
-  article_id?: string;
-  contributor_id?: string;
-  created_at?: string;
-  revision_id?: string;
-};
-
 export interface Article {
   current_html_content: string;
 }
@@ -39,15 +26,15 @@ export interface ErrorResponse {
   stack?: string;
 }
 
-export type Acc = {
+export type Account = {
   [key: string]: string;
 };
 
 export {
-  Json,
   Database,
+  Enums,
+  Json,
   Tables,
   TablesInsert,
-  TablesUpdate,
-  Enums
+  TablesUpdate
 } from './database.types';

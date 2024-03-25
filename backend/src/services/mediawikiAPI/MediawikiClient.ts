@@ -7,10 +7,10 @@ import {
   upsertChanges
 } from '../../helpers/supabaseHelper';
 import logger from '../../logger';
+import ENV from '../../schema/env.schema';
+import { Account } from '../../types';
 import { WikipediaApi } from '../wikipedia/WikipediaApi';
 import { MediawikiAutomator } from './MediawikiAutomator';
-import ENV from '../../schema/env.schema';
-import { Acc } from '../../types';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -43,7 +43,7 @@ export default class MediawikiClient {
   }
 
   private static extractCookies(setCookieHeaders: string[]) {
-    const cookies = setCookieHeaders.reduce((acc: Acc, header) => {
+    const cookies = setCookieHeaders.reduce((acc: Account, header) => {
       const cookieKeyValue = header.split(';')[0];
       const [key, value] = cookieKeyValue.split('=');
       acc[key.trim()] = value.trim();

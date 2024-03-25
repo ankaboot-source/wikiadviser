@@ -264,7 +264,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue';
-import { ChangeItem, UserRole, Status, Profile } from 'src/types';
+import { ChangeItem, Status, Profile, Enums } from 'src/types';
 import {
   hideChanges,
   insertComment,
@@ -280,7 +280,7 @@ const userStore = useUserStore();
 const store = useSelectedChangeStore();
 const props = defineProps<{
   item: ChangeItem;
-  role: UserRole;
+  role: Enums<'role'>;
   pastChange?: {
     icon?: string;
     text: string;
@@ -298,13 +298,12 @@ type StatusInfo = {
   icon: string;
 };
 
-const editorPermission =
-  props.role === UserRole.Editor || props.role === UserRole.Owner;
+const editorPermission = props.role === 'editor' || props.role === 'owner';
 const reviewerPermission =
-  props.role === UserRole.Reviewer ||
-  UserRole.Editor ||
-  props.role === UserRole.Owner;
-const viewerPermission = props.role === UserRole.Viewer;
+  props.role === 'reviewer' ||
+  props.role === 'editor' ||
+  props.role === 'owner';
+const viewerPermission = props.role === 'viewer';
 
 const statusDictionary: Map<Status, StatusInfo> = new Map([
   [
@@ -337,7 +336,7 @@ const userId = computed(() => (userStore.user as Profile).id);
 const previewDescription = computed(() => {
   const { item } = props;
 
-  if (item.description.length > 0) {
+  if ((item.description as string).length > 0) {
     return item.description;
   }
 
@@ -345,7 +344,10 @@ const previewDescription = computed(() => {
     return 'Modifications to infobox or table';
   }
 
-  const contentDoc = new DOMParser().parseFromString(item.content, 'text/html');
+  const contentDoc = new DOMParser().parseFromString(
+    item.content as string,
+    'text/html',
+  );
   if (contentDoc.querySelector('img') !== null) {
     return 'Modifications to an image';
   }
@@ -371,7 +373,7 @@ async function handleComment() {
     await insertComment(
       props.item.id,
       userId.value,
-      props.item.article_id,
+      props.item.article_id as string,
       toSendComment.value,
     );
     toSendComment.value = '';
@@ -381,11 +383,11 @@ async function handleComment() {
 const description = ref(props.item?.description);
 
 const statusIcon = computed(
-  () => statusDictionary.get(props.item?.status)?.icon,
+  () => statusDictionary.get(props.item?.status as number)?.icon,
 );
 
 const statusMessage = computed(
-  () => statusDictionary.get(props.item?.status)?.message,
+  () => statusDictionary.get(props.item?.status as number)?.message,
 );
 const preventLinkVisit = (event: MouseEvent) => {
   //Prevent visting links:
@@ -398,7 +400,7 @@ async function handleReview(Status: Status) {
 }
 
 async function handleDescription() {
-  await updateChange(props.item.id, undefined, description.value);
+  await updateChange(props.item.id, undefined, description.value as string);
 }
 
 const isArchived = computed(() => props.item.archived);
@@ -460,10 +462,10 @@ function setHovered(value: string) {
 }
 
 const localeDateString = computed(() =>
-  new Date(props.item?.created_at).toLocaleDateString(),
+  new Date(props.item?.created_at as string).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
-  new Date(props.item?.created_at).toLocaleTimeString(),
+  new Date(props.item?.created_at as string).toLocaleTimeString(),
 );
 
 const isUnindexed = computed(() => props.item.index === null);
@@ -496,10 +498,12 @@ async function hideChange() {
 .highlighted {
   animation: fadeEffect 0.4s;
 }
+
 @keyframes fadeEffect {
   0% {
     background-color: lightgrey;
   }
+
   100% {
     background-color: transparent;
   }

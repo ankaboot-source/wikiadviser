@@ -34,14 +34,7 @@ import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/Diff/DiffList.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import {
-  ChangeItem,
-  Comment,
-  Profile,
-  SupabaseArticle,
-  SupabaseChange,
-  UserRole,
-} from 'src/types';
+import { ChangeItem, Comment, Enums, Profile, Tables } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -62,7 +55,7 @@ const articleId = ref('');
 
 const loading = ref(true);
 
-const role = ref<UserRole>(UserRole.Viewer);
+const role = ref<Enums<'role'>>('viewer');
 const editorPermission = ref<boolean | null>(null);
 
 const changesList = ref<ChangeItem[]>([]);
@@ -76,9 +69,9 @@ const activeChanges = computed(
 );
 
 async function handleArticleRealtime(
-  payload: RealtimePostgresChangesPayload<SupabaseArticle>,
+  payload: RealtimePostgresChangesPayload<Tables<'articles'>>,
 ) {
-  const updatedArticle = payload.new as SupabaseArticle;
+  const updatedArticle = payload.new as Tables<'articles'>;
 
   if (!Object.keys(updatedArticle).length) {
     return;
@@ -92,9 +85,9 @@ async function handleArticleRealtime(
 }
 
 async function handleChangeRealtime(
-  payload: RealtimePostgresChangesPayload<SupabaseChange>,
+  payload: RealtimePostgresChangesPayload<Tables<'changes'>>,
 ) {
-  const newChange = payload.new as SupabaseChange;
+  const newChange = payload.new as Tables<'changes'>;
   const oldChangeIndex = changesList.value.find(
     (change) => change.id === newChange.id,
   )?.index;
@@ -122,7 +115,7 @@ async function handleCommentRealtime(
           .select()
           .eq('id', insertedComment.commenter_id)
           .single()
-      ).data;
+      ).data as Profile;
       change.comments.push(insertedComment);
       break;
     }
@@ -155,8 +148,7 @@ onBeforeMount(async () => {
   role.value = article.value.role;
   users.value = await getUsers(articleId.value);
   editorPermission.value =
-    article.value.role === UserRole.Editor ||
-    article.value.role === UserRole.Owner;
+    article.value.role === 'editor' || article.value.role === 'owner';
 
   changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(
@@ -166,12 +158,12 @@ onBeforeMount(async () => {
         .select('current_html_content')
         .eq('id', articleId.value)
         .single()
-    ).data?.current_html_content,
+    ).data?.current_html_content as string,
     changesList.value,
   );
 
   realtimeChannel
-    .on<SupabaseArticle>(
+    .on<Tables<'articles'>>(
       'postgres_changes',
       {
         event: '*',
@@ -181,7 +173,7 @@ onBeforeMount(async () => {
       },
       handleArticleRealtime,
     )
-    .on<SupabaseChange>(
+    .on<Tables<'changes'>>(
       'postgres_changes',
       {
         event: 'UPDATE',

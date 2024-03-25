@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { User, UserRole, Permission, Article, Profile } from 'src/types';
+import { User, Permission, Article, Profile, Enums } from 'src/types';
 import ShareUser from './ShareUser.vue';
 import {
   deletePermission,
@@ -71,11 +71,11 @@ const articlesStore = useArticlesStore();
 
 const props = defineProps<{
   article: Article;
-  role: UserRole;
+  role: Enums<'role'>;
 }>();
 const users = ref<User[]>();
 
-const ownerPermission = props.role === UserRole.Owner;
+const ownerPermission = props.role === 'owner';
 
 onMounted(async () => {
   users.value = await getUsers(props.article.article_id);
@@ -83,7 +83,7 @@ onMounted(async () => {
 
 type EmittedPermission = {
   permissionId: string;
-  role: UserRole;
+  role: Enums<'role'>;
   duplicate?: boolean;
   remove?: boolean;
 };

@@ -1,29 +1,6 @@
-export type SupabaseArticle = {
-  id: string;
-  created_at: Date | null;
-  title: string | null;
-  description: string | null;
-  current_html_content: string | null;
-  language: string | null;
-  web_publication: boolean;
-};
+import { Enums, Tables } from './database.types';
 
-export type SupabaseChange = {
-  id: string;
-  created_at: string;
-  status: number;
-  type_of_edit: number;
-  description: string;
-  content: string;
-  article_id: string;
-  contributor_id: string;
-  index: number;
-  archived: boolean;
-  revision_id: string;
-  hidden: boolean;
-};
-
-export interface ChangeItem extends SupabaseChange {
+export interface ChangeItem extends Tables<'changes'> {
   user: Profile;
   comments: Comment[];
   revision: {
@@ -41,7 +18,7 @@ export type SearchResult = {
 export type User = {
   picture: string;
   email: string;
-  role: UserRole;
+  role: Enums<'role'>;
   permissionId: string;
 };
 
@@ -50,7 +27,7 @@ export type Article = {
   title: string;
   description: string;
   permission_id: string;
-  role: UserRole;
+  role: Enums<'role'>;
   created_at: Date;
   language: string;
   web_publication: boolean;
@@ -66,16 +43,9 @@ export type Comment = {
   change_id: string;
 };
 
-export enum UserRole {
-  Owner = 'owner',
-  Editor = 'editor',
-  Reviewer = 'reviewer',
-  Viewer = 'viewer',
-}
-
 export type Permission = {
   permissionId: string;
-  role: UserRole;
+  role: Enums<'role'>;
 };
 
 export enum Status {
@@ -98,3 +68,12 @@ export interface Profile {
   avatar_url?: string;
   allowed_articles: number;
 }
+
+export type {
+  Database,
+  Enums,
+  Json,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+} from './database.types';

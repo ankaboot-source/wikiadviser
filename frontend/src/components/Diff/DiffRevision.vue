@@ -113,14 +113,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import DiffItem from './DiffItem.vue';
-import { UserRole, Revision } from 'src/types';
+import { Enums, Revision } from 'src/types';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
 import { useQuasar } from 'quasar';
 import UserComponent from '../UserComponent.vue';
 
 const props = defineProps<{
-  role: UserRole;
+  role: Enums<'role'>;
   revision: Revision;
   articleId: string;
 }>();
@@ -137,12 +137,15 @@ const changesToReviewLength = computed(() => {
   return props.revision.items.filter((item) => item.status === 0).length;
 });
 const localeDateString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleDateString(),
+  new Date(props.revision.items[0]?.created_at as string).toLocaleDateString(),
 );
 const localeTimeString = computed(() =>
-  new Date(props.revision.items[0]?.created_at).toLocaleTimeString(undefined, {
-    timeStyle: 'short',
-  }),
+  new Date(props.revision.items[0]?.created_at as string).toLocaleTimeString(
+    undefined,
+    {
+      timeStyle: 'short',
+    },
+  ),
 );
 
 watch(

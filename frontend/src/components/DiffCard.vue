@@ -22,7 +22,7 @@
         @click="viewArticleInNewTab()"
       />
       <q-btn
-        v-if="role === UserRole.Owner"
+        v-if="role === 'owner'"
         icon="link"
         outline
         label="Share article"
@@ -31,7 +31,7 @@
         @click="copyShareLinkToClipboard()"
       />
       <q-btn
-        v-if="role != UserRole.Viewer"
+        v-if="role != 'viewer'"
         icon="o_group"
         outline
         label="Share settings"
@@ -83,7 +83,7 @@ import ShareCard from 'src/components/Share/ShareCard.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Article, UserRole } from 'src/types';
+import { Article, Enums } from 'src/types';
 import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
 import ENV from 'src/schema/env.schema';
@@ -92,7 +92,7 @@ const store = useSelectedChangeStore();
 const props = defineProps<{
   changesContent: string | null;
   article: Article;
-  role: UserRole;
+  role: Enums<'role'>;
   editorPermission: boolean | null;
 }>();
 

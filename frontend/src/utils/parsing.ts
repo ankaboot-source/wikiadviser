@@ -1,7 +1,10 @@
 import { load } from 'cheerio';
-import { ChangeItem, SupabaseChange } from 'src/types';
+import { ChangeItem, Tables } from 'src/types';
 
-export function parseArticleHtml(content: string, changes: SupabaseChange[]) {
+export function parseArticleHtml(
+  content: string,
+  changes: Tables<'changes'>[],
+) {
   if (!content) {
     return null;
   }

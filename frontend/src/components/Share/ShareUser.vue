@@ -15,13 +15,13 @@
       class="q-ma-sm text-capitalize"
       :options="roleOptions"
       dense
-      :disable="!ownerPermission || props.user.role === UserRole.Owner"
+      :disable="!ownerPermission || props.user.role === 'owner'"
       label="Role"
       map-options
       @update:model-value="emitPermission()"
     />
     <q-btn
-      v-if="ownerPermission && props.user.role !== UserRole.Owner"
+      v-if="ownerPermission && props.user.role !== 'owner'"
       color="negative"
       unelevated
       no-caps
@@ -38,12 +38,12 @@
 </template>
 
 <script setup lang="ts">
-import { User, UserRole } from 'src/types';
+import { Enums, User } from 'src/types';
 import { ref } from 'vue';
 
 const props = defineProps<{
   user: User;
-  role: UserRole;
+  role: Enums<'role'>;
 }>();
 
 const roleModel = ref({
@@ -53,29 +53,29 @@ const roleModel = ref({
 const roleOptions = [
   {
     label: 'Editor',
-    value: UserRole.Editor,
+    value: 'editor',
     disable: false,
   },
   {
     label: 'Reviewer',
-    value: UserRole.Reviewer,
+    value: 'reviewer',
     disable: false,
   },
   {
     label: 'Viewer',
-    value: UserRole.Viewer,
+    value: 'viewer',
     disable: false,
   },
 ];
-if (roleModel.value.value === UserRole.Owner) {
+if (roleModel.value.value === 'owner') {
   roleOptions.unshift({
     label: 'Owner',
-    value: UserRole.Owner,
+    value: 'owner',
     disable: true,
   });
 }
 const removed = ref(false);
-const ownerPermission = props.role === UserRole.Owner;
+const ownerPermission = props.role === 'owner';
 
 const emit = defineEmits(['permissionEmit']);
 function emitPermission() {

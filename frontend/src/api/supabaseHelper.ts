@@ -1,9 +1,9 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, User, Tables } from 'src/types';
+import { Article, ChangeItem, Tables, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
-import supabase from './supabase';
 import { parseChangeHtml } from 'src/utils/parsing';
+import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -131,7 +131,7 @@ export async function updatePermission(
     const { error } = await supabase
       .from('permissions')
       .update({ role })
-      .match({ id: id });
+      .match({ id });
 
     if (error) {
       throw new Error(error.message);

@@ -13,18 +13,22 @@ name = "secrets"
 [[analyzers]]
 name = "docker"
 
-  [analyzers.meta]
-  dockerfile_paths = [
-    "backend/Dockerfile",
-    "frontend/Dockerfile"
-  ]
+[analyzers.meta]
+dockerfile_paths = [
+  "backend/Dockerfile",
+  "frontend/Dockerfile"
+]
 
 [[analyzers]]
 name = "javascript"
 
-  [analyzers.meta]
-  plugins = ["vue"]
-  environment = [
-    "nodejs",
-    "browser"
-  ]
+[analyzers.meta]
+plugins = ["vue"]
+environment = [
+  "nodejs",
+  "browser"
+]
+
+[[analyzers]]
+name = "test-coverage"
+enabled = true

@@ -10,11 +10,14 @@
           />
           <q-breadcrumbs-el
             v-if="article?.title"
-            :label="article.title"
             class="article-title"
             to="."
             @click="$router.go(0)"
-          />
+          >
+            <div class="ellipsis">
+              {{ article.title }}
+            </div>
+          </q-breadcrumbs-el>
           <q-icon v-if="article?.web_publication" name="public">
             <q-tooltip>This article is published on the Web</q-tooltip>
           </q-icon>

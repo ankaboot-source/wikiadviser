@@ -85,14 +85,12 @@ ve.collab.initPeerClient = function ( serverId, isMain ) {
 
 	if ( !isMain ) {
 		ve.ui.commandRegistry.unregister( 'showSave' );
-		// eslint-disable-next-line no-jquery/no-global-selector
-		$( '.ve-ui-toolbar-saveButton' ).css( 'text-decoration', 'line-through' );
 	}
 	ve.init.target.constructor.static.toolbarGroups = ve.copy( ve.init.target.constructor.static.toolbarGroups );
-	ve.init.target.constructor.static.toolbarGroups.push( {
+	ve.init.target.constructor.static.toolbarGroups.unshift( {
 		name: 'authorList',
 		include: [ 'authorList' ],
-		position: 'after'
+		align: 'after'
 	} );
 
 	peerClient.on( 'open', function ( /* id */ ) {
@@ -115,10 +113,16 @@ ve.collab.initPeerClient = function ( serverId, isMain ) {
 					);
 					return;
 				}
-				ve.init.target.getToolbar().setup(
+				var toolbar = ve.init.target.getToolbar();
+				toolbar.setup(
 					ve.init.target.constructor.static.toolbarGroups,
 					ve.init.target.surface
 				);
+				toolbar.onWindowResize();
+				if ( !isMain ) {
+					// eslint-disable-next-line no-jquery/no-global-selector
+					$( '.ve-ui-toolbar-saveButton' ).css( 'text-decoration', 'line-through' );
+				}
 			} );
 			ve.collab.connectModelSynchronizer();
 		} );
@@ -136,45 +140,12 @@ ve.collab.connectModelSynchronizer = function () {
 	} );
 };
 
-ve.collab.validateSessionUrl = function ( sessionUrl ) {
-	var u = new URL( sessionUrl );
-	var m = u.hash.match( /^#collabSession=(.*)/ );
-	if ( !m ) {
-		return '';
+ve.collab.join = function () {
+	var serverId = new URLSearchParams( location.search ).get( 'collabSession' );
+	if ( serverId ) {
+		// Valid session URL
+		ve.collab.start( serverId );
 	}
-	if (
-		u.protocol !== location.protocol ||
-		u.host !== location.host ||
-		u.pathname !== location.pathname
-	) {
-		return null;
-	}
-	return m[ 1 ];
-};
-
-ve.collab.setup = function () {
-	if ( location.hash.match( /^#collabSession=/ ) ) {
-		var serverId = ve.collab.validateSessionUrl( location.toString() );
-		if ( serverId ) {
-			// Valid session URL
-			ve.collab.start( serverId );
-			return;
-		}
-		if ( serverId === null ) {
-			// Invalid session URL
-			OO.ui.alert( 'Session URL does not match this page' );
-		}
-	}
-	ve.init.target.constructor.static.toolbarGroups = ve.copy(
-		ve.init.target.constructor.static.toolbarGroups
-	);
-	ve.init.target.constructor.static.toolbarGroups.push(
-		{ name: 'collab', include: [ 'collab' ] }
-	);
-	ve.init.target.getToolbar().setup(
-		ve.init.target.constructor.static.toolbarGroups,
-		ve.init.target.surface
-	);
 };
 
 /**
@@ -194,20 +165,5 @@ ve.collab.start = function ( serverId ) {
 		return;
 	}
 	// Else host a new session
-	ve.init.target.surface.dialogs.openWindow( 'hostCollabDialog' ).closing.then( function ( val ) {
-		if ( val !== 'accept' ) {
-			return;
-		}
-		ve.collab.initPeerServer();
-		var url = location.protocol + '//' + location.host + location.pathname;
-		ve.collab.peerServer.peer.on( 'open', function ( newId ) {
-			var copyTextLayout = new OO.ui.CopyTextLayout( {
-				copyText: url + '#collabSession=' + newId
-			} );
-			OO.ui.alert( copyTextLayout.$element, {
-				title: OO.ui.msg( 'visualeditor-collab-copy-title' ),
-				size: 'medium'
-			} );
-		} );
-	} );
+	ve.init.target.surface.dialogs.openWindow( 'hostCollabDialog' );
 };

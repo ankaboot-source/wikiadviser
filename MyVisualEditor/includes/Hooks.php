@@ -153,6 +153,14 @@ class Hooks implements
 			] );
 			$output->addModuleStyles( [ 'ext.visualEditor.desktopArticleTarget.noscript' ] );
 		}
+		if (
+			$services->getUserOptionsLookup()->getOption( $skin->getUser(), 'visualeditor-collab' ) ||
+			// Joining a collab session
+			$output->getRequest()->getVal( 'collabSession' )
+		) {
+			$output->addModules( 'ext.visualEditor.collab' );
+		}
+
 		// add scroll offset js variable to output
 		$veConfig = $services->getConfigFactory()->makeConfig( 'visualeditor' );
 		$skinsToolbarScrollOffset = $veConfig->get( 'VisualEditorSkinToolbarScrollOffset' );
@@ -276,7 +284,7 @@ class Hooks implements
 			}
 			$version = $matches[1];
 			foreach ( $rules as $rule ) {
-				list( $op, $matchVersion ) = $rule;
+				[ $op, $matchVersion ] = $rule;
 				if (
 					( $op === '<' && $version < $matchVersion ) ||
 					( $op === '>' && $version > $matchVersion ) ||
@@ -435,7 +443,7 @@ class Hooks implements
 
 			$out = $article->getContext()->getOutput();
 			$titleMsg = $title->exists() ? 'editing' : 'creating';
-			$out->setPageTitle( wfMessage( $titleMsg, $title->getPrefixedText() ) );
+			$out->setPageTitleMsg( wfMessage( $titleMsg, $title->getPrefixedText() ) );
 			$out->showPendingTakeover( $url, 'visualeditor-toload', wfExpandUrl( $url ) );
 
 			$out->setRevisionId( $req->getInt( 'oldid', $article->getRevIdFetched() ) );
@@ -576,7 +584,7 @@ class Hooks implements
 			$userOptionsLookup->getOption( $user, 'visualeditor-tabs' ) === 'remember-last'
 		) {
 			// Check if the user has made any edits before the SET switch time
-			$dbr = wfGetDB( DB_REPLICA );
+			$dbr = $services->getConnectionProvider()->getReplicaDatabase();
 			$revExists = $dbr->newSelectQueryBuilder()
 				->from( 'revision' )
 				->field( '1' )
@@ -1211,7 +1219,7 @@ class Hooks implements
 						'lib/ve/lib/jquery.uls/src/jquery.uls.data.js',
 						'lib/ve/lib/jquery.uls/src/jquery.uls.data.utils.js',
 					],
-			] ] );
+				] ] );
 		}
 	}
 

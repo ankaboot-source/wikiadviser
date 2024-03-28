@@ -1,19 +1,15 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title>
+      <q-toolbar-title class="col-9 col-shrink">
         <q-breadcrumbs class="merriweather">
           <q-breadcrumbs-el
+            class="no-wrap"
             label="WikiAdviser"
             icon="img:/icons/logo.svg"
             to="/"
           />
-          <q-breadcrumbs-el
-            v-if="article?.title"
-            class="article-title"
-            to="."
-            @click="$router.go(0)"
-          >
+          <q-breadcrumbs-el v-if="article?.title" to="." @click="$router.go(0)">
             <div class="ellipsis">
               {{ article.title }}
             </div>
@@ -23,6 +19,7 @@
           </q-icon>
         </q-breadcrumbs>
       </q-toolbar-title>
+      <q-space />
       <q-btn v-if="user" no-caps unelevated @click="account">
         <user-component
           :avatar-url="avatarURL"
@@ -92,33 +89,21 @@ function account() {
 }
 </script>
 
-<style scoped>
+<style>
 .q-breadcrumbs__el {
   text-decoration: none !important;
   color: black !important;
 }
 
-.article-title {
+/* ellipsis */
+.q-breadcrumbs--last,
+.q-breadcrumbs__el {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
 }
 
-@media screen and (max-width: 672px) {
-  .article-title {
-    max-width: 21vw;
-  }
-}
-
-@media screen and (min-width: 601px) and (max-width: 1024px) {
-  .article-title {
-    max-width: 32vw;
-  }
-}
-
-@media screen and (min-width: 1025px) {
-  .article-title {
-    max-width: 40vw;
-  }
+.q-breadcrumbs > div {
+  flex-wrap: nowrap;
 }
 </style>

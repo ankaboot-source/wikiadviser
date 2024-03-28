@@ -108,6 +108,10 @@
 		"VisualEditorRebaserURL": {
 			"value": false
 		},
+		"VisualEditorEnableCollabBeta": {
+			"description": "Enable the experimental ve.collab beta feature.",
+			"value": false
+		},
 		"VisualEditorShowBetaWelcome": {
 			"value": true
 		},
@@ -191,6 +195,12 @@
 				"SpecialPageFactory",
 				"VisualEditor.ParsoidClientFactory"
 			]
+		},
+		"editcheckreferenceurl": {
+			"class": "MediaWiki\\Extension\\VisualEditor\\EditCheck\\ApiEditCheckReferenceUrl",
+			"optional_services": [
+				"AbuseFilterBlockedDomainStorage"
+			]
 		}
 	},
 	"MessagesDirs": {
@@ -200,7 +210,8 @@
 			"i18n/ve-mw/api",
 			"i18n/ve-mw/mwlanguagevariant",
 			"i18n/ve-wmf",
-			"editcheck/i18n"
+			"editcheck/i18n",
+			"editcheck/i18n/api"
 		]
 	},
 	"ExtensionMessagesFiles": {
@@ -215,6 +226,7 @@
 		"TextSlotDiffRendererTablePrefix": "VisualEditorHooks",
 		"EditPage::showEditForm:fields": "VisualEditorHooks",
 		"GetPreferences": "VisualEditorHooks",
+		"GetBetaFeaturePreferences": "betapreferences",
 		"ListDefinedTags": "VisualEditorHooks",
 		"MakeGlobalVariablesScript": "VisualEditorHooks",
 		"OutputPageBodyAttributes": "VisualEditorHooks",
@@ -231,12 +243,24 @@
 	"HookHandlers": {
 		"VisualEditorHooks": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\Hooks"
+		},
+		"betapreferences": {
+			"class": "MediaWiki\\Extension\\VisualEditor\\BetaPreferenceHooks",
+			"services": [
+				"MainConfig",
+				"ConfigFactory"
+			]
 		}
 	},
 	"ResourceModules": {
 		"socket.io": {
 			"scripts": [
 				"lib/ve/lib/socket.io-client/socket.io.min.js"
+			]
+		},
+		"peerjs": {
+			"scripts": [
+				"lib/ve/lib/peerjs/peerjs.min.js"
 			]
 		},
 		"dompurify": {
@@ -326,7 +350,8 @@
 					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-vector-2022.less"
 				],
 				"monobook": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-apextheme.css"
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-apextheme.css",
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-monobook.css"
 				]
 			},
 			"dependencies": [
@@ -549,6 +574,47 @@
 		"ext.visualEditor.collabTarget.init.styles": {
 			"styles": [
 				"modules/ve-mw-collab/ve.init.mw.CollabTarget.css"
+			]
+		},
+		"ext.visualEditor.collab": {
+			"scripts": [
+				"lib/ve/rebaser/src/dm/ve.dm.RebaseDocState.js",
+				"lib/ve/rebaser/src/dm/ve.dm.RebaseServer.js",
+				"lib/ve/rebaser/src/dm/ve.dm.DocumentStore.js",
+				"lib/ve/rebaser/src/dm/ve.dm.ProtocolServer.js",
+				"lib/ve/src/dm/ve.dm.RebaseClient.js",
+				"lib/ve/src/dm/ve.dm.SurfaceSynchronizer.js",
+				"lib/ve/src/ui/widgets/ve.ui.AuthorItemWidget.js",
+				"lib/ve/src/ui/tools/ve.ui.AuthorListPopupTool.js",
+				"lib/ve/src/ve.FakePeer.js",
+				"lib/ve/collab/ve.collab.js",
+				"lib/ve/collab/ve.dm.CollabTransportServer.js",
+				"lib/ve/collab/ve.ui.CollabProcessDialog.js",
+				"lib/ve/collab/ve.ui.CollabTool.js",
+				"modules/ve-mw-collab/ve.init.mw.collab.init.js"
+			],
+			"styles": [
+				"lib/ve/src/ui/styles/widgets/ve.ui.AuthorItemWidget.css"
+			],
+			"dependencies": [
+				"color-picker",
+				"peerjs",
+				"ext.visualEditor.core"
+			],
+			"messages": [
+				"visualeditor-collab-copy-title",
+				"visualeditor-collab-dialog-title",
+				"visualeditor-collab-dialog-privacy",
+				"visualeditor-collab-dialog-sessionend",
+				"visualeditor-collab-dialog-sharing",
+				"visualeditor-collab-dialog-summary-host",
+				"visualeditor-collab-dialog-summary-join",
+				"visualeditor-collab-hostbutton-label",
+				"visualeditor-collab-joinbutton-label",
+				"visualeditor-collab-url-mismatch",
+				"visualeditor-collab-url-placeholder",
+				"visualeditor-collab-url-prompt",
+				"visualeditor-collab-user-placeholder"
 			]
 		},
 		"ext.visualEditor.ve": {
@@ -1459,14 +1525,14 @@
 			],
 			"styles": [
 				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog.css",
-				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchPopupWidget.css"
+				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchPopupWidget.less"
 			],
 			"skinStyles": {
 				"default": [
-					"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog-wikimedia.css"
+					"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog-wikimedia.less"
 				],
 				"monobook": [
-					"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog-apex.css"
+					"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog-apex.less"
 				]
 			},
 			"dependencies": [
@@ -2687,6 +2753,7 @@
 	"DefaultUserOptions": {
 		"visualeditor-autodisable": 0,
 		"visualeditor-betatempdisable": 0,
+		"visualeditor-collab": 0,
 		"visualeditor-editor": "visualeditor",
 		"visualeditor-enable": 0,
 		"visualeditor-hidebetawelcome": 0,

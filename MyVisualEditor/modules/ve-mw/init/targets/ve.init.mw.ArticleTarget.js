@@ -472,8 +472,11 @@ ve.init.mw.ArticleTarget.prototype.surfaceReady = function () {
 	if ( !this.canEdit ) {
 		this.getSurface().setReadOnly( true );
 	} else {
-		// Auto-save
-		this.initAutosave();
+		// TODO: If the user rejects joining the collab session, start auto-save
+		if ( !this.currentUrl.searchParams.has( 'collabSession' ) ) {
+			// Auto-save
+			this.initAutosave();
+		}
 
 		setTimeout( function () {
 			mw.libs.ve.targetSaver.preloadDeflate();
@@ -731,7 +734,7 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		// Not passing trackMechanism because this isn't an abort action
 		this.tryTeardown( true );
 	}
-	/* Custom WikiAdviser */
+		/* Custom WikiAdviser */
 	// On "Save Changes", update changes
 	const isIframe =  window.location !== window.parent.location;
 	if (isIframe) {
@@ -2263,7 +2266,10 @@ ve.init.mw.ArticleTarget.prototype.getSectionHashFromPage = function () {
 		section = this.section;
 	}
 	if ( section > 0 ) {
-		var $section = $sections.eq( section - 1 ).parent().find( '.mw-headline' );
+		// Compatibility with pre-T13555 markup
+		var $section = $sections.eq( section - 1 )
+			.closest( '.mw-heading, h1, h2, h3, h4, h5, h6' )
+			.find( 'h1, h2, h3, h4, h5, h6, .mw-headline' );
 
 		if ( $section.length && $section.attr( 'id' ) ) {
 			return '#' + $section.attr( 'id' );

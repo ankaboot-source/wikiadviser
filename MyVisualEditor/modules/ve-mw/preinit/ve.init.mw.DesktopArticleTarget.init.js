@@ -40,6 +40,7 @@
 		/* Custom WikiAdviser */
 		welcomeDialogDisabled = true,
 		/* End Custom WikiAdviser */
+		welcomeDialogDisabled = false,
 		educationPopupsDisabled = false,
 		// Defined after document-ready below
 		$targetContainer = null;

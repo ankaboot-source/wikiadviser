@@ -22,25 +22,16 @@
         @click="viewArticleInNewTab()"
       />
       <q-btn
-        v-if="role === 'owner'"
-        icon="link"
-        outline
-        label="Share article"
-        no-caps
-        class="q-mr-xs"
-        @click="copyShareLinkToClipboard()"
-      />
-      <q-btn
         v-if="role != 'viewer'"
         icon="o_group"
         outline
-        label="Share settings"
+        label="Share"
         no-caps
         class="q-pr-lg"
         @click="share = !share"
       >
         <q-dialog v-model="share">
-          <share-card :article="article" :role="article.role" />
+          <share-card :article="article" :role />
         </q-dialog>
       </q-btn>
     </q-toolbar>
@@ -76,17 +67,14 @@
 </template>
 
 <script setup lang="ts">
-import { copyToClipboard, useQuasar } from 'quasar';
-import { createLink } from 'src/api/supabaseHelper';
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/Share/ShareCard.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
+import ENV from 'src/schema/env.schema';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, Enums } from 'src/types';
-import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
-import ENV from 'src/schema/env.schema';
 
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -170,18 +158,7 @@ watch(
   },
 );
 
-const $q = useQuasar();
 const share = ref(false);
-async function copyShareLinkToClipboard() {
-  const token = await createLink(`${props.article.article_id}`);
-  await copyToClipboard(`${window.location.origin}/shares/${token}`);
-  $q.notify({
-    message: 'Share link copied to clipboard',
-    caption: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
-    color: 'positive',
-    icon: 'content_copy',
-  });
-}
 
 const viewButton = {
   label: 'Review changes',

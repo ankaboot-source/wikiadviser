@@ -242,6 +242,34 @@ putenv("GDFONTPATH=/usr/share/fonts/truetype/freefont");
 
 wfLoadExtension( 'Kartographer' );
 wfLoadExtension( 'JsonConfig' );
+$wgJsonConfigEnableLuaSupport = true; // required to use JsonConfig in Lua
+$wgJsonConfigModels['Tabular.JsonConfig'] = 'JsonConfig\JCTabularContent';
+$wgJsonConfigs['Tabular.JsonConfig'] = [ 
+        'namespace' => 486, 
+        'nsName' => 'Data',
+        // page name must end in ".tab", and contain at least one symbol
+        'pattern' => '/.\.tab$/',
+        'license' => 'CC0-1.0',
+        'isLocal' => false,
+];
+$wgJsonConfigModels['Map.JsonConfig'] = 'JsonConfig\JCMapDataContent';
+$wgJsonConfigs['Map.JsonConfig'] = [ 
+        'namespace' => 486,
+        'nsName' => 'Data',
+        // page name must end in ".map", and contain at least one symbol
+        'pattern' => '/.\.map$/',
+        'license' => 'CC0-1.0',
+        'isLocal' => false,
+];
+$wgJsonConfigInterwikiPrefix = "commons";
+
+$wgJsonConfigs['Tabular.JsonConfig']['remote'] = [ 
+        'url' => 'https://commons.wikimedia.org/w/api.php'
+];
+$wgJsonConfigs['Map.JsonConfig']['remote'] = [
+        'url' => 'https://commons.wikimedia.org/w/api.php'
+];
+
 wfLoadExtension( 'ImageMap' );
 wfLoadExtension( 'LabeledSectionTransclusion' );
 wfLoadExtension( 'Math' );

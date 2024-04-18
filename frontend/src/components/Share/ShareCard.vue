@@ -5,7 +5,29 @@
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
+    <q-card-section v-if="ownerPermission">
+      <div class="text-h6 text-weight-regular">Share link</div>
+      <div class="q-mr-sm row no-wrap items-center">
+        Anyone with this link will be a
+        <q-select
+          v-model="roleModel"
+          class="q-ml-sm text-capitalize"
+          dense
+          disable
+        />
+        <q-space />
+        <q-btn
+          icon="content_copy"
+          outline
+          label="Create share link"
+          no-caps
+          class="q-mr-xs"
+          @click="copyShareLinkToClipboard()"
+        />
+      </div>
+    </q-card-section>
     <q-card-section>
+      <div class="text-h6 text-weight-regular">Shared with</div>
       <q-list bordered separator>
         <share-user
           v-for="user in users"
@@ -16,7 +38,6 @@
         ></share-user>
       </q-list>
     </q-card-section>
-
     <q-card-section v-if="ownerPermission">
       <q-toggle
         v-model="web_publication_toggle"
@@ -52,23 +73,25 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { User, Permission, Article, Profile, Enums } from 'src/types';
-import ShareUser from './ShareUser.vue';
+import { copyToClipboard, useQuasar } from 'quasar';
 import {
+  createLink,
   deletePermission,
   getUsers,
   updateArticleWebPublication,
   updatePermission,
 } from 'src/api/supabaseHelper';
-import { copyToClipboard, useQuasar } from 'quasar';
+import ENV from 'src/schema/env.schema';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import ENV from 'src/schema/env.schema';
+import { Article, Enums, Permission, Profile, User } from 'src/types';
+import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
+import { onMounted, ref } from 'vue';
+import ShareUser from './ShareUser.vue';
 
 const $q = useQuasar();
 const articlesStore = useArticlesStore();
-
+const roleModel = ref('Viewer');
 const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
@@ -186,5 +209,16 @@ function handlePublish() {
       icon: 'content_copy',
     });
   }
+}
+
+async function copyShareLinkToClipboard() {
+  const token = await createLink(`${props.article.article_id}`);
+  await copyToClipboard(`${window.location.origin}/shares/${token}`);
+  $q.notify({
+    message: 'Share link copied to clipboard',
+    caption: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
+    color: 'positive',
+    icon: 'content_copy',
+  });
 }
 </script>

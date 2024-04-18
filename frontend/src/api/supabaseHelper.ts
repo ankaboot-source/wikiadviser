@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Tables, User } from 'src/types';
+import { Article, ChangeItem, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
 import supabase from './supabase';
@@ -124,7 +124,7 @@ export async function isArticleExists(articleId: string): Promise<boolean> {
 }
 
 export async function updatePermission(
-  permissions: Tables<'permissions'>[],
+  permissions: Permission[],
 ): Promise<void> {
   const updatedPermissionsPromises = permissions.map(async ({ id, role }) => {
     // Update permissions where id matches permissionId

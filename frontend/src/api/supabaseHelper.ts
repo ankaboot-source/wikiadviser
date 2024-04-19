@@ -126,17 +126,19 @@ export async function isArticleExists(articleId: string): Promise<boolean> {
 export async function updatePermission(
   permissions: Permission[],
 ): Promise<void> {
-  const updatedPermissionsPromises = permissions.map(async ({ id, role }) => {
-    // Update permissions where id matches permissionId
-    const { error } = await supabase
-      .from('permissions')
-      .update({ role })
-      .match({ id });
+  const updatedPermissionsPromises = permissions.map(
+    async ({ permissionId, role }) => {
+      // Update permissions where id matches permissionId
+      const { error } = await supabase
+        .from('permissions')
+        .update({ role })
+        .match({ id: permissionId });
 
-    if (error) {
-      throw new Error(error.message);
-    }
-  });
+      if (error) {
+        throw new Error(error.message);
+      }
+    },
+  );
 
   await Promise.all(updatedPermissionsPromises);
 }

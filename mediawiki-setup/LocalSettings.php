@@ -334,3 +334,4 @@ $wgForeignFileRepos[] = [
 ];
 
 wfLoadExtension( 'WikiEditor' );
+$wgWikiEditorRealtimePreview = true;

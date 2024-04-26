@@ -1,4 +1,4 @@
--- Policy to allow selects to changes by owners, editors, reviewers and viewers.
+-- Alter select_changes_policy to allow selects to changes by owners, editors, reviewers and viewers.
 ALTER POLICY select_changes_policy
   ON changes
   TO authenticated

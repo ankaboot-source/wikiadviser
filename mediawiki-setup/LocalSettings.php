@@ -332,3 +332,6 @@ $wgForeignFileRepos[] = [
 	'descriptionCacheExpiry' => 43200, // 12 hours, optional (values are seconds)
 	'apiThumbCacheExpiry' => 86400, // 24 hours, optional, but required for local thumb caching
 ];
+
+wfLoadExtension( 'WikiEditor' );
+$wgWikiEditorRealtimePreview = true;

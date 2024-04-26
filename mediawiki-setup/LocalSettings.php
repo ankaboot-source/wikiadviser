@@ -197,6 +197,8 @@ wfLoadExtension( 'SyntaxHighlight_GeSHi' );
 $wgUseInstantCommons = true;
 
 wfLoadExtension( 'Cite' );
+wfLoadExtension( 'Citoid' );
+$wgCitoidFullRestbaseURL = 'https://${LANGUAGE}.wikipedia.org/api/rest_';
 wfLoadExtension( 'PageForms' );
 
 /* Mediawiki Performance tuning */

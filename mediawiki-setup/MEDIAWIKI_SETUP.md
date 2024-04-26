@@ -347,6 +347,11 @@
       </details>
 
   Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
+  To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your Mediawiki instance `http://localhost/(language)/index.php/MediaWiki`:
+      - Cite-tool-definition.json
+      - Citoid-template-type-map.json
+      - Visualeditor-template-tools-definition.json
+      - Visualeditor-cite-tool-name-chapter
 
 - Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`

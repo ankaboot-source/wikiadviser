@@ -139,16 +139,16 @@ async function handlePermissionsRealtime(
 
   if (payload.eventType === 'UPDATE') {
     const updatedPermission = payload.new as Tables<'permissions'>;
-    const userToUpdate = users.value!.find(
+    const userToUpdate = users.value.find(
       (user) => user.permissionId === updatedPermission.id,
     );
-    if (userToUpdate) {
-      userToUpdate.role = updatedPermission.role!;
+    if (!userToUpdate || !updatedPermission.role) {
+      return;
     }
-
+    userToUpdate.role = updatedPermission.role;
     // If current user's own role is updated
-    if (updatedPermission.user_id === userId.value) {
-      article.value!.role = updatedPermission.role!;
+    if (updatedPermission.user_id === userId.value && article.value) {
+      article.value.role = updatedPermission.role;
       $q.notify({
         message: `Your role was updated to ${role.value}`,
         icon: 'check',
@@ -158,12 +158,12 @@ async function handlePermissionsRealtime(
   }
 
   if (payload.eventType === 'DELETE') {
-    users.value = users.value!.filter(
+    users.value = users.value.filter(
       (user) => user.permissionId !== payload.old.id,
     );
 
     // If current user's own role is removed
-    if (!users.value!.find((user) => user.id === userId.value)) {
+    if (!users.value.find((user) => user.id === userId.value)) {
       await articlesStore.fetchArticles(userId.value);
       $q.notify({
         type: 'warning',

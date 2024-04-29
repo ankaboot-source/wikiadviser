@@ -70,7 +70,6 @@ export async function verifyShareLink(req: Request, res: Response) {
 
     const { article_id: articleId, role } = shareRecord;
 
-    console.log(role);
     const { data: articlePermissions, error: articlesError } =
       await supabaseAdmin
         .from<Permission>("permissions")

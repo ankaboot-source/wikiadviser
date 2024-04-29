@@ -133,6 +133,10 @@ async function handleCommentRealtime(
 async function handlePermissionsRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'permissions'>>,
 ) {
+  if (payload.eventType === 'INSERT') {
+    users.value = await getUsers(articleId.value);
+  }
+
   if (payload.eventType === 'UPDATE') {
     const updatedPermission = payload.new as Tables<'permissions'>;
     const userToUpdate = users.value!.find(
@@ -141,11 +145,15 @@ async function handlePermissionsRealtime(
     if (userToUpdate) {
       userToUpdate.role = updatedPermission.role!;
     }
-  }
 
-  if (payload.eventType === 'INSERT') {
-    {
-      users.value = await getUsers(articleId.value);
+    // If current user's own role is updated
+    if (updatedPermission.user_id === userId.value) {
+      article.value!.role = updatedPermission.role!;
+      $q.notify({
+        message: `Your role was updated to ${role.value}`,
+        icon: 'check',
+        color: 'positive',
+      });
     }
   }
 
@@ -153,27 +161,16 @@ async function handlePermissionsRealtime(
     users.value = users.value!.filter(
       (user) => user.permissionId !== payload.old.id,
     );
-  }
 
-  if (payload.eventType === 'UPDATE' && payload.new.user_id === userId.value) {
-    article.value!.role = payload.new.role!;
-    $q.notify({
-      message: `Your role was updated to ${role.value}`,
-      icon: 'check',
-      color: 'positive',
-    });
-  }
-
-  if (
-    payload.eventType === 'DELETE' &&
-    !users.value!.find((user) => user.id === userId.value)
-  ) {
-    await articlesStore.fetchArticles(userId.value);
-    $q.notify({
-      type: 'warning',
-      message: 'Your were removed from the article',
-    });
-    router.push('/');
+    // If current user's own role is removed
+    if (!users.value!.find((user) => user.id === userId.value)) {
+      await articlesStore.fetchArticles(userId.value);
+      $q.notify({
+        type: 'warning',
+        message: 'Your were removed from the article',
+      });
+      router.push('/');
+    }
   }
 }
 

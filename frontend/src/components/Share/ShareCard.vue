@@ -31,7 +31,7 @@
       <q-list bordered separator>
         <share-user
           v-for="user in users"
-          :key="user.email"
+          :key="user.role"
           :user="user"
           :role="role"
           @permission-emit="onPermissionChange"
@@ -73,7 +73,12 @@
 </template>
 
 <script setup lang="ts">
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 import { copyToClipboard, useQuasar } from 'quasar';
+import supabase from 'src/api/supabase';
 import {
   createLink,
   deletePermission,
@@ -84,9 +89,9 @@ import {
 import ENV from 'src/schema/env.schema';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { Article, Enums, Permission, Profile, User } from 'src/types';
+import { Article, Enums, Permission, Profile, Tables, User } from 'src/types';
 import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
-import { onMounted, ref } from 'vue';
+import { onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import ShareUser from './ShareUser.vue';
 
 const $q = useQuasar();
@@ -119,8 +124,52 @@ const users = ref<User[]>();
 
 const ownerPermission = props.role === 'owner';
 
-onMounted(async () => {
+const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
+
+async function handlePermissionsRealtime(
+  payload: RealtimePostgresChangesPayload<Tables<'permissions'>>,
+) {
+  if (payload.eventType === 'UPDATE') {
+    const updatedPermission = payload.new as Tables<'permissions'>;
+    const userToUpdate = users.value!.find(
+      (user) => user.permissionId === updatedPermission.id,
+    );
+    if (userToUpdate) {
+      userToUpdate.role = updatedPermission.role!;
+    }
+  }
+
+  if (payload.eventType === 'INSERT') {
+    {
+      users.value = await getUsers(props.article.article_id);
+    }
+  }
+
+  if (payload.eventType === 'DELETE') {
+    users.value = users.value!.filter(
+      (user) => user.permissionId !== payload.old.id,
+    );
+  }
+}
+
+onBeforeMount(async () => {
   users.value = await getUsers(props.article.article_id);
+  realtimeChannel
+    .on<Tables<'permissions'>>(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'permissions',
+        filter: `article_id=eq.${props.article.article_id}`,
+      },
+      handlePermissionsRealtime,
+    )
+    .subscribe();
+});
+
+onBeforeUnmount(() => {
+  realtimeChannel.unsubscribe();
 });
 
 type EmittedPermission = {

@@ -16,6 +16,7 @@ export type SearchResult = {
 };
 
 export type User = {
+  id?: string;
   picture: string;
   email: string;
   role: Enums<'role'>;

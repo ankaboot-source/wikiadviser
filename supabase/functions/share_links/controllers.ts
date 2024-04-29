@@ -9,11 +9,11 @@ type Permission = Database["public"]["tables"]["permissions"]["row"];
 export async function createShareLink(req: Request, res: Response) {
   try {
     const { user } = res.locals;
-    const { article_id: articleId, expired_at: expiredAt } = req.body;
+    const { article_id: articleId, expires_at: expiresAt, role } = req.body;
 
     const supabaseAdmin = createSupabaseAdmin();
 
-    if (!articleId && !expiredAt) {
+    if (!articleId && !expiresAt) {
       return res.status(400).send("Invalid request body");
     }
 
@@ -33,7 +33,8 @@ export async function createShareLink(req: Request, res: Response) {
       .from<ShareLink>("share_links")
       .insert({
         article_id: articleId,
-        expired_at: expiredAt,
+        expired_at: expiresAt,
+        role,
       })
       .select("*")
       .single();
@@ -67,8 +68,9 @@ export async function verifyShareLink(req: Request, res: Response) {
       return res.status(403).send("Share link expired");
     }
 
-    const { article_id: articleId } = shareRecord;
+    const { article_id: articleId, role } = shareRecord;
 
+    console.log(role);
     const { data: articlePermissions, error: articlesError } =
       await supabaseAdmin
         .from<Permission>("permissions")
@@ -96,7 +98,7 @@ export async function verifyShareLink(req: Request, res: Response) {
     await supabaseAdmin.from<Permission>("permissions").insert({
       user_id: user.id,
       article_id: articleId,
-      role: "viewer",
+      role,
     });
 
     return res.status(200).json({ ...shareRecord });

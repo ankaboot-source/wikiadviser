@@ -10,10 +10,10 @@
       <div class="q-mr-sm row no-wrap items-center">
         Anyone with this link will be a
         <q-select
-          v-model="roleModel"
+          v-model="shareRoleModel"
+          :options="shareRoleOptions"
           class="q-ml-sm text-capitalize"
           dense
-          disable
         />
         <q-space />
         <q-btn
@@ -35,7 +35,7 @@
           :user="user"
           :role="role"
           @permission-emit="onPermissionChange"
-        ></share-user>
+        />
       </q-list>
     </q-card-section>
     <q-card-section v-if="ownerPermission">
@@ -91,7 +91,26 @@ import ShareUser from './ShareUser.vue';
 
 const $q = useQuasar();
 const articlesStore = useArticlesStore();
-const roleModel = ref('Viewer');
+
+const shareRoleModel = ref({
+  label: 'Reviewer',
+  value: 'reviewer',
+});
+const shareRoleOptions = [
+  {
+    label: 'Editor',
+    value: 'editor',
+  },
+  {
+    label: 'Reviewer',
+    value: 'reviewer',
+  },
+  {
+    label: 'Viewer',
+    value: 'viewer',
+  },
+];
+
 const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
@@ -212,7 +231,13 @@ function handlePublish() {
 }
 
 async function copyShareLinkToClipboard() {
-  const token = await createLink(`${props.article.article_id}`);
+  const token = await createLink(
+    `${props.article.article_id}`,
+    shareRoleModel.value.value as Enums<'role'>,
+  );
+  if (!token) {
+    throw Error('Failed to create share link');
+  }
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',

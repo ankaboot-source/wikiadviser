@@ -31,7 +31,7 @@
         @click="share = !share"
       >
         <q-dialog v-model="share">
-          <share-card :article="article" :role />
+          <share-card :article="article" :role :users />
         </q-dialog>
       </q-btn>
     </q-toolbar>
@@ -73,7 +73,7 @@ import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import ENV from 'src/schema/env.schema';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Article, Enums } from 'src/types';
+import { Article, Enums, User } from 'src/types';
 import { computed, nextTick, ref, watch } from 'vue';
 
 const store = useSelectedChangeStore();
@@ -82,6 +82,7 @@ const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
   editorPermission: boolean | null;
+  users: User[];
 }>();
 
 // There is an error when passing a variable into import()

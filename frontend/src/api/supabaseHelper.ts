@@ -27,6 +27,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
   const users: User[] = permissionsData.map(
     (permission) =>
       ({
+        id: permission.user?.id,
         picture: permission.user?.avatar_url,
         email: permission.user?.email,
         role: permission.role,

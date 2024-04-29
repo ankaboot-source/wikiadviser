@@ -10,6 +10,7 @@
           :changes-content="activeChanges ? changesContent : null"
           :role="role"
           :editor-permission="editorPermission"
+          :users
           class="col-9 q-mr-md"
         />
         <diff-list
@@ -24,24 +25,25 @@
 </template>
 
 <script setup lang="ts">
+import {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from '@supabase/supabase-js';
 import supabase from 'src/api/supabase';
 import {
   getParsedChanges,
   getUsers,
   isArticleExists,
 } from 'src/api/supabaseHelper';
-import DiffCard from 'src/components/DiffCard.vue';
 import DiffList from 'src/components/Diff/DiffList.vue';
+import DiffCard from 'src/components/DiffCard.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { ChangeItem, Comment, Enums, Profile, Tables } from 'src/types';
+import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import {
-  RealtimeChannel,
-  RealtimePostgresChangesPayload,
-} from '@supabase/supabase-js';
 
+import { useQuasar } from 'quasar';
 import { parseArticleHtml } from 'src/utils/parsing';
 
 const route = useRoute();
@@ -50,13 +52,14 @@ const articlesStore = useArticlesStore();
 
 const { params } = route;
 
-const users = ref();
 const articleId = ref('');
 
 const loading = ref(true);
 
-const role = ref<Enums<'role'>>('viewer');
-const editorPermission = ref<boolean | null>(null);
+const userStore = useUserStore();
+const userId = computed(() => (userStore.user as Profile).id);
+const users = ref<User[]>([]);
+const $q = useQuasar();
 
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
@@ -64,6 +67,11 @@ const changesContent = ref<string | null>(null);
 const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
 
 const article = computed(() => articlesStore.getArticleById(articleId.value));
+const editorPermission = computed(
+  () => article.value?.role === 'editor' || article.value?.role === 'owner',
+);
+const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
+
 const activeChanges = computed(
   () => changesList.value.map((item) => item?.hidden).length > 0,
 );
@@ -122,13 +130,58 @@ async function handleCommentRealtime(
   }
 }
 
+async function handlePermissionsRealtime(
+  payload: RealtimePostgresChangesPayload<Tables<'permissions'>>,
+) {
+  if (payload.eventType === 'INSERT') {
+    users.value = await getUsers(articleId.value);
+  }
+
+  if (payload.eventType === 'UPDATE') {
+    const updatedPermission = payload.new as Tables<'permissions'>;
+    const userToUpdate = users.value.find(
+      (user) => user.permissionId === updatedPermission.id,
+    );
+    if (!userToUpdate || !updatedPermission.role) {
+      return;
+    }
+    userToUpdate.role = updatedPermission.role;
+    // If current user's own role is updated
+    if (updatedPermission.user_id === userId.value && article.value) {
+      article.value.role = updatedPermission.role;
+      $q.notify({
+        message: `Your role was updated to ${role.value}`,
+        icon: 'check',
+        color: 'positive',
+      });
+    }
+  }
+
+  if (payload.eventType === 'DELETE') {
+    users.value = users.value.filter(
+      (user) => user.permissionId !== payload.old.id,
+    );
+
+    // If current user's own role is removed
+    if (!users.value.find((user) => user.id === userId.value)) {
+      await articlesStore.fetchArticles(userId.value);
+      $q.notify({
+        type: 'warning',
+        message: 'Your were removed from the article',
+      });
+      router.push('/');
+    }
+  }
+}
+
 onBeforeMount(async () => {
   const user = (await useUserStore().fetchProfile()) as Profile;
+
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;
 
   articleId.value = articleIdFromParams as string;
-
+  users.value = await getUsers(articleId.value);
   await articlesStore.fetchArticles(user.id);
 
   if (!article.value) {
@@ -144,11 +197,6 @@ onBeforeMount(async () => {
     router.push({ name: '403' });
     return;
   }
-
-  role.value = article.value.role;
-  users.value = await getUsers(articleId.value);
-  editorPermission.value =
-    article.value.role === 'editor' || article.value.role === 'owner';
 
   changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(
@@ -192,6 +240,16 @@ onBeforeMount(async () => {
         filter: `article_id=eq.${articleId.value}`,
       },
       handleCommentRealtime,
+    )
+    .on<Tables<'permissions'>>(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'permissions',
+        filter: `article_id=eq.${articleId.value}`,
+      },
+      handlePermissionsRealtime,
     )
     .subscribe();
 

@@ -31,7 +31,7 @@
       <q-list bordered separator>
         <share-user
           v-for="user in users"
-          :key="user.email"
+          :key="user.role"
           :user="user"
           :role="role"
           @permission-emit="onPermissionChange"
@@ -77,7 +77,6 @@ import { copyToClipboard, useQuasar } from 'quasar';
 import {
   createLink,
   deletePermission,
-  getUsers,
   updateArticleWebPublication,
   updatePermission,
 } from 'src/api/supabaseHelper';
@@ -86,7 +85,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article, Enums, Permission, Profile, User } from 'src/types';
 import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import ShareUser from './ShareUser.vue';
 
 const $q = useQuasar();
@@ -114,14 +113,10 @@ const shareRoleOptions = [
 const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
+  users: User[];
 }>();
-const users = ref<User[]>();
 
 const ownerPermission = props.role === 'owner';
-
-onMounted(async () => {
-  users.value = await getUsers(props.article.article_id);
-});
 
 type EmittedPermission = {
   permissionId: string;
@@ -180,7 +175,6 @@ async function handleApplyChanges() {
         icon: 'check',
         color: 'positive',
       });
-      users.value = await getUsers(props.article.article_id);
       permissionsToUpdate.value = [];
     }
 

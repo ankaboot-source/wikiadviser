@@ -26,7 +26,7 @@ BEGIN
     VALUES (
       auth.uid(),
       share_record.article_id,
-      'viewer'
+      share_record.role
     );
   END IF;
 

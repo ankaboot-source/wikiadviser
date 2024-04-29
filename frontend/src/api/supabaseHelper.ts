@@ -1,6 +1,6 @@
 import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Permission, User } from 'src/types';
+import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
 import { EXPIRATION_DAYS } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
 import supabase from './supabase';
@@ -243,16 +243,17 @@ export async function updateChanges(articleId: string) {
   }
 }
 
-export async function createLink(articleId: string) {
-  const expiredAt = new Date();
-  expiredAt.setDate(expiredAt.getDate() + EXPIRATION_DAYS);
+export async function createLink(articleId: string, role: Enums<'role'>) {
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + EXPIRATION_DAYS);
 
   const { data: shareLink, error: tokenCreationError } =
     await supabase.functions.invoke('share_links', {
       method: 'POST',
       body: {
         article_id: articleId,
-        expired_at: expiredAt.toISOString(),
+        expires_at: expiresAt.toISOString(),
+        role,
       },
     });
 

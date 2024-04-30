@@ -1,6 +1,6 @@
 import ENV from 'src/schema/env.schema';
 
-export const EXPIRATION_DAYS = ENV.SHARE_LINK_DAY_LIMIT;
+export const EXPIRATION_DAYS = ENV.SHARE_LINK_DAY_LIMIT || 2;
 
 export const MAX_EMAIL_LENGTH = 20;
 

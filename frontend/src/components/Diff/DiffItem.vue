@@ -148,6 +148,7 @@
               flat
               icon="send"
               color="primary"
+              tabindex="-1"
               @click="handleComment"
             />
           </template>

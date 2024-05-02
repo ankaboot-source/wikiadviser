@@ -136,10 +136,10 @@
           autogrow
           outlined
           dense
-          class="row"
+          class="row full-width"
           placeholder="Leave a comment"
-          style="width: 100%"
           :disable="viewerPermission"
+          @keydown.enter="handleComment"
         >
           <template #append>
             <q-btn
@@ -148,6 +148,7 @@
               flat
               icon="send"
               color="primary"
+              tabindex="-1"
               @click="handleComment"
             />
           </template>
@@ -263,17 +264,17 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
-import { ChangeItem, Status, Profile, Enums } from 'src/types';
+import { useQuasar } from 'quasar';
 import {
   hideChanges,
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { useQuasar } from 'quasar';
 import { useUserStore } from 'src/stores/userStore';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
+import { computed, nextTick, ref, watch } from 'vue';
 
 const $quasar = useQuasar();
 const userStore = useUserStore();
@@ -369,12 +370,12 @@ const previewItem = computed(() => {
 });
 
 async function handleComment() {
-  if (toSendComment.value.length > 0) {
+  if (toSendComment.value.trim().length > 0) {
     await insertComment(
       props.item.id,
       userId.value,
       props.item.article_id as string,
-      toSendComment.value,
+      toSendComment.value.trim(),
     );
     toSendComment.value = '';
   }

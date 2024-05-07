@@ -352,7 +352,7 @@
       - Citoid-template-type-map.json
       - Visualeditor-template-tools-definition.json
       - Visualeditor-cite-tool-name-chapter
-  Templates `http://localhost/(language)/index.php/Template` :
+  Templates `http://localhost/wiki/(language)/index.php/Template` :
       - Template:Cite_book
       - Template:Cite_web
       - Template:Cite_news

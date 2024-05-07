@@ -346,12 +346,19 @@
 
       </details>
 
-  Into your MediaWiki instance `http://localhost/(language)/index.php/MediaWiki`: Common.css and Common.js
-  To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your Mediawiki instance `http://localhost/(language)/index.php/MediaWiki`:
+  Into your MediaWiki instance `http://localhost/wiki/(language)/index.php/MediaWiki`: Common.css and Common.js
+  To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your Mediawiki instance `http://localhost/wiki/(language)/index.php/MediaWiki`:
       - Cite-tool-definition.json
       - Citoid-template-type-map.json
       - Visualeditor-template-tools-definition.json
       - Visualeditor-cite-tool-name-chapter
+  Templates `http://localhost/(language)/index.php/Template` :
+      - Template:Cite_book
+      - Template:Cite_web
+      - Template:Cite_news
+      - Template:Cite_journal
+  Each template has its own documentation template, make sure to import it as well, it is recommended to export templates by category (citoid category for example) and import them all at once.
+  More Informations : https://www.mediawiki.org/wiki/Citoid
 
 - Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`

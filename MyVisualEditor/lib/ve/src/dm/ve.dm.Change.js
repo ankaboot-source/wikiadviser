@@ -73,15 +73,14 @@
  * @param {Object} [selections] For each author ID (key), latest ve.dm.Selection
  */
 ve.dm.Change = function VeDmChange( start, transactions, stores, selections ) {
-	var change = this;
 	this.start = start || 0;
 	this.transactions = transactions || [];
 	this.store = new ve.dm.HashValueStore();
 	this.storeLengthAtTransaction = [];
 	if ( stores ) {
-		stores.forEach( function ( store ) {
-			change.store.merge( store );
-			change.storeLengthAtTransaction.push( change.store.getLength() );
+		stores.forEach( ( store ) => {
+			this.store.merge( store );
+			this.storeLengthAtTransaction.push( this.store.getLength() );
 		} );
 	}
 	this.selections = selections || {};
@@ -109,7 +108,7 @@ ve.dm.Change.static.deserialize = function ( data, preserveStoreValues, unsafe )
 		selections = {},
 		transactions = [],
 		// If stores is undefined, create an array of nulls
-		stores = data.stores || data.transactions.map( function () {
+		stores = data.stores || data.transactions.map( () => {
 			return null;
 		} );
 
@@ -136,9 +135,9 @@ ve.dm.Change.static.deserialize = function ( data, preserveStoreValues, unsafe )
 	}
 	var deserializeStore = ve.dm.HashValueStore.static.deserialize.bind(
 		null,
-		preserveStoreValues ? function noop( x ) {
+		preserveStoreValues ? ( x ) => {
 			return x;
-		} : function ( x ) {
+		} : ( x ) => {
 			return deserializeValue( x, unsafe );
 		}
 	);
@@ -289,6 +288,14 @@ ve.dm.Change.static.rebaseTransactions = function ( transactionA, transactionB )
 };
 
 /**
+ * @typedef {Object} RebasedChange
+ * @memberof ve.dm.Change
+ * @property {ve.dm.Change} rebased Rebase onto history of uncommitted (or an initial segment of it)
+ * @property {ve.dm.Change} transposedHistory Rebase of history onto initial segment of uncommitted
+ * @property {ve.dm.Change|null} rejected Unrebasable final segment of uncommitted
+ */
+
+/**
  * Rebase a change on top of a parallel committed one
  *
  * Since a change is a stack of transactions, we define change rebasing in terms of transaction
@@ -351,10 +358,7 @@ ve.dm.Change.static.rebaseTransactions = function ( transactionA, transactionB )
  *
  * @param {ve.dm.Change} history Committed history
  * @param {ve.dm.Change} uncommitted New transactions, with same start as history
- * @return {Object} Rebased
- * @return {ve.dm.Change} return.rebased Rebase onto history of uncommitted (or an initial segment of it)
- * @return {ve.dm.Change} return.transposedHistory Rebase of history onto initial segment of uncommitted
- * @return {ve.dm.Change|null} return.rejected Unrebasable final segment of uncommitted
+ * @return {ve.dm.Change.RebasedChange}
  */
 ve.dm.Change.static.rebaseUncommittedChange = function ( history, uncommitted ) {
 	if ( history.start !== uncommitted.start ) {
@@ -451,20 +455,30 @@ ve.dm.Change.static.rebaseUncommittedChange = function ( history, uncommitted ) 
 };
 
 /**
+ * @typedef UniformTextInfo
+ * @memberof ve.dm.Change
+ * @property {string} text The code units, in a single string
+ * @property {string} annotations Annotation hashes for all text
+ * @property {string} annotationString Comma-separated annotation hashes
+ */
+
+/**
+ * @typedef TransactionInfo
+ * @memberof ve.dm.Change
+ * @property {number} start The start offset of the replacement
+ * @property {number} end The end offset of the replacement (after replacement)
+ * @property {number} docLength The total length of the document (after replacement)
+ * @property {number} authorId The author ID
+ * @property {ve.dm.Change.UniformTextInfo|null} uniformInsert The insertion as uniform text, or null if not
+ */
+
+/**
  * Get info about a transaction if it is a "simple replacement", or null if not
  *
  * A simple replacement transaction is one that has just one retain op
  *
  * @param {ve.dm.Transaction} tx The transaction
- * @return {Object|null} Info about the transaction if a simple replacement, else null
- * @return {number} return.start The start offset of the replacement
- * @return {number} return.end The end offset of the replacement (after replacement)
- * @return {number} return.docLength The total length of the document (after replacement)
- * @return {number} return.authorId The author ID
- * @return {Object|null} return.uniformInsert The insertion as uniform text, or null if not
- * @return {string} return.uniformInsert.text The plain text of the uniform text
- * @return {string} return.uniformInsert.annotations Annotation hashes for all text
- * @return {string} return.uniformInsert.annotationString Comma-separated annotation hashes
+ * @return {ve.dm.Change.TransactionInfo|null} Info about the transaction if a simple replacement, else null
  */
 ve.dm.Change.static.getTransactionInfo = function ( tx ) {
 	// Copy of ve.dm.ElementLinearData.static.getAnnotationHashesFromItem, but we
@@ -504,10 +518,7 @@ ve.dm.Change.static.getTransactionInfo = function ( tx ) {
 	 * every item is a single code unit of text
 	 *
 	 * @param {Array} items The items
-	 * @return {Object|null} Info about the uniform text, or null if not uniform text
-	 * @return {string} return.text The code units, in a single string
-	 * @return {string} return.annotations Annotation hashes for all text
-	 * @return {string} return.annotationString Comma-separated annotation hashes
+	 * @return {ve.dm.Change.UniformTextInfo|null} Info about the uniform text, or null if not uniform text
 	 */
 	function getUniformText( items ) {
 		var codeUnits = [];
@@ -651,7 +662,7 @@ ve.dm.Change.prototype.firstAuthorId = function () {
  */
 ve.dm.Change.prototype.summarize = function () {
 	return '{ start: ' + this.start + ', txs: [ ' +
-		this.transactions.map( function ( tx ) {
+		this.transactions.map( ( tx ) => {
 			return tx.summarize();
 		} ).join( ', ' ) + ' ] }';
 };
@@ -666,11 +677,11 @@ ve.dm.Change.prototype.summarize = function () {
 ve.dm.Change.prototype.reversed = function () {
 	return new ve.dm.Change(
 		this.start + this.transactions.length,
-		this.transactions.map( function ( tx ) {
+		this.transactions.map( ( tx ) => {
 			return ve.dm.Transaction.prototype.reversed.call( tx );
 		} ).reverse(),
 		// Empty store for each transaction (reverting cannot possibly add new annotations)
-		this.transactions.map( function () {
+		this.transactions.map( () => {
 			return new ve.dm.HashValueStore();
 		} ),
 		{}
@@ -730,7 +741,6 @@ ve.dm.Change.prototype.pushTransaction = function ( transaction, storeLength ) {
  * @throws {Error} If other does not start immediately after this
  */
 ve.dm.Change.prototype.push = function ( other ) {
-	var change = this;
 	if ( other.start !== this.start + this.getLength() ) {
 		throw new Error( 'this ends at ' + ( this.start + this.getLength() ) +
 			' but other starts at ' + other.start );
@@ -739,8 +749,8 @@ ve.dm.Change.prototype.push = function ( other ) {
 	for ( var i = 0, iLen = other.transactions.length; i < iLen; i++ ) {
 		var transaction = other.transactions[ i ];
 		var store = stores[ i ];
-		change.store.merge( store );
-		this.pushTransaction( transaction, change.store.getLength() );
+		this.store.merge( store );
+		this.pushTransaction( transaction, this.store.getLength() );
 	}
 	this.selections = OO.cloneObject( other.selections );
 };
@@ -805,12 +815,12 @@ ve.dm.Change.prototype.applyTo = function ( surface, applySelection ) {
 	if ( this.start !== doc.completeHistory.getLength() ) {
 		throw new Error( 'Change starts at ' + this.start + ', but doc is at ' + doc.completeHistory.getLength() );
 	}
-	this.getStores().forEach( function ( store ) {
+	this.getStores().forEach( ( store ) => {
 		doc.store.merge( store );
 	} );
 	// Isolate other users' changes from ours with a breakpoint
 	surface.breakpoint();
-	this.transactions.forEach( function ( tx ) {
+	this.transactions.forEach( ( tx ) => {
 		surface.change( tx );
 		// Don't mark as applied: this.start already tracks this
 		tx.applied = false;
@@ -841,7 +851,7 @@ ve.dm.Change.prototype.unapplyTo = function ( surface ) {
 	if ( this.start !== historyLength ) {
 		throw new Error( 'Invalid start: change starts at ' + this.start + ', but doc would be at ' + historyLength );
 	}
-	this.transactions.slice().reverse().forEach( function ( tx ) {
+	this.transactions.slice().reverse().forEach( ( tx ) => {
 		surface.change( tx.reversed() );
 	} );
 	doc.completeHistory.transactions.length = historyLength;
@@ -929,7 +939,7 @@ ve.dm.Change.prototype.serialize = function ( preserveStoreValues ) {
 		transactions: transactions
 	};
 	// Only set stores if at least one is non-null
-	if ( stores.some( function ( store ) {
+	if ( stores.some( ( store ) => {
 		return store !== null;
 	} ) ) {
 		data.stores = stores;

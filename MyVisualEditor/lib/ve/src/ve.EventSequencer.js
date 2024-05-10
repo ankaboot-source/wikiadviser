@@ -137,6 +137,7 @@ ve.EventSequencer.prototype.attach = function ( $node ) {
 	return this;
 };
 
+// eslint-disable-next-line jsdoc/require-returns-check
 /**
  * Detach from a node (if attached), to stop listen to its jQuery events
  *
@@ -267,15 +268,14 @@ ve.EventSequencer.prototype.onEvent = function ( eventName, ev ) {
 	// - then create the setTimeout invocation to modify pendingCall.id
 	// - then set pendingCall.id to the setTimeout id, so the call can cancel itself
 	var pendingCall = { id: null, ev: ev, eventName: eventName };
-	var eventSequencer = this;
-	var id = this.postpone( function () {
+	var id = this.postpone( () => {
 		if ( pendingCall.id === null ) {
 			// clearTimeout seems not always to work immediately
 			return;
 		}
-		eventSequencer.resetAfterLoopTimeout();
+		this.resetAfterLoopTimeout();
 		pendingCall.id = null;
-		eventSequencer.afterEvent( eventName, ev );
+		this.afterEvent( eventName, ev );
 	} );
 	pendingCall.id = id;
 	this.pendingCalls.push( pendingCall );
@@ -354,9 +354,8 @@ ve.EventSequencer.prototype.resetAfterLoopTimeout = function () {
 	if ( this.afterLoopTimeoutId !== null ) {
 		this.cancelPostponed( this.afterLoopTimeoutId );
 	}
-	var eventSequencer = this;
-	var timeoutId = this.postpone( function () {
-		eventSequencer.doAfterLoop( timeoutId );
+	var timeoutId = this.postpone( () => {
+		this.doAfterLoop( timeoutId );
 	} );
 	this.afterLoopTimeoutId = timeoutId;
 };

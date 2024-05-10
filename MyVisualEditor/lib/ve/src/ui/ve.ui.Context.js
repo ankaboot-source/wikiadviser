@@ -10,8 +10,8 @@
  * @class
  * @abstract
  * @extends OO.ui.Element
- * @mixins OO.EventEmitter
- * @mixins OO.ui.mixin.GroupElement
+ * @mixes OO.EventEmitter
+ * @mixes OO.ui.mixin.GroupElement
  *
  * @constructor
  * @param {ve.ui.Surface} surface
@@ -32,7 +32,7 @@ ve.ui.Context = function VeUiContext( surface, config ) {
 
 	this.$focusTrapBefore = $( '<div>' ).prop( 'tabIndex', 0 );
 	this.$focusTrapAfter = $( '<div>' ).prop( 'tabIndex', 0 );
-	this.$focusTrapBefore.add( this.$focusTrapAfter ).on( 'focus', function () {
+	this.$focusTrapBefore.add( this.$focusTrapAfter ).on( 'focus', () => {
 		surface.getView().activate();
 	} );
 
@@ -56,7 +56,7 @@ OO.mixinClass( ve.ui.Context, OO.ui.mixin.GroupElement );
 /* Events */
 
 /**
- * @event resize
+ * @event ve.ui.Context#resize
  */
 
 /* Static Properties */
@@ -125,7 +125,7 @@ ve.ui.Context.prototype.hide = function () {
 	this.toggle( false );
 	// Desktop: Ensure the next cursor movement re-evaluates the context,
 	// e.g. if moving within a link, the context is re-shown.
-	surfaceModel.once( 'select', function () {
+	surfaceModel.once( 'select', () => {
 		surfaceModel.emitContextChange();
 	} );
 	// Mobile: Clear last-known contexedAnnotations so that clicking the annotation
@@ -185,7 +185,7 @@ ve.ui.Context.prototype.setupMenuItems = function () {
 		}
 	}
 
-	items.sort( function ( a, b ) {
+	items.sort( ( a, b ) => {
 		return a.constructor.static.sortOrder - b.constructor.static.sortOrder;
 	} );
 
@@ -224,7 +224,7 @@ ve.ui.Context.prototype.onContextItemCommand = function () {};
  *
  * @param {boolean} [show] Show the context, omit to toggle
  * @return {jQuery.Promise} Promise resolved when context is finished showing/hiding
- * @fires resize
+ * @fires ve.ui.Context#resize
  */
 ve.ui.Context.prototype.toggle = function ( show ) {
 	show = show === undefined ? !this.visible : !!show;
@@ -241,7 +241,7 @@ ve.ui.Context.prototype.toggle = function ( show ) {
  *
  * @return {ve.ui.Context}
  * @chainable
- * @fires resize
+ * @fires ve.ui.Context#resize
  */
 ve.ui.Context.prototype.updateDimensions = function () {
 	// Override in subclass if context is positioned relative to content

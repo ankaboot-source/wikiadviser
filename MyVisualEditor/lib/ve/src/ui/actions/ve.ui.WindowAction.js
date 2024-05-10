@@ -40,8 +40,7 @@ ve.ui.WindowAction.static.methods = [ 'open', 'close', 'toggle' ];
  */
 ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 	data = data || {};
-	var windowAction = this,
-		windowType = this.getWindowType( name ),
+	var windowType = this.getWindowType( name ),
 		windowManager = windowType && this.getWindowManager( windowType ),
 		currentWindow = windowManager.getCurrentWindow(),
 		autoClosePromises = [],
@@ -75,7 +74,7 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 		var text = surfaceFragment.getText( true );
 		originalFragment = surfaceFragment;
 
-		fragmentPromise = surfaceFragment.convertFromSource( text ).then( function ( selectionDocument ) {
+		fragmentPromise = surfaceFragment.convertFromSource( text ).then( ( selectionDocument ) => {
 			var tempSurfaceModel = new ve.dm.Surface( selectionDocument ),
 				tempFragment = tempSurfaceModel.getLinearFragment(
 					// TODO: Select all content using content offset methods
@@ -104,18 +103,18 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 
 	// If we're opening a dialog, close all inspectors first
 	if ( windowType === 'dialog' ) {
-		var inspectorWindowManager = windowAction.getWindowManager( 'inspector' );
+		var inspectorWindowManager = this.getWindowManager( 'inspector' );
 		var currentInspector = inspectorWindowManager.getCurrentWindow();
 		if ( currentInspector ) {
 			autoClosePromises.push( inspectorWindowManager.closeWindow( currentInspector ).closed );
 		}
 	}
 
-	fragmentPromise.then( function ( fragment ) {
+	fragmentPromise.then( ( fragment ) => {
 		ve.extendObject( data, { fragment: fragment } );
 
-		ve.promiseAll( autoClosePromises ).always( function () {
-			windowManager.getWindow( name ).then( function ( win ) {
+		ve.promiseAll( autoClosePromises ).always( () => {
+			windowManager.getWindow( name ).then( ( win ) => {
 				var instance = windowManager.openWindow( win, data );
 
 				if ( sourceMode ) {
@@ -126,14 +125,14 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 					surface.getView().deactivate( false );
 				}
 
-				instance.opened.then( function () {
+				instance.opened.then( () => {
 					if ( sourceMode ) {
 						// HACK: initialFragment/previousSelection is assumed to be in the visible surface
 						win.initialFragment = null;
 						win.previousSelection = null;
 					}
 				} );
-				instance.opened.always( function () {
+				instance.opened.always( () => {
 					// This uses .always() so that the action is executed even if the window is already open
 					// (in which case opening it again fails). Hopefully we'll never have a situation where
 					// it's closed, the opening fails for some reason, and then weird things happen.
@@ -144,7 +143,7 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 				} );
 
 				if ( !win.constructor.static.activeSurface ) {
-					windowManager.once( 'closing', function () {
+					windowManager.once( 'closing', () => {
 						// Collapsed mobile selection: We need to re-activate the surface in case an insertion
 						// annotation was generated. We also need to do it during the same event cycle otherwise
 						// the device may not open the virtual keyboard, so use the 'closing' event. (T203517)
@@ -153,7 +152,7 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 						} else {
 							// Otherwise use the `closed` promise to wait until the dialog has performed its actions,
 							// such as creating new annotations or moving focus, before re-activating.
-							instance.closed.then( function () {
+							instance.closed.then( () => {
 								// Don't activate if mobile and expanded
 								if ( !( OO.ui.isMobile() && !surface.getModel().getSelection().isCollapsed() ) ) {
 									surface.getView().activate();
@@ -163,7 +162,7 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 					} );
 				}
 
-				instance.closed.then( function ( closedData ) {
+				instance.closed.then( ( closedData ) => {
 					// Sequence-triggered window closed without action, undo
 					if ( data.strippedSequence && !( closedData && closedData.action ) ) {
 						surface.getModel().undo();

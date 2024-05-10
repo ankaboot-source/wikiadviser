@@ -25,12 +25,12 @@ ve.ui.ContextItem = function VeUiContextItem( context, model, config ) {
 	this.fragment = null;
 
 	// Events
-	this.$element.on( 'mousedown', function () {
+	this.$element.on( 'mousedown', () => {
 		// Deactivate so context is not automatically closed
 		// by null selection
 		context.getSurface().getView().deactivate();
 	} );
-	this.$element.on( 'keydown', function ( e ) {
+	this.$element.on( 'keydown', ( e ) => {
 		// Pressing escape while focus is in the context should
 		// return focus to the surface
 		if ( e.keyCode === OO.ui.Keys.ESCAPE && context.getSurface().getView().isDeactivated() ) {
@@ -50,7 +50,9 @@ OO.inheritClass( ve.ui.ContextItem, OO.ui.Widget );
 /* Events */
 
 /**
- * @event command
+ * The context executed a ve.ui.Command
+ *
+ * @event ve.ui.ContextItem#command
  */
 
 /* Static Properties */

@@ -10,7 +10,7 @@
  *
  * @class
  * @extends OO.ui.Widget
- * @mixins OO.ui.mixin.DraggableGroupElement
+ * @mixes OO.ui.mixin.DraggableGroupElement
  *
  * @constructor
  * @param {Object} [config] Configuration options
@@ -41,5 +41,5 @@ OO.mixinClass( ve.ui.MWGalleryGroupWidget, OO.ui.mixin.DraggableGroupElement );
 /* Events */
 
 /**
- * @event editItem
+ * @event ve.ui.MWGalleryGroupWidget#editItem
  */

@@ -10,7 +10,7 @@
  *
  * @class
  * @extends OO.ui.TextInputWidget
- * @mixins OO.ui.mixin.LookupElement
+ * @mixes OO.ui.mixin.LookupElement
  *
  * @constructor
  * @param {ve.ui.MWCategoryWidget} categoryWidget
@@ -51,7 +51,7 @@ OO.mixinClass( ve.ui.MWCategoryInputWidget, OO.ui.mixin.LookupElement );
 /* Events */
 
 /**
- * @event choose
+ * @event ve.ui.MWCategoryInputWidget#choose
  * A category was chosen
  * @param {OO.ui.MenuOptionWidget} item Chosen item
  */

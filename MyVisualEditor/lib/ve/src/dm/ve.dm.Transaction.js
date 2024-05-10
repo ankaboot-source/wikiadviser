@@ -26,7 +26,7 @@
 ve.dm.Transaction = function VeDmTransaction( operations, authorId ) {
 	this.operations = operations || [];
 	// TODO: remove this backwards-incompatibility check
-	this.operations.forEach( function ( op ) {
+	this.operations.forEach( ( op ) => {
 		if ( op.type && /meta/i.test( op.type ) ) {
 			throw new Error( 'Metadata ops are no longer supported' );
 		}
@@ -55,7 +55,7 @@ OO.initClass( ve.dm.Transaction );
  * If a property's treatment isn't specified, its value is simply copied without modification.
  * If an operation type's treatment isn't specified, all properties are copied without modification.
  *
- * @type {Object.<string,Object.<string,string|Object.<string, string>>>}
+ * @type {Object.<string,Object>}
  */
 ve.dm.Transaction.static.reversers = {
 	attribute: { from: 'to', to: 'from' }, // Swap .from with .to
@@ -169,7 +169,7 @@ ve.dm.Transaction.static.compareElementsForTranslate = function ( a, b ) {
 ve.dm.Transaction.static.isAnnotationOnlyOperation = function ( op ) {
 	return op.type === 'replace' &&
 		op.insert.length === op.remove.length &&
-		op.insert.every( function ( insert, j ) {
+		op.insert.every( ( insert, j ) => {
 			return ve.dm.Transaction.static.compareElementsForTranslate( insert, op.remove[ j ] );
 		} );
 };
@@ -588,14 +588,19 @@ ve.dm.Transaction.prototype.getModifiedRange = function ( doc, options ) {
 };
 
 /**
+ * @typedef {Object} RangeAndLengthDiff
+ * @memberof ve.dm.Transaction
+ * @property {number} [start] Start offset of the active range
+ * @property {number} [end] End offset of the active range
+ * @property {number} [startOpIndex] Start operation index of the active range
+ * @property {number} [endOpIndex] End operation index of the active range
+ * @property {number} diff Length change the transaction causes
+ */
+
+/**
  * Calculate active range and length change
  *
- * @return {Object} Active range and length change
- * @return {number|undefined} return.start Start offset of the active range
- * @return {number|undefined} return.end End offset of the active range
- * @return {number|undefined} return.startOpIndex Start operation index of the active range
- * @return {number|undefined} return.endOpIndex End operation index of the active range
- * @return {number} return.diff Length change the transaction causes
+ * @return {ve.dm.Transaction.RangeAndLengthDiff} Active range and length change
  */
 ve.dm.Transaction.prototype.getActiveRangeAndLengthDiff = function () {
 	var offset = 0,

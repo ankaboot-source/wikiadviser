@@ -37,7 +37,7 @@ OO.inheritClass( ve.ce.Document, ve.Document );
 /**
  * Language or direction changed
  *
- * @event langChange
+ * @event ve.ce.Document#langChange
  */
 
 /* Methods */
@@ -100,9 +100,7 @@ ve.ce.Document.prototype.getSlugAtOffset = function ( offset ) {
  *
  * @private
  * @param {number} offset Linear model offset
- * @return {Object} position
- * @return {Node} return.node position node
- * @return {number} return.offset position offset within the node
+ * @return {ve.ce.NodeAndOffset} Position
  * @throws {Error} Offset could not be translated to a DOM element and offset
  */
 ve.ce.Document.prototype.getNodeAndOffset = function ( offset ) {
@@ -306,7 +304,7 @@ ve.ce.Document.prototype.getNodeAndOffset = function ( offset ) {
 		return false;
 	}
 	var steps = ve.adjacentDomPosition( position, 1, { stop: stop, noDescend: noDescend } ).steps;
-	steps.slice( 0, -1 ).forEach( function ( s ) {
+	steps.slice( 0, -1 ).forEach( ( s ) => {
 		// Step type cannot be "internal", else the offset would have incremented
 		var hasClass = function ( className ) {
 			return s.node.nodeType === Node.ELEMENT_NODE &&

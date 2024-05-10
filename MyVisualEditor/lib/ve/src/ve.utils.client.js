@@ -6,7 +6,7 @@
 
 /**
  * @method
- * @inheritdoc OO.ui.Element#scrollIntoView
+ * @see OO.ui.Element#scrollIntoView
  */
 ve.scrollIntoView = OO.ui.Element.static.scrollIntoView.bind( OO.ui.Element.static );
 
@@ -143,7 +143,7 @@ ve.minimizeRects = function ( rects, allowedErrorOffset ) {
 	}
 
 	var minimalRects = [];
-	rects.forEach( function ( rect ) {
+	rects.forEach( ( rect ) => {
 		var keep = true;
 		for ( var i = 0, il = minimalRects.length; i < il; i++ ) {
 			// This rect is contained by an existing rect, discard

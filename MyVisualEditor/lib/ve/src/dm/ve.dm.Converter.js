@@ -514,7 +514,7 @@ ve.dm.Converter.prototype.getDomElementsFromDataElement = function ( dataElement
 	}
 	// TODO: This is only for the diff. Eventually should make a DiffConverter subclass
 	if ( dataElement.internal && dataElement.internal.diff ) {
-		Array.prototype.forEach.call( domElements, function ( domElement ) {
+		Array.prototype.forEach.call( domElements, ( domElement ) => {
 			for ( var key in dataElement.internal.diff ) {
 				// toDomElements is a misnomer, it can actually return other nodes,
 				// such as comment nodes or text nodes.
@@ -527,7 +527,7 @@ ve.dm.Converter.prototype.getDomElementsFromDataElement = function ( dataElement
 	// Mark branch nodes as generated from dataElement, so we don't try and descend into them in a deep renderHtmlAttributeList call
 	if ( this.nodeFactory.lookup( dataElement.type ) && this.nodeFactory.canNodeHaveChildren( dataElement.type ) ) {
 		var hasSignificantWhitespace = this.nodeFactory.doesNodeHaveSignificantWhitespace( dataElement.type );
-		domElements.forEach( function ( domElement ) {
+		domElements.forEach( ( domElement ) => {
 			domElement.veFromDataElement = true;
 			if ( hasSignificantWhitespace ) {
 				domElement.veHasSignificantWhitespace = true;
@@ -1188,7 +1188,7 @@ ve.dm.Converter.prototype.getDataFromDomSubtree = function ( domElement, wrapper
  * Get inner whitespace from linear data
  *
  * @param {ve.dm.ElementLinearData} data Linear model data
- * @return {(string|undefined)[]}
+ * @return {Array.<string|undefined>} Sparse array of whitespace strings: [ innerLeft, innerRight ]
  */
 ve.dm.Converter.prototype.getInnerWhitespace = function ( data ) {
 	var innerWhitespace = new Array( 2 ),
@@ -1293,7 +1293,7 @@ ve.dm.Converter.prototype.getDomSubtreeFromModel = function ( model, container, 
  *
  * @param {Array} data Linear model data
  * @param {HTMLElement} container DOM element to add the generated elements to. Should be empty.
- * @param {(string|undefined)[]} [innerWhitespace] Inner whitespace if the container is the body
+ * @param {Array.<string|undefined>} [innerWhitespace] Inner whitespace if the container is the body
  * @throws Unbalanced data: looking for closing /type
  */
 ve.dm.Converter.prototype.getDomSubtreeFromData = function ( data, container, innerWhitespace ) {

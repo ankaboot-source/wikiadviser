@@ -9,7 +9,7 @@
  *
  *     @example
  *     var platform = new ve.init.sa.Platform( ve.messagePaths );
- *     platform.initialize().done( function () {
+ *     platform.initialize().done( () => {
  *         $( document.body ).append( $( '<p>' ).text(
  *             platform.getMessage( 'visualeditor' )
  *         ) );
@@ -85,21 +85,20 @@ ve.init.sa.Platform.prototype.notify = function ( message, title ) {
 	}
 	function collapse() {
 		$notificationWrapper.addClass( 've-init-notification-collapse' );
-		setTimeout( remove, 250 );
+		$notificationWrapper.one( 'transitionend', remove );
 	}
 	function close() {
 		clearTimeout( closeId );
 		$notificationWrapper.removeClass( 've-init-notification-open' );
 		$notificationWrapper.css( 'height', $notificationWrapper[ 0 ].clientHeight );
-		setTimeout( collapse, 250 );
+		$notificationWrapper.one( 'transitionend', collapse );
 	}
 	function open() {
 		$notificationWrapper.addClass( 've-init-notification-open' );
 		closeId = setTimeout( close, 5000 );
 	}
 
-	var rAF = window.requestAnimationFrame || setTimeout;
-	rAF( open );
+	requestAnimationFrame( open );
 
 	$notification.on( 'click', close );
 
@@ -151,7 +150,7 @@ ve.init.sa.Platform.prototype.getHtmlMessage = function ( key ) {
 		lastOffset = 0,
 		args = arguments,
 		message = this.getMessage( key );
-	message.replace( /\$[0-9]+/g, function ( placeholder, offset ) {
+	message.replace( /\$[0-9]+/g, ( placeholder, offset ) => {
 		$message = $message.add( ve.sanitizeHtml( message.slice( lastOffset, offset ) ) );
 		var placeholderIndex = +( placeholder.slice( 1 ) );
 		var arg = args[ placeholderIndex ];
@@ -239,7 +238,7 @@ ve.init.sa.Platform.prototype.getParsedMessage = function ( key ) {
 		return this.parsedMessages[ key ];
 	}
 	// Fallback to regular messages, html escaping applied.
-	return this.getMessage( key ).replace( /['"<>&]/g, function ( char ) {
+	return this.getMessage( key ).replace( /['"<>&]/g, ( char ) => {
 		return {
 			'\'': '&#039;',
 			'"': '&quot;',

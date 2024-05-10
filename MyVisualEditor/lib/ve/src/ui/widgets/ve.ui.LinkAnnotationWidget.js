@@ -38,10 +38,9 @@ OO.inheritClass( ve.ui.LinkAnnotationWidget, OO.ui.Widget );
 /* Events */
 
 /**
- * @event change
- *
  * A change event is emitted when the annotation value of the input changes.
  *
+ * @event ve.ui.LinkAnnotationWidget#change
  * @param {ve.dm.LinkAnnotation|null} annotation
  */
 
@@ -119,8 +118,6 @@ ve.ui.LinkAnnotationWidget.prototype.setDisabled = function () {
  * @param {string} value New input value
  */
 ve.ui.LinkAnnotationWidget.prototype.onTextChange = function ( value ) {
-	var widget = this;
-
 	// RTL/LTR check
 	// TODO: Make this work properly
 	if ( document.body.classList.contains( 'rtl' ) ) {
@@ -130,11 +127,11 @@ ve.ui.LinkAnnotationWidget.prototype.onTextChange = function ( value ) {
 	}
 
 	this.getTextInputWidget().getValidity()
-		.done( function () {
-			widget.setAnnotation( widget.constructor.static.getAnnotationFromText( value ), true );
+		.done( () => {
+			this.setAnnotation( this.constructor.static.getAnnotationFromText( value ), true );
 		} )
-		.fail( function () {
-			widget.setAnnotation( null, true );
+		.fail( () => {
+			this.setAnnotation( null, true );
 		} );
 };
 
@@ -147,6 +144,7 @@ ve.ui.LinkAnnotationWidget.prototype.onTextChange = function ( value ) {
  * @param {boolean} [fromText] Annotation was generated from text input
  * @return {ve.ui.LinkAnnotationWidget}
  * @chainable
+ * @fires ve.ui.LinkAnnotationWidget#change
  */
 ve.ui.LinkAnnotationWidget.prototype.setAnnotation = function ( annotation, fromText ) {
 	if ( ve.compare(

@@ -43,12 +43,11 @@ OO.inheritClass( ve.ce.ContentBranchNode, ve.ce.BranchNode );
 /* Static Members */
 
 /**
- * Whether Enter splits this node type. Must be true for ContentBranchNodes.
+ * @property {boolean} Whether Enter splits this node type. Must be true for ContentBranchNodes.
  *
  * Warning: overriding this to false in a subclass will cause crashes on Enter key handling.
  *
  * @static
- * @property {boolean}
  * @inheritable
  */
 ve.ce.ContentBranchNode.static.splitOnEnter = true;
@@ -198,14 +197,27 @@ ve.ce.ContentBranchNode.prototype.setupInlineSlugs = function () {
 };
 
 /**
+ * @typedef {Object} UnicornInfo
+ * @memberof ve.ce.ContentBranchNode
+ * @property {boolean} hasCursor
+ * @property {ve.dm.AnnotationSet|null} annotations
+ * @property {HTMLElement[]|null} unicorns
+ */
+
+/**
+ * @typedef {HTMLElement} HTMLElementWithUnicorn
+ * @memberof ve.ce.ContentBranchNode
+ * @property {ve.ce.ContentBranchNode.UnicornInfo} unicornInfo Unicorn information
+ */
+
+/**
  * Get an HTML rendering of the contents.
  *
  * If you are actually going to append the result to a DOM, you need to
  * do this with #appendRenderedContents, which resolves the cloned
  * nodes returned by this function back to their originals.
  *
- * @return {HTMLElement} Wrapper containing rendered contents
- * @return {Object} return.unicornInfo Unicorn information
+ * @return {ve.ce.ContentBranchNode.HTMLElementWithUnicorn} Wrapper containing rendered contents
  */
 ve.ce.ContentBranchNode.prototype.getRenderedContents = function () {
 	var annotationsChanged,
@@ -414,7 +426,6 @@ ve.ce.ContentBranchNode.prototype.onModelDetach = function () {
  * @return {boolean} Whether the contents have changed
  */
 ve.ce.ContentBranchNode.prototype.renderContents = function () {
-	var node = this;
 	// TODO fix the use of ve.ce.DocumentNode and getSurface
 	if (
 		this.root instanceof ve.ce.DocumentNode &&
@@ -490,8 +501,8 @@ ve.ce.ContentBranchNode.prototype.renderContents = function () {
 	// Highlight the node in debug mode
 	if ( ve.inputDebug ) {
 		this.$element.css( 'backgroundColor', '#eee' );
-		setTimeout( function () {
-			node.$element.css( 'backgroundColor', '' );
+		setTimeout( () => {
+			this.$element.css( 'backgroundColor', '' );
 		}, 300 );
 	}
 

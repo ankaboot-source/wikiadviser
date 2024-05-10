@@ -58,6 +58,7 @@ ve.ui.TableLineContextItem.static.title = null;
  * @localdoc Executes the command related to #static-commandName on the context's surface
  *
  * @protected
+ * @fires ve.ui.ContextItem#command
  */
 ve.ui.TableLineContextItem.prototype.onActionButtonClick = function () {
 	var command = this.getCommand();
@@ -97,11 +98,11 @@ ve.ui.TableLineContextItem.prototype.setup = function () {
 		modeNames = { row: 'Row', col: 'Column' },
 		sideNames = { before: 'Before', after: 'After' };
 
-	modes.forEach( function ( mode ) {
+	modes.forEach( ( mode ) => {
 		var modeName = modeNames[ mode ];
 		var className;
 
-		sides.forEach( function ( side ) {
+		sides.forEach( ( side ) => {
 			var sideName = sideNames[ side ];
 
 			className = 'Insert' + modeName + sideName + 'ContextItem';

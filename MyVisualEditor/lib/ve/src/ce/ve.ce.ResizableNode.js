@@ -77,16 +77,16 @@ OO.initClass( ve.ce.ResizableNode );
 /* Events */
 
 /**
- * @event resizeStart
+ * @event ve.ce.ResizableNode#resizeStart
  */
 
 /**
- * @event resizing
+ * @event ve.ce.ResizableNode#resizing
  * @param {Object} dimensions Dimension object containing width & height
  */
 
 /**
- * @event resizeEnd
+ * @event ve.ce.ResizableNode#resizeEnd
  */
 
 /* Methods */
@@ -143,15 +143,14 @@ ve.ce.ResizableNode.prototype.hideSizeLabel = function () {
 		return;
 	}
 
-	var node = this;
 	// Defer the removal of this class otherwise other DOM changes may cause
 	// the opacity transition to not play out smoothly
-	setTimeout( function () {
-		node.$sizeLabel.removeClass( 've-ce-resizableNode-sizeLabel-resizing' );
+	setTimeout( () => {
+		this.$sizeLabel.removeClass( 've-ce-resizableNode-sizeLabel-resizing' );
 	} );
 	// Actually hide the size label after it's done animating
-	setTimeout( function () {
-		node.$sizeLabel.addClass( 'oo-ui-element-hidden' );
+	setTimeout( () => {
+		this.$sizeLabel.addClass( 'oo-ui-element-hidden' );
 	}, 200 );
 };
 
@@ -380,7 +379,7 @@ ve.ce.ResizableNode.prototype.onResizableAttributeChange = function () {
  * Handle bounding box handle mousedown.
  *
  * @param {jQuery.Event} e Click event
- * @fires resizeStart
+ * @fires ve.ce.ResizableNode#resizeStart
  */
 ve.ce.ResizableNode.prototype.onResizeHandlesCornerMouseDown = function ( e ) {
 	// Hide context menu
@@ -481,7 +480,7 @@ ve.ce.ResizableNode.prototype.setResizableHandlesPosition = function () {
  * Handle body mousemove.
  *
  * @param {jQuery.Event} e Click event
- * @fires resizing
+ * @fires ve.ce.ResizableNode#resizing
  */
 ve.ce.ResizableNode.prototype.onDocumentMouseMove = function ( e ) {
 	var diff = {},
@@ -548,7 +547,7 @@ ve.ce.ResizableNode.prototype.onDocumentMouseMove = function ( e ) {
 /**
  * Handle body mouseup.
  *
- * @fires resizeEnd
+ * @fires ve.ce.ResizableNode#resizeEnd
  */
 ve.ce.ResizableNode.prototype.onDocumentMouseUp = function () {
 	var width = this.$resizeHandles.outerWidth(),

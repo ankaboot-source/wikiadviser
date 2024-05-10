@@ -118,13 +118,14 @@ ve.ui.AnnotationInspector.prototype.getAnnotationFromFragment = null;
 ve.ui.AnnotationInspector.prototype.getMatchingAnnotations = function ( fragment, all ) {
 	var modelClasses = this.constructor.static.modelClasses;
 
-	return fragment.getAnnotations( all ).filter( function ( annotation ) {
+	return fragment.getAnnotations( all ).filter( ( annotation ) => {
 		return ve.isInstanceOfAny( annotation, modelClasses );
 	} );
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
- * @inheritdoc ve.ui.FragmentWindow
+ * @see ve.ui.FragmentWindow
  */
 ve.ui.AnnotationInspector.prototype.isEditing = function () {
 	// If initialSelection isn't set yet, default to assume we are editing,
@@ -148,7 +149,7 @@ ve.ui.AnnotationInspector.prototype.isEditing = function () {
  */
 ve.ui.AnnotationInspector.prototype.getSetupProcess = function ( data ) {
 	return ve.ui.AnnotationInspector.super.prototype.getSetupProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			var fragment = this.getFragment(),
 				surfaceModel = fragment.getSurface(),
 				// Partial annotations will be expanded later
@@ -240,7 +241,7 @@ ve.ui.AnnotationInspector.prototype.getSetupProcess = function ( data ) {
 ve.ui.AnnotationInspector.prototype.getTeardownProcess = function ( data ) {
 	data = data || {};
 	return ve.ui.AnnotationInspector.super.prototype.getTeardownProcess.call( this, data )
-		.first( function () {
+		.first( () => {
 			var inspector = this,
 				insertionAnnotation = false,
 				replace = false,
@@ -345,7 +346,7 @@ ve.ui.AnnotationInspector.prototype.getTeardownProcess = function ( data ) {
 				} else {
 					// We can't rely on the selection being placed inside the annotation
 					// so force it based on the model annotations. T265166
-					surfaceView.selectAnnotation( function ( annView ) {
+					surfaceView.selectAnnotation( ( annView ) => {
 						return ve.isInstanceOfAny( annView.getModel(), inspector.constructor.static.modelClasses );
 					} );
 				}
@@ -354,12 +355,12 @@ ve.ui.AnnotationInspector.prototype.getTeardownProcess = function ( data ) {
 			if ( insertionAnnotation ) {
 				surfaceModel.addInsertionAnnotations( annotation );
 			}
-		}, this )
-		.next( function () {
+		} )
+		.next( () => {
 			// Reset state
 			this.initialSelection = null;
 			this.initialAnnotation = null;
 			this.initialAnnotationIsCovering = false;
 			this.isNew = false;
-		}, this );
+		} );
 };

@@ -333,7 +333,7 @@ ve.Filibuster.prototype.stop = function () {
  */
 ve.Filibuster.prototype.getObservationsHtml = function ( branchPath ) {
 	function showArgs( args ) {
-		return '<b>(</b>' + ve.escapeHtml( args.map( function ( arg ) {
+		return '<b>(</b>' + ve.escapeHtml( args.map( ( arg ) => {
 			return JSON.stringify( arg );
 		} ).join( ', ' ) ) + '<b>)</b>';
 	}
@@ -346,7 +346,7 @@ ve.Filibuster.prototype.getObservationsHtml = function ( branchPath ) {
 		return (
 			( phase === 'enter' ? '<hr>' : '' ) +
 			'<div class="ve-filibuster-changes">' +
-			Object.keys( changes ).map( function ( name ) {
+			Object.keys( changes ).map( ( name ) => {
 				return (
 					'<b>' + ve.escapeHtml( name + ' old' ) + '</b><br>' +
 					ve.escapeHtml( changes[ name ].oldState ) + '<br>' +
@@ -462,8 +462,6 @@ ve.Filibuster.prototype.getObservationsHtml = function ( branchPath ) {
  * @return {Object|string|number|null} Plain old data object
  */
 ve.Filibuster.static.clonePlain = function ( val, seen ) {
-	var filibusterStatic = this;
-
 	if ( seen === undefined ) {
 		seen = new Set();
 	}
@@ -472,8 +470,8 @@ ve.Filibuster.static.clonePlain = function ( val, seen ) {
 			return '…';
 		}
 		seen.add( val );
-		return val.map( function ( x ) {
-			return filibusterStatic.clonePlain( x, seen );
+		return val.map( ( x ) => {
+			return this.clonePlain( x, seen );
 		} );
 	} else if ( typeof val === 'function' ) {
 		return '(function ' + val.name + ')';
@@ -488,8 +486,8 @@ ve.Filibuster.static.clonePlain = function ( val, seen ) {
 	} else if ( val.constructor === ve.Range ) {
 		return { 've.Range': [ val.from, val.to ] };
 	} else if ( val.constructor === ve.dm.Transaction ) {
-		return { 've.dm.Transaction': val.operations.map( function ( op ) {
-			return filibusterStatic.clonePlain( op );
+		return { 've.dm.Transaction': val.operations.map( ( op ) => {
+			return this.clonePlain( op );
 		} ) };
 	} else if ( val instanceof ve.dm.Selection ) {
 		return { 've.dm.Selection': val.getDescription() };
@@ -497,7 +495,7 @@ ve.Filibuster.static.clonePlain = function ( val, seen ) {
 		return {
 			've.dm.AnnotationSet': val.getStore()
 				.values( val.getHashes() )
-				.map( function ( annotation ) {
+				.map( ( annotation ) => {
 					return annotation.name;
 				} )
 		};
@@ -510,8 +508,8 @@ ve.Filibuster.static.clonePlain = function ( val, seen ) {
 		}
 		seen.add( val );
 		var plainVal = {};
-		Object.getOwnPropertyNames( val ).forEach( function ( k ) {
-			plainVal[ k ] = filibusterStatic.clonePlain( val[ k ], seen );
+		Object.getOwnPropertyNames( val ).forEach( ( k ) => {
+			plainVal[ k ] = this.clonePlain( val[ k ], seen );
 		} );
 		return plainVal;
 	}

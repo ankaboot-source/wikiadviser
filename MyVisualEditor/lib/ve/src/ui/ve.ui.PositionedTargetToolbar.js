@@ -83,11 +83,11 @@ ve.ui.PositionedTargetToolbar.prototype.detach = function () {
 };
 
 /**
- * @inheritdoc
- *
  * While toolbar floating is enabled,
  * the toolbar will stick to the top of the screen unless it would be over or under the last visible
  * branch node in the root of the document being edited, at which point it will stop just above it.
+ *
+ * @inheritdoc
  */
 ve.ui.PositionedTargetToolbar.prototype.onWindowResize = function () {
 	ve.ui.Toolbar.super.prototype.onWindowResize.call( this );
@@ -198,8 +198,7 @@ ve.ui.PositionedTargetToolbar.prototype.isFloatable = function () {
  */
 ve.ui.PositionedTargetToolbar.prototype.onToolbarDialogsOpeningOrClosing = function ( win, openingOrClosing ) {
 	var $surface = this.getSurface().$element,
-		transitionDuration = OO.ui.theme.getDialogTransitionDuration(),
-		toolbar = this;
+		transitionDuration = OO.ui.theme.getDialogTransitionDuration();
 
 	// win.isOpened before promise means we are closing
 	if ( win.constructor.static.position === 'side' && win.isOpened() ) {
@@ -211,40 +210,40 @@ ve.ui.PositionedTargetToolbar.prototype.onToolbarDialogsOpeningOrClosing = funct
 		win.$element.css( 'width', '' );
 	}
 
-	openingOrClosing.then( function () {
+	openingOrClosing.then( () => {
 		if ( win.constructor.static.position === 'side' ) {
 			// win.isOpened after promise means we are opening
 			if ( win.isOpened() ) {
 				var margin = $surface.css( 'direction' ) === 'rtl' ? 'margin-left' : 'margin-right';
 				var originalMargin = parseFloat( $surface.css( margin ) );
 				var width = win.getSizeProperties().width;
-				toolbar.getSurface().$element
+				this.getSurface().$element
 					.addClass( 've-ui-surface-toolbarDialog-side' )
 					.css( margin, width + originalMargin );
 				win.$element.css( 'width', width );
 			} else {
 				// Second closing transition
-				toolbar.getSurface().$element.removeClass( 've-ui-surface-toolbarDialog-side' );
+				this.getSurface().$element.removeClass( 've-ui-surface-toolbarDialog-side' );
 			}
 
-			toolbar.onViewportResize();
-			setTimeout( function () {
-				toolbar.onViewportResize();
-				toolbar.getSurface().getView().emit( 'position' );
+			this.onViewportResize();
+			setTimeout( () => {
+				this.onViewportResize();
+				this.getSurface().getView().emit( 'position' );
 			}, transitionDuration );
-			toolbar.getSurface().getView().emit( 'position' );
+			this.getSurface().getView().emit( 'position' );
 		} else if ( win.constructor.static.position === 'below' ) {
-			setTimeout( function () {
-				toolbar.onViewportResize();
-				toolbar.getSurface().getView().emit( 'position' );
+			setTimeout( () => {
+				this.onViewportResize();
+				this.getSurface().getView().emit( 'position' );
 			}, transitionDuration );
 		}
 		// Wait for window transition
-		setTimeout( function () {
-			if ( toolbar.floating ) {
+		setTimeout( () => {
+			if ( this.floating ) {
 				// Re-calculate height
-				toolbar.unfloat();
-				toolbar.float();
+				this.unfloat();
+				this.float();
 			}
 		}, transitionDuration );
 	} );

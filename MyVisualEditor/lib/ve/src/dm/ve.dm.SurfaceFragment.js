@@ -1031,7 +1031,7 @@ ve.dm.SurfaceFragment.prototype.delete = function ( directionAfterDelete ) {
 			// ancestor that the removal causes to be empty).
 			var endNodeData = this.document.getData( endNode.getRange() );
 			var nodeToDelete = endNode;
-			nodeToDelete.traverseUpstream( function ( node ) {
+			nodeToDelete.traverseUpstream( ( node ) => {
 				var parent = node.getParent();
 				if ( parent.children.length === 1 ) {
 					nodeToDelete = parent;
@@ -1344,15 +1344,13 @@ ve.dm.SurfaceFragment.prototype.isolateAndUnwrap = function ( isolateForType ) {
 		startSplitRequired = false,
 		endSplitRequired = false,
 		startSplitNodes = [],
-		endSplitNodes = [],
-		fragment = this;
+		endSplitNodes = [];
 
 	function createSplits( splitNodes, insertBefore ) {
-		var i, length,
-			adjustment = 0,
+		var adjustment = 0,
 			data = [];
 
-		for ( i = 0, length = splitNodes.length; i < length; i++ ) {
+		for ( var i = 0, length = splitNodes.length; i < length; i++ ) {
 			data.unshift( { type: '/' + splitNodes[ i ].type } );
 			data.push( splitNodes[ i ].getClonedElement() );
 
@@ -1427,9 +1425,9 @@ ve.dm.SurfaceFragment.prototype.isolateAndUnwrap = function ( isolateForType ) {
 		createSplits( endSplitNodes, false );
 	}
 
-	insertions.forEach( function ( insertion ) {
-		fragment.change(
-			ve.dm.TransactionBuilder.static.newFromInsertion( fragment.getDocument(), insertion.offset, insertion.data )
+	insertions.forEach( ( insertion ) => {
+		this.change(
+			ve.dm.TransactionBuilder.static.newFromInsertion( this.getDocument(), insertion.offset, insertion.data )
 		);
 	} );
 

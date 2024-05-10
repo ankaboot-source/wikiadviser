@@ -113,7 +113,7 @@ OO.inheritClass( ve.ui.LanguageInputWidget, OO.ui.Widget );
 /* Events */
 
 /**
- * @event change
+ * @event ve.ui.LanguageInputWidget#change
  * @param {string} lang Language code
  * @param {string} dir Directionality
  */
@@ -124,15 +124,13 @@ OO.inheritClass( ve.ui.LanguageInputWidget, OO.ui.Widget );
  * Handle find language button click events.
  */
 ve.ui.LanguageInputWidget.prototype.onFindLanguageButtonClick = function () {
-	var widget = this;
-
 	this.dialogs.openWindow( 'languageSearch', {
 		availableLanguages: this.availableLanguages,
 		$returnFocusTo: null
-	} ).closing.then( function ( data ) {
+	} ).closing.then( ( data ) => {
 		data = data || {};
 		if ( data.action === 'done' ) {
-			widget.setLangAndDir( data.lang, data.dir );
+			this.setLangAndDir( data.lang, data.dir );
 		}
 	} );
 };
@@ -157,9 +155,9 @@ ve.ui.LanguageInputWidget.prototype.onChange = function () {
  *
  * The inputs value will automatically be updated.
  *
- * @param {string} lang Language code
- * @param {string} dir Directionality
- * @fires change
+ * @param {string|null} lang Language code
+ * @param {string|null} dir Directionality
+ * @fires ve.ui.LanguageInputWidget#change
  * @return {ve.ui.LanguageInputWidget}
  * @chainable
  */
@@ -199,7 +197,7 @@ ve.ui.LanguageInputWidget.prototype.setLangAndDir = function ( lang, dir ) {
 /**
  * Get the language
  *
- * @return {string} Language code
+ * @return {string|null} Language code
  */
 ve.ui.LanguageInputWidget.prototype.getLang = function () {
 	return this.lang;
@@ -208,7 +206,7 @@ ve.ui.LanguageInputWidget.prototype.getLang = function () {
 /**
  * Get the directionality
  *
- * @return {string} Directionality (ltr/rtl)
+ * @return {string|null} Directionality (ltr/rtl)
  */
 ve.ui.LanguageInputWidget.prototype.getDir = function () {
 	return this.dir;

@@ -8,7 +8,7 @@
  * @class
  * @abstract
  * @extends ve.dm.LeafNode
- * @mixins ve.dm.FocusableNode
+ * @mixes ve.dm.FocusableNode
  *
  * @constructor
  * @param {Object} element Reference to element in meta-linmod
@@ -70,7 +70,7 @@ ve.dm.CommentNode.static.toDomElements = function ( dataElement, doc, converter 
 	} else {
 		// Real comment node
 		// Encode & - > (see T95040, T144708)
-		var data = dataElement.attributes.text.replace( /[-&>]/g, function ( c ) {
+		var data = dataElement.attributes.text.replace( /[-&>]/g, ( c ) => {
 			return '&#x' + c.charCodeAt( 0 ).toString( 16 ).toUpperCase() + ';';
 		} );
 		return [ doc.createComment( data ) ];

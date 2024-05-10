@@ -9,7 +9,7 @@
  *
  * @class
  * @extends OO.ui.Element
- * @mixins OO.EventEmitter
+ * @mixes OO.EventEmitter
  *
  * @constructor
  * @param {ve.dm.Surface} model Surface model to observe
@@ -17,8 +17,6 @@
  * @param {Object} [config] Configuration options
  */
 ve.ce.Surface = function VeCeSurface( model, ui, config ) {
-	var surface = this;
-
 	// Parent constructor
 	ve.ce.Surface.super.call( this, config );
 
@@ -168,10 +166,10 @@ ve.ce.Surface = function VeCeSurface( model, ui, config ) {
 
 	this.$attachedRootNode
 		.on( 'paste', this.onPaste.bind( this ) )
-		.on( 'focus', 'a', function () {
+		.on( 'focus', 'a', () => {
 			// Opera <= 12 triggers 'blur' on document node before any link is
 			// focused and we don't want that
-			surface.$attachedRootNode[ 0 ].focus();
+			this.$attachedRootNode[ 0 ].focus();
 		} );
 
 	this.onDocumentSelectionChangeHandler = this.onDocumentSelectionChange.bind( this );
@@ -196,6 +194,12 @@ ve.ce.Surface = function VeCeSurface( model, ui, config ) {
 	} ).after( {
 		keydown: this.afterDocumentKeyDown.bind( this )
 	} );
+
+	this.mutationObserver = new MutationObserver( this.afterMutations.bind( this ) );
+	this.mutationObserver.observe(
+		this.$attachedRootNode[ 0 ],
+		{ childList: true, subtree: true }
+	);
 
 	// Initialization
 	// Support: Chrome
@@ -236,42 +240,44 @@ OO.mixinClass( ve.ce.Surface, OO.EventEmitter );
 /* Events */
 
 /**
- * @event relocationStart
+ * @event ve.ce.Surface#relocationStart
  */
 
 /**
- * @event relocationEnd
+ * @event ve.ce.Surface#relocationEnd
  */
 
 /**
- * @event keyup
+ * @event ve.ce.Surface#keyup
  */
 
 /**
  * When the surface or its contents changes position
  * (only after initialize has already been called).
  *
- * @event position
+ * @event ve.ce.Surface#position
  */
 
 /**
- * @event focus
  * Note that it's possible for a focus event to occur immediately after a blur event, if the focus
  * moves to or from a FocusableNode. In this case the surface doesn't lose focus conceptually, but
  * a pair of blur-focus events is emitted anyway.
+ *
+ * @event ve.ce.Surface#focus
  */
 
 /**
- * @event blur
  * Note that it's possible for a focus event to occur immediately after a blur event, if the focus
  * moves to or from a FocusableNode. In this case the surface doesn't lose focus conceptually, but
  * a pair of blur-focus events is emitted anyway.
+ *
+ * @event ve.ce.Surface#blur
  */
 
 /**
  * Surface activation state has changed (i.e. on activate or deactivate)
  *
- * @event activation
+ * @event ve.ce.Surface#activation
  */
 
 /* Static properties */
@@ -510,6 +516,8 @@ ve.ce.Surface.prototype.getSelectionDirectionality = function () {
  * Initialize surface.
  *
  * This should be called after the surface has been attached to the DOM.
+ *
+ * @fires ve.ce.Surface#position
  */
 ve.ce.Surface.prototype.initialize = function () {
 	this.attachedRoot.setLive( true );
@@ -562,7 +570,7 @@ ve.ce.Surface.prototype.setReviewMode = function ( reviewMode, highlightNodes ) 
 	this.$element.toggleClass( 've-ce-surface-reviewMode', this.reviewMode );
 	this.$element.toggleClass( 've-ce-surface-reviewMode-highlightNodes', this.reviewMode && !!highlightNodes );
 	if ( reviewMode && highlightNodes ) {
-		highlightNodes.forEach( function ( node ) {
+		highlightNodes.forEach( ( node ) => {
 			node.$element
 				.addClass( 've-ce-surface-reviewMode-highlightNode' )
 				.parentsUntil( '.ve-ce-attachedRootNode' )
@@ -583,8 +591,6 @@ ve.ce.Surface.prototype.setReviewMode = function ( reviewMode, highlightNodes ) 
  * function will also reapply the selection, even if the surface is already focused.
  */
 ve.ce.Surface.prototype.focus = function () {
-	var surface = this;
-
 	if ( !this.attachedRoot.isLive() ) {
 		OO.ui.warnDeprecation( 'Tried to focus an un-initialized surface view. Wait for the ve.ui.Surface `ready` event to fire.' );
 		return;
@@ -616,7 +622,7 @@ ve.ce.Surface.prototype.focus = function () {
 	// but onDocumentFocus won't fire so restore the selection here too.
 	this.onModelSelect();
 	// setTimeout: postpone until onDocumentFocus has been called
-	setTimeout( function () {
+	setTimeout( () => {
 		// Support: Chrome
 		// In some browsers (e.g. Chrome) giving the document node focus doesn't
 		// necessarily give you a selection (e.g. if the first child is a <figure>)
@@ -624,8 +630,8 @@ ve.ce.Surface.prototype.focus = function () {
 		// manually
 		// TODO: rename isFocused and other methods to something which reflects
 		// the fact they actually mean "has a native selection"
-		if ( !surface.isFocused() ) {
-			surface.selectFirstVisibleStartContentOffset();
+		if ( !this.isFocused() ) {
+			this.selectFirstVisibleStartContentOffset();
 		}
 	} );
 	// onDocumentFocus takes care of the rest
@@ -739,10 +745,9 @@ ve.ce.Surface.prototype.isShownAsDeactivated = function () {
  * @param {boolean} [showAsActivated=true] Surface should still show as activated
  * @param {boolean} [noSelectionChange] Don't change the native selection.
  * @param {boolean} [hideSelection] Completely hide the selection
- * @fires activation
+ * @fires ve.ce.Surface#activation
  */
 ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChange, hideSelection ) {
-	var surface = this;
 	this.showAsActivated = showAsActivated === undefined || !!showAsActivated;
 	this.hideSelection = hideSelection;
 	if ( !this.deactivated ) {
@@ -758,13 +763,13 @@ ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChan
 		if ( !noSelectionChange ) {
 			this.removeRangesAndBlur();
 			// iOS Safari will sometimes restore the selection immediately (T293661)
-			setTimeout( function () {
+			setTimeout( () => {
 				if (
 					// Surface may have been immediately re-activated deliberately
-					surface.deactivated &&
-					OO.ui.contains( surface.$attachedRootNode[ 0 ], surface.nativeSelection.anchorNode, true )
+					this.deactivated &&
+					OO.ui.contains( this.$attachedRootNode[ 0 ], this.nativeSelection.anchorNode, true )
 				) {
-					surface.removeRangesAndBlur();
+					this.removeRangesAndBlur();
 				}
 			} );
 		}
@@ -777,7 +782,8 @@ ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChan
 /**
  * Reactivate the surface and restore the native selection
  *
- * @fires activation
+ * @fires ve.ce.Surface#activation
+ * @fires ve.dm.Surface#contextChange
  */
 ve.ce.Surface.prototype.activate = function () {
 	if ( this.deactivated ) {
@@ -818,10 +824,10 @@ ve.ce.Surface.prototype.activate = function () {
 			this.getModel().setSelection( previousSelection );
 			// Restore active annotations
 			if ( this.previousActiveAnnotations.length ) {
-				var annotationClasses = this.previousActiveAnnotations.map( function ( ann ) {
+				var annotationClasses = this.previousActiveAnnotations.map( ( ann ) => {
 					return ann.constructor;
 				} );
-				this.selectAnnotation( function ( view ) {
+				this.selectAnnotation( ( view ) => {
 					return ve.isInstanceOfAny( view, annotationClasses );
 				} );
 			}
@@ -896,8 +902,6 @@ ve.ce.Surface.prototype.hasNativeCursorSelection = function () {
  * @param {string} options.label Label shown above each selection
  */
 ve.ce.Surface.prototype.drawSelections = function ( name, selections, options ) {
-	var surface = this;
-
 	options = options || {};
 
 	var drawnSelection = ( this.drawnSelections[ name ] = this.drawnSelections[ name ] || {} );
@@ -922,8 +926,8 @@ ve.ce.Surface.prototype.drawSelections = function ( name, selections, options ) 
 	);
 
 	var selectionsJustShown = {};
-	selections.forEach( function ( selection ) {
-		var $selection = surface.getDrawnSelection( name, selection.getModel(), options );
+	selections.forEach( ( selection ) => {
+		var $selection = this.getDrawnSelection( name, selection.getModel(), options );
 		if ( !$selection ) {
 			var rects = selection.getSelectionRects();
 			if ( !rects ) {
@@ -931,7 +935,7 @@ ve.ce.Surface.prototype.drawSelections = function ( name, selections, options ) 
 			}
 			rects = ve.minimizeRects( rects );
 			$selection = $( '<div>' ).addClass( 've-ce-surface-selection' );
-			rects.forEach( function ( rect ) {
+			rects.forEach( ( rect ) => {
 				var $rect = $( '<div>' ).css( {
 					top: rect.top,
 					left: rect.left,
@@ -962,15 +966,15 @@ ve.ce.Surface.prototype.drawSelections = function ( name, selections, options ) 
 		if ( !$selection.parent().length ) {
 			drawnSelection.$selections.append( $selection );
 		}
-		var cacheKey = surface.storeDrawnSelection( $selection, name, selection.getModel(), options );
+		var cacheKey = this.storeDrawnSelection( $selection, name, selection.getModel(), options );
 		selectionsJustShown[ cacheKey ] = true;
 	} );
 
 	// Remove any selections that were not in the latest list of selections
-	oldSelections.forEach( function ( oldSelection ) {
-		var cacheKey = surface.getDrawnSelectionCacheKey( name, oldSelection.getModel(), oldOptions );
+	oldSelections.forEach( ( oldSelection ) => {
+		var cacheKey = this.getDrawnSelectionCacheKey( name, oldSelection.getModel(), oldOptions );
 		if ( !selectionsJustShown[ cacheKey ] ) {
-			var $oldSelection = surface.getDrawnSelection( name, oldSelection.getModel(), oldOptions );
+			var $oldSelection = this.getDrawnSelection( name, oldSelection.getModel(), oldOptions );
 			if ( $oldSelection ) {
 				$oldSelection.detach();
 			}
@@ -1028,17 +1032,15 @@ ve.ce.Surface.prototype.storeDrawnSelection = function ( $selection, name, selec
  * to be incorrect.
  */
 ve.ce.Surface.prototype.redrawSelections = function () {
-	var surface = this;
-
-	Object.keys( this.drawnSelections ).forEach( function ( name ) {
-		var drawnSelection = surface.drawnSelections[ name ];
+	Object.keys( this.drawnSelections ).forEach( ( name ) => {
+		var drawnSelection = this.drawnSelections[ name ];
 		drawnSelection.$selections.empty();
 	} );
 
 	this.drawnSelectionCache = {};
-	Object.keys( this.drawnSelections ).forEach( function ( name ) {
-		var drawnSelection = surface.drawnSelections[ name ];
-		surface.drawSelections( name, drawnSelection.selections, drawnSelection.options );
+	Object.keys( this.drawnSelections ).forEach( ( name ) => {
+		var drawnSelection = this.drawnSelections[ name ];
+		this.drawSelections( name, drawnSelection.selections, drawnSelection.options );
 	} );
 };
 
@@ -1047,7 +1049,7 @@ ve.ce.Surface.prototype.redrawSelections = function () {
  *
  * This is triggered by a global focusin/focusout event noticing a selection on the document.
  *
- * @fires focus
+ * @fires ve.ce.Surface#focus
  */
 ve.ce.Surface.prototype.onDocumentFocus = function () {
 	if ( this.getModel().getSelection().isNull() ) {
@@ -1068,7 +1070,7 @@ ve.ce.Surface.prototype.onDocumentFocus = function () {
  *
  * This is triggered by a global focusin/focusout event noticing no selection on the document.
  *
- * @fires blur
+ * @fires ve.ce.Surface#blur
  */
 ve.ce.Surface.prototype.onDocumentBlur = function () {
 	var nullSelectionOnBlur = this.surface.nullSelectionOnBlur;
@@ -1111,8 +1113,6 @@ ve.ce.Surface.prototype.isFocused = function () {
  * @param {jQuery.Event} e Mouse down event
  */
 ve.ce.Surface.prototype.onDocumentMouseDown = function ( e ) {
-	var surface = this;
-
 	if ( e.which !== OO.ui.MouseButtons.LEFT ) {
 		if ( e.which === OO.ui.MouseButtons.MIDDLE ) {
 			// When middle click is also focusig the document, the selection may not end up
@@ -1123,23 +1123,22 @@ ve.ce.Surface.prototype.onDocumentMouseDown = function ( e ) {
 			}
 			this.middleClickTargetOffset = targetOffset !== -1 ? targetOffset : null;
 			this.middleClickPasting = true;
-			this.$document.one( 'mouseup', function () {
+			this.$document.one( 'mouseup', () => {
 				// Stay true until other events have run, e.g. paste
-				setTimeout( function () {
-					surface.middleClickPasting = false;
+				setTimeout( () => {
+					this.middleClickPasting = false;
 				} );
 			} );
 		}
 		return;
 	}
 
-	function isContexedNode( view ) {
-		return surface.surface.context.getRelatedSourcesFromModels( [ view.model ] ).length;
-	}
-
 	var offset = this.getOffsetFromEventCoords( e );
 	if ( offset !== -1 ) {
-		var contexedAnnotations = this.annotationsAtNode( e.target, isContexedNode );
+		var contexedAnnotations = this.annotationsAtNode(
+			e.target,
+			( view ) => this.surface.context.getRelatedSourcesFromModels( [ view.model ] ).length
+		);
 		if (
 			OO.ui.isMobile() &&
 			// The user has clicked on contexed annotations and ...
@@ -1150,19 +1149,19 @@ ve.ce.Surface.prototype.onDocumentMouseDown = function ( e ) {
 				!(
 					// Shallow strict equality check
 					this.contexedAnnotations.length === contexedAnnotations.length &&
-					this.contexedAnnotations.every( function ( ann, i ) {
+					this.contexedAnnotations.every( ( ann, i ) => {
 						return ann === contexedAnnotations[ i ];
 					} )
 				)
 			)
 		) {
 			var node = e.target;
-			setTimeout( function () {
-				surface.getModel().setLinearSelection( new ve.Range( offset ) );
+			setTimeout( () => {
+				this.getModel().setLinearSelection( new ve.Range( offset ) );
 				// HACK: Re-activate flag so selection is repositioned
-				surface.activate();
-				surface.deactivate( false, false, true );
-				surface.updateActiveAnnotations( node );
+				this.activate();
+				this.deactivate( false, false, true );
+				this.updateActiveAnnotations( node );
 			} );
 			this.contexedAnnotations = contexedAnnotations;
 			e.preventDefault();
@@ -1322,7 +1321,7 @@ ve.ce.Surface.prototype.onDocumentSelectionChange = function () {
  * Handle document drag start events.
  *
  * @param {jQuery.Event} e Drag start event
- * @fires relocationStart
+ * @fires ve.ce.Surface#relocationStart
  */
 ve.ce.Surface.prototype.onDocumentDragStart = function ( e ) {
 	this.onCopy( e );
@@ -1391,7 +1390,7 @@ ve.ce.Surface.prototype.onDocumentDragOver = function ( e ) {
 			node = node.parent;
 		}
 		if ( node.parent ) {
-			node.parent.traverseUpstream( function ( n ) {
+			node.parent.traverseUpstream( ( n ) => {
 				if ( n.shouldIgnoreChildren() ) {
 					node = null;
 					return false;
@@ -1478,7 +1477,7 @@ ve.ce.Surface.prototype.onDocumentDragLeave = function () {
  * Limits native drag and drop behaviour.
  *
  * @param {jQuery.Event} e Drop event
- * @fires relocationEnd
+ * @fires ve.ce.Surface#relocationEnd
  */
 ve.ce.Surface.prototype.onDocumentDrop = function ( e ) {
 	// Properties may be nullified by other events, so cache before setTimeout
@@ -1629,7 +1628,7 @@ ve.ce.Surface.prototype.onDocumentKeyDown = function ( e ) {
 		var treeWalker = document.createTreeWalker(
 			document.body,
 			NodeFilter.SHOW_ELEMENT,
-			function ( n ) {
+			( n ) => {
 				if ( surfaceNode.contains( n ) ) {
 					return NodeFilter.FILTER_REJECT;
 				}
@@ -2133,7 +2132,7 @@ ve.ce.Surface.prototype.cleanupUnicorns = function ( fixupCursor ) {
  * Handle document key up events.
  *
  * @param {jQuery.Event} e Key up event
- * @fires keyup
+ * @fires ve.ce.Surface#keyup
  */
 ve.ce.Surface.prototype.onDocumentKeyUp = function () {
 	this.emit( 'keyup' );
@@ -2145,8 +2144,7 @@ ve.ce.Surface.prototype.onDocumentKeyUp = function () {
  * @param {jQuery.Event} e Cut event
  */
 ve.ce.Surface.prototype.onCut = function ( e ) {
-	var surface = this,
-		selection = this.getModel().getSelection();
+	var selection = this.getModel().getSelection();
 
 	if ( selection.isCollapsed() ) {
 		return;
@@ -2154,10 +2152,10 @@ ve.ce.Surface.prototype.onCut = function ( e ) {
 
 	this.onCopy( e );
 	// setTimeout: postpone until after the setTimeout in onCopy
-	setTimeout( function () {
+	setTimeout( () => {
 		// Trigger a fake backspace to remove the content: this behaves differently based on the selection,
 		// e.g. in a TableSelection.
-		ve.ce.keyDownHandlerFactory.executeHandlersForKey( OO.ui.Keys.BACKSPACE, selection.getName(), surface, e );
+		ve.ce.keyDownHandlerFactory.executeHandlersForKey( OO.ui.Keys.BACKSPACE, selection.getName(), this, e );
 	} );
 };
 
@@ -2210,19 +2208,19 @@ ve.ce.Surface.prototype.onCopy = function ( e, selection ) {
 	// Support: Firefox
 	// Some attributes (e.g RDFa attributes in Firefox) aren't preserved by copy
 	var unsafeSelector = '[' + ve.ce.Surface.static.unsafeAttributes.join( '],[' ) + ']';
-	this.$pasteTarget.find( unsafeSelector ).each( function () {
+	this.$pasteTarget.find( unsafeSelector ).each( ( n, element ) => {
 		var i, val,
 			attrs = {},
 			ua = ve.ce.Surface.static.unsafeAttributes;
 
 		i = ua.length;
 		while ( i-- ) {
-			val = this.getAttribute( ua[ i ] );
+			val = element.getAttribute( ua[ i ] );
 			if ( val !== null ) {
 				attrs[ ua[ i ] ] = val;
 			}
 		}
-		this.setAttribute( 'data-ve-attributes', JSON.stringify( attrs ) );
+		element.setAttribute( 'data-ve-attributes', JSON.stringify( attrs ) );
 	} );
 
 	this.clipboardIndex++;
@@ -2266,7 +2264,7 @@ ve.ce.Surface.prototype.onCopy = function ( e, selection ) {
  */
 ve.ce.Surface.prototype.getBeforePasteAnnotationSet = function () {
 	var store = this.getModel().getDocument().getStore();
-	var dmAnnotations = this.beforePasteAnnotationsAtFocus.map( function ( view ) {
+	var dmAnnotations = this.beforePasteAnnotationsAtFocus.map( ( view ) => {
 		return view.getModel();
 	} );
 	return new ve.dm.AnnotationSet( store, store.hashAll( dmAnnotations ) );
@@ -2276,10 +2274,9 @@ ve.ce.Surface.prototype.getBeforePasteAnnotationSet = function () {
  * Handle native paste event
  *
  * @param {jQuery.Event} e Paste event
- * @return {boolean} False if the event is cancelled
+ * @return {boolean|undefined} False if the event is cancelled
  */
 ve.ce.Surface.prototype.onPaste = function ( e ) {
-	var surface = this;
 	// Prevent pasting until after we are done
 	if ( this.pasting || this.readOnly ) {
 		return false;
@@ -2288,27 +2285,27 @@ ve.ce.Surface.prototype.onPaste = function ( e ) {
 	this.surfaceObserver.disable();
 	this.pasting = true;
 	// setTimeout: postpone until after the default paste action
-	setTimeout( function () {
+	setTimeout( () => {
 		var afterPastePromise = ve.createDeferred().resolve().promise();
 		try {
 			if ( !e.isDefaultPrevented() ) {
-				afterPastePromise = surface.afterPaste( e );
+				afterPastePromise = this.afterPaste( e );
 			}
 		} finally {
-			afterPastePromise.always( function () {
-				surface.surfaceObserver.clear();
-				surface.surfaceObserver.enable();
+			afterPastePromise.always( () => {
+				this.surfaceObserver.clear();
+				this.surfaceObserver.enable();
 
 				// Allow pasting again
-				surface.pasting = false;
-				surface.pasteSpecial = false;
-				surface.beforePasteData = null;
+				this.pasting = false;
+				this.pasteSpecial = false;
+				this.beforePasteData = null;
 
 				// Restore original clipboard metadata if requred (was overridden by middle-click
 				// paste logic in beforePaste)
-				if ( surface.originalClipboardMetdata ) {
-					surface.clipboardIndex = surface.originalClipboardMetdata.clipboardIndex;
-					surface.clipboard = surface.originalClipboardMetdata.clipboard;
+				if ( this.originalClipboardMetdata ) {
+					this.clipboardIndex = this.originalClipboardMetdata.clipboardIndex;
+					this.clipboard = this.originalClipboardMetdata.clipboard;
 				}
 
 				ve.track( 'activity.clipboard', { action: 'paste' } );
@@ -2464,7 +2461,6 @@ ve.ce.Surface.prototype.afterPaste = function () {
 		documentModel = surfaceModel.getDocument(),
 		fragment = surfaceModel.getFragment(),
 		targetFragment = surfaceModel.getFragment( null, true ),
-		view = this,
 		beforePasteData = this.beforePasteData || {},
 		done = ve.createDeferred().resolve().promise();
 
@@ -2514,33 +2510,38 @@ ve.ce.Surface.prototype.afterPaste = function () {
 	} else {
 		pending = this.afterPasteAddToFragmentFromExternal( pasteData.clipboardKey, pasteData.$clipboardHtml, fragment, targetFragment, isMultiline );
 	}
-	return pending.then( function () {
-		if ( view.getSelection().isNativeCursor() ) {
+	return pending.then( () => {
+		if ( this.getSelection().isNativeCursor() ) {
 			// Restore focus and scroll position
-			view.$attachedRootNode[ 0 ].focus();
-			view.surface.$scrollContainer.scrollTop( beforePasteData.scrollTop );
+			this.$attachedRootNode[ 0 ].focus();
+			this.surface.$scrollContainer.scrollTop( beforePasteData.scrollTop );
 			// setTimeout: Firefox sometimes doesn't change scrollTop immediately when pasting
 			// line breaks at the end of a line so do it again later.
-			setTimeout( function () {
-				view.surface.$scrollContainer.scrollTop( beforePasteData.scrollTop );
+			setTimeout( () => {
+				this.surface.$scrollContainer.scrollTop( beforePasteData.scrollTop );
 			} );
 		}
 
 		// If original selection was linear, switch to end of pasted text
 		if ( fragment.getSelection() instanceof ve.dm.LinearSelection ) {
 			targetFragment.collapseToEnd().select();
-			view.findAndExecuteSequences( /* isPaste */ true );
+			this.findAndExecuteSequences( /* isPaste */ true );
 		}
 	} );
 };
 
 /**
+ * @typedef {Object} ClipboardData
+ * @memberof ve.ce
+ * @property {string|undefined} clipboardKey Clipboard key, if present
+ * @property {jQuery|undefined} $clipboardHtml Clipboard html, if used to extract the clipboard key
+ * @property {ve.dm.DocumentSlice|undefined} slice Relevant slice of this document, if the key points to it
+ */
+
+/**
  * Extract the clipboard key and other relevant data from beforePasteData / the paste target
  *
- * @return {Object} Data
- * @return {string|undefined} return.clipboardKey Clipboard key, if present
- * @return {jQuery|undefined} return.$clipboardHtml Clipboard html, if used to extract the clipboard key
- * @return {ve.dm.DocumentSlice|undefined} return.slice Relevant slice of this document, if the key points to it
+ * @return {ve.ce.ClipboardData} Data
  */
 ve.ce.Surface.prototype.afterPasteExtractClipboardData = function () {
 	var clipboardKey, clipboardHash, $clipboardHtml,
@@ -2553,8 +2554,8 @@ ve.ce.Surface.prototype.afterPasteExtractClipboardData = function () {
 	} else {
 		if ( beforePasteData.html ) {
 			// text/html was present, so we can check if a key was hidden in it
-			$clipboardHtml = $( ve.sanitizeHtml( beforePasteData.html ) ).filter( function () {
-				var val = this.getAttribute && this.getAttribute( 'data-ve-clipboard-key' );
+			$clipboardHtml = $( ve.sanitizeHtml( beforePasteData.html ) ).filter( ( i, element ) => {
+				var val = element.getAttribute && element.getAttribute( 'data-ve-clipboard-key' );
 				if ( val ) {
 					clipboardKey = val;
 					// Remove the clipboard key span once read
@@ -2789,23 +2790,23 @@ ve.ce.Surface.prototype.afterPasteAddToFragmentFromExternal = function ( clipboa
 	// <ul><li>A</li><ul><li>B</li></ul></ul>
 	// to
 	// <ul><li>A<ul><li>B</li></ul></li></ul>
-	$( htmlDoc.body ).find( 'ul > ul, ul > ol, ol > ul, ol > ol' ).each( function () {
-		if ( this.previousElementSibling ) {
-			this.previousElementSibling.appendChild( this );
+	$( htmlDoc.body ).find( 'ul > ul, ul > ol, ol > ul, ol > ol' ).each( ( n, element ) => {
+		if ( element.previousElementSibling ) {
+			element.previousElementSibling.appendChild( element );
 		} else {
 			// List starts double indented. This is invalid and a semantic nightmare.
 			// Just wrap with an extra list item
-			$( this ).wrap( '<li>' );
+			$( element ).wrap( '<li>' );
 		}
 	} );
 
 	// HACK: Fix invalid HTML from copy-pasting `display: inline` lists (T239550).
-	$( htmlDoc.body ).find( 'li, dd, dt' ).each( function () {
+	$( htmlDoc.body ).find( 'li, dd, dt' ).each( ( n, element ) => {
 		var list,
 			listType = { li: 'ul', dd: 'dl', dt: 'dl' },
-			tag = this.tagName.toLowerCase(),
+			tag = element.tagName.toLowerCase(),
 			// Parent node always exists because we're searching inside <body>
-			parentTag = this.parentNode.tagName.toLowerCase();
+			parentTag = element.parentNode.tagName.toLowerCase();
 
 		if (
 			( tag === 'li' && ( parentTag !== 'ul' && parentTag !== 'ol' ) ) ||
@@ -2814,7 +2815,7 @@ ve.ce.Surface.prototype.afterPasteAddToFragmentFromExternal = function ( clipboa
 			// This list item's parent node is not a list. This breaks expectations in DM code.
 			// Wrap this node and its list item siblings in a list node.
 			list = htmlDoc.createElement( listType[ tag ] );
-			this.parentNode.insertBefore( list, this );
+			element.parentNode.insertBefore( list, element );
 
 			while (
 				list.nextElementSibling &&
@@ -2829,14 +2830,14 @@ ve.ce.Surface.prototype.afterPasteAddToFragmentFromExternal = function ( clipboa
 	var htmlBlacklist = ve.getProp( this.afterPasteImportRules( isMultiline ), 'external', 'htmlBlacklist' );
 	if ( htmlBlacklist && !clipboardKey ) {
 		if ( htmlBlacklist.remove ) {
-			Object.keys( htmlBlacklist.remove ).forEach( function ( selector ) {
+			Object.keys( htmlBlacklist.remove ).forEach( ( selector ) => {
 				if ( htmlBlacklist.remove[ selector ] ) {
 					$( htmlDoc.body ).find( selector ).remove();
 				}
 			} );
 		}
 		if ( htmlBlacklist.unwrap ) {
-			Object.keys( htmlBlacklist.unwrap ).forEach( function ( selector ) {
+			Object.keys( htmlBlacklist.unwrap ).forEach( ( selector ) => {
 				if ( htmlBlacklist.unwrap[ selector ] ) {
 					$( htmlDoc.body ).find( selector ).contents().unwrap();
 				}
@@ -2887,7 +2888,7 @@ ve.ce.Surface.prototype.afterPasteAddToFragmentFromExternal = function ( clipboa
 	} else {
 		contextRange = pastedDocumentModel.getDocumentRange();
 	}
-	var pastedNodes = pastedDocumentModel.selectNodes( contextRange, 'siblings' ).filter( function ( node ) {
+	var pastedNodes = pastedDocumentModel.selectNodes( contextRange, 'siblings' ).filter( ( node ) => {
 		// Ignore nodes where nothing is selected
 		return !( node.range && node.range.isCollapsed() );
 	} );
@@ -3027,7 +3028,7 @@ ve.ce.Surface.prototype.afterPasteSanitizeExternal = function ( $element ) {
 	// likely to incorrectly over-format things.
 	// TODO: This might be cleaner if we could move the sanitization into
 	// dm.converter entirely.
-	$element.find( 'span' ).each( function ( i, node ) {
+	$element.find( 'span' ).each( ( i, node ) => {
 		// Later sanitization will replace completely-empty spans with
 		// their contents, so we can lazily-wrap here without cleaning
 		// up.
@@ -3059,35 +3060,35 @@ ve.ce.Surface.prototype.afterPasteSanitizeExternal = function ( $element ) {
 	$element.find( '[style]' ).removeAttr( 'style' );
 
 	if ( metadataIdRegExp ) {
-		$element.find( '[id]' ).each( function () {
-			var $this = $( this );
-			if ( metadataIdRegExp.test( $this.attr( 'id' ) ) ) {
-				$this.removeAttr( 'id' );
+		$element.find( '[id]' ).each( ( i, el ) => {
+			var $el = $( el );
+			if ( metadataIdRegExp.test( $el.attr( 'id' ) ) ) {
+				$el.removeAttr( 'id' );
 			}
 		} );
 	}
 
 	// Remove the pasteProtect class (see #onCopy) and unwrap empty spans.
-	$element.find( 'span' ).each( function () {
-		var $this = $( this );
-		$this.removeClass( 've-pasteProtect' );
-		if ( $this.attr( 'class' ) === '' ) {
-			$this.removeAttr( 'class' );
+	$element.find( 'span' ).each( ( i, el ) => {
+		var $el = $( el );
+		$el.removeClass( 've-pasteProtect' );
+		if ( $el.attr( 'class' ) === '' ) {
+			$el.removeAttr( 'class' );
 		}
 		// Unwrap empty spans
-		if ( !this.attributes.length ) {
+		if ( !el.attributes.length ) {
 			// childNodes is a NodeList
 			// eslint-disable-next-line no-jquery/no-append-html
-			$this.replaceWith( this.childNodes );
+			$el.replaceWith( el.childNodes );
 		}
 	} );
 
 	// Restore attributes. See #onCopy.
-	$element.find( '[data-ve-attributes]' ).each( function () {
-		var attrsJSON = this.getAttribute( 'data-ve-attributes' );
+	$element.find( '[data-ve-attributes]' ).each( ( i, el ) => {
+		var attrsJSON = el.getAttribute( 'data-ve-attributes' );
 
 		// Always remove the attribute, even if the JSON has been corrupted
-		this.removeAttribute( 'data-ve-attributes' );
+		el.removeAttribute( 'data-ve-attributes' );
 
 		var attrs;
 		try {
@@ -3096,7 +3097,7 @@ ve.ce.Surface.prototype.afterPasteSanitizeExternal = function ( $element ) {
 			// Invalid JSON
 			return;
 		}
-		$( this ).attr( attrs );
+		$( el ).attr( attrs );
 	} );
 };
 
@@ -3297,8 +3298,7 @@ ve.ce.Surface.prototype.selectAll = function () {
  */
 ve.ce.Surface.prototype.onDocumentBeforeInput = function ( e ) {
 	if ( this.getSelection().isNativeCursor() ) {
-		var surface = this,
-			inputType = e.originalEvent ? e.originalEvent.inputType : null;
+		var inputType = e.originalEvent ? e.originalEvent.inputType : null;
 
 		// Support: Chrome (Android, Gboard)
 		// Handle IMEs that emit text fragments with a trailing newline on Enter keypress (T312558)
@@ -3309,7 +3309,7 @@ ve.ce.Surface.prototype.onDocumentBeforeInput = function ( e ) {
 			// The event will have inserted a newline into the CE view,
 			// so fix up the DM accordingly depending on the context.
 			this.eventSequencer.afterOne( {
-				beforeinput: surface.fixupChromiumNativeEnter.bind( surface )
+				beforeinput: this.fixupChromiumNativeEnter.bind( this )
 			} );
 		}
 	}
@@ -3386,8 +3386,7 @@ ve.ce.Surface.prototype.fixupChromiumNativeEnter = function () {
  */
 ve.ce.Surface.prototype.onDocumentInput = function ( e ) {
 	// Synthetic events don't have the originalEvent property (T176104)
-	var surface = this,
-		inputType = e.originalEvent ? e.originalEvent.inputType : null;
+	var inputType = e.originalEvent ? e.originalEvent.inputType : null;
 
 	// Special handling of NBSP insertions. T53045
 	// NBSPs are converted to normal spaces in ve.ce.TextState as they can be
@@ -3401,11 +3400,10 @@ ve.ce.Surface.prototype.onDocumentInput = function ( e ) {
 		e.originalEvent.data === '\u00a0'
 	) {
 		// Wait for the insertion to happen
-		setTimeout( function () {
-			var
-				fragment = surface.getModel().getFragment().adjustLinearSelection( -1 ),
+		setTimeout( () => {
+			var fragment = this.getModel().getFragment().adjustLinearSelection( -1 ),
 				nbspContent = '&nbsp;';
-			if ( surface.getSurface().getMode() === 'visual' ) {
+			if ( this.getSurface().getMode() === 'visual' ) {
 				nbspContent = ve.init.platform.decodeEntities( nbspContent );
 			}
 			// Check a plain space was inserted and replace it with an NBSP.
@@ -3649,9 +3647,10 @@ ve.ce.Surface.prototype.findFocusedNode = function ( range ) {
 
 /**
  * Handle documentUpdate events on the surface model.
+ *
+ * @fires ve.ce.Surface#position
  */
 ve.ce.Surface.prototype.onModelDocumentUpdate = function () {
-	var surface = this;
 	if ( this.contentBranchNodeChanged ) {
 		// Update the selection state from model
 		this.onModelSelect();
@@ -3659,8 +3658,8 @@ ve.ce.Surface.prototype.onModelDocumentUpdate = function () {
 	// Update the state of the SurfaceObserver
 	this.surfaceObserver.pollOnceNoCallback();
 	// setTimeout: Wait for other documentUpdate listeners to run before emitting
-	setTimeout( function () {
-		surface.emit( 'position' );
+	setTimeout( () => {
+		this.emit( 'position' );
 	} );
 };
 
@@ -3719,8 +3718,7 @@ ve.ce.Surface.prototype.renderSelectedContentBranchNode = function () {
  * @param {ve.ce.RangeState} newState The changed range state
  */
 ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) {
-	var surface = this,
-		dmDoc = this.getModel().getDocument(),
+	var dmDoc = this.getModel().getDocument(),
 		insertedText = false,
 		removedText = false;
 
@@ -3743,10 +3741,10 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
 				} finally {
 					this.decRenderLock();
 				}
-				insertedText = transaction.operations.some( function ( op ) {
+				insertedText = transaction.operations.some( ( op ) => {
 					return op.type === 'replace' && op.insert.length;
 				} );
-				removedText = transaction.operations.some( function ( op ) {
+				removedText = transaction.operations.some( ( op ) => {
 					return op.type === 'replace' && op.remove.length;
 				} );
 			}
@@ -3831,9 +3829,9 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
 					new ve.dm.LinearSelection( oldState.veRange ) :
 					new ve.dm.NullSelection();
 				// TODO: setTimeout: document purpose
-				setTimeout( function () {
-					surface.changeModel( null, newSelection );
-					surface.showModelSelection();
+				setTimeout( () => {
+					this.changeModel( null, newSelection );
+					this.showModelSelection();
 				} );
 			}
 		}
@@ -3853,14 +3851,14 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
 	}
 
 	if ( insertedText ) {
-		surface.afterRenderLock( function () {
-			surface.findAndExecuteSequences();
-			surface.maybeSetBreakpoint();
+		this.afterRenderLock( () => {
+			this.findAndExecuteSequences();
+			this.maybeSetBreakpoint();
 		} );
 	} else if ( removedText ) {
-		surface.afterRenderLock( function () {
-			surface.findAndExecuteSequences( false, true );
-			surface.maybeSetBreakpoint();
+		this.afterRenderLock( () => {
+			this.findAndExecuteSequences( false, true );
+			this.maybeSetBreakpoint();
 		} );
 	}
 	if ( newState.branchNodeChanged && newState.node ) {
@@ -3874,7 +3872,7 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
 		// 2. Text was deleted. If so, make a breakpoint. A future enhancement could be
 		//    to make this only break after a sequence of deletes. (Maybe combine new
 		//    breakpoints with the former breakpoint based on the new transactions?)
-		surface.getModel().breakpoint();
+		this.getModel().breakpoint();
 	}
 };
 
@@ -3882,11 +3880,12 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
  * Create a slug out of a DOM element
  *
  * @param {HTMLElement} element Slug element
+ * @fires ve.ce.Surface#position
  */
 ve.ce.Surface.prototype.createSlug = function ( element ) {
-	var surface = this,
-		offset = ve.ce.getOffsetOfSlug( element ),
-		documentModel = this.getModel().getDocument();
+	var offset = ve.ce.getOffsetOfSlug( element ),
+		documentModel = this.getModel().getDocument(),
+		slugHeight = element.scrollHeight;
 
 	this.changeModel( ve.dm.TransactionBuilder.static.newFromInsertion(
 		documentModel, offset, [
@@ -3897,13 +3896,23 @@ ve.ce.Surface.prototype.createSlug = function ( element ) {
 
 	// Animate the slug open
 	var $slug = this.getDocument().getDocumentNode().getNodeFromOffset( offset + 1 ).$element;
-	$slug.addClass( 've-ce-branchNode-newSlug' );
-	// setTimeout: postpone until after animation is complete
-	setTimeout( function () {
-		$slug.addClass( 've-ce-branchNode-newSlug-open' );
-		setTimeout( function () {
-			surface.emit( 'position' );
-		}, 200 );
+	var verticalPadding = $slug.innerHeight() - $slug.height();
+	var targetMargin = $slug.css( 'margin' );
+	var targetPadding = $slug.css( 'padding' );
+	$slug.addClass( 've-ce-branchNode-newSlug' ).css( 'min-height', slugHeight - verticalPadding );
+	requestAnimationFrame( () => {
+		$slug.addClass( 've-ce-branchNode-newSlug-open' ).css( {
+			margin: targetMargin,
+			padding: targetPadding,
+			'min-height': $slug.css( 'line-height' )
+		} );
+		$slug.one( 'transitionend', () => {
+			this.emit( 'position' );
+			// Animation finished, cleanup
+			$slug
+				.removeClass( 've-ce-branchNode-newSlug ve-ce-branchNode-newSlug-open' )
+				.css( { margin: '', padding: '', 'min-height': '' } );
+		} );
 	} );
 
 	this.onModelSelect();
@@ -3987,6 +3996,7 @@ ve.ce.Surface.prototype.fixupCursorPosition = function ( direction, extend ) {
  *
  * @param {boolean} [isPaste] Whether this in the context of a paste
  * @param {boolean} [isDelete] Whether this is after content being deleted
+ * @return {ve.ui.SequenceRegistry.Match[]}
  */
 ve.ce.Surface.prototype.findMatchingSequences = function ( isPaste, isDelete ) {
 	var selection = this.getSelection();
@@ -4056,6 +4066,11 @@ ve.ce.Surface.prototype.findAndExecuteDelayedSequences = function () {
 // Deprecated alias
 ve.ce.Surface.prototype.checkDelayedSequences = ve.ce.Surface.prototype.findAndExecuteDelayedSequences;
 
+/**
+ * Execute matched sequences
+ *
+ * @param {ve.ui.SequenceRegistry.Match[]} sequences
+ */
 ve.ce.Surface.prototype.executeSequences = function ( sequences ) {
 	var executed = false;
 
@@ -4111,6 +4126,7 @@ ve.ce.Surface.prototype.maybeSetBreakpoint = function () {
  * Handle window resize event.
  *
  * @param {jQuery.Event} e Window resize event
+ * @fires ve.ce.Surface#position
  */
 ve.ce.Surface.prototype.onWindowResize = function () {
 	this.emit( 'position' );
@@ -4127,6 +4143,8 @@ ve.ce.Surface.prototype.onWindowResize = function () {
 
 /**
  * Start a relocation action.
+ *
+ * @fires ve.ce.Surface#relocationStart
  */
 ve.ce.Surface.prototype.startRelocation = function () {
 	// Cache the selection and selectedNode when the drag starts, to
@@ -4138,6 +4156,8 @@ ve.ce.Surface.prototype.startRelocation = function () {
 
 /**
  * Complete a relocation action.
+ *
+ * @fires ve.ce.Surface#relocationEnd
  */
 ve.ce.Surface.prototype.endRelocation = function () {
 	this.relocatingSelection = null;
@@ -4486,7 +4506,7 @@ ve.ce.Surface.prototype.getRelativeSelectableContentOffset = function ( startOff
 	var nextOffset = linearData.getRelativeOffset(
 		startOffset,
 		direction,
-		function ( offset ) {
+		( offset ) => {
 			// Check we are at a content offset, according to the model
 			if ( !linearData.isContentOffset( offset ) ) {
 				return false;
@@ -4496,7 +4516,7 @@ ve.ce.Surface.prototype.getRelativeSelectableContentOffset = function ( startOff
 				// This shouldn't happen in a content offset
 				return false;
 			}
-			var noAutoFocusContainer = branchNode.traverseUpstream( function ( node ) {
+			var noAutoFocusContainer = branchNode.traverseUpstream( ( node ) => {
 				// traverseUpstream stops on a false return
 				return node.autoFocus();
 			} );
@@ -4599,7 +4619,7 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 
 	function highestIgnoreChildrenNode( childNode ) {
 		var ignoreChildrenNode = null;
-		childNode.traverseUpstream( function ( node ) {
+		childNode.traverseUpstream( ( node ) => {
 			if ( node.shouldIgnoreChildren() ) {
 				ignoreChildrenNode = node;
 			}
@@ -4911,11 +4931,11 @@ ve.ce.Surface.prototype.showSelectionState = function ( selection ) {
  *
  * @param {boolean|Node} [fromModelOrNode] If `true`, gather annotations from the model,
  *  instead of the cusor focus point. If a Node is passed, gather annotations from that node.
+ * @fires ve.dm.Surface#contextChange
  */
 ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	var activeAnnotations,
 		changed = false,
-		surface = this,
 		canBeActive = function ( view ) {
 			return view.canBeActive();
 		};
@@ -4929,7 +4949,7 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	}
 
 	// Iterate over previously active annotations
-	this.activeAnnotations.forEach( function ( annotation ) {
+	this.activeAnnotations.forEach( ( annotation ) => {
 		// If not in the new list, turn off
 		if ( activeAnnotations.indexOf( annotation ) === -1 ) {
 			annotation.$element.removeClass( 've-ce-annotation-active' );
@@ -4938,9 +4958,9 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	} );
 
 	// Iterate over newly active annotations
-	activeAnnotations.forEach( function ( annotation ) {
+	activeAnnotations.forEach( ( annotation ) => {
 		// If not in the old list, turn on
-		if ( surface.activeAnnotations.indexOf( annotation ) === -1 ) {
+		if ( this.activeAnnotations.indexOf( annotation ) === -1 ) {
 			annotation.$element.addClass( 've-ce-annotation-active' );
 			changed = true;
 		}
@@ -5061,8 +5081,8 @@ ve.ce.Surface.prototype.annotationsAtFocus = function ( filter ) {
  */
 ve.ce.Surface.prototype.annotationsAtNode = function ( node, filter ) {
 	var annotations = [];
-	$( node ).parents( '.ve-ce-annotation' ).addBack( '.ve-ce-annotation' ).each( function () {
-		var view = $( this ).data( 'view' );
+	$( node ).parents( '.ve-ce-annotation' ).addBack( '.ve-ce-annotation' ).each( ( i, element ) => {
+		var view = $( element ).data( 'view' );
 		if ( view && ( !filter || filter( view ) ) ) {
 			annotations.push( view );
 		}
@@ -5080,12 +5100,6 @@ ve.ce.Surface.prototype.annotationsAtNode = function ( node, filter ) {
  *
  * @param {ve.Range|null} range Range to get selection for
  * @return {ve.SelectionState} The selection
- * @return {Node|null} return.anchorNode The anchor node
- * @return {number} return.anchorOffset The anchor offset
- * @return {Node|null} return.focusNode The focus node
- * @return {number} return.focusOffset The focus offset
- * @return {boolean} return.isCollapsed True if the focus and anchor are in the same place
- * @return {boolean} return.isBackwards True if the focus is before the anchor
  */
 ve.ce.Surface.prototype.getSelectionState = function ( range ) {
 	var dmDoc = this.getModel().getDocument();
@@ -5345,14 +5359,14 @@ ve.ce.Surface.prototype.getSelectedModels = function () {
 		) );
 	}
 
-	var activeModels = this.activeAnnotations.map( function ( view ) {
+	var activeModels = this.activeAnnotations.map( ( view ) => {
 		return view.getModel();
 	} );
 
 	if ( this.model.sourceMode ) {
 		return models;
 	} else {
-		return models.filter( function ( annModel ) {
+		return models.filter( ( annModel ) => {
 			// If the model is an annotation that can be active, only show it if it *is* active
 			if ( annModel instanceof ve.dm.Annotation && ve.ce.annotationFactory.canAnnotationBeActive( annModel.getType() ) ) {
 				return activeModels.indexOf( annModel ) !== -1;
@@ -5417,8 +5431,7 @@ ve.ce.Surface.prototype.onSynchronizerPause = function () {
  * @param {number} authorId The author ID
  */
 ve.ce.Surface.prototype.paintAuthor = function ( authorId ) {
-	var surface = this,
-		synchronizer = this.model.synchronizer,
+	var synchronizer = this.model.synchronizer,
 		authorData = synchronizer.getAuthorData( authorId ),
 		selection = synchronizer.authorSelections[ authorId ];
 
@@ -5429,13 +5442,13 @@ ve.ce.Surface.prototype.paintAuthor = function ( authorId ) {
 	var color = '#' + authorData.color;
 
 	if ( !this.userSelectionDeactivate[ authorId ] ) {
-		this.userSelectionDeactivate[ authorId ] = ve.debounce( function () {
+		this.userSelectionDeactivate[ authorId ] = ve.debounce( () => {
 			// TODO: Transition away the user label when inactive, maybe dim selection
-			if ( surface.drawnSelections[ 'otherUserSelection-' + authorId ] ) {
-				surface.drawnSelections[ 'otherUserSelection-' + authorId ].$selections.addClass( 've-ce-surface-selections-otherUserSelection-inactive' );
+			if ( this.drawnSelections[ 'otherUserSelection-' + authorId ] ) {
+				this.drawnSelections[ 'otherUserSelection-' + authorId ].$selections.addClass( 've-ce-surface-selections-otherUserSelection-inactive' );
 			}
-			if ( surface.drawnSelections[ 'otherUserCursor-' + authorId ] ) {
-				surface.drawnSelections[ 'otherUserCursor-' + authorId ].$selections.addClass( 've-ce-surface-selections-otherUserCursor-inactive' );
+			if ( this.drawnSelections[ 'otherUserCursor-' + authorId ] ) {
+				this.drawnSelections[ 'otherUserCursor-' + authorId ].$selections.addClass( 've-ce-surface-selections-otherUserCursor-inactive' );
 			}
 		}, 5000 );
 	}
@@ -5476,17 +5489,58 @@ ve.ce.Surface.prototype.paintAuthor = function ( authorId ) {
  * Respond to a position event on this surface
  */
 ve.ce.Surface.prototype.onPosition = function () {
-	var surface = this;
-
 	this.redrawSelections();
 
 	if ( this.model.synchronizer ) {
 		// Defer to allow surface synchronizer to adjust for transactions
-		setTimeout( function () {
-			var authorSelections = surface.model.synchronizer.authorSelections;
+		setTimeout( () => {
+			var authorSelections = this.model.synchronizer.authorSelections;
 			for ( var authorId in authorSelections ) {
-				surface.onSynchronizerAuthorUpdate( +authorId );
+				this.onSynchronizerAuthorUpdate( +authorId );
 			}
 		} );
 	}
+};
+
+/**
+ * Handler for mutation observer
+ *
+ * Identifies deleted DOM nodes, and finds and deletes corresponding model structural nodes.
+ * Mutation observers run asynchronously (on the microtask queue) so the current document state
+ * may differ from when the mutations happened. Therefore this handler rechecks node attachment,
+ * document ranges etc.
+ *
+ * @param {MutationRecord[]} mutationRecords Records of the mutations observed
+ */
+ve.ce.Surface.prototype.afterMutations = function ( mutationRecords ) {
+	var removals = [];
+	mutationRecords.forEach( ( mutationRecord ) => {
+		if ( !mutationRecord.removedNodes ) {
+			return;
+		}
+		mutationRecord.removedNodes.forEach( ( removedNode ) => {
+			var view = $.data( removedNode, 'view' );
+			if ( view && view.isContent && !view.isContent() ) {
+				removals.push( { node: view, range: view.getOuterRange() } );
+			}
+		} );
+	} );
+	removals.sort( ( x, y ) => {
+		return x.range.start - y.range.start;
+	} );
+	for ( var i = 0, iLen = removals.length; i < iLen; i++ ) {
+		// Remove any overlapped range (which in a tree must be a nested range)
+		if ( i > 0 && removals[ i ].range.start < removals[ i - 1 ].range.end ) {
+			removals.splice( i, 1 );
+			i--;
+			continue;
+		}
+	}
+	removals.forEach( ( removal ) => {
+		var tx = ve.dm.TransactionBuilder.static.newFromRemoval(
+			this.getModel().getDocument(),
+			removal.node.getOuterRange()
+		);
+		this.getModel().change( tx );
+	} );
 };

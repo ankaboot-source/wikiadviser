@@ -21,7 +21,7 @@
  *  ignored.
  * @param {ve.dm.Document} [parentDocument] Document to use as root for created nodes, used when cloning
  * @param {ve.dm.InternalList} [internalList] Internal list to clone; passed when creating a document slice
- * @param {(string|undefined)[]} [innerWhitespace] Inner whitespace to clone; passed when creating a document slice
+ * @param {Array.<string|undefined>} [innerWhitespace] Inner whitespace to clone; passed when creating a document slice
  * @param {string} [lang] Language code
  * @param {string} [dir='ltr'] Directionality (ltr/rtl)
  * @param {ve.dm.Document} [originalDocument] Original document form which this was cloned.
@@ -92,15 +92,23 @@ OO.inheritClass( ve.dm.Document, ve.Document );
 /* Events */
 
 /**
- * @event precommit
  * Emitted when a transaction is about to be committed.
+ *
+ * @event ve.dm.Document#precommit
  * @param {ve.dm.Transaction} tx Transaction that is about to be committed
  */
 
 /**
- * @event transact
  * Emitted when a transaction has been committed.
+ *
+ * @event ve.dm.Document#transact
  * @param {ve.dm.Transaction} tx Transaction that was just processed
+ */
+
+/**
+ * A value in persistent storage has changed
+ *
+ * @event ve.dm.Document#storage
  */
 
 /* Static methods */
@@ -143,7 +151,7 @@ ve.dm.Document.static.addAnnotationsToData = function ( data, annotationSet, rep
 			continue;
 		}
 		// eslint-disable-next-line no-loop-func
-		var allowedAnnotations = annotationSet.filter( function ( ann ) {
+		var allowedAnnotations = annotationSet.filter( ( ann ) => {
 			return data.canTakeAnnotationAtOffset( i, ann, true );
 		} );
 		var existingAnnotations = data.getAnnotationsFromOffset( i, true );
@@ -352,7 +360,7 @@ ve.dm.Document.prototype.setReadOnly = function ( readOnly ) {
 	this.readOnly = !!readOnly;
 	if ( !this.readOnly ) {
 		// Clear offset cache when leaving read-only mode
-		this.getDocumentNode().traverse( function ( node ) {
+		this.getDocumentNode().traverse( ( node ) => {
 			node.offset = null;
 		} );
 	}
@@ -372,8 +380,8 @@ ve.dm.Document.prototype.isReadOnly = function () {
  *
  * @param {ve.dm.Transaction} transaction Transaction to apply
  * @param {boolean} isStaging Transaction is being applied in staging mode
- * @fires precommit
- * @fires transact
+ * @fires ve.dm.Document#precommit
+ * @fires ve.dm.Document#transact
  * @throws {Error} Cannot commit a transaction that has already been committed
  */
 ve.dm.Document.prototype.commit = function ( transaction, isStaging ) {
@@ -416,7 +424,7 @@ ve.dm.Document.prototype.getMetadata = function ( range ) {
 		range = new ve.Range( 0, documentNode.length );
 	}
 	var data = [];
-	documentNode.traverse( function ( node ) {
+	documentNode.traverse( ( node ) => {
 		var offset;
 		if ( node instanceof ve.dm.MetaItem ) {
 			offset = node.getOffset();
@@ -468,7 +476,7 @@ ve.dm.Document.prototype.getInternalList = function () {
 /**
  * Get the document's inner whitespace
  *
- * @return {(string|undefined)[]} The document's inner whitespace
+ * @return {Array.<string|undefined>} The document's inner whitespace
  */
 ve.dm.Document.prototype.getInnerWhitespace = function () {
 	return this.innerWhitespace;
@@ -788,7 +796,7 @@ ve.dm.Document.prototype.getFullData = function ( range, mode ) {
 		) {
 			if ( !internal.changesSinceLoad ) {
 				// eslint-disable-next-line no-loop-func, no-shadow
-				this.data.modifyData( i, function ( item ) {
+				this.data.modifyData( i, ( item ) => {
 					// Re-fetch unfrozen metaItems.
 					metaItems = item.internal.metaItems;
 					// No changes, so restore meta item offsets
@@ -1005,7 +1013,7 @@ ve.dm.Document.prototype.getNearestNodeMatching = function ( test, offset, direc
  * @return {ve.dm.Node|null} Nearest focusable node, or null if not found
  */
 ve.dm.Document.prototype.getNearestFocusableNode = function ( offset, direction, limit ) {
-	return this.getNearestNodeMatching( function ( nodeType ) {
+	return this.getNearestNodeMatching( ( nodeType ) => {
 		return ve.dm.nodeFactory.isNodeFocusable( nodeType );
 	}, offset, direction, limit );
 };
@@ -1135,6 +1143,9 @@ ve.dm.Document.prototype.rebuildTree = function () {
 	var removedNodes = ve.batchSplice( rootNode, 0, rootNode.getChildren().length, addedNodes );
 
 	this.updateNodesByType( addedNodes, removedNodes );
+
+	// Clear branch node cache
+	this.branchNodeFromOffsetCache = [];
 };
 
 /**
@@ -1167,7 +1178,7 @@ ve.dm.Document.prototype.updateNodesByType = function ( addedNodes, removedNodes
 	}
 
 	function traverse( nodes, action ) {
-		nodes.forEach( function ( node ) {
+		nodes.forEach( ( node ) => {
 			if ( node.hasChildren() ) {
 				node.traverse( action );
 			}
@@ -1208,12 +1219,22 @@ ve.dm.Document.prototype.getNodesByType = function ( type, sort ) {
 	}
 
 	if ( sort ) {
-		nodes.sort( function ( a, b ) {
+		nodes.sort( ( a, b ) => {
 			return a.getOffset() - b.getOffset();
 		} );
 	}
 	return nodes;
 };
+
+/**
+ * @typedef FixedInsertion
+ * @memberof ve.dm.Document
+ * @property {Array} data Possibly modified copy of `data`
+ * @property {number} offset Possibly modified offset
+ * @property {number} remove Number of elements to remove after the modified `offset`
+ * @property {number} [insertedDataOffset] Offset of intended insertion within fixed up data
+ * @property {number} [insertedDataLength] Length of intended insertion within fixed up data
+ */
 
 /**
  * Fix up data so it can safely be inserted into the document data at an offset.
@@ -1222,12 +1243,7 @@ ve.dm.Document.prototype.getNodesByType = function ( type, sort ) {
  *
  * @param {Array} data Snippet of linear model data to insert
  * @param {number} offset Offset in the linear model where the caller wants to insert data
- * @return {Object}
- * @return {Array} return.data Possibly modified copy of `data`
- * @return {number} return.offset Possibly modified offset
- * @return {number} return.remove Number of elements to remove after the modified `offset`
- * @return {number} [return.insertedDataOffset] Offset of intended insertion within fixed up data
- * @return {number} [return.insertedDataLength] Length of intended insertion within fixed up data
+ * @return {ve.dm.Document.FixedInsertion}
  */
 ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 	var
@@ -1249,9 +1265,6 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 		// Track the position of the original data in the fixed up data for range adjustments
 		insertedDataOffset = 0,
 		insertedDataLength = data.length,
-
-		// Pointer to this document for private methods
-		doc = this,
 
 		// *** State persisting across iterations of the outer loop ***
 		// The node (from the document) we're currently in. When in a node that was opened
@@ -1407,7 +1420,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 	parentNode = this.getBranchNodeFromOffset( offset );
 	parentType = parentNode.getType();
 	inTextNode = false;
-	isFirstChild = doc.data.isOpenElementData( offset - 1 );
+	isFirstChild = this.data.isOpenElementData( offset - 1 );
 
 	for ( i = 0; i < data.length; i++ ) {
 		if ( inTextNode && data[ i ].type !== undefined ) {
@@ -1482,7 +1495,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 						// This element would be the first child of its parent, so
 						// abandon this fix up and try again one offset to the left
 						insertion = this.fixupInsertion( data, offset - 1 );
-						if ( doc.data.isCloseElementData( offset ) && !ve.dm.nodeFactory.isNodeInternal( parentType ) ) {
+						if ( this.data.isCloseElementData( offset ) && !ve.dm.nodeFactory.isNodeInternal( parentType ) ) {
 							// This element would also be the last child, so that means parent is empty.
 							// Remove it entirely. (Never remove the internal list though, ugh...)
 							insertion.remove += 2;
@@ -1534,7 +1547,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 		}
 	}
 
-	if ( closingStack.length > 0 && doc.data.isCloseElementData( offset ) ) {
+	if ( closingStack.length > 0 && this.data.isCloseElementData( offset ) ) {
 		// This element would be the last child of its parent, so
 		// abandon this fix up and try again one offset to the right
 		return this.fixupInsertion( data, offset + 1 );
@@ -1618,7 +1631,7 @@ ve.dm.Document.prototype.findText = function ( query, options ) {
 
 	if ( query instanceof RegExp ) {
 		// Avoid multi-line matching by only matching within content (text or content elements)
-		data.forEachRunOfContent( documentRange, function ( off, line ) {
+		data.forEachRunOfContent( documentRange, ( off, line ) => {
 			query.lastIndex = 0;
 			var match;
 			while ( ( match = query.exec( line ) ) !== null ) {
@@ -1699,7 +1712,7 @@ ve.dm.Document.prototype.findText = function ( query, options ) {
 
 	if ( options.wholeWord ) {
 		var dataString = new ve.dm.DataString( this.getData() );
-		ranges = ranges.filter( function ( range ) {
+		ranges = ranges.filter( ( range ) => {
 			return unicodeJS.wordbreak.isBreak( dataString, range.start ) &&
 				unicodeJS.wordbreak.isBreak( dataString, range.end );
 		} );
@@ -1766,7 +1779,7 @@ ve.dm.Document.prototype.getDir = function () {
  *
  * @param {string|Object} [keyOrStorage] Key, or storage object to restore
  * @param {Mixed} [value] Serializable value, if key is set
- * @fires storage
+ * @fires ve.dm.Document#storage
  */
 ve.dm.Document.prototype.setStorage = function ( keyOrStorage, value ) {
 	if ( typeof keyOrStorage === 'string' ) {

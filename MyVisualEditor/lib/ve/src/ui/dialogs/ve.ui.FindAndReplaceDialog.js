@@ -27,8 +27,6 @@ OO.inheritClass( ve.ui.FindAndReplaceDialog, ve.ui.ToolbarDialog );
 
 ve.ui.FindAndReplaceDialog.static.name = 'findAndReplace';
 
-ve.ui.FindAndReplaceDialog.static.group = 'utility';
-
 // Invisible title for accessibility
 ve.ui.FindAndReplaceDialog.static.title =
 	OO.ui.deferMsg( 'visualeditor-find-and-replace-title' );
@@ -65,11 +63,7 @@ ve.ui.FindAndReplaceDialog.prototype.initialize = function () {
 	this.findText = new OO.ui.TextInputWidget( {
 		placeholder: ve.msg( 'visualeditor-find-and-replace-find-text' ),
 		value: ve.userConfig( 'visualeditor-findAndReplace-findText' ),
-		validate: ( function ( dialog ) {
-			return function () {
-				return !dialog.invalidRegex;
-			};
-		}( this ) ),
+		validate: () => !this.invalidRegex,
 		tabIndex: 1
 	} );
 	this.findText.$input.attr( 'aria-label', ve.msg( 'visualeditor-find-and-replace-find-text' ) );
@@ -212,7 +206,7 @@ ve.ui.FindAndReplaceDialog.prototype.initialize = function () {
 ve.ui.FindAndReplaceDialog.prototype.getSetupProcess = function ( data ) {
 	data = data || {};
 	return ve.ui.FindAndReplaceDialog.super.prototype.getSetupProcess.call( this, data )
-		.first( function () {
+		.first( () => {
 			this.surface = data.surface;
 
 			// Events
@@ -222,7 +216,7 @@ ve.ui.FindAndReplaceDialog.prototype.getSetupProcess = function ( data ) {
 
 			this.updateFragments();
 			this.renderFragments();
-		}, this );
+		} );
 };
 
 /**
@@ -230,9 +224,9 @@ ve.ui.FindAndReplaceDialog.prototype.getSetupProcess = function ( data ) {
  */
 ve.ui.FindAndReplaceDialog.prototype.getReadyProcess = function ( data ) {
 	return ve.ui.FindAndReplaceDialog.super.prototype.getReadyProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			this.focus();
-		}, this );
+		} );
 };
 
 /**
@@ -240,7 +234,7 @@ ve.ui.FindAndReplaceDialog.prototype.getReadyProcess = function ( data ) {
  */
 ve.ui.FindAndReplaceDialog.prototype.getTeardownProcess = function ( data ) {
 	return ve.ui.FindAndReplaceDialog.super.prototype.getTeardownProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			var surfaceView = this.surface.getView(),
 				surfaceModel = this.surface.getModel();
 
@@ -264,7 +258,7 @@ ve.ui.FindAndReplaceDialog.prototype.getTeardownProcess = function ( data ) {
 			this.fragments = [];
 			this.surface = null;
 			this.focusedIndex = 0;
-		}, this );
+		} );
 };
 
 /**
@@ -596,8 +590,7 @@ ve.ui.FindAndReplaceDialog.prototype.onReplaceAllButtonClick = function () {
  * @param {number} index Index to replace
  */
 ve.ui.FindAndReplaceDialog.prototype.replace = function ( index ) {
-	var dialog = this,
-		replace = this.replaceText.getValue();
+	var replace = this.replaceText.getValue();
 
 	// Prevent replace from triggering throttled redraws
 	this.replacing = true;
@@ -612,8 +605,8 @@ ve.ui.FindAndReplaceDialog.prototype.replace = function ( index ) {
 	}
 
 	// 'position' event is deferred, so block that too
-	setTimeout( function () {
-		dialog.replacing = false;
+	setTimeout( () => {
+		this.replacing = false;
 	} );
 };
 

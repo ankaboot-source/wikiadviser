@@ -32,15 +32,7 @@ OO.initClass( ve.ce.GeneratedContentNode );
 /* Events */
 
 /**
- * @event setup
- */
-
-/**
- * @event teardown
- */
-
-/**
- * @event rerender
+ * @event ve.ce.GeneratedContentNode#rerender
  */
 
 /* Static members */
@@ -142,7 +134,7 @@ ve.ce.GeneratedContentNode.prototype.getRenderedDomElements = function ( domElem
 
 	if ( rendering.length ) {
 		// Span wrap root text nodes so they can be measured
-		rendering = rendering.map( function ( node ) {
+		rendering = rendering.map( ( node ) => {
 			if ( node.nodeType === Node.TEXT_NODE ) {
 				var span = document.createElement( 'span' );
 				span.appendChild( node );
@@ -158,6 +150,12 @@ ve.ce.GeneratedContentNode.prototype.getRenderedDomElements = function ( domElem
 		);
 	} else {
 		rendering = [ document.createElement( 'span' ) ];
+	}
+
+	if ( rendering.every( ve.isVoidElement ) ) {
+		// Should contain at least one non-void element, e.g. for attaching
+		// a visibility button in ve.ce.FocusableNode#updateInvisibleIconSync
+		rendering.push( document.createElement( 'span' ) );
 	}
 
 	return rendering;
@@ -178,11 +176,11 @@ ve.ce.GeneratedContentNode.prototype.filterRenderedDomElements = function ( domE
  *
  * @param {Object|string|Array} generatedContents Generated contents, in the default case an HTMLElement array
  * @param {boolean} [staged] Update happened in staging mode
- * @fires setup
- * @fires teardown
+ * @fires ve.ce.View#setup
+ * @fires ve.ce.View#teardown
+ * @fires ve.dm.GeneratedContentNode#generatedContentsError
  */
 ve.ce.GeneratedContentNode.prototype.render = function ( generatedContents, staged ) {
-	var node = this;
 	if ( this.live ) {
 		this.emit( 'teardown' );
 	}
@@ -201,9 +199,9 @@ ve.ce.GeneratedContentNode.prototype.render = function ( generatedContents, stag
 			if ( lengthChange ) {
 				// Changing the DOM node count can move the cursor, so re-apply
 				// the cursor position from the model (T231094).
-				setTimeout( function () {
-					if ( node.getRoot() && node.getRoot().getSurface() ) {
-						node.getRoot().getSurface().showModelSelection();
+				setTimeout( () => {
+					if ( this.getRoot() && this.getRoot().getSurface() ) {
+						this.getRoot().getSurface().showModelSelection();
 					}
 				} );
 			}
@@ -250,10 +248,10 @@ ve.ce.GeneratedContentNode.prototype.preventTabbingInside = function () {
 	var selector = 'input, select, textarea, button, object, a, area, [contenteditable], [tabindex]',
 		$focusableCandidates = this.$element.find( selector ).addBack( selector );
 
-	$focusableCandidates.each( function () {
-		var $this = $( this );
-		if ( OO.ui.isFocusableElement( $this ) ) {
-			$this.attr( 'tabindex', -1 );
+	$focusableCandidates.each( ( i, element ) => {
+		var $element = $( element );
+		if ( OO.ui.isFocusableElement( $element ) ) {
+			$element.attr( 'tabindex', -1 );
 		}
 	} );
 };
@@ -263,7 +261,7 @@ ve.ce.GeneratedContentNode.prototype.preventTabbingInside = function () {
  *
  * Nodes may override this method if the rerender event needs to be deferred (e.g. until images have loaded)
  *
- * @fires rerender
+ * @fires ve.ce.GeneratedContentNode#rerender
  */
 ve.ce.GeneratedContentNode.prototype.afterRender = function () {
 	this.emit( 'rerender' );
@@ -313,19 +311,18 @@ ve.ce.GeneratedContentNode.prototype.forceUpdate = function ( config, staged ) {
 		this.startGenerating();
 	}
 
-	var node = this;
 	// Create a new promise
 	var promise = this.generatingPromise = this.generateContents( config );
 	promise
 		// If this promise is no longer the currently pending one, ignore it completely
-		.done( function ( generatedContents ) {
-			if ( node.generatingPromise === promise ) {
-				node.doneGenerating( generatedContents, config, staged );
+		.done( ( generatedContents ) => {
+			if ( this.generatingPromise === promise ) {
+				this.doneGenerating( generatedContents, config, staged );
 			}
 		} )
-		.fail( function () {
-			if ( node.generatingPromise === promise ) {
-				node.failGenerating();
+		.fail( () => {
+			if ( this.generatingPromise === promise ) {
+				this.failGenerating();
 			}
 		} );
 };

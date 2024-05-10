@@ -52,7 +52,7 @@ ve.dm.Model.static.matchTagNames = null;
  * For more information about element matching, see ve.dm.ModelRegistry.
  *
  * @static
- * @property {(string|RegExp)[]|null}
+ * @property {Array.<string|RegExp>|null}
  * @inheritable
  */
 ve.dm.Model.static.matchRdfaTypes = null;
@@ -64,7 +64,7 @@ ve.dm.Model.static.matchRdfaTypes = null;
  * For more information about element matching, see ve.dm.ModelRegistry.
  *
  * @static
- * @property {(string|RegExp)[]|null}
+ * @property {Array.<string|RegExp>|null}
  * @inheritable
  */
 ve.dm.Model.static.allowedRdfaTypes = [];
@@ -228,7 +228,7 @@ ve.dm.Model.static.getHashObject = function ( dataElement ) {
  * Array of RDFa types that this model should be a match candidate for.
  *
  * @static
- * @return {(string|RegExp)[]|null} Array of strings or regular expressions
+ * @return {Array.<string|RegExp>|null} Array of strings or regular expressions
  */
 ve.dm.Model.static.getMatchRdfaTypes = function () {
 	return this.matchRdfaTypes;
@@ -238,7 +238,7 @@ ve.dm.Model.static.getMatchRdfaTypes = function () {
  * Extra RDFa types that the element is allowed to have.
  *
  * @static
- * @return {(string|RegExp)[]|null} Array of strings or regular expressions
+ * @return {Array.<string|RegExp>|null} Array of strings or regular expressions
  */
 ve.dm.Model.static.getAllowedRdfaTypes = function () {
 	return this.allowedRdfaTypes;
@@ -293,6 +293,7 @@ ve.dm.Model.static.describeChange = function ( key, change ) {
 			return ve.htmlMsg( 'visualeditor-changedesc-changed', key, this.wrapText( 'del', change.from ), this.wrapText( 'ins', change.to ) );
 		}
 	}
+	return null;
 };
 
 /**
@@ -307,7 +308,6 @@ ve.dm.Model.static.describeChange = function ( key, change ) {
 ve.dm.Model.static.getAttributeDiff = function ( oldText, newText, allowRemoveInsert ) {
 	var span = document.createElement( 'span' ),
 		isRemoveInsert = true,
-		model = this,
 		/* global diff_match_patch */
 		// eslint-disable-next-line new-cap
 		differ = new diff_match_patch();
@@ -315,13 +315,13 @@ ve.dm.Model.static.getAttributeDiff = function ( oldText, newText, allowRemoveIn
 	var diff = differ.diff_main( oldText, newText );
 	differ.diff_cleanupEfficiency( diff );
 
-	diff.forEach( function ( part ) {
+	diff.forEach( ( part ) => {
 		switch ( part[ 0 ] ) {
 			case -1:
-				span.appendChild( model.wrapText( 'del', part[ 1 ] ) );
+				span.appendChild( this.wrapText( 'del', part[ 1 ] ) );
 				break;
 			case 1:
-				span.appendChild( model.wrapText( 'ins', part[ 1 ] ) );
+				span.appendChild( this.wrapText( 'ins', part[ 1 ] ) );
 				break;
 			case 0:
 				isRemoveInsert = false;

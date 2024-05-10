@@ -152,8 +152,6 @@ ve.ce.TableNode.prototype.onTableDblClick = function ( e ) {
  * @param {jQuery.Event} e Mouse down or touch start event
  */
 ve.ce.TableNode.prototype.onTableMouseDown = function ( e ) {
-	var node = this;
-
 	var cellNode = this.getCellNodeFromEvent( e );
 	if ( !cellNode ) {
 		return;
@@ -220,11 +218,11 @@ ve.ce.TableNode.prototype.onTableMouseDown = function ( e ) {
 		cellNode.$element.prop( 'contentEditable', true );
 		// Select the clicked element so we get a copy option in the context menu
 		ve.selectElement( cellNode.$element[ 0 ] );
-		setTimeout( function () {
+		setTimeout( () => {
 			// Undo ce=true as soon as the context menu is shown
 			cellNode.$element.prop( 'contentEditable', 'false' );
 			// Trigger onModelSelect to restore the selection
-			node.surface.onModelSelect();
+			this.surface.onModelSelect();
 		} );
 		return;
 	}
@@ -238,8 +236,8 @@ ve.ce.TableNode.prototype.onTableMouseDown = function ( e ) {
 		// As we just have only just set the table selection, the surface is in
 		// process of deactivating, so wait for the event loop to clear before
 		// continuing.
-		setTimeout( function () {
-			node.onTableDblClick( e );
+		setTimeout( () => {
+			this.onTableDblClick( e );
 		} );
 	} else {
 		this.surface.$document.on( {

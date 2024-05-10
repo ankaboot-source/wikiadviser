@@ -106,9 +106,8 @@ ve.ui.CommandHelpDialog.prototype.initialize = function () {
  */
 ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 	return ve.ui.CommandHelpDialog.super.prototype.getSetupProcess.call( this, data )
-		.next( function () {
-			var dialog = this,
-				surface = data.surface,
+		.next( () => {
+			var surface = data.surface,
 				target = surface.getTarget(),
 				sequenceRegistry = surface.sequenceRegistry,
 				commandRegistry = surface.commandRegistry,
@@ -120,12 +119,12 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 
 			this.$container.empty();
 
-			commandGroupsOrder.forEach( function ( groupName ) {
+			commandGroupsOrder.forEach( ( groupName ) => {
 				var hasCommand = false;
 				var commandGroup = commandGroups[ groupName ];
-				var commands = dialog.constructor.static.sortedCommandsFromGroup( groupName, commandGroup.promote, commandGroup.demote );
+				var commands = this.constructor.static.sortedCommandsFromGroup( groupName, commandGroup.promote, commandGroup.demote );
 				var $list = $( '<dl>' ).addClass( 've-ui-commandHelpDialog-list' );
-				commands.forEach( function ( command ) {
+				commands.forEach( ( command ) => {
 					var triggerList;
 					if ( command.trigger ) {
 						if (
@@ -150,7 +149,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 								// 'checkCommand' is not available
 								return;
 							}
-							triggerList = command.shortcuts.map( function ( shortcut ) {
+							triggerList = command.shortcuts.map( ( shortcut ) => {
 								return new ve.ui.Trigger( shortcut, true );
 							} );
 						}
@@ -159,16 +158,16 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 					var hasShortcut = false;
 
 					var $shortcut = $( '<dt>' );
-					triggerList.forEach( function ( trigger ) {
+					triggerList.forEach( ( trigger ) => {
 						// Append an array of jQuery collections from buildKeyNode
 						// eslint-disable-next-line no-jquery/no-append-html
 						$shortcut.append( $( '<kbd>' ).addClass( 've-ui-commandHelpDialog-shortcut' ).append(
-							trigger.getMessage( true ).map( dialog.constructor.static.buildKeyNode )
+							trigger.getMessage( true ).map( this.constructor.static.buildKeyNode )
 						).find( 'kbd + kbd' ).before( '+' ).end() );
 						hasShortcut = true;
 					} );
 					if ( command.sequences ) {
-						command.sequences.forEach( function ( sequenceName ) {
+						command.sequences.forEach( ( sequenceName ) => {
 							var sequence = sequenceRegistry.lookup( sequenceName );
 							if ( sequence ) {
 								// Append an array of jQuery collections from buildKeyNode
@@ -176,7 +175,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 								$shortcut.append( $( '<kbd>' ).addClass( 've-ui-commandHelpDialog-sequence' )
 									.attr( 'data-label', ve.msg( 'visualeditor-shortcuts-sequence-notice' ) )
 									.append(
-										sequence.getMessage( true ).map( dialog.constructor.static.buildKeyNode )
+										sequence.getMessage( true ).map( this.constructor.static.buildKeyNode )
 									)
 								);
 								hasShortcut = true;
@@ -192,7 +191,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 					}
 				} );
 				if ( hasCommand ) {
-					dialog.$container.append(
+					this.$container.append(
 						$( '<div>' )
 							.addClass( 've-ui-commandHelpDialog-section' )
 							.append(
@@ -202,7 +201,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 					);
 				}
 			} );
-		}, this );
+		} );
 };
 
 /* Static methods */
@@ -245,7 +244,7 @@ ve.ui.CommandHelpDialog.static.sortedCommandsFromGroup = function ( groupName, p
 	keys.sort();
 
 	if ( promote ) {
-		promote.forEach( function ( name ) {
+		promote.forEach( ( name ) => {
 			if ( !commands[ name ] ) {
 				return;
 			}
@@ -254,7 +253,7 @@ ve.ui.CommandHelpDialog.static.sortedCommandsFromGroup = function ( groupName, p
 		} );
 	}
 	if ( demote ) {
-		demote.forEach( function ( name ) {
+		demote.forEach( ( name ) => {
 			if ( used[ name ] || !commands[ name ] ) {
 				return;
 			}
@@ -262,7 +261,7 @@ ve.ui.CommandHelpDialog.static.sortedCommandsFromGroup = function ( groupName, p
 			used[ name ] = true;
 		} );
 	}
-	keys.forEach( function ( name ) {
+	keys.forEach( ( name ) => {
 		if ( used[ name ] ) {
 			return;
 		}

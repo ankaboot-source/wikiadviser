@@ -65,7 +65,7 @@ ve.ui.NodeWindow.prototype.getSelectedNode = function () {
 
 	if (
 		selectedNode &&
-		modelClasses.some( function ( modelClass ) {
+		modelClasses.some( ( modelClass ) => {
 			return selectedNode instanceof modelClass;
 		} )
 	) {
@@ -74,22 +74,16 @@ ve.ui.NodeWindow.prototype.getSelectedNode = function () {
 	return null;
 };
 
-/**
- * @inheritdoc OO.ui.Window
- */
 ve.ui.NodeWindow.prototype.getSetupProcess = function ( data, process ) {
 	data = data || {};
-	return process.next( function () {
+	return process.next( () => {
 		this.selectedNode = this.getSelectedNode( data );
-	}, this );
+	} );
 };
 
-/**
- * @inheritdoc OO.ui.Window
- */
 ve.ui.NodeWindow.prototype.getTeardownProcess = function ( data, process ) {
 	data = data || {};
-	return process.next( function () {
+	return process.next( () => {
 		this.selectedNode = null;
-	}, this );
+	} );
 };

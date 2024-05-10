@@ -78,11 +78,11 @@ OO.initClass( ve.ce.FocusableNode );
 /* Events */
 
 /**
- * @event focus
+ * @event ve.ce.FocusableNode#focus
  */
 
 /**
- * @event blur
+ * @event ve.ce.FocusableNode#blur
  */
 
 /* Static properties */
@@ -159,7 +159,7 @@ ve.ce.FocusableNode.static.getRectsForElement = function ( $element, relativeRec
 	// Elements with a width/height of 0 return a clientRect with a width/height of 1
 	// As elements with an actual width/height of 1 aren't that useful anyway, just
 	// throw away anything that is <=1
-	var filteredRects = rects.filter( function ( rect ) {
+	var filteredRects = rects.filter( ( rect ) => {
 		return rect.width > 1 && rect.height > 1;
 	} );
 	// But if this filtering doesn't leave any rects at all, then we do want to use the 1px rects
@@ -310,13 +310,11 @@ ve.ce.FocusableNode.prototype.updateInvisibleIcon = function () {
 		this.icon.$element.detach();
 	}
 	var showIcon = !this.hasRendering();
-	var rAF = window.requestAnimationFrame || setTimeout;
-	var node = this;
 
 	// Defer updating the DOM. If we don't do this, the hasRendering() call for the next
 	// FocusableNode will force a reflow, which is slow.
-	rAF( function () {
-		node.updateInvisibleIconSync( showIcon );
+	requestAnimationFrame( () => {
+		this.updateInvisibleIconSync( showIcon );
 	} );
 };
 
@@ -328,7 +326,7 @@ ve.ce.FocusableNode.prototype.updateInvisibleIcon = function () {
  */
 ve.ce.FocusableNode.prototype.updateInvisibleIconSync = function ( showIcon ) {
 	if ( !this.getModel() ) {
-		// Check the node hasn't been destroyed, as this method is called after an rAF
+		// Check the node hasn't been destroyed, as this method is called after a requestAnimationFrame
 		return;
 	}
 	if ( showIcon ) {
@@ -432,8 +430,7 @@ ve.ce.FocusableNode.prototype.onFocusableMouseDown = function ( e ) {
 		return;
 	}
 
-	var node = this,
-		surfaceModel = this.focusableSurface.getModel(),
+	var surfaceModel = this.focusableSurface.getModel(),
 		selection = surfaceModel.getSelection(),
 		nodeRange = this.model.getOuterRange();
 
@@ -443,17 +440,17 @@ ve.ce.FocusableNode.prototype.onFocusableMouseDown = function ( e ) {
 		this.$highlights.prop( 'contentEditable', 'true' );
 		// Select the clicked element so we get a copy option in the context menu
 		ve.selectElement( this.$highlights[ 0 ] );
-		setTimeout( function () {
+		setTimeout( () => {
 			// Undo ce=true as soon as the context menu is shown
-			node.$highlights.prop( 'contentEditable', 'false' );
-			node.focusableSurface.preparePasteTargetForCopy();
+			this.$highlights.prop( 'contentEditable', 'false' );
+			this.focusableSurface.preparePasteTargetForCopy();
 		} );
 	}
 
 	// Wait for native selection to change before correcting
-	setTimeout( function () {
+	setTimeout( () => {
 		// Check surface still exists after timeout
-		if ( node.focusableSurface ) {
+		if ( this.focusableSurface ) {
 			var range = selection instanceof ve.dm.LinearSelection && selection.getRange();
 			surfaceModel.getLinearFragment(
 				e.shiftKey && range ?
@@ -462,9 +459,9 @@ ve.ce.FocusableNode.prototype.onFocusableMouseDown = function ( e ) {
 					) :
 					nodeRange
 			).select();
-			node.focusableSurface.updateActiveAnnotations();
+			this.focusableSurface.updateActiveAnnotations();
 			// Ensure surface is active as native 'focus' event won't be fired
-			node.focusableSurface.activate();
+			this.focusableSurface.activate();
 		}
 	} );
 };
@@ -618,8 +615,8 @@ ve.ce.FocusableNode.prototype.isFocused = function () {
  * Set the selected state of the node.
  *
  * @param {boolean} value Node is focused
- * @fires focus
- * @fires blur
+ * @fires ve.ce.FocusableNode#focus
+ * @fires ve.ce.FocusableNode#blur
  */
 ve.ce.FocusableNode.prototype.setFocused = function ( value ) {
 	value = !!value;
@@ -814,11 +811,11 @@ ve.ce.FocusableNode.prototype.hasRendering = function () {
 			( height >= 10 && width >= 4 );
 	}
 
-	this.$element.each( function () {
+	this.$element.each( ( i, element ) => {
 		if (
-			checkSize( this.offsetWidth, this.offsetHeight ) ||
+			checkSize( element.offsetWidth, element.offsetHeight ) ||
 			// Check width/height attribute as well. (T125767)
-			checkSize( this.width, this.height )
+			checkSize( element.width, element.height )
 		) {
 			visible = true;
 			return false;
@@ -836,7 +833,7 @@ ve.ce.FocusableNode.prototype.hasRendering = function () {
  * @return {boolean} Editing disabled
  */
 ve.ce.FocusableNode.prototype.isInContentEditableDisabled = function () {
-	return !!this.traverseUpstream( function ( node ) {
+	return !!this.traverseUpstream( ( node ) => {
 		return !(
 			node.isContentEditable && !node.isContentEditable()
 		);

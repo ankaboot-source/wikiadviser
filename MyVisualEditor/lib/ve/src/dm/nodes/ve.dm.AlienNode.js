@@ -10,7 +10,7 @@
  * @class
  * @abstract
  * @extends ve.dm.LeafNode
- * @mixins ve.dm.FocusableNode
+ * @mixes ve.dm.FocusableNode
  *
  * @constructor
  * @param {Object} [element] Reference to element in linear model
@@ -85,7 +85,7 @@ ve.dm.AlienNode.static.isDiffComparable = function ( element, other, elementStor
 	// non-persistent in historical diffs.
 
 	function removeAboutAttributes( el ) {
-		Array.prototype.forEach.call( el.querySelectorAll( '[about]' ), function ( e ) {
+		Array.prototype.forEach.call( el.querySelectorAll( '[about]' ), ( e ) => {
 			e.removeAttribute( 'about' );
 		} );
 	}

@@ -5,10 +5,6 @@
  */
 
 /**
- * @class ve
- */
-
-/**
  * Checks if an object is an instance of one or more classes.
  *
  * @param {Object} subject Object to check
@@ -174,13 +170,13 @@ ve.copy = OO.copy;
 
 /**
  * @method
- * @inheritdoc OO.ui#debounce
+ * @see OO.ui#debounce
  */
 ve.debounce = OO.ui.debounce;
 
 /**
  * @method
- * @inheritdoc OO.ui#throttle
+ * @see OO.ui#throttle
  */
 ve.throttle = OO.ui.throttle;
 
@@ -212,7 +208,7 @@ ve.promiseAll = function ( promises ) {
  * @return {HTMLElement[]} Copy of domElements with copies of each element
  */
 ve.copyDomElements = function ( domElements, doc ) {
-	return domElements.map( function ( domElement ) {
+	return domElements.map( ( domElement ) => {
 		return doc ? doc.importNode( domElement, true ) : domElement.cloneNode( true );
 	} );
 };
@@ -382,7 +378,7 @@ ve.sparseSplice = function ( arr, offset, remove, data ) {
 		data = data.slice();
 	}
 	// Remove content without adjusting length
-	arr.slice( offset, endOffset ).forEach( function ( item, j ) {
+	arr.slice( offset, endOffset ).forEach( ( item, j ) => {
 		removed[ j ] = item;
 		delete arr[ offset + j ];
 	} );
@@ -400,7 +396,7 @@ ve.sparseSplice = function ( arr, offset, remove, data ) {
 		arr.splice( offset, -diff );
 	}
 	// Insert new content
-	data.forEach( function ( item, j ) {
+	data.forEach( ( item, j ) => {
 		arr[ offset + j ] = item;
 	} );
 	// Set removed.length in case there are holes at the end
@@ -790,7 +786,7 @@ ve.filterMetaElements = function ( contents ) {
 	// As of jQuery 3 we can't use $.not( 'tagName' ) as that doesn't
 	// match text nodes. Also we can't $.remove these elements as they
 	// aren't attached to anything.
-	contents = contents.filter( function ( node ) {
+	contents = contents.filter( ( node ) => {
 		return node.tagName !== 'LINK' && node.tagName !== 'STYLE';
 	} );
 	// Also remove link and style tags nested inside other tags
@@ -853,7 +849,7 @@ ve.resolveAttributes = function ( elementsOrJQuery, doc, attrs ) {
  */
 ve.targetLinksToNewWindow = function ( container ) {
 	// Make all links open in a new window
-	Array.prototype.forEach.call( container.querySelectorAll( 'a[href]' ), function ( el ) {
+	Array.prototype.forEach.call( container.querySelectorAll( 'a[href]' ), ( el ) => {
 		ve.appendToRel( el, 'noopener' );
 		el.setAttribute( 'target', '_blank' );
 	} );
@@ -1087,6 +1083,14 @@ ve.compareDocumentOrder = function ( node1, offset1, node2, offset2 ) {
 };
 
 /**
+ * @typedef {Object} DomPosition
+ * @memberof ve
+ * @property {Node|null} node The node, or null if we stepped past the root node
+ * @property {number|null} offset The offset, or null if we stepped past the root node
+ * @property {ve.PositionStep[]} steps Steps taken
+ */
+
+/**
  * Get the closest matching DOM position in document order (forward or reverse)
  *
  * A DOM position is represented as an object with "node" and "offset" properties.
@@ -1114,10 +1118,7 @@ ve.compareDocumentOrder = function ( node1, offset1, node2, offset2 ) {
  * @param {Object} options
  * @param {Function|string} [options.noDescend] Selector or function: nodes to skip over
  * @param {Function} [options.stop] Boolean-valued ve.PositionStep test function
- * @return {Object} The adjacent DOM position encountered
- * @return {Node|null} return.node The node, or null if we stepped past the root node
- * @return {number|null} return.offset The offset, or null if we stepped past the root node
- * @return {Object[]} return.steps Steps taken {node: x, type: leave|cross|enter|internal, offset: n}
+ * @return {ve.DomPosition} The adjacent DOM position encountered
  * @see ve#isHardCursorStep
  */
 ve.adjacentDomPosition = function ( position, direction, options ) {
@@ -1256,14 +1257,19 @@ ve.rejectsCursor = function ( node ) {
 };
 
 /**
+ * @typedef {Object} ChangeOffsets
+ * @memberof ve
+ * @return {number} start Offset from start of first changed element
+ * @return {number} end Offset from end of last changed element (nonoverlapping with start)
+ */
+
+/**
  * Count the common elements at the start and end of two sequences
  *
  * @param {Array|string} before The original sequence
  * @param {Array|string} after The modified sequence
  * @param {Function} [equals] Two-argument comparison returning boolean (defaults to ===)
- * @return {Object|null} Change offsets (valid in both sequences), or null if unchanged
- * @return {number} return.start Offset from start of first changed element
- * @return {number} return.end Offset from end of last changed element (nonoverlapping with start)
+ * @return {ve.ChangeOffsets|null} Change offsets (valid in both sequences), or null if unchanged
  */
 ve.countEdgeMatches = function ( before, after, equals ) {
 	if ( !equals ) {

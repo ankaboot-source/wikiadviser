@@ -38,15 +38,22 @@ ve.ui.SequenceRegistry.prototype.register = function ( sequence ) {
 };
 
 /**
+ * Matching sequence and corresponding range
+ *
+ * @typedef {Object} Match
+ * @memberof ve.ui.SequenceRegistry
+ * @property {ve.ui.Sequence} sequence
+ * @property {ve.Range} range
+ */
+
+/**
  * Find sequence matches a given offset in the data
  *
  * @param {ve.dm.ElementLinearData} data
  * @param {number} offset
  * @param {boolean} [isPaste] Whether this in the context of a paste
  * @param {boolean} [isDelete] Whether this is after content being deleted
- * @return {{sequence:ve.ui.Sequence,range:ve.Range}[]}
- *   Array of matching sequences, and the corresponding range of the match
- *   for each.
+ * @return {ve.ui.SequenceRegistry.Match[]} Array of matching sequences, and the corresponding range of the match for each.
  */
 ve.ui.SequenceRegistry.prototype.findMatching = function ( data, offset, isPaste, isDelete ) {
 	// To avoid blowup when matching RegExp sequences, we're going to grab

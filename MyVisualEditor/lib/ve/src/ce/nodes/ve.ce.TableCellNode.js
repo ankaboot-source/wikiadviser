@@ -9,8 +9,8 @@
  *
  * @class
  * @extends ve.ce.BranchNode
- * @mixins ve.ce.TableCellableNode
- * @mixins ve.ce.ContentEditableNode
+ * @mixes ve.ce.TableCellableNode
+ * @mixes ve.ce.ContentEditableNode
  * @constructor
  * @param {ve.dm.TableCellNode} model Model to observe
  * @param {Object} [config] Configuration options
@@ -114,8 +114,9 @@ ve.ce.TableCellNode.prototype.onTableCellTeardown = function () {
 	}
 };
 
+// eslint-disable-next-line jsdoc/require-returns
 /**
- * @inheritdoc ve.ce.ContentEditableNode
+ * @see ve.ce.ContentEditableNode
  */
 ve.ce.TableCellNode.prototype.setContentEditable = function () {
 	// Overwite any state passed to setContentEditable with this.editing, so that

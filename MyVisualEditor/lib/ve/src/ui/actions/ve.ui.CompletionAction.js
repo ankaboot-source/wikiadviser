@@ -30,29 +30,26 @@ OO.inheritClass( ve.ui.CompletionAction, ve.ui.Action );
 /* Static Properties */
 
 /**
- * Length to which to limit the list of returned completions
+ * @property {number} Length to which to limit the list of returned completions
  *
  * @static
- * @property {number}
  */
 ve.ui.CompletionAction.static.defaultLimit = 8;
 
 /**
- * Length of the sequence which triggers the action
+ * @property {number} Length of the trigger sequence for the action
  *
  * This many characters will be stripped from the start of the current input by
  * CompletionWidget when triggered by a sequence, see #getSequenceLength.
  *
  * @static
- * @property {number}
  */
 ve.ui.CompletionAction.static.sequenceLength = 1;
 
 /**
- * Whether the current input should be included as a completion automatically
+ * @property {boolean} Whether the current input should be included as a completion automatically
  *
  * @static
- * @property {boolean}
  */
 ve.ui.CompletionAction.static.alwaysIncludeInput = true;
 
@@ -186,14 +183,13 @@ ve.ui.CompletionAction.prototype.updateMenuItems = function ( menuItems ) {
  * @return {Mixed[]}
  */
 ve.ui.CompletionAction.prototype.filterSuggestionsForInput = function ( suggestions, input ) {
-	var action = this;
 	input = input.trim();
 
 	var normalizedInput = input.toLowerCase().trim();
 
 	var exact = false;
-	suggestions = suggestions.filter( function ( suggestion ) {
-		var result = action.compareSuggestionToInput( suggestion, normalizedInput );
+	suggestions = suggestions.filter( ( suggestion ) => {
+		var result = this.compareSuggestionToInput( suggestion, normalizedInput );
 		exact = exact || result.isExact;
 		return result.isMatch;
 	} );

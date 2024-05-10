@@ -1971,7 +1971,7 @@ ol.references {
 }
 
 /* T156351: Support for Parsoid's Cite implementation */
-/* WikiAdviser Custom: Commented ref doubles
+/* Custom WikiAdviser : Commented ref doubles
 .mw-ref > a::after {
   content: counter(mw-Ref, decimal);
 }

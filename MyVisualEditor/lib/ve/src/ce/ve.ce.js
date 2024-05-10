@@ -7,8 +7,7 @@
 /**
  * Namespace for all VisualEditor ContentEditable classes, static methods and static properties.
  *
- * @class
- * @singleton
+ * @namespace
  */
 ve.ce = {
 	// nodeFactory: Initialized in ve.ce.NodeFactory.js
@@ -113,12 +112,16 @@ ve.ce.getDomHash = function ( element ) {
 };
 
 /**
+ * @typedef {Object} NodeAndOffset
+ * @memberof ve.ce
+ * @return {Node} node
+ * @return {number} offset
+ */
+/**
  * Get the first cursor offset immediately after a node.
  *
  * @param {Node} node DOM node
- * @return {Object}
- * @return {Node} return.node
- * @return {number} return.offset
+ * @return {ve.ce.NodeAndOffset}
  */
 ve.ce.nextCursorOffset = function ( node ) {
 	var nextNode, offset;
@@ -136,9 +139,7 @@ ve.ce.nextCursorOffset = function ( node ) {
  * Get the first cursor offset immediately before a node.
  *
  * @param {Node} node DOM node
- * @return {Object}
- * @return {Node} return.node
- * @return {number} return.offset
+ * @return {ve.ce.NodeAndOffset}
  */
 ve.ce.previousCursorOffset = function ( node ) {
 	var previousNode, offset;

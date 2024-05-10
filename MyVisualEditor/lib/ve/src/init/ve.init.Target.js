@@ -10,7 +10,7 @@
  * @class
  * @abstract
  * @extends OO.ui.Element
- * @mixins OO.EventEmitter
+ * @mixes OO.EventEmitter
  *
  * @constructor
  * @param {Object} [config] Configuration options
@@ -82,9 +82,9 @@ OO.mixinClass( ve.init.Target, OO.EventEmitter );
 /* Events */
 
 /**
- * @event surfaceReady
- *
  * Must be fired after the surface is initialized
+ *
+ * @event ve.init.Target#surfaceReady
  */
 
 /* Static Properties */
@@ -184,14 +184,14 @@ ve.init.Target.static.actionGroups = [];
 /**
  * List of commands which can be triggered anywhere from within the document
  *
- * @type {string[]} List of command names
+ * @type {string[]}
  */
 ve.init.Target.static.documentCommands = [];
 
 /**
  * List of commands which can be triggered from within the target element
  *
- * @type {string[]} List of command names
+ * @type {string[]}
  */
 ve.init.Target.static.targetCommands = [ 'commandHelp', 'findAndReplace', 'findNext', 'findPrevious' ];
 
@@ -200,14 +200,14 @@ ve.init.Target.static.targetCommands = [ 'commandHelp', 'findAndReplace', 'findN
  *
  * Null means all commands in the registry are used (excluding excludeCommands)
  *
- * @type {string[]|null} List of command names
+ * @type {string[]|null}
  */
 ve.init.Target.static.includeCommands = null;
 
 /**
  * List of commands to exclude from the target entirely
  *
- * @type {string[]} List of command names
+ * @type {string[]}
  */
 ve.init.Target.static.excludeCommands = [];
 
@@ -393,10 +393,9 @@ ve.init.Target.prototype.teardown = function () {
  * @return {jQuery.Promise} Promise which resolves when the target has been destroyed
  */
 ve.init.Target.prototype.destroy = function () {
-	var target = this;
-	return this.teardown().then( function () {
-		target.$element.remove();
-		if ( ve.init.target === target ) {
+	return this.teardown().then( () => {
+		this.$element.remove();
+		if ( ve.init.target === this ) {
 			ve.init.target = null;
 		}
 	} );
@@ -440,7 +439,7 @@ ve.init.Target.prototype.onContainerScroll = function () {
 		if ( toolbar.isFloating() !== wasFloating ) {
 			// HACK: Re-position any active toolgroup popups. We can't rely on normal event handler order
 			// because we're mixing jQuery and non-jQuery events. T205924#4657203
-			toolbar.getItems().forEach( function ( toolgroup ) {
+			toolbar.getItems().forEach( ( toolgroup ) => {
 				if ( toolgroup instanceof OO.ui.PopupToolGroup && toolgroup.isActive() ) {
 					toolgroup.position();
 				}
@@ -682,12 +681,12 @@ ve.init.Target.prototype.setupToolbar = function ( surface ) {
 
 	if ( surface.nullSelectionOnBlur ) {
 		toolbar.$element
-			.on( 'focusin', function () {
+			.on( 'focusin', () => {
 				// When the focus moves to the toolbar, deactivate the surface but keep the selection (even if
 				// nullSelectionOnBlur is true), to allow tools to act on that selection.
 				surface.getView().deactivate( /* showAsActivated= */ true );
 			} )
-			.on( 'focusout', function ( e ) {
+			.on( 'focusout', ( e ) => {
 				var newFocusedElement = e.relatedTarget;
 				if ( !OO.ui.contains( [ toolbar.$element[ 0 ], toolbar.$overlay[ 0 ] ], newFocusedElement, true ) ) {
 					// When the focus moves out of the toolbar:
@@ -709,15 +708,14 @@ ve.init.Target.prototype.setupToolbar = function ( surface ) {
 			} );
 	}
 
-	this.actionGroups.forEach( function ( group ) {
+	this.actionGroups.forEach( ( group ) => {
 		group.align = 'after';
 	} );
 	var groups = [].concat( this.toolbarGroups, this.actionGroups );
 
 	toolbar.setup( groups, surface );
 	this.attachToolbar();
-	var rAF = window.requestAnimationFrame || setTimeout;
-	rAF( this.onContainerScrollHandler );
+	requestAnimationFrame( this.onContainerScrollHandler );
 };
 
 /**

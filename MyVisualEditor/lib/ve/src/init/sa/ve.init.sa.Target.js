@@ -10,7 +10,7 @@
  * A platform must be constructed first. See ve.init.sa.Platform for an example.
  *
  *     @example
- *     ve.init.platform.initialize().done( function () {
+ *     ve.init.platform.initialize().done( () => {
  *         var target = new ve.init.sa.DesktopTarget();
  *         target.addSurface(
  *             ve.dm.converter.getModelFromDom(
@@ -48,7 +48,7 @@ OO.inheritClass( ve.init.sa.Target, ve.init.Target );
 
 /**
  * @inheritdoc
- * @fires surfaceReady
+ * @fires ve.init.Target#surfaceReady
  */
 ve.init.sa.Target.prototype.addSurface = function () {
 	// Parent method

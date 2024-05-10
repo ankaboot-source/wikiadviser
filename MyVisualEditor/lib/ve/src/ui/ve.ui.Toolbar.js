@@ -42,20 +42,20 @@ OO.inheritClass( ve.ui.Toolbar, OO.ui.Toolbar );
 /* Events */
 
 /**
- * @event updateState
+ * @event ve.ui.Toolbar#updateState
  * @param {ve.dm.SurfaceFragment|null} fragment Surface fragment. Null if no surface is active.
  * @param {Object|null} direction Context direction with 'inline' & 'block' properties if a surface exists. Null if no surface is active.
  * @param {string[]} activeDialogs List of names of currently open dialogs.
  */
 
 /**
- * @event surfaceChange
+ * @event ve.ui.Toolbar#surfaceChange
  * @param {ve.ui.Surface|null} oldSurface Old surface being controlled
  * @param {ve.ui.Surface|null} newSurface New surface being controlled
  */
 
 /**
- * @event resize
+ * @event ve.ui.Toolbar#resize
  */
 
 /* Methods */
@@ -65,6 +65,8 @@ OO.inheritClass( ve.ui.Toolbar, OO.ui.Toolbar );
  *
  * @param {Object} groups List of tool group configurations
  * @param {ve.ui.Surface} [surface] Surface to attach to
+ * @fires ve.ui.Toolbar#surfaceChange
+ * @fires ve.ui.Toolbar#resize
  */
 ve.ui.Toolbar.prototype.setup = function ( groups, surface ) {
 	var oldSurface,
@@ -83,7 +85,7 @@ ve.ui.Toolbar.prototype.setup = function ( groups, surface ) {
 	// do this if they have changed
 	if ( groups !== this.groups ) {
 		// Parent method
-		groups = groups.map( function ( group ) {
+		groups = groups.map( ( group ) => {
 			if ( group.name ) {
 				group.classes = group.classes || [];
 				group.classes.push( 've-ui-toolbar-group-' + group.name );
@@ -151,16 +153,15 @@ ve.ui.Toolbar.prototype.isToolAvailable = function ( name ) {
  * @param {Object} data
  */
 ve.ui.Toolbar.prototype.onInspectorOrDialogOpeningOrClosing = function ( win, openingOrClosing ) {
-	var toolbar = this;
-	openingOrClosing.then( function () {
-		toolbar.updateToolStateDebounced();
+	openingOrClosing.then( () => {
+		this.updateToolStateDebounced();
 	} );
 };
 
 /**
  * Handle context changes on the surface.
  *
- * @fires updateState
+ * @fires ve.ui.Toolbar#updateState
  */
 ve.ui.Toolbar.prototype.onContextChange = function () {
 	this.updateToolStateDebounced();
@@ -168,6 +169,8 @@ ve.ui.Toolbar.prototype.onContextChange = function () {
 
 /**
  * Update the state of the tools
+ *
+ * @fires ve.ui.Toolbar#updateState
  */
 ve.ui.Toolbar.prototype.updateToolState = function () {
 	if ( !this.getSurface() ) {
@@ -211,12 +214,12 @@ ve.ui.Toolbar.prototype.updateToolState = function () {
 		this.surface.getDialogs(),
 		this.surface.getContext().getInspectors(),
 		this.surface.getToolbarDialogs()
-	].map( function ( windowManager ) {
+	].map( ( windowManager ) => {
 		if ( windowManager.getCurrentWindow() ) {
 			return windowManager.getCurrentWindow().constructor.static.name;
 		}
 		return null;
-	} ).filter( function ( name ) {
+	} ).filter( ( name ) => {
 		return name !== null;
 	} );
 

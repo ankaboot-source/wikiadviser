@@ -1,11 +1,8 @@
-import { Database } from "shared/types.ts";
 import corsHeaders from "shared/cors.ts";
 import createSupabaseClient from "shared/supabaseClient.ts";
 
 import generateAvatar from "./external-avatars/authUi.ts";
 import getGravatar from "./external-avatars/gravatar.ts";
-
-type usersRecord = Database["public"]["views"]["users"]["row"];
 
 Deno.serve(async (req) => {
   try {
@@ -19,7 +16,7 @@ Deno.serve(async (req) => {
 
     const {
       data: { user },
-    }: usersRecord = await supabaseClient.auth.getUser();
+    } = await supabaseClient.auth.getUser();
 
     if (!user) {
       return new Response("Unauthorized", {

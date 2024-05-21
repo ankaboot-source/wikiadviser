@@ -1,99 +1,133 @@
 #!/bin/sh
 
 set -e
-curl -s "https://en.wikipedia.org/wiki/Special:Version" > version_page.html
-ulimit -n 4096
+ulimit -n 9999
 
 ##########envs############
-languages=("${LANGUAGES[@]}")
-environments=("${DATABASE_ENV[@]}")
-mediawiki_password="$MEDIAWIKI_PASSWORD"
 user="wiki-user"
 dump_path="dump"
-mediawiki_version=$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' version_page.html | head -n1 | awk '{print $2}')
+
+curl -s "https://en.wikipedia.org/wiki/Special:Version" > /home/$user/version_page.html
+mediawiki_version=$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' /home/$user/version_page.html | head -n1 | awk '{print $2}')
 ##########################
 
-# Clear Pending Jobs
+check_job_queue() {
+    local environment=$1
+    local lang=$2
+    local result
+
+    # Run the PHP script and capture the output
+    result=$(echo $mediawiki_password | sudo -S -u www-data bash -c "/usr/bin/php /var/www/wiki-$environment/wiki/$lang/maintenance/runJobs.php")
+
+    # Check if the result contains Job queue is empty.
+    if [[ "$result" == "Job queue is empty." ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+echo -e "\e[1;35mClear Pending Jobs\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        /usr/bin/php /var/www/wiki-$environment/$lang/maintenance/run.php /var/www/wiki-$environment/$lang/maintenance/runJobs.php
+        while true; do
+            if check_job_queue "$environment" "$lang"; then
+                echo "Job queue is empty for $environment-$lang."
+                break
+            else
+                echo "Running jobs for $environment-$lang. Queue not empty, re-checking..."
+                # 5 sec sleep to avoid hammering the server
+                sleep 5
+            fi
+        done
     done
 done
 
-# Create Database dumps
+echo -e "\e[1:35mBackup old db dump folder\e[0m"
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        mv /home/$user/$dump_path /home/$user/$dump_path.old
+    done
+done
+
+echo -e "\e[1:35mCreate Database dumps\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         echo $mediawiki_password | sudo -S mysqldump -u root "$environment"_wiki_"$lang" > /home/$user/$dump_path/$environment-dump-$lang.sql
     done
 done
 
-# Backup old mediawiki folders
+echo -e "\e[1:35mBackup old mediawiki folders\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        mv /var/www/wiki-$environment/$lang /var/www/wiki-$environment/$lang.old 
+        mv /var/www/wiki-$environment/wiki/$lang /var/www/wiki-$environment/wiki/$lang.old
     done
 done
 
-# Download new mediawiki package
+echo -e "\e[1:35mDownload new mediawiki package\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$mediawiki_version /var/www/wiki-$environment/$lang
+        git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$mediawiki_version /var/www/wiki-$environment/wiki/$lang
     done
 done
 
-# Install Additional extensions
+echo -e "\e[1:35mInstall Additional extensions\e[0m"
 # PageForms
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/$lang/extensions/PageForms
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/wiki/$lang/extensions/PageForms
     done
 done
 
 # ExternalData
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/$lang/extensions/ExternalData
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/wiki/$lang/extensions/ExternalData
     done
 done
 
 # RegularToolTips
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/$lang/extensions/RegularTooltips
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/wiki/$lang/extensions/RegularTooltips
     done
 done
 
 # HTMLTags
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/$lang/extensions/HTMLTags
+         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/wiki/$lang/extensions/HTMLTags
     done
 done
 
-# Update extensions to latest branch changes & fetch external libraries
+echo -e "\e[1:35mUpdate extensions to latest branch changes & fetch external libraries\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cd /var/www/wiki-$environment/$lang
+        cd /var/www/wiki-$environment/wiki/$lang
         git submodule update --init --recursive # update extensions
-        composer update --no-dev --ignore-platform-req=ext-ldap # fetch external libs
+        composer update --no-dev # fetch external libs
     done
 done
 
-# Copy old configuration to the new installation directories
+echo -e "\e[1:35mCopy old configuration to the new installation directories\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cp /var/www/wiki-$environment/$lang.old/LocalSettings.php /var/www/wiki-$environment/$lang/LocalSettings.php
-        cp -r /var/www/wiki-$environment/$lang.old/images /var/www/wiki-$environment/$lang/images
-        cp -r /var/www/wiki-$environment/$lang.old/resources/assets/icons /var/www/wiki-$environment/$lang/resources/assets/icons
-        cp -r /home/$user/wikiadviser/MyVisualEditor /var/www/wiki-$environment/$lang/extensions/MyVisualEditor
+        cp /var/www/wiki-$environment/wiki/$lang.old/LocalSettings.php /var/www/wiki-$environment/wiki/$lang/LocalSettings.php
+        cp -r /var/www/wiki-$environment/wiki/$lang.old/images /var/www/wiki-$environment/wiki/$lang
+        cp -r /var/www/wiki-$environment/wiki/$lang.old/resources/assets/icons /var/www/wiki-$environment/wiki/$lang/resources/assets/icons
+        cp /var/www/wiki-$environment/wiki/$lang.old/resources/assets/poweredby_wikiadviser_*.png /var/www/wiki-$environment/wiki/$lang/resources/assets/
+        echo $mediawiki_password | sudo -S chown -R www-data:www-data /var/www/wiki-$environment/wiki/$lang/images
+        cp -r /home/$user/wikiadviser/MyVisualEditor /var/www/wiki-$environment/wiki/$lang/extensions/MyVisualEditor
     done
 done
 
+echo -e "\e[1:35mSetup wikibase\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
-        cd /var/www/wiki-$environment/$lang/
+        cd /var/www/wiki-$environment/wiki/$lang/
+        rm composer.lock
         mv composer.local.json-sample composer.local.json
-        composer install --no-dev --no-interaction --ignore-platform-req=ext-ldap
+        composer install --no-dev --no-interaction
         php maintenance/run.php ./maintenance/update.php
         php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
         php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
@@ -101,4 +135,8 @@ for environment in "${environments[@]}"; do
     done
 done
 
+echo -e  "\e[1:35mRemove unnecessary files\e[0m"
 rm /home/$user/version_page.html
+
+echo -e "\e[1:35mRestarting web server...\e[0m"
+echo $mediawiki_password | sudo -S systemctl restart php8.1-fpm.service

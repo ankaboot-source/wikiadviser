@@ -1,0 +1,48 @@
+name: Upgrade Mediawiki Environments
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to upgrade'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    env:
+      MW_SUDO_PWD: ${{ secrets.MW_SUDO_PWD }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Upgrade environment
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+        key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+        username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+        script: |
+
+          if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+            export environments=("dev")
+
+          elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
+            export environments=("demo")
+
+          elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            export environments=("prod")
+          fi
+
+          echo "Upgrading ${{ github.event.inputs.environment }} environment"
+
+          export languages=("fr" "en")
+          export mediawiki_password=$MW_SUDO_PWD
+          bash ./mediawiki-setup/mediawiki-upgrade.sh

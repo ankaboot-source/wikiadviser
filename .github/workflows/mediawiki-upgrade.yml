@@ -24,19 +24,25 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Upgrade environment
-      run: |
-        if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-          export environments=("dev")
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+        key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+        username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+        script: |
 
-        elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
-          export environments=("demo")
+          if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
+            export environments=("dev")
 
-        elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-          export environments=("prod")
-        fi
+          elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
+            export environments=("demo")
 
-        echo "Upgrading ${{ github.event.inputs.environment }} environment"
+          elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            export environments=("prod")
+          fi
 
-        export languages=("fr" "en")
-        export mediawiki_password=$MW_SUDO_PWD
-        bash ./mediawiki-setup/mediawiki-upgrade.sh
+          echo "Upgrading ${{ github.event.inputs.environment }} environment"
+
+          export languages=("fr" "en")
+          export mediawiki_password=$MW_SUDO_PWD
+          bash ./mediawiki-setup/mediawiki-upgrade.sh

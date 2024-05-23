@@ -71,6 +71,13 @@ for environment in "${environments[@]}"; do
     done
 done
 
+echo -e "\e[1:35mIncrease Api Timeout\e[0m"
+for environment in "${environments[@]}"; do
+    for lang in "${languages[@]}"; do
+        sed -i 's/30 \* 1000/600 * 1000/' /home/$user/wiki-$environment/wiki/$lang/resources/src/mediawiki.api/index.js
+    done
+done
+
 echo -e "\e[1:35mInstall Additional extensions\e[0m"
 # PageForms
 for environment in "${environments[@]}"; do

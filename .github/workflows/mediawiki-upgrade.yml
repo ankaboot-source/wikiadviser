@@ -23,6 +23,9 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: List repository contents
+      run: ls -R
+
     - name: Upgrade environment
       uses: appleboy/ssh-action@master
       with:

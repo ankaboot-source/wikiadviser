@@ -20,7 +20,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-      
+
     - name: Upgrade environment
       uses: appleboy/ssh-action@master
       env:
@@ -31,7 +31,6 @@ jobs:
         username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
         envs: MW_SUDO_PWD
         script: |
-          chmod +x /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
 
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
             environments=("dev")
@@ -41,8 +40,12 @@ jobs:
             environments=("prod")
           fi
 
-          export mediawiki_password=$MW_SUDO_PWD
+          mediawiki_password="${MW_SUDO_PWD}"
           languages=("fr" "en")
 
           echo "Upgrading ${{ github.event.inputs.environment }} environment..."
-          bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+          chmod +x /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+          export environments
+          export languages
+          export mediawiki_password
+          bash -c 'source /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh'

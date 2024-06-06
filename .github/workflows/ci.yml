@@ -3,7 +3,8 @@ on:
   push:
     branches:
       - main
-
+    paths-ignore:
+      - '.github/workflows/**'
 jobs:
   backend:
     runs-on: ubuntu-latest

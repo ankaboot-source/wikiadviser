@@ -33,7 +33,8 @@ jobs:
         script: |
           echo "Setting environment variables"
           export mediawiki_password=MW_SUDO_PWD
-          
+          chmod +x /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
             environments=("dev")
           elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
@@ -45,4 +46,4 @@ jobs:
           languages=("fr" "en")
           
           echo "Upgrading ${{ github.event.inputs.environment }} environment"
-          echo "${MW_SUDO_PWD}" | sudo -S bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+          bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh

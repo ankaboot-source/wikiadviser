@@ -17,7 +17,6 @@ jobs:
   upgrade:
     runs-on: ubuntu-latest
 
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -30,20 +29,27 @@ jobs:
         host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
         key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
         username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
-        envs: MW_SUDO_PWD
-        script: |          
+        script: |
+          echo "Setting environment variables"
+          export mediawiki_password="${MW_SUDO_PWD}"
+          
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-            export environments=("dev")
-
+            environments=("dev")
           elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
-            export environments=("demo")
-
+            environments=("demo")
           elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            export environments=("prod")
+            environments=("prod")
           fi
-
+          
+          languages=("fr" "en")
+          
           echo "Upgrading ${{ github.event.inputs.environment }} environment"
-
-          export languages=("fr" "en")
-          export mediawiki_password=$MW_SUDO_PWD
-          bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+          echo "Running upgrade script..."
+          
+          sudo -S bash -c "
+            set -e
+            export mediawiki_password=${MW_SUDO_PWD}
+            environments=(${environments[@]})
+            languages=(${languages[@]})
+            bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
+          "

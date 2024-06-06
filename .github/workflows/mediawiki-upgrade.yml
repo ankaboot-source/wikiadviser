@@ -33,19 +33,17 @@ jobs:
         script: |
 
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
-            environments=("dev")
+            export environments=("dev")
           elif [ "${{ github.event.inputs.environment }}" = "qa" ]; then
-            environments=("demo")
+            export environments=("demo")
           elif [ "${{ github.event.inputs.environment }}" = "prod" ]; then
-            environments=("prod")
+            export environments=("prod")
           fi
 
           mediawiki_password="${MW_SUDO_PWD}"
-          languages=("fr" "en")
+          export languages=("fr" "en")
+          export mediawiki_password
 
           echo "Upgrading ${{ github.event.inputs.environment }} environment..."
           chmod +x /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
-          export environments
-          export languages
-          export mediawiki_password
           bash -c 'source /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh'

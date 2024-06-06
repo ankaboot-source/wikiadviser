@@ -22,12 +22,6 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: List repository contents
-      run: ls -l mediawiki-setup
-      
-    - name: List repository contents
-      run: cat mediawiki-setup/mediawiki-upgrade.sh
       
     - name: Upgrade environment
       uses: appleboy/ssh-action@master
@@ -51,4 +45,4 @@ jobs:
 
           export languages=("fr" "en")
           export mediawiki_password=$MW_SUDO_PWD
-          bash ./mediawiki-setup/mediawiki-upgrade.sh
+          bash mediawiki-setup/mediawiki-upgrade.sh

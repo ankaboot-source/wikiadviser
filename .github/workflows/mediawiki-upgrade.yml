@@ -44,12 +44,4 @@ jobs:
           languages=("fr" "en")
           
           echo "Upgrading ${{ github.event.inputs.environment }} environment"
-          echo "Running upgrade script..."
-          
-          sudo -S bash -c "
-            set -e
-            export mediawiki_password=${MW_SUDO_PWD}
-            environments=(${environments[@]})
-            languages=(${languages[@]})
-            bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh
-          "
+          echo "${MW_SUDO_PWD}" | sudo -S bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh

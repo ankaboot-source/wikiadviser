@@ -43,42 +43,42 @@ for environment in "${environments[@]}"; do
     done
 done
 
-echo -e "\e[1:35mBackup old db dump folder\e[0m"
+echo -e "\e[1;35mBackup old db dump folder\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         mv /home/$user/$dump_path /home/$user/$dump_path.old
     done
 done
 
-echo -e "\e[1:35mCreate Database dumps\e[0m"
+echo -e "\e[1;35mCreate Database dumps\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         echo $mediawiki_password | sudo -S mysqldump -u root "$environment"_wiki_"$lang" > /home/$user/$dump_path/$environment-dump-$lang.sql
     done
 done
 
-echo -e "\e[1:35mBackup old mediawiki folders\e[0m"
+echo -e "\e[1;35mBackup old mediawiki folders\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         mv /var/www/wiki-$environment/wiki/$lang /var/www/wiki-$environment/wiki/$lang.old
     done
 done
 
-echo -e "\e[1:35mDownload new mediawiki package\e[0m"
+echo -e "\e[1;35mDownload new mediawiki package\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$mediawiki_version /var/www/wiki-$environment/wiki/$lang
     done
 done
 
-echo -e "\e[1:35mIncrease Api Timeout\e[0m"
+echo -e "\e[1;35mIncrease Api Timeout\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         sed -i 's/30 \* 1000/600 * 1000/' /home/$user/wiki-$environment/wiki/$lang/resources/src/mediawiki.api/index.js
     done
 done
 
-echo -e "\e[1:35mInstall Additional extensions\e[0m"
+echo -e "\e[1;35mInstall Additional extensions\e[0m"
 # PageForms
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
@@ -107,7 +107,7 @@ for environment in "${environments[@]}"; do
     done
 done
 
-echo -e "\e[1:35mUpdate extensions to latest branch changes & fetch external libraries\e[0m"
+echo -e "\e[1;35mUpdate extensions to latest branch changes & fetch external libraries\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/wiki/$lang
@@ -116,7 +116,7 @@ for environment in "${environments[@]}"; do
     done
 done
 
-echo -e "\e[1:35mCopy old configuration to the new installation directories\e[0m"
+echo -e "\e[1;35mCopy old configuration to the new installation directories\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cp /var/www/wiki-$environment/wiki/$lang.old/LocalSettings.php /var/www/wiki-$environment/wiki/$lang/LocalSettings.php
@@ -128,7 +128,7 @@ for environment in "${environments[@]}"; do
     done
 done
 
-echo -e "\e[1:35mSetup wikibase\e[0m"
+echo -e "\e[1;35mSetup wikibase\e[0m"
 for environment in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         cd /var/www/wiki-$environment/wiki/$lang/
@@ -142,8 +142,8 @@ for environment in "${environments[@]}"; do
     done
 done
 
-echo -e  "\e[1:35mRemove unnecessary files\e[0m"
+echo -e "\e[1;35mRemove unnecessary files\e[0m"
 rm /home/$user/version_page.html
 
-echo -e "\e[1:35mRestarting web server...\e[0m"
+echo -e "\e[1;35mRestarting web server...\e[0m"
 echo $mediawiki_password | sudo -S systemctl restart php8.1-fpm.service

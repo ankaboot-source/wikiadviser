@@ -30,7 +30,13 @@ jobs:
         key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
         username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
         script: |
-
+          echo "Current directory:"
+          pwd
+          echo "Listing all files:"
+          ls -R
+          echo "Contents of mediawiki-upgrade.sh:"
+          cat mediawiki-setup/mediawiki-upgrade.sh || { echo "Script not found"; exit 1; }
+          
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
             export environments=("dev")
 

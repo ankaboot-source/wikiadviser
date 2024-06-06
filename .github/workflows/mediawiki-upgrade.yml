@@ -29,14 +29,7 @@ jobs:
         host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
         key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
         username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
-        script: |
-          echo "Current directory:"
-          pwd
-          echo "Listing all files:"
-          ls -R
-          echo "Contents of mediawiki-upgrade.sh:"
-          cat mediawiki-setup/mediawiki-upgrade.sh || { echo "Script not found"; exit 1; }
-          
+        script: |          
           if [ "${{ github.event.inputs.environment }}" = "dev" ]; then
             export environments=("dev")
 
@@ -51,4 +44,4 @@ jobs:
 
           export languages=("fr" "en")
           export mediawiki_password=$MW_SUDO_PWD
-          bash mediawiki-setup/mediawiki-upgrade.sh
+          bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh

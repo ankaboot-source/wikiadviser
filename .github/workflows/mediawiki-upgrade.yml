@@ -43,9 +43,6 @@ jobs:
 
           export mediawiki_password=$MW_SUDO_PWD
           languages=("fr" "en")
-          echo $languages
-          echo $mediawiki_password
-          echo $environments
-          
-          echo "Upgrading ${{ github.event.inputs.environment }} environment"
+
+          echo "Upgrading ${{ github.event.inputs.environment }} environment..."
           bash /home/wiki-user/wikiadviser/mediawiki-setup/mediawiki-upgrade.sh

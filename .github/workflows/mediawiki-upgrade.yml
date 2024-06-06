@@ -88,12 +88,9 @@ jobs:
           done
 
           echo -e "\e[1;35mBackup old db dump folder\e[0m"
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                  mv /home/$user/$dump_path /home/$user/$dump_path.old
-              done
-          done
-          
+          cp -r /home/$user/$dump_path /home/$user/$dump_path.old
+          rm /home/$user/$dump_path/*
+                    
           echo -e "\e[1;35mCreate Database dumps\e[0m"
           for environment in "${environments[@]}"; do
               for lang in "${languages[@]}"; do

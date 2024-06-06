@@ -112,41 +112,41 @@ jobs:
           #    done
           #done
           
-          echo -e "\e[1;35mIncrease Api Timeout\e[0m"
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                  sed -i 's/30 \* 1000/600 * 1000/' /var/www/wiki-$environment/wiki/$lang/resources/src/mediawiki.api/index.js
-              done
-          done
+          #echo -e "\e[1;35mIncrease Api Timeout\e[0m"
+          #for environment in "${environments[@]}"; do
+          #    for lang in "${languages[@]}"; do
+          #        sed -i 's/30 \* 1000/600 * 1000/' /var/www/wiki-$environment/wiki/$lang/resources/src/mediawiki.api/index.js
+          #    done
+          #done
           
-          echo -e "\e[1;35mInstall Additional extensions\e[0m"
-          # PageForms
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                   git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/wiki/$lang/extensions/PageForms
-              done
-          done
+          #echo -e "\e[1;35mInstall Additional extensions\e[0m"
+          ## PageForms
+          #for environment in "${environments[@]}"; do
+          #    for lang in "${languages[@]}"; do
+          #         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/wiki-$environment/wiki/$lang/extensions/PageForms
+          #    done
+          #done
           
-          # ExternalData
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                   git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/wiki/$lang/extensions/ExternalData
-              done
-          done
+          ## ExternalData
+          #for environment in "${environments[@]}"; do
+          #    for lang in "${languages[@]}"; do
+          #         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData /var/www/wiki-$environment/wiki/$lang/extensions/ExternalData
+          #    done
+          #done
           
-          # RegularToolTips
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                   git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/wiki/$lang/extensions/RegularTooltips
-              done
-          done
+          ## RegularToolTips
+          #for environment in "${environments[@]}"; do
+          #    for lang in "${languages[@]}"; do
+          #         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/wiki-$environment/wiki/$lang/extensions/RegularTooltips
+          #    done
+          #done
           
-          # HTMLTags
-          for environment in "${environments[@]}"; do
-              for lang in "${languages[@]}"; do
-                   git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/wiki/$lang/extensions/HTMLTags
-              done
-          done
+          ## HTMLTags
+          #for environment in "${environments[@]}"; do
+          #    for lang in "${languages[@]}"; do
+          #         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/wiki-$environment/wiki/$lang/extensions/HTMLTags
+          #    done
+          #done
           
           echo -e "\e[1;35mUpdate extensions to latest branch changes & fetch external libraries\e[0m"
           for environment in "${environments[@]}"; do

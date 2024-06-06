@@ -9,6 +9,11 @@ dump_path="dump"
 
 curl -s "https://en.wikipedia.org/wiki/Special:Version" > /home/$user/version_page.html
 mediawiki_version=$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' /home/$user/version_page.html | head -n1 | awk '{print $2}')
+
+echo ${languages[@]}
+echo $mediawiki_password
+echo $environments
+
 ##########################
 
 check_job_queue() {

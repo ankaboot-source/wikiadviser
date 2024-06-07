@@ -1020,8 +1020,7 @@ ve.ui.DiffElement.prototype.getChangedListNodeData = function ( newListNode, dif
  * @return {Array} Linear data for the diff
  */
 ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, newTreeNode, diff ) {
-	var diffElement = this,
-		nodeData = this.constructor.static.getDataFromNode( newTreeNode ),
+	var nodeData = this.constructor.static.getDataFromNode( newTreeNode ),
 		nodeRange = newTreeNode.getOuterRange(),
 		treeDiff = diff.treeDiff,
 		diffInfo = diff.diffInfo,
@@ -1038,17 +1037,17 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 	 * @param {number} nodeIndex The index of this node in the subtree rooted at
 	 * this document child
 	 */
-	function highlightRemovedNode( nodeIndex ) {
+	var highlightRemovedNode = ( nodeIndex ) => {
 
-		function findRemovedAncestor( n ) {
+		var findRemovedAncestor = ( n ) => {
 			if ( !n.parent || structuralRemoves.indexOf( n.parent.index ) === -1 ) {
 				return n.index;
 			} else {
 				return findRemovedAncestor( n.parent );
 			}
-		}
+		};
 
-		function getRemoveData( n, index ) {
+		var getRemoveData = ( n, index ) => {
 			var data = this.constructor.static.getDataFromNode( n.node );
 			this.addAttributesToElement( data, 0, {
 				'data-diff-action': 'remove'
@@ -1065,7 +1064,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 			}
 
 			return data;
-		}
+		};
 
 		var orderedNode = oldNodes[ nodeIndex ];
 		var node = orderedNode.node;
@@ -1079,7 +1078,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 			// Display the removed node, and all its ancestors, up to the first ancestor that
 			// hasn't been removed.
 			var highestRemovedAncestor = oldNodes[ findRemovedAncestor( orderedNode ) ];
-			var removeData = getRemoveData.call( this, orderedNode, highestRemovedAncestor.index );
+			var removeData = getRemoveData( orderedNode, highestRemovedAncestor.index );
 			var insertIndex;
 
 			// Work out where to insert the removed subtree
@@ -1135,7 +1134,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 
 			ve.batchSplice( nodeData, insertIndex, 0, removeData );
 		}
-	}
+	};
 
 	/**
 	 * Mark this node as inserted.
@@ -1143,7 +1142,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 	 * @param {number} nodeIndex The index of this node in the subtree rooted at
 	 * this document child
 	 */
-	function highlightInsertedNode( nodeIndex ) {
+	var highlightInsertedNode = ( nodeIndex ) => {
 		// Find index of first data element for this node
 		var node = newNodes[ nodeIndex ].node;
 		var nodeRangeStart = node.getOuterRange().from - nodeRange.from;
@@ -1154,7 +1153,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 				'data-diff-action': ( node.isDiffedAsTree() && node.hasChildren() ) ? 'structural-insert' : 'insert'
 			}
 		);
-	}
+	};
 
 	/**
 	 * Mark this node as changed and, if it is a content branch node, splice in
@@ -1164,14 +1163,14 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 	 * @param {number} newIdx New node index
 	 * @param {Object} info Diff information relating to this node's change
 	 */
-	function highlightChangedNode( oldIdx, newIdx, info ) {
+	var highlightChangedNode = ( oldIdx, newIdx, info ) => {
 		// The new node was changed.
 		// Get data for this node
 		var oldNode = oldNodes[ oldIdx ].node;
 		var newNode = newNodes[ newIdx ].node;
 		var nodeRangeStart = newNode.getOuterRange().from - nodeRange.from;
 
-		var nodeDiffData = diffElement.getChangedNodeData( info, oldNode, newNode, null, true );
+		var nodeDiffData = this.getChangedNodeData( info, oldNode, newNode, null, true );
 		if ( nodeDiffData ) {
 			// Diff was handled e.g. by leaf/list/doc differ
 			ve.batchSplice( nodeData, nodeRangeStart, newNode.getOuterLength(), nodeDiffData );
@@ -1194,7 +1193,7 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 				}
 			}
 		}
-	}
+	};
 
 	// Iterate backwards over trees so that changes are made from right to left
 	// of the data, to avoid having to update ranges
@@ -1206,11 +1205,11 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 
 		if ( newIndex < 0 ) {
 			// The rest of the nodes have been removed
-			highlightRemovedNode.call( this, oldIndex );
+			highlightRemovedNode( oldIndex );
 
 		} else if ( oldIndex < 0 ) {
 			// The rest of the nodes have been inserted
-			highlightInsertedNode.call( this, newIndex );
+			highlightInsertedNode( newIndex );
 
 		} else if ( correspondingNodes.newToOld[ newIndex ] === oldIndex ) {
 			// The new node was changed.
@@ -1218,23 +1217,23 @@ ve.ui.DiffElement.prototype.getChangedTreeNodeData = function ( oldTreeNode, new
 				if ( treeDiff[ k ][ 0 ] === oldIndex && treeDiff[ k ][ 1 ] === newIndex ) {
 					if ( !diffInfo[ k ] ) {
 						// We are treating these nodes as removed and inserted
-						highlightInsertedNode.call( this, newIndex );
-						highlightRemovedNode.call( this, oldIndex );
+						highlightInsertedNode( newIndex );
+						highlightRemovedNode( oldIndex );
 					} else {
 						// There could be any combination of content, attribute and type changes
-						highlightChangedNode.call( this, oldIndex, newIndex, diffInfo[ k ] );
+						highlightChangedNode( oldIndex, newIndex, diffInfo[ k ] );
 					}
 				}
 			}
 
 		} else if ( correspondingNodes.newToOld[ newIndex ] === undefined ) {
 			// The new node was inserted.
-			highlightInsertedNode.call( this, newIndex );
+			highlightInsertedNode( newIndex );
 			j--;
 
 		} else if ( correspondingNodes.newToOld[ newIndex ] < oldIndex ) {
 			// The old node was removed.
-			highlightRemovedNode.call( this, oldIndex );
+			highlightRemovedNode( oldIndex );
 			i--;
 		}
 	}

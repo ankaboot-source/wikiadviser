@@ -1,17 +1,15 @@
 'use strict';
 
-const fs = require( 'fs' );
 const path = require( 'path' );
 
-const extensionJsonPath = '../../extension.json';
-const modulesJsonPath = '../../lib/ve/build/modules.json';
+const extensionJson = require( '../extension.json' );
+const modulesJson = require( '../lib/ve/build/modules.json' );
 
 const ignored = [
 	'node_modules/',
 	'lib/',
 	'dist/',
 	'src/ve.track.js', // Re-implemented in MW
-	'src/ce/ve.ce.debug.js',
 	'tests/ve.qunit.local.js',
 	// Standalone / Demos
 	'demos/',
@@ -20,8 +18,6 @@ const ignored = [
 	'src/ui/dialogs/ve.ui.DiffDialog.js',
 	// Rebaser
 	'rebaser/',
-	'collab/',
-	'src/ve.FakePeer.js',
 	// TODO: Put these is a folder
 	'tests/ve.FakePeer.test.js',
 	'tests/dm/ve.dm.TransactionSquasher.test.js',
@@ -30,19 +26,9 @@ const ignored = [
 	'tests/dm/ve.dm.FakeSocket.js',
 	'tests/dm/ve.dm.DocumentStore.test.js',
 	'tests/dm/ve.dm.TransportServer.test.js'
-
 ];
 
-function readJson( filePath ) {
-	try {
-		// eslint-disable-next-line security/detect-non-literal-fs-filename
-		const rawData = fs.readFileSync( filePath );
-		return JSON.parse( rawData );
-	} catch ( error ) {
-		console.error( `Error reading file ${ filePath }:`, error );
-		return null;
-	}
-}
+const unusedIgnores = new Set( ignored );
 
 function addFilesToSet( files, set, basePath = '' ) {
 	if ( Array.isArray( files ) ) {
@@ -55,7 +41,11 @@ function addFilesToSet( files, set, basePath = '' ) {
 function isIgnored( filePath ) {
 	return ignored.some( ( ignorePath ) => {
 		const fullIgnorePath = path.join( 'lib/ve', ignorePath );
-		return filePath === fullIgnorePath || filePath.startsWith( fullIgnorePath );
+		const match = filePath === fullIgnorePath || filePath.startsWith( fullIgnorePath );
+		if ( match ) {
+			unusedIgnores.delete( ignorePath );
+		}
+		return match;
 	} );
 }
 
@@ -79,13 +69,6 @@ function addModulesToSet( modules, set, basePath = '' ) {
 }
 
 function checkFiles() {
-	const extensionJson = readJson( extensionJsonPath );
-	const modulesJson = readJson( modulesJsonPath );
-
-	if ( !extensionJson || !modulesJson ) {
-		return;
-	}
-
 	const extensionFiles = new Set();
 	addModulesToSet( extensionJson.ResourceModules, extensionFiles );
 	addModulesToSet( { QUnitTestModule: extensionJson.QUnitTestModule }, extensionFiles );
@@ -97,9 +80,21 @@ function checkFiles() {
 		return !extensionFiles.has( file ) && !isIgnored( file );
 	} );
 
+	if ( unusedIgnores.size ) {
+		console.warn(
+			'Unused ignore path(s) in checkModules.js:\n\n' +
+			Array.from( unusedIgnores ).map( ( ignore ) => `* ${ ignore }\n` ).join( '' )
+		);
+	}
+
 	if ( missingFiles.length ) {
-		console.log( missingFiles.length + ' missing file(s):' );
-		console.log( missingFiles.join( '\n' ) );
+		console.error(
+			`${ missingFiles.length } file(s) from lib/ve/modules.json are missing from extension.json:\n\n` +
+			missingFiles.map( ( file ) => `* ${ file }\n` ).join( '' ) +
+			'\nIf any of these files are not required, add them to the ignore list in build/checkModules.js.'
+		);
+		// eslint-disable-next-line n/no-process-exit
+		process.exit( 1 );
 	} else {
 		console.log( 'No missing files.' );
 	}

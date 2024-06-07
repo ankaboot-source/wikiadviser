@@ -195,11 +195,12 @@ ve.ce.Surface = function VeCeSurface( model, ui, config ) {
 		keydown: this.afterDocumentKeyDown.bind( this )
 	} );
 
-	this.mutationObserver = new MutationObserver( this.afterMutations.bind( this ) );
-	this.mutationObserver.observe(
-		this.$attachedRootNode[ 0 ],
-		{ childList: true, subtree: true }
-	);
+	// Disable mutation observer (T365052)
+	// this.mutationObserver = new MutationObserver( this.afterMutations.bind( this ) );
+	// this.mutationObserver.observe(
+	//   this.$attachedRootNode[ 0 ],
+	//   { childList: true, subtree: true }
+	// );
 
 	// Initialization
 	// Support: Chrome
@@ -824,12 +825,8 @@ ve.ce.Surface.prototype.activate = function () {
 			this.getModel().setSelection( previousSelection );
 			// Restore active annotations
 			if ( this.previousActiveAnnotations.length ) {
-				var annotationClasses = this.previousActiveAnnotations.map( ( ann ) => {
-					return ann.constructor;
-				} );
-				this.selectAnnotation( ( view ) => {
-					return ve.isInstanceOfAny( view, annotationClasses );
-				} );
+				var annotationClasses = this.previousActiveAnnotations.map( ( ann ) => ann.constructor );
+				this.selectAnnotation( ( view ) => ve.isInstanceOfAny( view, annotationClasses ) );
 			}
 		}
 
@@ -1149,9 +1146,7 @@ ve.ce.Surface.prototype.onDocumentMouseDown = function ( e ) {
 				!(
 					// Shallow strict equality check
 					this.contexedAnnotations.length === contexedAnnotations.length &&
-					this.contexedAnnotations.every( ( ann, i ) => {
-						return ann === contexedAnnotations[ i ];
-					} )
+					this.contexedAnnotations.every( ( ann, i ) => ann === contexedAnnotations[ i ] )
 				)
 			)
 		) {
@@ -1764,7 +1759,6 @@ ve.ce.Surface.prototype.onDocumentKeyPress = function ( e ) {
  */
 ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 	var keyDownSelectionState,
-		surface = this,
 		documentModel = this.getModel().getDocument(),
 		isArrow = (
 			e.keyCode === OO.ui.Keys.UP ||
@@ -1792,7 +1786,7 @@ ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 	 * @param {number} dir Cursor motion direction (1=forward, -1=backward)
 	 * @return {ve.ce.Node|null} node, or null if not in a focusable node
 	 */
-	function getSurroundingFocusableNode( node, offset, dir ) {
+	var getSurroundingFocusableNode = ( node, offset, dir ) => {
 		var focusNode;
 		if ( node.nodeType === Node.TEXT_NODE ) {
 			focusNode = node;
@@ -1810,7 +1804,7 @@ ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 			return null;
 		}
 		return $( focusNode ).closest( '.ve-ce-focusableNode, .ve-ce-tableNode' ).data( 'view' ) || null;
-	}
+	};
 
 	/**
 	 * Compute the direction of cursor movement, if any
@@ -1823,18 +1817,16 @@ ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 	 *
 	 * @return {number|null} negative for startwards, positive for endwards, null for none
 	 */
-	function getDirection() {
-		return (
-			isArrow &&
+	var getDirection = () => (
+		isArrow &&
 			keyDownSelectionState &&
 			ve.compareDocumentOrder(
-				surface.nativeSelection.focusNode,
-				surface.nativeSelection.focusOffset,
+				this.nativeSelection.focusNode,
+				this.nativeSelection.focusOffset,
 				keyDownSelectionState.focusNode,
 				keyDownSelectionState.focusOffset
 			)
-		) || null;
-	}
+	) || null;
 
 	if ( e !== this.keyDownState.event ) {
 		return;
@@ -1857,7 +1849,7 @@ ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 				this.decRenderLock();
 			}
 
-			var dmSelection = surface.model.getSelection();
+			var dmSelection = this.model.getSelection();
 			if ( dmSelection instanceof ve.dm.LinearSelection ) {
 				var dmFocus = dmSelection.getRange().end;
 				var ceNode = this.documentView.getBranchNodeFromOffset( dmFocus );
@@ -1885,7 +1877,7 @@ ve.ce.Surface.prototype.afterDocumentKeyDown = function ( e ) {
 	}
 
 	// Only fixup cursoring on linear selections.
-	if ( isArrow && !( surface.model.getSelection() instanceof ve.dm.LinearSelection ) ) {
+	if ( isArrow && !( this.model.getSelection() instanceof ve.dm.LinearSelection ) ) {
 		return;
 	}
 
@@ -2264,9 +2256,7 @@ ve.ce.Surface.prototype.onCopy = function ( e, selection ) {
  */
 ve.ce.Surface.prototype.getBeforePasteAnnotationSet = function () {
 	var store = this.getModel().getDocument().getStore();
-	var dmAnnotations = this.beforePasteAnnotationsAtFocus.map( ( view ) => {
-		return view.getModel();
-	} );
+	var dmAnnotations = this.beforePasteAnnotationsAtFocus.map( ( view ) => view.getModel() );
 	return new ve.dm.AnnotationSet( store, store.hashAll( dmAnnotations ) );
 };
 
@@ -2888,10 +2878,9 @@ ve.ce.Surface.prototype.afterPasteAddToFragmentFromExternal = function ( clipboa
 	} else {
 		contextRange = pastedDocumentModel.getDocumentRange();
 	}
-	var pastedNodes = pastedDocumentModel.selectNodes( contextRange, 'siblings' ).filter( ( node ) => {
+	var pastedNodes = pastedDocumentModel.selectNodes( contextRange, 'siblings' )
 		// Ignore nodes where nothing is selected
-		return !( node.range && node.range.isCollapsed() );
-	} );
+		.filter( ( node ) => !( node.range && node.range.isCollapsed() ) );
 
 	// Unwrap single content branch nodes to match internal copy/paste behaviour
 	// (which wouldn't put the open and close tags in the clipboard to begin with).
@@ -3322,21 +3311,18 @@ ve.ce.Surface.prototype.onDocumentBeforeInput = function ( e ) {
  * there is candidate text (T312558).
  */
 ve.ce.Surface.prototype.fixupChromiumNativeEnter = function () {
-	var range,
-		surface = this,
-		fixedUp = false;
-
-	function setCursorToEnd( element ) {
+	var setCursorToEnd = ( element ) => {
 		if ( !element ) {
 			return;
 		}
-		range = surface.getElementDocument().createRange();
+		var range = this.getElementDocument().createRange();
 		range.setStart( element, element.childNodes.length );
 		range.setEnd( element, element.childNodes.length );
-		surface.nativeSelection.removeAllRanges();
-		surface.nativeSelection.addRange( range );
-	}
+		this.nativeSelection.removeAllRanges();
+		this.nativeSelection.addRange( range );
+	};
 
+	var fixedUp = false;
 	// Test for Chromium native Enter inside a <li class="foo"><p class="bar">...</p></li>
 	// creating unwanted trailing <li class="foo"><p class="bar"><br></p></li>,
 	// assuming it (initially) leaves the selection in the original list item.
@@ -3741,12 +3727,8 @@ ve.ce.Surface.prototype.handleObservedChanges = function ( oldState, newState ) 
 				} finally {
 					this.decRenderLock();
 				}
-				insertedText = transaction.operations.some( ( op ) => {
-					return op.type === 'replace' && op.insert.length;
-				} );
-				removedText = transaction.operations.some( ( op ) => {
-					return op.type === 'replace' && op.remove.length;
-				} );
+				insertedText = transaction.operations.some( ( op ) => op.type === 'replace' && op.insert.length );
+				removedText = transaction.operations.some( ( op ) => op.type === 'replace' && op.remove.length );
 			}
 		}
 	}
@@ -4516,10 +4498,8 @@ ve.ce.Surface.prototype.getRelativeSelectableContentOffset = function ( startOff
 				// This shouldn't happen in a content offset
 				return false;
 			}
-			var noAutoFocusContainer = branchNode.traverseUpstream( ( node ) => {
-				// traverseUpstream stops on a false return
-				return node.autoFocus();
-			} );
+			// traverseUpstream stops on a false return
+			var noAutoFocusContainer = branchNode.traverseUpstream( ( node ) => node.autoFocus() );
 			if ( noAutoFocusContainer ) {
 				// Don't try to place the cursor in a node which has a container with autoFocus set to false
 				return false;
@@ -4600,8 +4580,7 @@ ve.ce.Surface.prototype.selectLastSelectableContentOffset = function () {
  * @return {ve.Range|null} Range covering data visible in the viewport, null if the surface is not attached
  */
 ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
-	var surface = this,
-		documentModel = this.getModel().getDocument(),
+	var documentModel = this.getModel().getDocument(),
 		data = documentModel.data,
 		dimensions = this.surface.getViewportDimensions();
 
@@ -4617,7 +4596,7 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 		this.getModel().getDocument().getDocumentRange() :
 		this.attachedRoot.getRange();
 
-	function highestIgnoreChildrenNode( childNode ) {
+	var highestIgnoreChildrenNode = ( childNode ) => {
 		var ignoreChildrenNode = null;
 		childNode.traverseUpstream( ( node ) => {
 			if ( node.shouldIgnoreChildren() ) {
@@ -4625,9 +4604,16 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 			}
 		} );
 		return ignoreChildrenNode;
-	}
+	};
 
-	function binarySearch( offset, range, side, isStart ) {
+	/**
+	 * @param {number} offset Vertical offset to find
+	 * @param {ve.Range} range Document range
+	 * @param {string} side Side of the viewport align with, 'bottom' or 'top'
+	 * @param {boolean} isStart Find the start of the range, otherwise the end
+	 * @return {number} DM offset
+	 */
+	var binarySearch = ( offset, range, side, isStart ) => {
 		var start = range.start,
 			end = range.end,
 			lastLength = Infinity;
@@ -4664,7 +4650,7 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 				} else {
 					contentRange = new ve.Range( mid );
 				}
-				rect = surface.getSelection( new ve.dm.LinearSelection( contentRange ) ).getSelectionBoundingRect();
+				rect = this.getSelection( new ve.dm.LinearSelection( contentRange ) ).getSelectionBoundingRect();
 
 				// Node at contentRange is not rendered, find rendered parent
 				if ( !rect ) {
@@ -4697,7 +4683,7 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 			}
 		}
 		return side === 'bottom' ? start : end;
-	}
+	};
 
 	return new ve.Range(
 		binarySearch( top, documentRange, covering ? 'bottom' : 'top', true ),
@@ -5359,9 +5345,7 @@ ve.ce.Surface.prototype.getSelectedModels = function () {
 		) );
 	}
 
-	var activeModels = this.activeAnnotations.map( ( view ) => {
-		return view.getModel();
-	} );
+	var activeModels = this.activeAnnotations.map( ( view ) => view.getModel() );
 
 	if ( this.model.sourceMode ) {
 		return models;
@@ -5525,9 +5509,7 @@ ve.ce.Surface.prototype.afterMutations = function ( mutationRecords ) {
 			}
 		} );
 	} );
-	removals.sort( ( x, y ) => {
-		return x.range.start - y.range.start;
-	} );
+	removals.sort( ( x, y ) => x.range.start - y.range.start );
 	for ( var i = 0, iLen = removals.length; i < iLen; i++ ) {
 		// Remove any overlapped range (which in a tree must be a nested range)
 		if ( i > 0 && removals[ i ].range.start < removals[ i - 1 ].range.end ) {

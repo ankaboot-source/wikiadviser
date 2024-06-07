@@ -62,9 +62,9 @@ ve.ui.MWLinkNodeInspector.prototype.initialize = function () {
  */
 ve.ui.MWLinkNodeInspector.prototype.getActionProcess = function ( action ) {
 	if ( action === 'convert' ) {
-		return new OO.ui.Process( function () {
+		return new OO.ui.Process( () => {
 			this.close( { action: action } );
-		}, this );
+		} );
 	}
 	return ve.ui.MWLinkNodeInspector.super.prototype.getActionProcess.call( this, action );
 };
@@ -74,13 +74,13 @@ ve.ui.MWLinkNodeInspector.prototype.getActionProcess = function ( action ) {
  */
 ve.ui.MWLinkNodeInspector.prototype.getSetupProcess = function ( data ) {
 	return ve.ui.MWLinkNodeInspector.super.prototype.getSetupProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			// Initialization
 			this.targetInput.setValue(
 				this.selectedNode ? this.selectedNode.getAttribute( 'href' ) : ''
 			);
 			this.targetInput.setReadOnly( this.isReadOnly() );
-		}, this );
+		} );
 };
 
 /**
@@ -88,9 +88,9 @@ ve.ui.MWLinkNodeInspector.prototype.getSetupProcess = function ( data ) {
  */
 ve.ui.MWLinkNodeInspector.prototype.getReadyProcess = function ( data ) {
 	return ve.ui.MWLinkNodeInspector.super.prototype.getReadyProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			this.targetInput.focus().select();
-		}, this );
+		} );
 };
 
 /**
@@ -99,12 +99,12 @@ ve.ui.MWLinkNodeInspector.prototype.getReadyProcess = function ( data ) {
 ve.ui.MWLinkNodeInspector.prototype.getTeardownProcess = function ( data ) {
 	data = data || {};
 	return ve.ui.MWLinkNodeInspector.super.prototype.getTeardownProcess.call( this, data )
-		.first( function () {
-			var surfaceView = this.manager.getSurface().getView(),
+		.first( () => {
+			let value = this.targetInput.getValue();
+			const surfaceView = this.manager.getSurface().getView(),
 				surfaceModel = this.getFragment().getSurface(),
 				doc = surfaceModel.getDocument(),
 				nodeRange = this.selectedNode.getOuterRange(),
-				value = this.targetInput.getValue(),
 				convert = data.action === 'convert',
 				remove = data.action === 'remove' || !value;
 
@@ -120,23 +120,21 @@ ve.ui.MWLinkNodeInspector.prototype.getTeardownProcess = function ( data ) {
 					ve.dm.TransactionBuilder.static.newFromRemoval( doc, nodeRange )
 				);
 			} else if ( convert ) {
-				var annotation = new ve.dm.MWExternalLinkAnnotation( {
+				const annotation = new ve.dm.MWExternalLinkAnnotation( {
 					type: 'link/mwExternal',
 					attributes: {
 						href: value
 					}
 				} );
-				var annotations = doc.data.getAnnotationsFromOffset( nodeRange.start ).clone();
+				const annotations = doc.data.getAnnotationsFromOffset( nodeRange.start ).clone();
 				annotations.push( annotation );
-				var content = value.split( '' );
+				const content = value.split( '' );
 				ve.dm.Document.static.addAnnotationsToData( content, annotations );
 				surfaceModel.change(
 					ve.dm.TransactionBuilder.static.newFromReplacement( doc, nodeRange, content )
 				);
-				setTimeout( function () {
-					surfaceView.selectAnnotation( function ( view ) {
-						return view.model instanceof ve.dm.MWExternalLinkAnnotation;
-					} );
+				setTimeout( () => {
+					surfaceView.selectAnnotation( ( view ) => view.model instanceof ve.dm.MWExternalLinkAnnotation );
 				} );
 			} else {
 				surfaceModel.change(
@@ -145,7 +143,7 @@ ve.ui.MWLinkNodeInspector.prototype.getTeardownProcess = function ( data ) {
 					)
 				);
 			}
-		}, this );
+		} );
 };
 
 /* Registration */

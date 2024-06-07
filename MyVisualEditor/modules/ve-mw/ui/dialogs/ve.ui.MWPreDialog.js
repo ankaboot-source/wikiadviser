@@ -76,9 +76,9 @@ ve.ui.MWPreDialog.prototype.initialize = function () {
  */
 ve.ui.MWPreDialog.prototype.getReadyProcess = function ( data ) {
 	return ve.ui.MWPreDialog.super.prototype.getReadyProcess.call( this, data )
-		.next( function () {
+		.next( () => {
 			this.input.focus();
-		}, this );
+		} );
 };
 
 /**
@@ -86,8 +86,8 @@ ve.ui.MWPreDialog.prototype.getReadyProcess = function ( data ) {
  */
 ve.ui.MWPreDialog.prototype.getActionProcess = function ( action ) {
 	if ( action === 'convert' ) {
-		return new OO.ui.Process( function () {
-			var
+		return new OO.ui.Process( () => {
+			const
 				value = this.input.getValue(),
 				nodeRange = this.selectedNode.getOuterRange(),
 				surfaceModel = this.getFragment().getSurface(),
@@ -105,7 +105,7 @@ ve.ui.MWPreDialog.prototype.getActionProcess = function ( action ) {
 				ve.dm.TransactionBuilder.static.newFromReplacement( doc, nodeRange, content )
 			);
 			this.close();
-		}, this );
+		} );
 	}
 	// Parent method
 	return ve.ui.MWPreDialog.super.prototype.getActionProcess.call( this, action );

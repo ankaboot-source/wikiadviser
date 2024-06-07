@@ -34,17 +34,14 @@ ve.FakePeer.prototype.on = function ( ev, f ) {
 	handlers.push( f );
 };
 
-ve.FakePeer.prototype.callHandlers = function ( type ) {
-	var args = Array.prototype.slice.call( arguments, 1 );
+ve.FakePeer.prototype.callHandlers = function ( type, ...args ) {
 	( this.handlers.get( type ) || [] ).forEach( ( handler ) => {
-		handler.apply( null, args );
+		handler( ...args );
 	} );
 };
 
 ve.FakePeer.prototype.connect = function ( id ) {
-	var peer = this.constructor.static.peers.find( ( peerI ) => {
-		return peerI.id === id;
-	} );
+	var peer = this.constructor.static.peers.find( ( peerI ) => peerI.id === id );
 	if ( !peer ) {
 		throw new Error( 'Unknown id: ' + id );
 	}
@@ -78,10 +75,9 @@ ve.FakePeerConnection.prototype.on = function ( ev, f ) {
 	handlers.push( f );
 };
 
-ve.FakePeerConnection.prototype.callHandlers = function ( type ) {
-	var args = Array.prototype.slice.call( arguments, 1 );
+ve.FakePeerConnection.prototype.callHandlers = function ( type, ...args ) {
 	( this.handlers.get( type ) || [] ).forEach( ( handler ) => {
-		handler.apply( null, args );
+		handler( ...args );
 	} );
 };
 

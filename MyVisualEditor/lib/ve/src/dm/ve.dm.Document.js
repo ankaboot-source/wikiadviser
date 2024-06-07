@@ -9,7 +9,7 @@
  *
  * WARNING: The data parameter is passed by reference. Do not modify a data array after passing
  * it to this constructor, and do not construct multiple Documents with the same data array. If you
- * need to do these things, make a deep copy (ve#copy) of the data array and operate on the
+ * need to do these things, make a deep copy (ve.copy) of the data array and operate on the
  * copy.
  *
  * @class
@@ -151,9 +151,7 @@ ve.dm.Document.static.addAnnotationsToData = function ( data, annotationSet, rep
 			continue;
 		}
 		// eslint-disable-next-line no-loop-func
-		var allowedAnnotations = annotationSet.filter( ( ann ) => {
-			return data.canTakeAnnotationAtOffset( i, ann, true );
-		} );
+		var allowedAnnotations = annotationSet.filter( ( ann ) => data.canTakeAnnotationAtOffset( i, ann, true ) );
 		var existingAnnotations = data.getAnnotationsFromOffset( i, true );
 		var newAnnotationSet;
 		if ( !existingAnnotations.isEmpty() ) {
@@ -1013,9 +1011,7 @@ ve.dm.Document.prototype.getNearestNodeMatching = function ( test, offset, direc
  * @return {ve.dm.Node|null} Nearest focusable node, or null if not found
  */
 ve.dm.Document.prototype.getNearestFocusableNode = function ( offset, direction, limit ) {
-	return this.getNearestNodeMatching( ( nodeType ) => {
-		return ve.dm.nodeFactory.isNodeFocusable( nodeType );
-	}, offset, direction, limit );
+	return this.getNearestNodeMatching( ( nodeType ) => ve.dm.nodeFactory.isNodeFocusable( nodeType ), offset, direction, limit );
 };
 
 /**
@@ -1155,36 +1151,34 @@ ve.dm.Document.prototype.rebuildTree = function () {
  * @param {ve.dm.Node[]} removedNodes Removed nodes
  */
 ve.dm.Document.prototype.updateNodesByType = function ( addedNodes, removedNodes ) {
-	var doc = this;
-
-	function remove( node ) {
+	var remove = ( node ) => {
 		var type = node.getType(),
-			nodes = doc.nodesByType[ type ] || [],
+			nodes = this.nodesByType[ type ] || [],
 			index = nodes.indexOf( node );
 
 		if ( index !== -1 ) {
 			nodes.splice( index, 1 );
 			if ( !nodes.length ) {
-				delete doc.nodesByType[ type ];
+				delete this.nodesByType[ type ];
 			}
 		}
-	}
+	};
 
-	function add( node ) {
+	var add = ( node ) => {
 		var type = node.getType(),
-			nodes = doc.nodesByType[ type ] = doc.nodesByType[ type ] || [];
+			nodes = this.nodesByType[ type ] = this.nodesByType[ type ] || [];
 
 		nodes.push( node );
-	}
+	};
 
-	function traverse( nodes, action ) {
+	var traverse = ( nodes, action ) => {
 		nodes.forEach( ( node ) => {
 			if ( node.hasChildren() ) {
 				node.traverse( action );
 			}
 			action( node );
 		} );
-	}
+	};
 
 	traverse( removedNodes, remove );
 	traverse( addedNodes, add );
@@ -1219,9 +1213,7 @@ ve.dm.Document.prototype.getNodesByType = function ( type, sort ) {
 	}
 
 	if ( sort ) {
-		nodes.sort( ( a, b ) => {
-			return a.getOffset() - b.getOffset();
-		} );
+		nodes.sort( ( a, b ) => a.getOffset() - b.getOffset() );
 	}
 	return nodes;
 };
@@ -1712,10 +1704,8 @@ ve.dm.Document.prototype.findText = function ( query, options ) {
 
 	if ( options.wholeWord ) {
 		var dataString = new ve.dm.DataString( this.getData() );
-		ranges = ranges.filter( ( range ) => {
-			return unicodeJS.wordbreak.isBreak( dataString, range.start ) &&
-				unicodeJS.wordbreak.isBreak( dataString, range.end );
-		} );
+		ranges = ranges.filter( ( range ) => unicodeJS.wordbreak.isBreak( dataString, range.start ) &&
+				unicodeJS.wordbreak.isBreak( dataString, range.end ) );
 	}
 
 	return ranges;
@@ -1778,7 +1768,7 @@ ve.dm.Document.prototype.getDir = function () {
  * such as InternalList's nextUniqueNumber.
  *
  * @param {string|Object} [keyOrStorage] Key, or storage object to restore
- * @param {Mixed} [value] Serializable value, if key is set
+ * @param {any} [value] Serializable value, if key is set
  * @fires ve.dm.Document#storage
  */
 ve.dm.Document.prototype.setStorage = function ( keyOrStorage, value ) {
@@ -1794,7 +1784,7 @@ ve.dm.Document.prototype.setStorage = function ( keyOrStorage, value ) {
  * Get a value from the persistent static storage, or the whole store
  *
  * @param {string} [key] Key
- * @return {Mixed|Object} Value at key, or whole storage object if key not provided
+ * @return {any|Object} Value at key, or whole storage object if key not provided
  */
 ve.dm.Document.prototype.getStorage = function ( key ) {
 	if ( key ) {

@@ -65,13 +65,13 @@
  * - Documented aliases are also considered valid, known parameter names. Use
  *   {@link #isParameterAlias} to differentiate between the two.
  *
- * Therefore this is not the original specification but an accessor to the documentation for an
- * individual template invocation. It's possible different for every invocation.
+ * Therefore, this is not the original specification but an accessor to the documentation for an
+ * individual template invocation. It's possibly different for every invocation.
  *
- * Meant to be in a 1:1 relationship to ve.dm.MWTemplateModel.
+ * Meant to be in a 1:1 relationship to {@link ve.dm.MWTemplateModel}.
  *
- * The actual, unmodified specification can be found in the {@link #templateData} property, and
- * the local `specCache` in ve.dm.MWTransclusionModel.
+ * The actual, unmodified specification can be found in the {@link #templateData} property and
+ * the local `specCache` in {@link ve.dm.MWTransclusionModel}.
  *
  * See <https://github.com/wikimedia/mediawiki-extensions-TemplateData/blob/master/Specification.md>
  * for the latest version of the TemplateData specification.
@@ -142,14 +142,14 @@ ve.dm.MWTemplateSpecModel.prototype.setTemplateData = function ( data ) {
 	// {@see ve.ui.MWAddParameterPage}.
 	delete this.templateData.params[ '' ];
 
-	var resolveAliases = false;
+	let resolveAliases = false;
 
-	for ( var primaryName in this.templateData.params ) {
+	for ( const primaryName in this.templateData.params ) {
 		this.seenParameterNames[ primaryName ] = true;
 
-		var aliases = this.getParameterAliases( primaryName );
-		for ( var i = 0; i < aliases.length; i++ ) {
-			var alias = aliases[ i ];
+		const aliases = this.getParameterAliases( primaryName );
+		for ( let i = 0; i < aliases.length; i++ ) {
+			const alias = aliases[ i ];
 			this.aliases[ alias ] = primaryName;
 			if ( alias in this.seenParameterNames ) {
 				resolveAliases = true;
@@ -158,8 +158,8 @@ ve.dm.MWTemplateSpecModel.prototype.setTemplateData = function ( data ) {
 	}
 
 	if ( resolveAliases ) {
-		var primaryNames = {};
-		for ( var name in this.seenParameterNames ) {
+		const primaryNames = {};
+		for ( const name in this.seenParameterNames ) {
 			primaryNames[ this.getPrimaryParameterName( name ) ] = true;
 		}
 		this.seenParameterNames = primaryNames;
@@ -172,7 +172,7 @@ ve.dm.MWTemplateSpecModel.prototype.setTemplateData = function ( data ) {
  * to the template.
  */
 ve.dm.MWTemplateSpecModel.prototype.fillFromTemplate = function () {
-	for ( var name in this.template.getParameters() ) {
+	for ( const name in this.template.getParameters() ) {
 		// Ignore placeholder parameters with no name
 		if ( name && !this.isKnownParameterOrAlias( name ) ) {
 			// There is no information other than the names of the parameters, that they exist, and
@@ -188,7 +188,7 @@ ve.dm.MWTemplateSpecModel.prototype.fillFromTemplate = function () {
  *  `{{example}}` when a template name is dynamically generated.
  */
 ve.dm.MWTemplateSpecModel.prototype.getLabel = function () {
-	var title = this.template.getTemplateDataQueryTitle();
+	let title = this.template.getTemplateDataQueryTitle();
 	if ( title ) {
 		try {
 			// Normalize and remove namespace prefix if in the Template: namespace
@@ -228,9 +228,7 @@ ve.dm.MWTemplateSpecModel.prototype.isDocumented = function () {
  */
 ve.dm.MWTemplateSpecModel.prototype.getDocumentedParameterOrder = function () {
 	return Array.isArray( this.templateData.paramOrder ) ?
-		this.templateData.paramOrder.filter( function ( name ) {
-			return name;
-		} ) :
+		this.templateData.paramOrder.filter( ( name ) => name ) :
 		Object.keys( this.templateData.params );
 };
 
@@ -240,11 +238,9 @@ ve.dm.MWTemplateSpecModel.prototype.getDocumentedParameterOrder = function () {
  * @return {string[]}
  */
 ve.dm.MWTemplateSpecModel.prototype.getUndocumentedParameterNames = function () {
-	var documentedParameters = this.templateData.params;
+	const documentedParameters = this.templateData.params;
 
-	return this.getKnownParameterNames().filter( function ( name ) {
-		return !( name in documentedParameters );
-	} );
+	return this.getKnownParameterNames().filter( ( name ) => !( name in documentedParameters ) );
 };
 
 /**
@@ -258,9 +254,9 @@ ve.dm.MWTemplateSpecModel.prototype.getUndocumentedParameterNames = function () 
  * @return {string[]}
  */
 ve.dm.MWTemplateSpecModel.prototype.getCanonicalParameterOrder = function () {
-	var undocumentedParameters = this.getUndocumentedParameterNames();
+	const undocumentedParameters = this.getUndocumentedParameterNames();
 
-	undocumentedParameters.sort( function ( a, b ) {
+	undocumentedParameters.sort( ( a, b ) => {
 		if ( isNaN( a ) ) {
 			// If a and b are string, order alphabetically, otherwise numbers before strings
 			return isNaN( b ) ? a.localeCompare( b ) : 1;
@@ -310,7 +306,7 @@ ve.dm.MWTemplateSpecModel.prototype.isParameterDocumented = function ( name ) {
  *  name as is.
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterLabel = function ( name, languageCode ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return this.constructor.static.getLocalValue( param && param.label || name, languageCode );
 };
 
@@ -320,7 +316,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterLabel = function ( name, languag
  * @return {string|null}
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterDescription = function ( name, languageCode ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return this.constructor.static.getLocalValue( param && param.description || null, languageCode );
 };
 
@@ -329,7 +325,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterDescription = function ( name, l
  * @return {string[]}
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterSuggestedValues = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && param.suggestedvalues || [];
 };
 
@@ -341,7 +337,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterSuggestedValues = function ( nam
  * @return {string} e.g. "{{PAGENAME}}"
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterDefaultValue = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && param.default || '';
 };
 
@@ -351,7 +347,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterDefaultValue = function ( name )
  * @return {string|null}
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterExampleValue = function ( name, languageCode ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return this.constructor.static.getLocalValue( param && param.example || null, languageCode );
 };
 
@@ -363,7 +359,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterExampleValue = function ( name, 
  * @return {string}
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterAutoValue = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && param.autovalue || '';
 };
 
@@ -372,7 +368,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterAutoValue = function ( name ) {
  * @return {string} e.g. "string"
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterType = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && param.type || 'string';
 };
 
@@ -383,7 +379,7 @@ ve.dm.MWTemplateSpecModel.prototype.getParameterType = function ( name ) {
  * @return {string[]} Alternate parameter names
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterAliases = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && param.aliases || [];
 };
 
@@ -404,7 +400,7 @@ ve.dm.MWTemplateSpecModel.prototype.getPrimaryParameterName = function ( name ) 
  * @return {boolean}
  */
 ve.dm.MWTemplateSpecModel.prototype.isParameterRequired = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return !!( param && param.required );
 };
 
@@ -413,7 +409,7 @@ ve.dm.MWTemplateSpecModel.prototype.isParameterRequired = function ( name ) {
  * @return {boolean}
  */
 ve.dm.MWTemplateSpecModel.prototype.isParameterSuggested = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return !!( param && param.suggested );
 };
 
@@ -422,7 +418,7 @@ ve.dm.MWTemplateSpecModel.prototype.isParameterSuggested = function ( name ) {
  * @return {boolean}
  */
 ve.dm.MWTemplateSpecModel.prototype.isParameterDeprecated = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return !!( param && ( param.deprecated || typeof param.deprecated === 'string' ) );
 };
 
@@ -432,7 +428,7 @@ ve.dm.MWTemplateSpecModel.prototype.isParameterDeprecated = function ( name ) {
  *   deprecated or no description has been specified
  */
 ve.dm.MWTemplateSpecModel.prototype.getParameterDeprecationDescription = function ( name ) {
-	var param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
+	const param = this.templateData.params[ this.getPrimaryParameterName( name ) ];
 	return param && typeof param.deprecated === 'string' ? param.deprecated : '';
 };
 

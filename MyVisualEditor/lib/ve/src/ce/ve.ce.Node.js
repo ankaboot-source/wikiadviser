@@ -194,12 +194,12 @@ ve.ce.Node.prototype.isContent = function () {
 
 // eslint-disable-next-line jsdoc/require-returns
 /**
- * @see ve.Node
- *
  * If this is set to true it should implement:
  *
  *     setFocused( boolean val )
  *     boolean isFocused()
+ *
+ * @see ve.Node
  */
 ve.ce.Node.prototype.isFocusable = function () {
 	return this.model.isFocusable();
@@ -304,9 +304,7 @@ ve.ce.Node.prototype.removeEmptyLastChildOnEnter = function () {
  * @return {boolean} Node supports multiline input
  */
 ve.ce.Node.prototype.isMultiline = function () {
-	var booleanNode = this.traverseUpstream( ( node ) => {
-		return node.constructor.static.isMultiline === null;
-	} );
+	var booleanNode = this.traverseUpstream( ( node ) => node.constructor.static.isMultiline === null );
 	if ( booleanNode ) {
 		return booleanNode.constructor.static.isMultiline;
 	} else {

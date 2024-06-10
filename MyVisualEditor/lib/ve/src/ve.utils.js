@@ -35,7 +35,7 @@ ve.isInstanceOfAny = function ( subject, classes ) {
  *
  * @method
  * @param {Object} obj
- * @param {...Mixed} [keys]
+ * @param {...any} [keys]
  * @return {Object|undefined} obj[arguments[1]][arguments[2]].... or undefined
  */
 ve.getProp = OO.getProp;
@@ -54,8 +54,8 @@ ve.getProp = OO.getProp;
  *
  * @method
  * @param {Object} obj
- * @param {...Mixed} [keys]
- * @param {Mixed} [value]
+ * @param {...any} [keys]
+ * @param {any} [value]
  */
 ve.setProp = OO.setProp;
 
@@ -67,7 +67,7 @@ ve.setProp = OO.setProp;
  *
  * @method
  * @param {Object} obj
- * @param {...Mixed} [keys]
+ * @param {...any} [keys]
  */
 ve.deleteProp = OO.deleteProp;
 
@@ -170,13 +170,13 @@ ve.copy = OO.copy;
 
 /**
  * @method
- * @see OO.ui#debounce
+ * @see OO.ui.debounce
  */
 ve.debounce = OO.ui.debounce;
 
 /**
  * @method
- * @see OO.ui#throttle
+ * @see OO.ui.throttle
  */
 ve.throttle = OO.ui.throttle;
 
@@ -208,9 +208,7 @@ ve.promiseAll = function ( promises ) {
  * @return {HTMLElement[]} Copy of domElements with copies of each element
  */
 ve.copyDomElements = function ( domElements, doc ) {
-	return domElements.map( ( domElement ) => {
-		return doc ? doc.importNode( domElement, true ) : domElement.cloneNode( true );
-	} );
+	return domElements.map( ( domElement ) => doc ? doc.importNode( domElement, true ) : domElement.cloneNode( true ) );
 };
 
 /**
@@ -293,10 +291,10 @@ ve.isEmptyObject = $.isEmptyObject;
  *
  * @method
  * @param {boolean} [recursive=false]
- * @param {Mixed} [target] Object that will receive the new properties
- * @param {...Mixed} [sources] Variadic list of objects containing properties
+ * @param {any} [target] Object that will receive the new properties
+ * @param {...any} [sources] Variadic list of objects containing properties
  * to be merged into the target.
- * @return {Mixed} Modified version of first or second argument
+ * @return {any} Modified version of first or second argument
  */
 ve.extendObject = $.extend;
 
@@ -409,7 +407,7 @@ ve.sparseSplice = function ( arr, offset, remove, data ) {
  *
  * Shortcut for `ve.batchSplice( arr, offset, 0, src )`.
  *
- * @see #batchSplice
+ * @see ve.batchSplice
  * @param {Array|ve.dm.BranchNode} arr Target object (must have `splice` method)
  * @param {number} offset Offset in arr where items will be inserted
  * @param {Array} src Items to insert at offset
@@ -453,7 +451,7 @@ ve.batchPush = function ( arr, data ) {
  *
  * This implementation does nothing, to add a real implementation ve.debug needs to be loaded.
  *
- * @param {...Mixed} [args] Data to log
+ * @param {...any} [args] Data to log
  */
 ve.log = ve.log || function () {
 	// Don't do anything, this is just a stub
@@ -464,7 +462,7 @@ ve.log = ve.log || function () {
  *
  * This implementation does nothing, to add a real implementation ve.debug needs to be loaded.
  *
- * @param {...Mixed} [args] Data to log
+ * @param {...any} [args] Data to log
  */
 ve.error = ve.error || function () {
 	// Don't do anything, this is just a stub
@@ -499,7 +497,7 @@ ve.deepFreeze = ve.deepFreeze || function ( obj ) {
  * Get a localized message.
  *
  * @param {string} key Message key
- * @param {...Mixed} [params] Message parameters
+ * @param {...any} [params] Message parameters
  * @return {string} Localized message
  */
 ve.msg = function () {
@@ -512,7 +510,7 @@ ve.msg = function () {
  * Get an HTML localized message with HTML or DOM arguments.
  *
  * @param {string} key Message key
- * @param {...Mixed} [params] Message parameters
+ * @param {...any} [params] Message parameters
  * @return {Node[]} Localized message
  */
 ve.htmlMsg = function () {
@@ -525,7 +523,7 @@ ve.htmlMsg = function () {
  * Get platform config value(s)
  *
  * @param {string|string[]} key Config key, or list of keys
- * @return {Mixed|Object} Config value, or keyed object of config values if list of keys provided
+ * @return {any|Object} Config value, or keyed object of config values if list of keys provided
  */
 ve.config = function () {
 	return ve.init.platform.getConfig.apply( ve.init.platform, arguments );
@@ -535,8 +533,8 @@ ve.config = function () {
  * Get or set a user config value.
  *
  * @param {string|string[]|Object} key Config key, list of keys or object mapping keys to values
- * @param {Mixed} [value] Value to set, if setting and key is a string
- * @return {Mixed|Object|boolean} Config value, keyed object of config values if list of keys provided,
+ * @param {any} [value] Value to set, if setting and key is a string
+ * @return {any|Object|boolean} Config value, keyed object of config values if list of keys provided,
  *  or success boolean if setting.
  */
 ve.userConfig = function ( key ) {
@@ -786,9 +784,7 @@ ve.filterMetaElements = function ( contents ) {
 	// As of jQuery 3 we can't use $.not( 'tagName' ) as that doesn't
 	// match text nodes. Also we can't $.remove these elements as they
 	// aren't attached to anything.
-	contents = contents.filter( ( node ) => {
-		return node.tagName !== 'LINK' && node.tagName !== 'STYLE';
-	} );
+	contents = contents.filter( ( node ) => node.tagName !== 'LINK' && node.tagName !== 'STYLE' );
 	// Also remove link and style tags nested inside other tags
 	$( contents ).find( 'link, style' ).remove();
 	return contents;
@@ -883,7 +879,7 @@ ve.appendToRel = function ( element, value ) {
  *
  * @param {string} s String to test
  * @return {boolean} decodeURIComponent( s ) did not throw an exception
- * @see #safeDecodeURIComponent
+ * @see ve.safeDecodeURIComponent
  */
 ve.isUriComponentValid = function ( s ) {
 	try {
@@ -902,7 +898,7 @@ ve.isUriComponentValid = function ( s ) {
  *
  * @param {string} s String to decode
  * @return {string} Decoded string, or same string if decoding failed
- * @see #isUriComponentValid
+ * @see ve.isUriComponentValid
  */
 ve.safeDecodeURIComponent = function ( s ) {
 	try {
@@ -946,12 +942,11 @@ ve.getCommonStartSequenceLength = function ( sequences ) {
 /**
  * Find the nearest common ancestor of DOM nodes
  *
- * @param {...Node|null} DOM nodes
+ * @param {...Node|null} nodes DOM nodes
  * @return {Node|null} Nearest common ancestor; or null if there is none / an argument is null
  */
-ve.getCommonAncestor = function () {
-	var args = Array.prototype.slice.call( arguments );
-	var nodeCount = args.length;
+ve.getCommonAncestor = function ( ...nodes ) {
+	var nodeCount = nodes.length;
 	if ( nodeCount === 0 ) {
 		return null;
 	}
@@ -961,13 +956,13 @@ ve.getCommonAncestor = function () {
 	// Build every chain
 	for ( i = 0; i < nodeCount; i++ ) {
 		var chain = [];
-		node = args[ i ];
+		node = nodes[ i ];
 		while ( node !== null ) {
 			chain.unshift( node );
 			node = node.parentNode;
 		}
 		if ( chain.length === 0 ) {
-			// args[ i ] was null (so no common ancestor)
+			// nodes[ i ] was null (so no common ancestor)
 			return null;
 		}
 		if ( i > 0 && chain[ 0 ] !== chains[ chains.length - 1 ][ 0 ] ) {
@@ -1119,7 +1114,7 @@ ve.compareDocumentOrder = function ( node1, offset1, node2, offset2 ) {
  * @param {Function|string} [options.noDescend] Selector or function: nodes to skip over
  * @param {Function} [options.stop] Boolean-valued ve.PositionStep test function
  * @return {ve.DomPosition} The adjacent DOM position encountered
- * @see ve#isHardCursorStep
+ * @see ve.isHardCursorStep
  */
 ve.adjacentDomPosition = function ( position, direction, options ) {
 	var node = position.node,
@@ -1226,7 +1221,7 @@ ve.adjacentDomPosition = function ( position, direction, options ) {
  *
  * @param {ve.PositionStep} step The cursor movement step to test
  * @return {boolean} Whether the cursor movement step uses up a cursor press
- * @see ve#adjacentDomPosition
+ * @see ve.adjacentDomPosition
  */
 ve.isHardCursorStep = function ( step ) {
 	if ( step.node.nodeType === Node.TEXT_NODE ) {

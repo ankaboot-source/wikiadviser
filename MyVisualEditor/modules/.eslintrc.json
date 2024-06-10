@@ -4,10 +4,11 @@
 		"wikimedia/client-es6",
 		"wikimedia/jquery",
 		"wikimedia/mediawiki",
-		"wikimedia/jsdoc",
 		"./eslint-shared.json"
 	],
 	"rules": {
-		"no-var": "off"
+		"prefer-arrow-callback": "error",
+		"implicit-arrow-linebreak": "error",
+		"arrow-body-style": "error"
 	}
 }

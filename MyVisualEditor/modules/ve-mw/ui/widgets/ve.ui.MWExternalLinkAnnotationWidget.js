@@ -29,7 +29,7 @@ OO.inheritClass( ve.ui.MWExternalLinkAnnotationWidget, ve.ui.LinkAnnotationWidge
  * @inheritdoc
  */
 ve.ui.MWExternalLinkAnnotationWidget.static.getAnnotationFromText = function ( value ) {
-	var href = value.trim();
+	const href = value.trim();
 
 	// Keep annotation in sync with value
 	if ( href === '' ) {
@@ -51,12 +51,10 @@ ve.ui.MWExternalLinkAnnotationWidget.static.getAnnotationFromText = function ( v
  * @return {OO.ui.TextInputWidget} Text input widget
  */
 ve.ui.MWExternalLinkAnnotationWidget.static.createExternalLinkInputWidget = function ( config ) {
-	var inputWidget = new OO.ui.TextInputWidget( ve.extendObject( {}, config, {
+	const inputWidget = new OO.ui.TextInputWidget( ve.extendObject( {}, config, {
 		icon: 'linkExternal',
 		type: 'url',
-		validate: function ( text ) {
-			return !!ve.init.platform.getExternalLinkUrlProtocolsRegExp().exec( text.trim() );
-		}
+		validate: ( text ) => !!ve.init.platform.getExternalLinkUrlProtocolsRegExp().exec( text.trim() )
 	} ) );
 
 	inputWidget.$input.attr( 'aria-label', mw.msg( 'visualeditor-linkinspector-button-link-external' ) );

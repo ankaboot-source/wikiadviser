@@ -169,9 +169,7 @@ ve.dm.Transaction.static.compareElementsForTranslate = function ( a, b ) {
 ve.dm.Transaction.static.isAnnotationOnlyOperation = function ( op ) {
 	return op.type === 'replace' &&
 		op.insert.length === op.remove.length &&
-		op.insert.every( ( insert, j ) => {
-			return ve.dm.Transaction.static.compareElementsForTranslate( insert, op.remove[ j ] );
-		} );
+		op.insert.every( ( insert, j ) => ve.dm.Transaction.static.compareElementsForTranslate( insert, op.remove[ j ] ) );
 };
 
 /* Methods */
@@ -261,8 +259,8 @@ ve.dm.Transaction.prototype.pushReplaceOp = function ( remove, insert, insertedD
  * Build an attribute operation
  *
  * @param {string} key Name of attribute to change
- * @param {Mixed} from Value to change attribute from, or undefined if not previously set
- * @param {Mixed} to Value to change attribute to, or undefined to remove
+ * @param {any} from Value to change attribute from, or undefined if not previously set
+ * @param {any} to Value to change attribute to, or undefined to remove
  */
 ve.dm.Transaction.prototype.pushAttributeOp = function ( key, from, to ) {
 	this.operations.push( { type: 'attribute', key: key, from: from, to: to } );

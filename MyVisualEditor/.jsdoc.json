@@ -14,7 +14,10 @@
 	},
 	"plugins": [
 		"plugins/markdown",
-		"plugins/summarize",
+		"node_modules/jsdoc-wmf-theme/plugins/allow-dots-in-modules",
+		"node_modules/jsdoc-wmf-theme/plugins/betterlinks",
+		"node_modules/jsdoc-wmf-theme/plugins/externals",
+		"node_modules/jsdoc-wmf-theme/plugins/summarize",
 		"node_modules/jsdoc-class-hierarchy"
 	],
 	"source": {
@@ -29,8 +32,21 @@
 		"wmf": {
 			"maintitle": "VisualEditor-MediaWiki",
 			"repository": "https://gerrit.wikimedia.org/g/mediawiki/extensions/VisualEditor/",
+			"prefixMap": {
+				"OO.ui.": "https://doc.wikimedia.org/oojs-ui/master/js/{type}.html",
+				"OO.": "https://doc.wikimedia.org/oojs/master/{type}.html",
+				"ve.": "https://doc.wikimedia.org/visualeditor-standalone/master/{type}.html",
+				"mw.": "https://doc.wikimedia.org/mediawiki-core/master/js/{type}.html"
+			},
+			"prefixMapIgnore": [
+				"ve.ce.MW",
+				"ve.dm.MW",
+				"ve.init.mw.",
+				"ve.ui.MW",
+				"mw.libs.ve."
+			],
 			"linkMap": {
-				"Mixed": "#",
+				"VisualEditorOverlay": "https://doc.wikimedia.org/MobileFrontend/master/js/js/VisualEditorOverlay.html",
 
 				"Array": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
 				"Error": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error",
@@ -43,6 +59,7 @@
 				"Event": "https://developer.mozilla.org/en-US/docs/Web/API/Event",
 				"HTMLDocument": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLDocument",
 				"HTMLElement": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement",
+				"KeyboardEvent": "https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent",
 				"MutationRecord": "https://developer.mozilla.org/en-US/docs/Web/API/MutationRecord",
 				"Node": "https://developer.mozilla.org/en-US/docs/Web/API/Node",
 				"NodeList": "https://developer.mozilla.org/en-US/docs/Web/API/NodeList",
@@ -52,40 +69,7 @@
 				"jQuery": "http://api.jquery.com/",
 				"jQuery.Deferred": "http://api.jquery.com/jQuery.Deferred/",
 				"jQuery.Event": "http://api.jquery.com/Types/#Event",
-				"jQuery.Promise": "http://api.jquery.com/Types/#Promise",
-
-				"OO.EventEmitter": "https://doc.wikimedia.org/oojs/master/OO.EventEmitter.html",
-				"OO.Factory": "https://doc.wikimedia.org/oojs/master/OO.Factory.html",
-				"OO.Registry": "https://doc.wikimedia.org/oojs/master/OO.Registry.html",
-
-				"OO.ui.mixin.GroupElement": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.mixin.GroupElement.html",
-				"OO.ui.mixin.PendingElement": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.mixin.PendingElement.html",
-				"OO.ui.BookletLayout": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.BookletLayout.html",
-				"OO.ui.ButtonSelectWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ButtonSelectWidget.html",
-				"OO.ui.DecoratedOptionWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.DecoratedOptionWidget.html",
-				"OO.ui.Dialog": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Dialog.html",
-				"OO.ui.Element": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Element.html",
-				"OO.ui.HtmlSnippet": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html",
-				"OO.ui.MenuOptionWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MenuOptionWidget.html",
-				"OO.ui.MessageDialog": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageDialog.html",
-				"OO.ui.MultilineTextInputWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MultilineTextInputWidget.html",
-				"OO.ui.NumberInputWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.NumberInputWidget.html",
-				"OO.ui.OptionWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.OptionWidget.html",
-				"OO.ui.PageLayout": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.PageLayout.html",
-				"OO.ui.PopupTool": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.PopupTool.html",
-				"OO.ui.Process": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Process.html",
-				"OO.ui.ProcessDialog": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html",
-				"OO.ui.SearchWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.SearchWidget.html",
-				"OO.ui.SelectWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.SelectWidget.html",
-				"OO.ui.TextInputWidget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.TextInputWidget.html",
-				"OO.ui.Tool": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Tool.html",
-				"OO.ui.Toolbar": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Toolbar.html",
-				"OO.ui.ToolFactory": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ToolFactory.html",
-				"OO.ui.ToolGroup": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ToolGroup.html",
-				"OO.ui.ToolGroupTool": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ToolGroupTool.html",
-				"OO.ui.Widget": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Widget.html",
-				"OO.ui.Window": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Window.html",
-				"OO.ui.WindowManager": "https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.WindowManager.html"
+				"jQuery.Promise": "http://api.jquery.com/Types/#Promise"
 			}
 		}
 	}

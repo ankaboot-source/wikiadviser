@@ -510,7 +510,7 @@ ve.dm.ElementLinearData.prototype.setAnnotationHashesAtOffset = function ( offse
  *
  * @param {number} offset Offset to set/unset attribute at
  * @param {string} key Attribute name
- * @param {Mixed} value Value to set, or undefined to unset
+ * @param {any} value Value to set, or undefined to unset
  */
 ve.dm.ElementLinearData.prototype.setAttributeAtOffset = function ( offset, key, value ) {
 	if ( !this.isElementData( offset ) ) {
@@ -698,10 +698,8 @@ ve.dm.ElementLinearData.prototype.getInsertionAnnotationsFromRange = function ( 
 
 	// Return those startAnnotations that either continue in afterAnnotations or
 	// should get added to appended content
-	return startAnnotations.filter( ( annotation ) => {
-		return annotation.constructor.static.applyToAppendedContent ||
-			afterAnnotations.containsComparable( annotation );
-	} );
+	return startAnnotations.filter( ( annotation ) => annotation.constructor.static.applyToAppendedContent ||
+			afterAnnotations.containsComparable( annotation ) );
 };
 
 /**
@@ -868,12 +866,10 @@ ve.dm.ElementLinearData.prototype.getSourceText = function ( range ) {
  * @param {number} distance Number of valid offsets to move
  * @param {Function} callback Function to call to check if an offset is valid which will be
  * given initial argument of offset
- * @param {...Mixed} [args] Additional arguments to pass to the callback
+ * @param {...any} [args] Additional arguments to pass to the callback
  * @return {number} Relative valid offset or -1 if there are no valid offsets in data
  */
-ve.dm.ElementLinearData.prototype.getRelativeOffset = function ( offset, distance, callback ) {
-	var args = Array.prototype.slice.call( arguments, 3 );
-
+ve.dm.ElementLinearData.prototype.getRelativeOffset = function ( offset, distance, callback, ...args ) {
 	// If offset is already a structural offset and distance is zero than no further work is needed,
 	// otherwise distance should be 1 so that we can get out of the invalid starting offset
 	if ( distance === 0 ) {
@@ -1266,14 +1262,12 @@ ve.dm.ElementLinearData.prototype.sanitize = function ( rules ) {
 		}
 
 		// Create annotation set to remove from blacklist
-		setToRemove = allAnnotations.filter( ( annotation ) => {
-			return (
-				rules.blacklist && rules.blacklist[ annotation.name ]
-			) || (
-				// If original DOM element references are being removed, remove spans
-				annotation.name === 'textStyle/span' && rules.removeOriginalDomElements
-			);
-		} );
+		setToRemove = allAnnotations.filter( ( annotation ) => (
+			rules.blacklist && rules.blacklist[ annotation.name ]
+		) || (
+		// If original DOM element references are being removed, remove spans
+			annotation.name === 'textStyle/span' && rules.removeOriginalDomElements
+		) );
 	}
 
 	var contentElement;

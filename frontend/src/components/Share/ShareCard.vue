@@ -43,7 +43,7 @@
         v-model="web_publication_toggle"
         @update:model-value="handlePublish()"
       >
-        Publish this article on the Web and make it readable to everyone
+        Make it public on the Web, searchable and readable for everyone.
         <q-icon name="public" size="xs" class="q-ml-xs">
           <q-tooltip>This article is published on the Web</q-tooltip>
         </q-icon>
@@ -92,8 +92,8 @@ const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 const shareRoleModel = ref({
-  label: 'Reviewer',
-  value: 'reviewer',
+  label: 'Editor',
+  value: 'editor',
 });
 const shareRoleOptions = [
   {

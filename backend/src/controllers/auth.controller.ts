@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { getArticle, getUserPermission } from '../helpers/supabaseHelper';
 import logger from '../logger';
-import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 import ENV from '../schema/env.schema';
+import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 
 const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join('|');
 
@@ -30,7 +30,7 @@ export default async function restrictMediawikiAccess(
     );
 
     const allowedPrefixRegEx = new RegExp(
-      `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=query\\&format=json\\&(meta=(filerepoinfo|siteinfo)|(formatversion=2&)?prop=imageinfo(\\&indexpageids=1&iiprop=size%7Cmediatype)?\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)`,
+      `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=(editcheckreferenceurl|query)\\&format=json\\&(url|meta=(filerepoinfo|siteinfo)|(formatversion=2&)?prop=imageinfo(\\&indexpageids=1&iiprop=size%7Cmediatype)?\\&titles=)|(skins|resources|extensions/UniversalLanguageSelector|images/timeline)/|extensions/Kartographer)`,
       'i'
     );
 

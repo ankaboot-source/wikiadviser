@@ -15,7 +15,8 @@ jobs:
         run: |
           curl -X GET "https://enxddisazdljwcvranya.supabase.co/rest/v1/profiles" \
           -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
-          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
+          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN" > profiles # To disable data from appearing within github action log  
+
 
   keep-PROD-active:
     runs-on: ubuntu-latest
@@ -27,5 +28,4 @@ jobs:
         run: |
           curl -X GET "https://rcsxuyoogygnyjbwbrbb.supabase.co/rest/v1/profiles" \
           -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
-          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
-
+          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN" > profiles # To disable data from appearing within github action log

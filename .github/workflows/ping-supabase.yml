@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Request QA Supabase to keep it alive
         run: |
-          curl -X GET "https://your-project-id.supabase.co/rest/v1/your-table-name" \
+          curl -X GET "https://enxddisazdljwcvranya.supabase.co/rest/v1/profiles" \
           -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
           -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
 
@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: Request PROD Supabase to keep it alive
         run: |
-          curl -X GET "https://enxddisazdljwcvranya.supabase.co/rest/v1/profiles" \
+          curl -X GET "https://rcsxuyoogygnyjbwbrbb.supabase.co/rest/v1/profiles" \
           -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
           -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
 

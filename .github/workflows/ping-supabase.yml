@@ -3,7 +3,7 @@ name: Keep Supabase Active
 on:
   schedule:
     - cron: '0 0 1,4,7,10,13,16,19,22,25,28 * *' # Runs every three days, 10 times per month
-
+  workflow_dispatch:
 jobs:
   keep-QA-active:
     runs-on: ubuntu-latest

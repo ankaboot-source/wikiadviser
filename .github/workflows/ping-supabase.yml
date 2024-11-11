@@ -1,0 +1,31 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    - cron: '0 0 1,4,7,10,13,16,19,22,25,28 * *' # Runs every three days, 10 times per month
+  workflow_dispatch:
+jobs:
+  keep-QA-active:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_SECRET_PROJECT_TOKEN: ${{ secrets.SUPABASE_SECRET_PROJECT_TOKEN }}
+
+    steps:
+      - name: Request QA Supabase to keep it alive
+        run: |
+          curl -X GET "https://enxddisazdljwcvranya.supabase.co/rest/v1/profiles" \
+          -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
+          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
+
+  keep-PROD-active:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_SECRET_PROJECT_TOKEN: ${{ secrets.SUPABASE_PROD_SECRET_PROJECT_TOKEN }}
+
+    steps:
+      - name: Request PROD Supabase to keep it alive
+        run: |
+          curl -X GET "https://rcsxuyoogygnyjbwbrbb.supabase.co/rest/v1/profiles" \
+          -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" \
+          -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"
+

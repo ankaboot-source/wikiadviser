@@ -58,10 +58,10 @@ ve.ui.AuthorItemWidget = function VeUiAuthorItemWidget( synchronizer, $overlay, 
 		} );
 
 		this.colorPicker.picker.classList.add( 've-ui-authorItemWidget-colorPicker' );
-		this.colorPicker.fit = function () {
-			this.picker.style.left = this.$element[ 0 ].offsetLeft + 'px';
-			this.picker.style.top = this.$element[ 0 ].offsetTop + 'px';
-			$overlay[ 0 ].appendChild( this.picker );
+		this.colorPicker.fit = () => {
+			this.colorPicker.picker.style.left = this.$element[ 0 ].offsetLeft + 'px';
+			this.colorPicker.picker.style.top = this.$element[ 0 ].offsetTop + 'px';
+			$overlay[ 0 ].appendChild( this.colorPicker.picker );
 		};
 
 		this.$element
@@ -121,7 +121,7 @@ ve.ui.AuthorItemWidget.prototype.setAuthorId = function ( authorId ) {
  * Update name and color from synchronizer
  */
 ve.ui.AuthorItemWidget.prototype.update = function () {
-	var authorData = this.synchronizer.getAuthorData( this.authorId );
+	const authorData = this.synchronizer.getAuthorData( this.authorId );
 	this.name = authorData.name;
 	this.color = authorData.color;
 	this.$color.css( 'background-color', '#' + this.color );

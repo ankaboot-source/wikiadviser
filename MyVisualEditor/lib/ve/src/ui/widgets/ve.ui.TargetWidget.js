@@ -17,17 +17,17 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
- * @cfg {ve.dm.Document} [doc] Initial document model
- * @cfg {Object} [modes] Available editing modes.
- * @cfg {Object} [defaultMode] Default mode for new surfaces.
- * @cfg {Object} [toolbarGroups] Target's toolbar groups config.
- * @cfg {string[]|null} [includeCommands] List of commands to include, null for all registered commands
- * @cfg {string[]} [excludeCommands] List of commands to exclude
- * @cfg {Object} [importRules] Import rules
- * @cfg {boolean} [multiline=true] Multi-line surface
- * @cfg {string} [placeholder] Placeholder text to display when the surface is empty
- * @cfg {boolean} [readOnly] Surface is read-only
- * @cfg {string} [inDialog] The name of the dialog this surface widget is in
+ * @param {ve.dm.Document} [config.doc] Initial document model
+ * @param {Object} [config.modes] Available editing modes.
+ * @param {Object} [config.defaultMode] Default mode for new surfaces.
+ * @param {Object} [config.toolbarGroups] Target's toolbar groups config.
+ * @param {string[]|null} [config.includeCommands] List of commands to include, null for all registered commands
+ * @param {string[]} [config.excludeCommands] List of commands to exclude
+ * @param {Object} [config.importRules] Import rules
+ * @param {boolean} [config.multiline=true] Multi-line surface
+ * @param {string} [config.placeholder] Placeholder text to display when the surface is empty
+ * @param {boolean} [config.readOnly] Surface is read-only
+ * @param {string} [config.inDialog] The name of the dialog this surface widget is in
  */
 ve.ui.TargetWidget = function VeUiTargetWidget( config ) {
 	// Config initialization
@@ -121,7 +121,7 @@ ve.ui.TargetWidget.prototype.createTarget = function () {
 ve.ui.TargetWidget.prototype.setDocument = function ( doc ) {
 	// Destroy the previous surface
 	this.clear();
-	var surface = this.target.addSurface( doc, {
+	const surface = this.target.addSurface( doc, {
 		inTargetWidget: true,
 		includeCommands: this.includeCommands,
 		excludeCommands: this.excludeCommands,
@@ -161,7 +161,7 @@ ve.ui.TargetWidget.prototype.setDocument = function ( doc ) {
  * @fires ve.ui.TargetWidget#submit
  */
 ve.ui.TargetWidget.prototype.onSurfaceSubmit = function () {
-	var handled = this.emit( 'submit' );
+	const handled = this.emit( 'submit' );
 	if ( !handled && this.inDialog ) {
 		// If we are in a dialog, re-throw a fake keydown event for OO.ui.Dialog#onDialogKeyDown
 		this.$element.parent().trigger( $.Event( 'keydown', {
@@ -177,7 +177,7 @@ ve.ui.TargetWidget.prototype.onSurfaceSubmit = function () {
  * @fires ve.ui.TargetWidget#cancel
  */
 ve.ui.TargetWidget.prototype.onSurfaceCancel = function () {
-	var handled = this.emit( 'cancel' );
+	const handled = this.emit( 'cancel' );
 	if ( !handled && this.inDialog ) {
 		// If we are in a dialog, re-throw a fake keydown event for OO.ui.Dialog#onDialogKeyDown
 		this.$element.parent().trigger( $.Event( 'keydown', {
@@ -268,7 +268,7 @@ ve.ui.TargetWidget.prototype.clear = function () {
  */
 ve.ui.TargetWidget.prototype.onFocusChange = function () {
 	// This may be null if the target is in the process of being destroyed
-	var surface = this.getSurface();
+	const surface = this.getSurface();
 	// Replacement for the :focus pseudo selector one would be able to
 	// use on a regular input widget
 	this.$element.toggleClass(
@@ -281,7 +281,7 @@ ve.ui.TargetWidget.prototype.onFocusChange = function () {
  * Focus the surface.
  */
 ve.ui.TargetWidget.prototype.focus = function () {
-	var surface = this.getSurface();
+	const surface = this.getSurface();
 	if ( surface ) {
 		if ( !surface.getView().attachedRoot.isLive() ) {
 			surface.once( 'ready', () => {

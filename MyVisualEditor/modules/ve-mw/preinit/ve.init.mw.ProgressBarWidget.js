@@ -30,7 +30,7 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	// Stylesheets might not have processed yet, so manually set starting width to 0
 	this.$bar = $( '<div>' ).addClass( 've-init-mw-progressBarWidget-bar' ).css( 'width', 0 );
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
-	
+
 	/* Custom WikiAdviser */
 	try {
 		// Make inner page full width and hide left bar (TOC)
@@ -38,7 +38,7 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 		} catch (error) {
 		console.error('An error occurred while trying to hide non editor distractions', error.message);
 		}
-	/* End Custom WikiAdviser */
+	/* End WikiAdviser */
 };
 
 mw.libs.ve.ProgressBarWidget.prototype.setLoadingProgress = function ( target, duration ) {

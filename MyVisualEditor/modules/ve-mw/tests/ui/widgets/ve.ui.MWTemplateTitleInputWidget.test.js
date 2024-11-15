@@ -1,24 +1,18 @@
 {
-	const toggleCirrusSearchLookup = ( enabled ) =>
-		mw.config.set( 'wgVisualEditorConfig', ve.extendObject( {}, mw.config.get( 'wgVisualEditorConfig' ), {
+	const toggleCirrusSearchLookup = ( enabled ) => mw.config.set( 'wgVisualEditorConfig', ve.extendObject( {}, mw.config.get( 'wgVisualEditorConfig' ), {
 			cirrusSearchLookup: enabled !== false
 		} ) );
 
-	const makeFakeApi = () => {
-		return {
-			defaults: { parameters: {} },
-			get: () => {
-				return {
-					abort: { bind: () => {} },
-					then: () => {}
-				};
-			}
-		};
-	};
-
 	QUnit.module( 've.ui.MWTemplateTitleInputWidget', ve.test.utils.newMwEnvironment( {
+		messages: {
+			// Force `templateDataInstalled` condition
+			'templatedata-doc-subpage': '(templatedata-doc-subpage)'
+		},
 		// Config will be reset by newMwEnvironment's teardown
-		beforeEach: toggleCirrusSearchLookup
+		beforeEach: function () {
+			this.server = this.sandbox.useFakeServer();
+			toggleCirrusSearchLookup();
+		}
 	} ) );
 
 	QUnit.test( 'default prefixsearch', ( assert ) => {
@@ -158,7 +152,7 @@
 	} );
 
 	QUnit.test( 'CirrusSearch with prefixsearch fallback', async function ( assert ) {
-		const api = makeFakeApi();
+		const api = new mw.Api();
 		this.sandbox.stub( api, 'get' )
 			.onFirstCall().returns( ve.createDeferred()
 				.resolve( { query: {
@@ -166,7 +160,7 @@
 						{ pageid: 101, title: 'B' },
 						{ pageid: 102, title: 'A' },
 						// Documentation subpage, expected to be stripped
-						{ pageid: 103, title: 'A/(templatedata-doc-subpage)' }
+						{ pageid: 103, title: 'A/(templatedata-doc-subpage)', index: 2 }
 					],
 					redirects: [
 						// Alternative source for indexes, expected to be copied to the pages array

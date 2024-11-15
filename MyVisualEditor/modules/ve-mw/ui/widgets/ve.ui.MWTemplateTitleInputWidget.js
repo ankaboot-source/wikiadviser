@@ -16,9 +16,9 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
- * @cfg {number} [namespace] Namespace to prepend to queries. Defaults to template namespace.
- * @cfg {boolean} [showDescriptions] Show template descriptions from the TemplateData API
- * @cfg {mw.Api} [api]
+ * @param {number} [config.namespace] Namespace to prepend to queries. Defaults to template namespace.
+ * @param {boolean} [config.showDescriptions] Show template descriptions from the TemplateData API
+ * @param {mw.Api} [config.api]
  */
 ve.ui.MWTemplateTitleInputWidget = function VeUiMWTemplateTitleInputWidget( config ) {
 	config = ve.extendObject( {}, {
@@ -70,7 +70,7 @@ ve.ui.MWTemplateTitleInputWidget.prototype.getApiParams = function ( query ) {
 		// cases though. We're limiting it to be add only of the term ends with a letter or numeric
 		// character.
 		// eslint-disable-next-line es-x/no-regexp-unicode-property-escapes, prefer-regex-literals
-		const endsWithAlpha = new RegExp( '[0-9a-z\\p{L}\\p{N}]$', 'iu' );
+		const endsWithAlpha = new RegExp( '[\\p{L}\\p{N}]$', 'u' );
 		if ( endsWithAlpha.test( params.gsrsearch ) ) {
 			params.gsrsearch += '*';
 		}
@@ -120,9 +120,6 @@ ve.ui.MWTemplateTitleInputWidget.prototype.getLookupRequest = function () {
 				}
 			} );
 
-			// Ensure everything goes into the order defined by the page's index key
-			newPages.sort( ( a, b ) => a.index - b.index );
-
 			// T54448: Filter out matches which end in /doc or as configured on-wiki
 			if ( templateDataInstalled ) {
 				newPages = newPages.filter(
@@ -131,6 +128,15 @@ ve.ui.MWTemplateTitleInputWidget.prototype.getLookupRequest = function () {
 					( page ) => page.title.slice( -templateDocPageFragment.length ) !== templateDocPageFragment
 				);
 			}
+
+			// Ensure everything goes into the order defined by the page's index key
+			newPages.sort( ( a, b ) => {
+				// T366299: Avoid unstable sort.
+				if ( a.index === undefined || b.index === undefined ) {
+					return 0;
+				}
+				return a.index - b.index;
+			} );
 
 			const titles = newPages.map( ( page ) => page.title );
 

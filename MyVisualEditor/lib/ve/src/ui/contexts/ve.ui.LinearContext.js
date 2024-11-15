@@ -87,7 +87,7 @@ ve.ui.LinearContext.prototype.onDocumentUpdate = function () {
  * Handle debounced context change events.
  */
 ve.ui.LinearContext.prototype.afterContextChange = function () {
-	var selectedNode = this.surface.getModel().getSelectedNode();
+	const selectedNode = this.surface.getModel().getSelectedNode();
 
 	// Reset debouncing state
 	this.afterContextChangeTimeout = null;
@@ -96,8 +96,10 @@ ve.ui.LinearContext.prototype.afterContextChange = function () {
 		if ( !this.isEmpty() ) {
 			if ( this.isInspectable() ) {
 				// Change state: menu -> menu
+				// Make a copy of items so setupMenuItems can compare it
+				const previousItems = this.items.slice();
 				this.teardownMenuItems();
-				this.setupMenuItems();
+				this.setupMenuItems( previousItems );
 				this.updateDimensionsDebounced();
 			} else {
 				// Change state: menu -> closed
@@ -133,7 +135,7 @@ ve.ui.LinearContext.prototype.afterContextChange = function () {
  * @param {Object} data Window opening data
  */
 ve.ui.LinearContext.prototype.onInspectorOpening = function ( win, opening ) {
-	var observer = this.surface.getView().surfaceObserver;
+	const observer = this.surface.getView().surfaceObserver;
 
 	this.isOpening = true;
 	this.inspector = win;
@@ -233,9 +235,9 @@ ve.ui.LinearContext.prototype.removePersistentSource = function ( name ) {
  * @inheritdoc Also adds the `embeddable` property to each object.
  */
 ve.ui.LinearContext.prototype.getRelatedSources = function () {
-	var surfaceModel = this.surface.getModel(),
-		selection = surfaceModel.getSelection(),
-		selectedModels = [];
+	const surfaceModel = this.surface.getModel(),
+		selection = surfaceModel.getSelection();
+	let selectedModels = [];
 
 	if ( !this.relatedSources ) {
 		this.relatedSources = [];
@@ -247,7 +249,7 @@ ve.ui.LinearContext.prototype.getRelatedSources = function () {
 		if ( selectedModels.length ) {
 			this.relatedSources = this.getRelatedSourcesFromModels( selectedModels );
 		}
-		this.relatedSources = this.relatedSources.concat( this.persistentSources );
+		this.relatedSources.push( ...this.persistentSources );
 	}
 
 	return this.relatedSources;
@@ -260,11 +262,11 @@ ve.ui.LinearContext.prototype.getRelatedSources = function () {
  * @return {Object[]} See #getRelatedSources
  */
 ve.ui.LinearContext.prototype.getRelatedSourcesFromModels = function ( selectedModels ) {
-	var models = [],
+	const models = [],
 		relatedSources = [],
 		items = ve.ui.contextItemFactory.getRelatedItems( selectedModels );
 
-	var i, len;
+	let i, len;
 	for ( i = 0, len = items.length; i < len; i++ ) {
 		if ( !items[ i ].model.isInspectable() ) {
 			continue;
@@ -279,13 +281,13 @@ ve.ui.LinearContext.prototype.getRelatedSourcesFromModels = function ( selectedM
 			model: items[ i ].model
 		} );
 	}
-	var tools = ve.ui.toolFactory.getRelatedItems( selectedModels );
+	const tools = ve.ui.toolFactory.getRelatedItems( selectedModels );
 	for ( i = 0, len = tools.length; i < len; i++ ) {
 		if ( !tools[ i ].model.isInspectable() ) {
 			continue;
 		}
 		if ( models.indexOf( tools[ i ].model ) === -1 ) {
-			var toolClass = ve.ui.toolFactory.lookup( tools[ i ].name );
+			const toolClass = ve.ui.toolFactory.lookup( tools[ i ].name );
 			relatedSources.push( {
 				type: 'tool',
 				embeddable: !toolClass || toolClass.static.makesEmbeddableContextItem,

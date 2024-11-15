@@ -14,6 +14,7 @@
 module.exports = function ( grunt ) {
 	const modules = grunt.file.readJSON( 'build/modules.json' ),
 		moduleUtils = require( './build/moduleUtils' ),
+		path = require( 'path' ),
 		fg = require( 'fast-glob' ),
 		rebaserBuildFiles = moduleUtils.makeBuildList( modules, [ 'rebaser.build' ] ),
 		veRebaseFiles = moduleUtils.makeBuildList( modules, [ 'visualEditor.rebase.build' ] ),
@@ -64,6 +65,25 @@ module.exports = function ( grunt ) {
 		};
 	}
 
+	function fixPaths( src, filepath ) {
+		const makeRelative = ( target ) => {
+			const currentDir = path.dirname( path.resolve( filepath ) );
+			const targetAbsolute = path.resolve( currentDir, target );
+			return path.relative( 'dist', targetAbsolute );
+		};
+
+		src = src.replace(
+			/@import ["'](.*)["']/g,
+			( ...args ) => `@import '${ makeRelative( args[ 1 ] ) }'`
+		);
+		src = src.replace(
+			/url\([\s]*["']?([^)]*)["']?[\s]*\)/g,
+			( ...args ) => args[ 1 ].includes( 'data:' ) ? args[ 0 ] : `url('${ makeRelative( args[ 1 ] ) }')`
+		);
+
+		return src;
+	}
+
 	grunt.initConfig( {
 		pkg: grunt.file.readJSON( 'package.json' ),
 		clean: {
@@ -89,7 +109,8 @@ module.exports = function ( grunt ) {
 			},
 			'visualEditor.rebase.styles': {
 				options: {
-					banner: grunt.file.read( 'build/banner.txt' )
+					banner: grunt.file.read( 'build/banner.txt' ),
+					process: fixPaths
 				},
 				dest: 'dist/visualEditor-rebase.less',
 				src: veRebaseFiles.styles
@@ -104,14 +125,16 @@ module.exports = function ( grunt ) {
 			},
 			'css-apex': {
 				options: {
-					banner: grunt.file.read( 'build/banner.txt' )
+					banner: grunt.file.read( 'build/banner.txt' ),
+					process: fixPaths
 				},
 				dest: 'dist/visualEditor-apex.less',
 				src: coreBuildFilesApex.styles
 			},
 			'css-wikimediaui': {
 				options: {
-					banner: grunt.file.read( 'build/banner.txt' )
+					banner: grunt.file.read( 'build/banner.txt' ),
+					process: fixPaths
 				},
 				dest: 'dist/visualEditor-wikimediaui.less',
 				src: coreBuildFilesWikimediaUI.styles
@@ -149,11 +172,6 @@ module.exports = function ( grunt ) {
 			}
 		},
 		cssUrlEmbed: {
-			options: {
-				// TODO: Image paths are relative to their folders, but the files have already been
-				// flattened as this point, so supporting more that one baseDir is not possible.
-				baseDir: 'src/ui/styles/nodes'
-			},
 			dist: {
 				files: {
 					'dist/visualEditor-apex.css': 'dist/visualEditor-apex.css',
@@ -353,6 +371,7 @@ module.exports = function ( grunt ) {
 			},
 			all: fg.globSync( [
 				'**/*.{js,json}',
+				'**/.*.{js,json}',
 				'demos/**/*.html',
 				'!lib/**',
 				'!**/{coverage,dist,docs,node_modules}/**'
@@ -363,7 +382,7 @@ module.exports = function ( grunt ) {
 				reportNeedlessDisables: true
 			},
 			all: fg.globSync( [
-				'**/*.css',
+				'**/*.{css,less}',
 				'!lib/**',
 				'!**/{coverage,dist,docs,node_modules}/**'
 			] )
@@ -512,13 +531,13 @@ module.exports = function ( grunt ) {
 	grunt.registerTask( 'git-status', function () {
 		const done = this.async();
 		// Are there unstaged changes?
-		require( 'child_process' ).exec( 'git ls-files --modified', function ( err, stdout, stderr ) {
+		require( 'child_process' ).exec( 'git ls-files --modified', ( err, stdout, stderr ) => {
 			const ret = err || stderr || stdout;
 			if ( ret ) {
 				grunt.log.error( 'Unstaged changes in these files:' );
 				grunt.log.error( ret );
 				// Show a condensed diff
-				require( 'child_process' ).exec( 'git diff -U1 | tail -n +3', function ( err2, stdout2, stderr2 ) {
+				require( 'child_process' ).exec( 'git diff -U1 | tail -n +3', ( err2, stdout2, stderr2 ) => {
 					grunt.log.write( err2 || stderr2 || stdout2 );
 					done( false );
 				} );

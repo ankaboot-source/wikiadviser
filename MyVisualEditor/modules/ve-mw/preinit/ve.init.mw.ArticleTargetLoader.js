@@ -21,19 +21,17 @@
 ( function () {
 	const conf = mw.config.get( 'wgVisualEditorConfig' ),
 		pluginCallbacks = [],
-		modules = [ 'ext.visualEditor.articleTarget' ]
+		modules = [
+			'ext.visualEditor.articleTarget',
 			// Add modules from $wgVisualEditorPluginModules
-			.concat( conf.pluginModules.filter( mw.loader.getState ) );
+			...conf.pluginModules.filter( mw.loader.getState )
+		];
 
 	const url = new URL( location.href );
 	// Provide the new wikitext editor
 	if (
-		conf.enableWikitext &&
-		(
-			mw.user.options.get( 'visualeditor-newwikitext' ) ||
-			url.searchParams.get( 'veaction' ) === 'editsource'
-		) &&
-		mw.loader.getState( 'ext.visualEditor.mwwikitext' )
+		mw.user.options.get( 'visualeditor-newwikitext' ) ||
+		url.searchParams.get( 'veaction' ) === 'editsource'
 	) {
 		modules.push( 'ext.visualEditor.mwwikitext' );
 	}

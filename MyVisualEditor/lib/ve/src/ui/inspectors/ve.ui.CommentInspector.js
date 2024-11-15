@@ -39,8 +39,9 @@ ve.ui.CommentInspector.static.actions = [
 		label: OO.ui.deferMsg( 'visualeditor-inspector-remove-tooltip' ),
 		flags: 'destructive',
 		modes: 'edit'
-	}
-].concat( ve.ui.CommentInspector.super.static.actions );
+	},
+	...ve.ui.CommentInspector.super.static.actions
+];
 
 /* Methods */
 
@@ -119,7 +120,7 @@ ve.ui.CommentInspector.prototype.getTeardownProcess = function ( data ) {
 	data = data || {};
 	return ve.ui.CommentInspector.super.prototype.getTeardownProcess.call( this, data )
 		.first( () => {
-			var surfaceModel = this.getFragment().getSurface();
+			const surfaceModel = this.getFragment().getSurface();
 
 			// data.action can be 'done', 'remove' or undefined (cancel)
 			if ( data.action === 'done' && this.textWidget.getValue() !== '' ) {

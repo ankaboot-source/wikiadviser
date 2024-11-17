@@ -140,7 +140,7 @@ ve.ui.ContextItem.prototype.getCommand = function () {
  */
 ve.ui.ContextItem.prototype.getFragment = function () {
 	if ( !this.fragment ) {
-		var surfaceModel = this.context.getSurface().getModel();
+		const surfaceModel = this.context.getSurface().getModel();
 		this.fragment = this.isNode() ?
 			surfaceModel.getLinearFragment( this.model.getOuterRange() ) :
 			surfaceModel.getFragment();
@@ -158,8 +158,20 @@ ve.ui.ContextItem.prototype.isReadOnly = function () {
 };
 
 /**
+ * Check whether this context item represents the same content as another
+ *
+ * @param {ve.ui.ContextItem} other
+ * @return {boolean}
+ */
+ve.ui.ContextItem.prototype.equals = function ( other ) {
+	return this.constructor.static.name === other.constructor.static.name &&
+		this.getFragment().getSelection().equals( other.getFragment().getSelection() );
+};
+
+/**
  * Setup the item.
  *
+ * @param {boolean} refreshing If this is a reconstruction/refresh of a context
  * @return {ve.ui.ContextItem}
  * @chainable
  */

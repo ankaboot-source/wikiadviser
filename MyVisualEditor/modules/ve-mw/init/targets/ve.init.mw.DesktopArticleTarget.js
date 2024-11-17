@@ -135,28 +135,6 @@ ve.init.mw.DesktopArticleTarget.static.toolbarGroups.push(
 	}
 );
 
-/**
- * Compatibility map used with jQuery.client to decide if a browser should
- * receive a compatibility warning. Blacklisting is handled in DesktopArticleTarget.init.
- *
- * @static
- * @property {Object}
- */
-ve.init.mw.DesktopArticleTarget.static.compatibility = {
-	// The key is the browser name returned by jQuery.client
-	// The value is either null (match all versions) or a list of tuples
-	// containing an inequality (<,>,<=,>=) and a version number
-	supportedList: {
-		chrome: [ [ '>=', 19 ] ],
-		opera: [ [ '>=', 15 ] ],
-		// All versions not in unsupportedList are fully supported:
-		firefox: null,
-		safari: null,
-		msie: null,
-		edge: null
-	}
-};
-
 ve.init.mw.DesktopArticleTarget.static.platformType = 'desktop';
 
 /* Events */
@@ -318,21 +296,6 @@ ve.init.mw.DesktopArticleTarget.prototype.setupToolbarSaveButton = function () {
 };
 
 /**
- * Set up notices for things like unknown browsers.
- * Needs to be done on each activation because localNoticeMessages is cleared in clearState.
- */
-ve.init.mw.DesktopArticleTarget.prototype.setupLocalNoticeMessages = function () {
-	if ( !(
-		this.currentUrl.searchParams.has( 'vesupported' ) ||
-		$.client.test( this.constructor.static.compatibility.supportedList, null, true )
-	) ) {
-		// Show warning in unknown browsers that pass the support test
-		// Continue at own risk.
-		this.localNoticeMessages.push( 'visualeditor-browserwarning' );
-	}
-};
-
-/**
  * @inheritdoc
  */
 ve.init.mw.DesktopArticleTarget.prototype.updateTabs = function () {
@@ -451,7 +414,6 @@ ve.init.mw.DesktopArticleTarget.prototype.activate = function ( dataPromise ) {
 		// User interface changes
 		this.changeDocumentTitle();
 		this.transformPage();
-		this.setupLocalNoticeMessages();
 
 		this.load( dataPromise );
 	}
@@ -878,8 +840,15 @@ ve.init.mw.DesktopArticleTarget.prototype.saveComplete = function ( data ) {
 			} );
 		}
 
-		// Actually fire the postEdit hook now that the save is complete
 		if ( data.newrevid !== undefined ) {
+			// (T370771) Update wgCurRevisionId and wgRevisionId (!)
+			// Mirror of DiscussionTools's cb5d585b93d83f9a7b4df10a71a0d574295f861c
+			mw.config.set( {
+				wgCurRevisionId: data.newrevid,
+				wgRevisionId: data.newrevid
+			} );
+
+			// Actually fire the postEdit hook, now that the save is complete
 			require( 'mediawiki.action.view.postEdit' ).fireHook( 'saved' );
 		}
 	}
@@ -967,15 +936,15 @@ ve.init.mw.DesktopArticleTarget.prototype.teardownToolbar = function () {
 	this.toolbar.$element
 		.addClass( 've-init-mw-desktopArticleTarget-toolbar-preclose' )
 		.css( 'height', this.toolbar.$bar[ 0 ].offsetHeight );
-	setTimeout( () => {
+	requestAnimationFrame( () => {
 		this.toolbar.$element
 			.css( 'height', '0' )
 			.addClass( 've-init-mw-desktopArticleTarget-toolbar-close' );
-		setTimeout( () => {
+		this.toolbar.$element.one( 'transitionend', () => {
 			// Parent method
 			ve.init.mw.DesktopArticleTarget.super.prototype.teardownToolbar.call( this );
 			deferred.resolve();
-		}, 250 );
+		} );
 	} );
 	return deferred.promise();
 };

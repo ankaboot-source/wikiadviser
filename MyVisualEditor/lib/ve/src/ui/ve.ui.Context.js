@@ -120,7 +120,7 @@ ve.ui.Context.prototype.getSurface = function () {
  * mobile or by pressing escape.
  */
 ve.ui.Context.prototype.hide = function () {
-	var surfaceModel = this.surface.getModel();
+	const surfaceModel = this.surface.getModel();
 	this.toggleMenu( false );
 	this.toggle( false );
 	// Desktop: Ensure the next cursor movement re-evaluates the context,
@@ -160,16 +160,18 @@ ve.ui.Context.prototype.toggleMenu = function ( show ) {
  * Setup menu items.
  *
  * @protected
+ * @param {ve.ui.ContextItem[]} [previousItems] if a context is being refreshed, this will
+ *  be the previously-open items for comparison
  * @return {ve.ui.Context}
  * @chainable
  */
-ve.ui.Context.prototype.setupMenuItems = function () {
-	var sources = this.getRelatedSources(),
+ve.ui.Context.prototype.setupMenuItems = function ( previousItems ) {
+	const sources = this.getRelatedSources(),
 		items = [];
 
-	var i, len;
+	let i, len;
 	for ( i = 0, len = sources.length; i < len; i++ ) {
-		var source = sources[ i ];
+		const source = sources[ i ];
 		if ( source.type === 'item' ) {
 			items.push( ve.ui.contextItemFactory.create(
 				sources[ i ].name, this, sources[ i ].model
@@ -189,8 +191,17 @@ ve.ui.Context.prototype.setupMenuItems = function () {
 
 	this.addItems( items );
 	for ( i = 0, len = items.length; i < len; i++ ) {
-		items[ i ].connect( this, { command: 'onContextItemCommand' } );
-		items[ i ].setup();
+		const item = items[ i ];
+		const isRefreshing = previousItems && previousItems.some(
+			// We treat it as refreshing if they're exactly equal, or if either is null.
+			// Null here probably means we're dealing with a persistent fragment that's
+			// between text-selections currently.
+			( oldItem ) => oldItem.equals( item ) ||
+				oldItem.getFragment().isNull() ||
+				item.getFragment().isNull()
+		);
+		item.connect( this, { command: 'onContextItemCommand' } );
+		item.setup( isRefreshing );
 	}
 
 	return this;
@@ -204,7 +215,7 @@ ve.ui.Context.prototype.setupMenuItems = function () {
  * @chainable
  */
 ve.ui.Context.prototype.teardownMenuItems = function () {
-	for ( var i = 0, len = this.items.length; i < len; i++ ) {
+	for ( let i = 0, len = this.items.length; i < len; i++ ) {
 		this.items[ i ].teardown();
 	}
 	this.clearItems();
@@ -267,7 +278,7 @@ ve.ui.Context.prototype.destroy = function () {
  * For example the mobile context, which is fixed to the bottom of the viewport,
  * will add bottom padding, whereas the floating desktop context will add none.
  *
- * @return {null|Object} Padding object, or null
+ * @return {ve.ui.Surface.Padding|null} Padding object, or null
  */
 ve.ui.Context.prototype.getSurfacePadding = function () {
 	return null;

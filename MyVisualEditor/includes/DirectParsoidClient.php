@@ -19,7 +19,7 @@ use MediaWiki\Rest\Handler\Helper\PageRestHelperFactory;
 use MediaWiki\Revision\MutableRevisionRecord;
 use MediaWiki\Revision\RevisionRecord;
 use MediaWiki\Revision\SlotRecord;
-use User;
+use MediaWiki\User\User;
 use Wikimedia\Bcp47Code\Bcp47Code;
 use WikitextContent;
 
@@ -34,16 +34,9 @@ class DirectParsoidClient implements ParsoidClient {
 
 	private const FLAVOR_DEFAULT = 'view';
 
-	/** @var PageRestHelperFactory */
-	private $helperFactory;
+	private PageRestHelperFactory $helperFactory;
+	private Authority $performer;
 
-	/** @var Authority */
-	private $performer;
-
-	/**
-	 * @param PageRestHelperFactory $helperFactory
-	 * @param Authority $performer
-	 */
 	public function __construct(
 		PageRestHelperFactory $helperFactory,
 		Authority $performer
@@ -52,15 +45,6 @@ class DirectParsoidClient implements ParsoidClient {
 		$this->helperFactory = $helperFactory;
 	}
 
-	/**
-	 * @param PageIdentity $page
-	 * @param RevisionRecord|null $revision
-	 * @param Bcp47Code|null $pageLanguage
-	 * @param bool $stash
-	 * @param string $flavor
-	 *
-	 * @return HtmlOutputRendererHelper
-	 */
 	private function getHtmlOutputRendererHelper(
 		PageIdentity $page,
 		?RevisionRecord $revision = null,
@@ -68,8 +52,6 @@ class DirectParsoidClient implements ParsoidClient {
 		bool $stash = false,
 		string $flavor = self::FLAVOR_DEFAULT
 	): HtmlOutputRendererHelper {
-		$helper = $this->helperFactory->newHtmlOutputRendererHelper();
-
 		// TODO: remove this once we no longer need a User object for rate limiting (T310476).
 		if ( $this->performer instanceof User ) {
 			$user = $this->performer;
@@ -77,7 +59,7 @@ class DirectParsoidClient implements ParsoidClient {
 			$user = User::newFromIdentity( $this->performer->getUser() );
 		}
 
-		$helper->init( $page, [], $user, $revision );
+		$helper = $this->helperFactory->newHtmlOutputRendererHelper( $page, [], $user, $revision );
 
 		// Ensure we get a compatible version, not just the default
 		$helper->setOutputProfileVersion( self::PARSOID_VERSION );
@@ -98,15 +80,6 @@ class DirectParsoidClient implements ParsoidClient {
 		return $helper;
 	}
 
-	/**
-	 * @param PageIdentity $page
-	 * @param string $html
-	 * @param int|null $oldid
-	 * @param string|null $etag
-	 * @param Bcp47Code|null $pageLanguage
-	 *
-	 * @return HtmlInputTransformHelper
-	 */
 	private function getHtmlInputTransformHelper(
 		PageIdentity $page,
 		string $html,
@@ -114,8 +87,6 @@ class DirectParsoidClient implements ParsoidClient {
 		string $etag = null,
 		Bcp47Code $pageLanguage = null
 	): HtmlInputTransformHelper {
-		$helper = $this->helperFactory->newHtmlInputTransformHelper();
-
 		// Fake REST body
 		$body = [
 			'html' => [
@@ -123,17 +94,24 @@ class DirectParsoidClient implements ParsoidClient {
 			]
 		];
 
-		$metrics = MediaWikiServices::getInstance()->getParsoidSiteConfig()->metrics();
-		if ( $metrics ) {
-			$helper->setMetrics( $metrics );
-		}
-
 		if ( $oldid || $etag ) {
 			$body['original']['revid'] = $oldid;
 			$body['original']['renderid'] = $etag;
 		}
 
-		$helper->init( $page, $body, [], null, $pageLanguage );
+		$helper = $this->helperFactory->newHtmlInputTransformHelper(
+			/* envOptions: */ [],
+			$page,
+			$body,
+			/* parameters: */ [],
+			/* originalRevision: */ null,
+			$pageLanguage
+		);
+
+		$metrics = MediaWikiServices::getInstance()->getParsoidSiteConfig()->metrics();
+		if ( $metrics ) {
+			$helper->setMetrics( $metrics );
+		}
 
 		return $helper;
 	}
@@ -157,12 +135,6 @@ class DirectParsoidClient implements ParsoidClient {
 		return $this->fakeRESTbaseHTMLResponse( $parserOutput->getRawText(), $helper );
 	}
 
-	/**
-	 * @param PageIdentity $page
-	 * @param string $wikitext
-	 *
-	 * @return RevisionRecord
-	 */
 	private function makeFakeRevision(
 		PageIdentity $page,
 		string $wikitext

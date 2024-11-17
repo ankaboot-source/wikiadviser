@@ -35,11 +35,10 @@ ve.ui.UrlStringTransferHandler.static.types = [
 	// Firefox type, preserves title
 	'text/x-moz-url',
 	// Used in GNOME drag-and-drop
-	'text/x-uri'
-].concat(
+	'text/x-uri',
 	// Identify links in pasted plain text as well
-	ve.ui.UrlStringTransferHandler.super.static.types
-);
+	...ve.ui.UrlStringTransferHandler.super.static.types
+];
 
 ve.ui.UrlStringTransferHandler.static.handlesPaste = true;
 
@@ -53,7 +52,7 @@ ve.ui.UrlStringTransferHandler.static.urlRegExp = null; // Initialized below
 
 ve.init.Platform.static.initializedPromise.then( () => {
 	ve.ui.UrlStringTransferHandler.static.urlRegExp =
-		// eslint-disable-next-line security/detect-non-literal-regexp
+
 		new RegExp(
 			ve.init.platform.getExternalLinkUrlProtocolsRegExp().source +
 				'\\S+$',
@@ -81,12 +80,12 @@ ve.ui.UrlStringTransferHandler.static.matchFunction = function ( item ) {
  * @inheritdoc
  */
 ve.ui.UrlStringTransferHandler.prototype.process = function () {
-	var surface = this.surface,
+	const surface = this.surface,
 		store = surface.getModel().getDocument().getStore(),
 		linkAction = ve.ui.actionFactory.create( 'link', surface ),
 		data = this.item.getAsString();
 
-	var links;
+	let links;
 	switch ( this.item.type ) {
 		case 'text/uri-list':
 			// text/uri-list has embedded comments; remove them before
@@ -102,8 +101,8 @@ ve.ui.UrlStringTransferHandler.prototype.process = function () {
 			// be extracted from the 'text/html' version of the item.
 			// Let's try that.
 			if ( this.item.data.htmlStringData ) {
-				var html = this.item.data.htmlStringData;
-				var doc = ve.createDocumentFromHtml( html );
+				const html = this.item.data.htmlStringData;
+				const doc = ve.createDocumentFromHtml( html );
 				links = $.makeArray( doc.querySelectorAll( 'a[href]' ) )
 					.map( ( a ) => ( { href: a.href, title: a.textContent } ) );
 			}
@@ -124,9 +123,9 @@ ve.ui.UrlStringTransferHandler.prototype.process = function () {
 	}
 
 	// Create linked text.
-	var result = [];
+	const result = [];
 	links.forEach( ( link ) => {
-		var annotation = linkAction.getLinkAnnotation( link.href ),
+		const annotation = linkAction.getLinkAnnotation( link.href ),
 			annotationSet = new ve.dm.AnnotationSet( store, store.hashAll( [
 				annotation
 			] ) ),
@@ -139,7 +138,7 @@ ve.ui.UrlStringTransferHandler.prototype.process = function () {
 		}
 
 		ve.dm.Document.static.addAnnotationsToData( content, annotationSet );
-		for ( var i = 0; i < content.length; i++ ) {
+		for ( let i = 0; i < content.length; i++ ) {
 			result.push( content[ i ] );
 		}
 	} );

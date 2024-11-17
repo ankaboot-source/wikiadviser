@@ -22,11 +22,9 @@ ve.test.utils.runWikitextStringHandlerTest = ( assert, server, string, mimeType,
 		item = ve.ui.DataTransferItem.static.newFromString( string, mimeType ),
 		doc = ve.dm.Document.static.newBlankDocument(),
 		mockSurface = {
-			getModel: () => {
-				return {
+			getModel: () => ( {
 					getDocument: () => doc
-				};
-			},
+				} ),
 			createProgress: () => ve.createDeferred().promise()
 		};
 
@@ -97,19 +95,11 @@ QUnit.test.each( 'convert', [
 		} ],
 		expectedData: [
 			{ type: 'paragraph' },
-			's',
-			'o',
-			'm',
-			'e',
-			' ',
+			...'some ',
 			[ 'F', [ 0 ] ],
 			[ 'o', [ 0 ] ],
 			[ 'o', [ 0 ] ],
-			' ',
-			't',
-			'e',
-			'x',
-			't',
+			...' text',
 			{ type: '/paragraph' },
 			{ type: 'internalList' },
 			{ type: '/internalList' }
@@ -176,10 +166,10 @@ QUnit.test.each( 'convert', [
 		assertDom: true,
 		expectedData: [
 			{ type: 'mwHeading', attributes: { level: 2 }, originalDomElements: $.parseHTML( '<h2>foo</h2>' ) },
-			'f', 'o', 'o',
+			...'foo',
 			{ type: '/mwHeading' },
 			{ type: 'mwHeading', attributes: { level: 2 }, originalDomElements: $.parseHTML( '<h2 id="mw-meaningful-id">bar</h2>' ) },
-			'b', 'a', 'r',
+			...'bar',
 			{ type: '/mwHeading' },
 			{ type: 'internalList' },
 			{ type: '/internalList' }
@@ -194,7 +184,7 @@ QUnit.test.each( 'convert', [
 		assertDom: true,
 		expectedData: [
 			{ type: 'mwHeading', attributes: { level: 2 }, originalDomElements: $.parseHTML( '<h2 id="Tudnivalók"> Tudnivalók </h2>' ) },
-			'T', 'u', 'd', 'n', 'i', 'v', 'a', 'l', 'ó', 'k',
+			...'Tudnivalók',
 			{ type: '/mwHeading' },
 			{ type: 'internalList' },
 			{ type: '/internalList' }

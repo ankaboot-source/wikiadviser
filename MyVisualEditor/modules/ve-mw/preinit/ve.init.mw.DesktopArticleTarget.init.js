@@ -41,7 +41,7 @@
 		plugins = [],
 		/* Custom WikiAdviser */
 		welcomeDialogDisabled = true,
-		/* End Custom WikiAdviser */
+		/* End WikiAdviser */
 		educationPopupsDisabled = false,
 		// Defined after document-ready below
 		$targetContainer = null;
@@ -301,10 +301,11 @@
 					);
 					// Add modules specific to desktop (modules shared between desktop
 					// and mobile are already added by TargetLoader)
-					[ 'ext.visualEditor.desktopArticleTarget' ]
+					[
+						'ext.visualEditor.desktopArticleTarget',
 						// Add requested plugins
-						.concat( plugins )
-						.forEach( mw.libs.ve.targetLoader.addPlugin );
+						...plugins
+					].forEach( mw.libs.ve.targetLoader.addPlugin );
 					plugins = [];
 					return mw.libs.ve.targetLoader.loadModules( mode );
 				} )
@@ -338,6 +339,7 @@
 					return target;
 				}, ( e ) => {
 					mw.log.warn( 'VisualEditor failed to load: ' + e );
+					return $.Deferred().reject( e ).promise();
 				} );
 		}
 
@@ -884,8 +886,6 @@
 	}
 
 	init = {
-		unsupportedList: conf.unsupportedList,
-
 		/**
 		 * Add a plugin module or function.
 		 *
@@ -1027,17 +1027,9 @@
 		 * Setup multiple section links (edit + edit source)
 		 */
 		setupMultiSectionLinks: function () {
-			const $editsections = $( '#mw-content-text .mw-editsection' ),
-				bodyDir = $( document.body ).css( 'direction' );
-
-			// Match direction of the user interface
-			// TODO: Why is this needed? It seems to work fine without.
-			if ( $editsections.css( 'direction' ) !== bodyDir ) {
-				// Avoid creating inline style attributes if the inherited value is already correct
-				$editsections.css( 'direction', bodyDir );
-			}
-
 			if ( pageCanLoadEditor ) {
+				const $editsections = $( '#mw-content-text .mw-editsection' );
+
 				// Only init without refresh if we're on a view page. Though section edit links
 				// are rarely shown on non-view pages, they appear in one other case, namely
 				// when on a diff against the latest version of a page. In that case we mustn't
@@ -1331,11 +1323,8 @@
 
 	// Whether VisualEditor should be available for the current user, page, wiki, mediawiki skin,
 	// browser etc.
-	init.isAvailable = (
-		VisualEditorSupportCheck() &&
-		( url.searchParams.has( 'vesupported' ) || !$.client.test( init.unsupportedList, null, true ) )
-		// Extensions can disable VE in certain circumstances using the VisualEditorBeforeEditor hook (T174180)
-	);
+	init.isAvailable = VisualEditorSupportCheck();
+	// Extensions can disable VE in certain circumstances using the VisualEditorBeforeEditor hook (T174180)
 
 	const enabledForUser = (
 		// User has 'visualeditor-enable' preference enabled (for alpha opt-in)
@@ -1365,11 +1354,14 @@
 	init.isWikitextAvailable = (
 		init.isAvailable &&
 
-		// Enabled on site
-		conf.enableWikitext &&
+		// If forced by the URL parameter, skip the checks (T239796)
+		( url.searchParams.get( 'veaction' ) === 'editsource' || (
+			// Enabled on site
+			conf.enableWikitext &&
 
-		// User preference
-		mw.user.options.get( 'visualeditor-newwikitext' ) &&
+			// User preference
+			mw.user.options.get( 'visualeditor-newwikitext' )
+		) ) &&
 
 		// Only on wikitext pages
 		mw.config.get( 'wgPageContentModel' ) === 'wikitext'
@@ -1388,9 +1380,9 @@
 
 	init.updateTabs = updateTabs;
 
-	// Note: Though VisualEditor itself only needs this exposure for a very small reason
-	// (namely to access init.unsupportedList from the unit tests...) this has become one of the nicest
-	// ways to easily detect whether the VisualEditor initialisation code is present.
+	// Note: Though VisualEditor itself only needed this exposure for a very small reason
+	// (namely to access the old init.unsupportedList from the unit tests...) this has become one
+	// of the nicest ways to easily detect whether the VisualEditor initialisation code is present.
 	//
 	// The VE global was once available always, but now that platform integration initialisation
 	// is properly separated, it doesn't exist until the platform loads VisualEditor core.

@@ -8,38 +8,29 @@ QUnit.module( 've.ce.LinearArrowKeyDownHandler', {
 	// See https://github.com/platinumazure/eslint-plugin-qunit/issues/68
 	// eslint-disable-next-line qunit/resolve-async
 	beforeEach: function ( assert ) {
-		var done = assert.async();
+		const done = assert.async();
 		return ve.init.platform.getInitializedPromise().then( done );
 	}
 } );
 
-QUnit.test( 'special key down: linear arrow keys', function ( assert ) {
-	var done = assert.async(),
-		promise = Promise.resolve(),
+QUnit.test( 'special key down: linear arrow keys', ( assert ) => {
+	const done = assert.async(),
 		supportsSelectionExtend = ve.supportsSelectionExtend,
 		complexTableDoc = ve.dm.example.createExampleDocument( 'complexTable' ),
-		slugDoc = ve.dm.example.createExampleDocumentFromData(
-			[
-				{ type: 'alienBlock' }, { type: '/alienBlock' },
-				{ type: 'internalList' }, { type: '/internalList' }
-			]
-		),
-		inlineFocusableDoc = ve.dm.example.createExampleDocumentFromData(
-			[
-				{ type: 'paragraph' }, 'F', 'o', 'o', ' ', { type: 'alienInline' }, { type: '/alienInline' }, ' ', 'b', 'a', 'r', { type: '/paragraph' },
-				{ type: 'internalList' }, { type: '/internalList' }
-			]
-		),
-		blockImageDoc = ve.dm.example.createExampleDocumentFromData(
-			[ { type: 'paragraph' }, 'F', 'o', 'o', { type: '/paragraph' } ].concat(
-				ve.dm.example.blockImage.data.slice()
-			).concat(
-				[
-					{ type: 'paragraph' }, 'B', 'a', 'r', { type: '/paragraph' },
-					{ type: 'internalList' }, { type: '/internalList' }
-				]
-			)
-		),
+		slugDoc = ve.dm.example.createExampleDocumentFromData( [
+			{ type: 'alienBlock' }, { type: '/alienBlock' },
+			{ type: 'internalList' }, { type: '/internalList' }
+		] ),
+		inlineFocusableDoc = ve.dm.example.createExampleDocumentFromData( [
+			{ type: 'paragraph' }, ...'Foo ', { type: 'alienInline' }, { type: '/alienInline' }, ...' Bar', { type: '/paragraph' },
+			{ type: 'internalList' }, { type: '/internalList' }
+		] ),
+		blockImageDoc = ve.dm.example.createExampleDocumentFromData( [
+			{ type: 'paragraph' }, ...'Foo', { type: '/paragraph' },
+			...ve.dm.example.blockImage.data,
+			{ type: 'paragraph' }, ...'Bar', { type: '/paragraph' },
+			{ type: 'internalList' }, { type: '/internalList' }
+		] ),
 		cases = [
 			// Within normal text. NOTE: these tests manually force the cursor to
 			// move, because we rely on native browser actions for that.
@@ -409,10 +400,9 @@ QUnit.test( 'special key down: linear arrow keys', function ( assert ) {
 			}
 		];
 
-	cases.forEach( function ( caseItem ) {
-		promise = promise.then( function () {
-			return ve.test.utils.runSurfaceHandleSpecialKeyTest( assert, caseItem );
-		} );
+	let promise = Promise.resolve();
+	cases.forEach( ( caseItem ) => {
+		promise = promise.then( () => ve.test.utils.runSurfaceHandleSpecialKeyTest( assert, caseItem ) );
 	} );
 
 	promise.finally( () => done() );

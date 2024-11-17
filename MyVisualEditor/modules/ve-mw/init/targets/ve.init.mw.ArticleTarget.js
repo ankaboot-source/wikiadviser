@@ -15,8 +15,8 @@
  *
  * @constructor
  * @param {Object} [config] Configuration options
- * @cfg {Object} [toolbarConfig]
- * @cfg {boolean} [register=true]
+ * @param {Object} [config.toolbarConfig]
+ * @param {boolean} [config.register=true]
  */
 ve.init.mw.ArticleTarget = function VeInitMwArticleTarget( config ) {
 	config = config || {};
@@ -181,7 +181,8 @@ ve.init.mw.ArticleTarget.static.platformType = 'other';
 /**
  * @inheritdoc
  */
-ve.init.mw.ArticleTarget.static.documentCommands = ve.init.mw.ArticleTarget.super.static.documentCommands.concat( [
+ve.init.mw.ArticleTarget.static.documentCommands = [
+	...ve.init.mw.ArticleTarget.super.static.documentCommands,
 	// Make help dialog triggerable from anywhere
 	'commandHelp',
 	// Make save commands triggerable from anywhere
@@ -190,7 +191,7 @@ ve.init.mw.ArticleTarget.static.documentCommands = ve.init.mw.ArticleTarget.supe
 	'showPreview',
 	'showMinoredit',
 	'showWatchthis'
-] );
+];
 
 /* Static methods */
 
@@ -762,7 +763,7 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 			},
 		})
 	}
-	/* End Custom WikiAdviser */
+	/* End WikiAdviser */
 };
 
 /**
@@ -790,7 +791,13 @@ ve.init.mw.ArticleTarget.prototype.saveFail = function ( doc, saveData, code, da
 
 			if ( error.code === 'assertanonfailed' || error.code === 'assertuserfailed' || error.code === 'assertnameduserfailed' ) {
 				this.refreshUser().then( ( username ) => {
-					this.saveErrorNewUser( username );
+					// Reattempt the save after successfully refreshing the
+					// user, but only if it's a temporary account (T345975)
+					if ( error.code === 'assertanonfailed' && mw.util.isTemporaryUser( username ) ) {
+						this.startSave( this.getSaveOptions() );
+					} else {
+						this.saveErrorNewUser( username );
+					}
 				}, () => {
 					this.saveErrorUnknown( data );
 				} );
@@ -1084,7 +1091,7 @@ ve.init.mw.ArticleTarget.prototype.getVisualDiffGeneratorPromise = function () {
 			return mw.libs.ve.diffLoader.getVisualDiffGeneratorPromise( this.originalDmDocPromise, newRevPromise );
 		} else {
 			return this.originalDmDocPromise.then(
-				( originalDmDoc ) => () => new ve.dm.VisualDiff( originalDmDoc, this.getSurface().getModel().getAttachedRoot() )
+				( originalDmDoc ) => () => new ve.dm.VisualDiff( originalDmDoc, this.getSurface().getModel().getDocument().getAttachedRoot() )
 			);
 		}
 	} );
@@ -1565,13 +1572,12 @@ ve.init.mw.ArticleTarget.prototype.save = function ( doc, options ) {
 		this.getSurface().getMode() === 'visual' &&
 		mw.config.get( 'wgVisualEditorConfig' ).editCheckTagging
 	) {
-		const documentModel = this.getSurface().getModel().getDocument();
 		// New content needing a reference
-		if ( mw.editcheck.findAddedContentNeedingReference( documentModel ).length ) {
+		if ( mw.editcheck.hasAddedContentNeedingReference( this.getSurface() ) ) {
 			taglist.push( 'editcheck-references' );
 		}
 		// New content, regardless of if it needs a reference
-		if ( mw.editcheck.findAddedContentNeedingReference( documentModel, true ).length ) {
+		if ( mw.editcheck.hasAddedContentNeedingReference( this.getSurface(), true ) ) {
 			taglist.push( 'editcheck-newcontent' );
 		}
 		// Rejection reasons for references
@@ -1788,7 +1794,7 @@ ve.init.mw.ArticleTarget.prototype.createSurface = function ( dmDoc, config ) {
  */
 ve.init.mw.ArticleTarget.prototype.getSurfaceClasses = function () {
 	const classes = ve.init.mw.ArticleTarget.super.prototype.getSurfaceClasses.call( this );
-	return classes.concat( [ 'mw-body-content' ] );
+	return [ ...classes, 'mw-body-content' ];
 };
 
 /**

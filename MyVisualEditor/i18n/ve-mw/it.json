@@ -44,6 +44,7 @@
 			"Supernino",
 			"Toa",
 			"Una giornata uggiosa '94",
+			"Valepert",
 			"Vivbod",
 			"Wikitoni"
 		]
@@ -60,7 +61,6 @@
 	"visualeditor-autosave-recovered-text": "Le tue modifiche non salvate sono state automaticamente ripristinate.",
 	"visualeditor-autosave-recovered-title": "Modifiche ripristinate",
 	"visualeditor-backbutton-tooltip": "Indietro",
-	"visualeditor-browserwarning": "Si sta utilizzando un browser che non è ufficialmente supportato da questo editor.",
 	"visualeditor-ca-createlocaldescriptionsource": "Aggiungi descrizione locale con wikitesto",
 	"visualeditor-ca-createsource": "Crea sorgente",
 	"visualeditor-ca-editlocaldescriptionsource": "Modifica wikitesto locale",
@@ -177,6 +177,7 @@
 	"visualeditor-dialog-transclusion-template-widget-aria": "Premi Spazio per selezionare il template.",
 	"visualeditor-dialog-transclusion-add-wikitext": "Aggiungi wikitesto",
 	"visualeditor-dialog-transclusion-add-param-error-exists-selected": "Impossibile aggiungere il parametro \"$2\" due volte.",
+	"visualeditor-dialog-transclusion-add-param-help": "Se ne sei a conoscenza, puoi inserire nomi di [//www.mediawiki.org/wiki/Special:MyLanguage/Help:VisualEditor/User_guide#Adding_undocumented_parameters parametri non documentati]. Nota che solamente i parametri previsti dal template avranno effetto. Puoi trovare informazioni sui parametri previsti nella [[$1|pagina del template]].",
 	"visualeditor-dialog-transclusion-add-param-placeholder": "Nome del parametro",
 	"visualeditor-dialog-transclusion-add-param-save": "Aggiungi",
 	"visualeditor-dialog-transclusion-add-template": "Aggiungi template",

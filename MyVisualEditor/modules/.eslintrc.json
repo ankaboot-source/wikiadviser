@@ -1,14 +1,12 @@
 {
 	"root": true,
 	"extends": [
-		"wikimedia/client-es6",
+		"wikimedia/client",
 		"wikimedia/jquery",
 		"wikimedia/mediawiki",
 		"./eslint-shared.json"
 	],
 	"rules": {
-		"prefer-arrow-callback": "error",
-		"implicit-arrow-linebreak": "error",
-		"arrow-body-style": "error"
+		"no-jquery/no-append-html": "warn"
 	}
 }

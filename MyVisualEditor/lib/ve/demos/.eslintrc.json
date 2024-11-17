@@ -11,8 +11,7 @@
 		"OO": "readonly"
 	},
 	"rules": {
-		"max-len": "off",
-		"no-var": "off"
+		"max-len": "off"
 	},
 	"plugins": [ "html" ],
 	"settings": {

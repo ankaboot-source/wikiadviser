@@ -13,4 +13,4 @@ git clone -b "$1" https://gerrit.wikimedia.org/r/mediawiki/extensions/VisualEdit
 # 2. Searchs for files containing "WikiAdviser" within MyVisualEditor and open them in both MyVisualEditor & the cloned VisualEditor folder in VScode
 grep -lir WikiAdviser MyVisualEditor | xargs -I {} sh -c 'code -r "$1" "VisualEditor${1#MyVisualEditor}"' _ {}
 
-# 3. Then manually update the code in VisualEditor to match the changes in MyVisualEditor
+# 3. Then manually update the code in VisualEditor to match the changes in MyVisualEditor, Delete MyVisualEditor and rename VisualEditor to MyVisualEditor

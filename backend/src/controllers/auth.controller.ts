@@ -7,7 +7,7 @@ import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join('|');
 
 /**
- * Restricts access to MediaWiki endpoints based on user permissions and request details.
+ * Restricts access (HTTP 403) to MediaWiki endpoints based on user permissions and request details.
  *
  * @param {Request} req - The Express request object.
  * @param {Response} res - The Express response object.
@@ -30,11 +30,11 @@ export default async function restrictMediawikiAccess(
     );
 
     const allowedPrefixRegEx = new RegExp(
-      `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=(editcheckreferenceurl|query|templatedata)&format=json&(url|meta=(filerepoinfo|siteinfo)|(formatversion=2&)?(revids=\\d+&prop=mapdata|titles=Template%3ACite)|prop=(imageinfo(&indexpageids=1&iiprop=size%7Cmediatype)?|info%7Cpageprops%7Cpageimages%7Cdescription&pithumbsize=80&pilimit=1&ppprop=disambiguation%7Chiddencat)&titles=)|(skins|resources|images/timeline)/|extensions/(UniversalLanguageSelector|Kartographer|wikihiero))`,
+      `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=(editcheckreferenceurl|query|templatedata)&format=json&(url|meta=(filerepoinfo|siteinfo)|(formatversion=2&)?(revids=\\d+&prop=mapdata|titles=)|prop=(imageinfo(&indexpageids=1&iiprop=size%7Cmediatype)?|info%7Cpageprops%7Cpageimages%7Cdescription&pithumbsize=80&pilimit=1&ppprop=disambiguation%7Chiddencat)&titles=)|(skins|resources|images/timeline)/|extensions/(UniversalLanguageSelector|Kartographer|wikihiero))`,
       'i'
     );
 
-    if (!(typeof forwardedUri === 'string')) {
+    if (typeof forwardedUri !== 'string') {
       return res
         .status(403)
         .send('You are not authorized to access this content');

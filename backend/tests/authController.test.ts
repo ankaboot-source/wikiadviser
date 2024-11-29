@@ -14,7 +14,7 @@ const allowedRequests = [
 ];
 describe('Testing allowed mediawiki requests', () => {
   allowedRequests.forEach((request, index) => {
-    it(`should allow request ${index}`, async () => {
+    it(`should allow request ${index}`, () => {
       const result = Boolean(request.match(allowedPrefixRegEx));
       expect(result).toBe(true);
     });

@@ -5,6 +5,14 @@ import ENV from '../schema/env.schema';
 import SupabaseAuthorization from '../services/auth/SupabaseResolver';
 
 const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join('|');
+const articleIdRegEx = new RegExp(
+  `^/wiki/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
+  'i'
+);
+export const allowedPrefixRegEx = new RegExp(
+  `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=(editcheckreferenceurl|query|templatedata)&format=json&(url|meta=(filerepoinfo|siteinfo)|(formatversion=2&)?(revids=\\d+&prop=mapdata|titles=)|prop=(imageinfo(&indexpageids=1&iiprop=size%7Cmediatype)?|info%7Cpageprops%7Cpageimages%7Cdescription&pithumbsize=80&pilimit=1&ppprop=disambiguation%7Chiddencat)&titles=)|(skins|resources|images/timeline)/|extensions/(UniversalLanguageSelector|Kartographer|wikihiero))`,
+  'i'
+);
 
 /**
  * Restricts access (HTTP 403) to MediaWiki endpoints based on user permissions and request details.
@@ -23,16 +31,6 @@ export default async function restrictMediawikiAccess(
   try {
     const authHandler = new SupabaseAuthorization(logger);
     const user = await authHandler.verifyCookie(req);
-
-    const articleIdRegEx = new RegExp(
-      `^/wiki/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
-      'i'
-    );
-
-    const allowedPrefixRegEx = new RegExp(
-      `^/wiki/(${wikiadviserLanguagesRegex})/(images/thumb|load.php\\?|api.php\\?action=(editcheckreferenceurl|query|templatedata)&format=json&(url|meta=(filerepoinfo|siteinfo)|(formatversion=2&)?(revids=\\d+&prop=mapdata|titles=)|prop=(imageinfo(&indexpageids=1&iiprop=size%7Cmediatype)?|info%7Cpageprops%7Cpageimages%7Cdescription&pithumbsize=80&pilimit=1&ppprop=disambiguation%7Chiddencat)&titles=)|(skins|resources|images/timeline)/|extensions/(UniversalLanguageSelector|Kartographer|wikihiero))`,
-      'i'
-    );
 
     if (typeof forwardedUri !== 'string') {
       return res

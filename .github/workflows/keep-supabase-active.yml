@@ -14,7 +14,7 @@ jobs:
       - name: Request QA Supabase to keep it alive
         run: |
           request() { curl -X GET "https://enxddisazdljwcvranya.supabase.co/rest/v1/profiles" -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"; }
-          for i in {1..10}; do   request > hide_data_from_logs;   echo "Next request will be in 3sec";   sleep 3; done
+          for i in {1..10}; do   request > /dev/null 2>&1;   echo "Next request will be in 3sec";   sleep 3; done
 
   keep-PROD-active:
     runs-on: ubuntu-latest
@@ -25,4 +25,4 @@ jobs:
       - name: Request PROD Supabase to keep it alive
         run: |
           request() { curl -X GET "https://rcsxuyoogygnyjbwbrbb.supabase.co/rest/v1/profiles" -H "apikey: $SUPABASE_SECRET_PROJECT_TOKEN" -H "Authorization: Bearer $SUPABASE_SECRET_PROJECT_TOKEN"; }
-          for i in {1..10}; do   request > hide_data_from_logs;   echo "Next request will be in 3sec";   sleep 3; done
+          for i in {1..10}; do   request > /dev/null 2>&1;   echo "Next request will be in 3sec";   sleep 3; done

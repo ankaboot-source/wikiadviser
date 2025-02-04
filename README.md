@@ -65,7 +65,7 @@ And finally, start frontend and backend servers by running this command.
 npm run dev:all
 ```
 
-or If you want to run the backend or frontend separately, then run the command:
+Or if you want to run the backend or frontend separately, then run the command:
 
 ```sh
 # to start the backend

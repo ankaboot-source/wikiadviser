@@ -9,6 +9,7 @@
     "install-deps:frontend": "npm i --prefix ./frontend",
     "dev:frontend": "npm run dev --prefix ./frontend",
     "dev:backend": "npm run dev --prefix ./backend",
+    "dev:all": "npm run dev:frontend & npm run dev:backend & wait",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

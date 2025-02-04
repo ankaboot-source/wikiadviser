@@ -13,7 +13,7 @@ To set up MediaWiki locally, follow these [steps](/mediawiki-setup/MEDIAWIKI_SET
 
 ## Setup the project
 
-After installing Docker and NodeJS, we need to install the dependencies that the project requires from the system by running this command:
+After installing Docker and Node.js, you need to install the required system dependencies for the project by running the following command (Debian based distros is required to execute it):
 
 ```sh
 sudo npx playwright install-deps
@@ -60,6 +60,12 @@ SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
 ## Running the Project
 
 And finally, start frontend and backend servers by running this command.
+
+```sh
+npm run dev:all
+```
+
+Or if you want to run the backend or frontend separately, then run the command:
 
 ```sh
 # to start the backend

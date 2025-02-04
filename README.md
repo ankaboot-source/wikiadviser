@@ -13,16 +13,10 @@ To set up MediaWiki locally, follow these [steps](/mediawiki-setup/MEDIAWIKI_SET
 
 ## Setup the project
 
-After installing Docker and Node.js, you need to install the required system dependencies for the project by running the following command (Ubuntu is required to execute it):
+After installing Docker and Node.js, you need to install the required system dependencies for the project by running the following command (Debian based distros is required to execute it):
 
 ```sh
 sudo npx playwright install-deps
-```
-
-If you have Ubuntu 24.04 or later, at this moment Ubuntu 24.04 or later is not supported by playwright, you must run this command to install required dependencies (this command required a root permission)
-
-```sh
-npm run install-fixes
 ```
 
 and also install project dependencies by running this command:

@@ -5,10 +5,12 @@
   "main": "index.js",
   "scripts": {
     "install-deps": "npm i && npm run install-deps:backend && npm run install-deps:frontend",
+    "install-fixes": "./deps.sh",
     "install-deps:backend": "npm i --prefix ./backend",
     "install-deps:frontend": "npm i --prefix ./frontend",
     "dev:frontend": "npm run dev --prefix ./frontend",
     "dev:backend": "npm run dev --prefix ./backend",
+    "dev:all": "./run.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

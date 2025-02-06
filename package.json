@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install-deps": "npm i && npm run install-deps:backend && npm run install-deps:frontend",
-    "install-deps:backend": "npm i --prefix ./backend",
-    "install-deps:frontend": "npm i --prefix ./frontend",
-    "dev:frontend": "npm run dev --prefix ./frontend",
-    "dev:backend": "npm run dev --prefix ./backend",
-    "dev:all": "npm run dev:frontend & npm run dev:backend & wait",
+    "install-deps": "pnpm i && pnpm run install-deps:backend && pnpm run install-deps:frontend",
+    "install-deps:backend": "pnpm i --prefix ./backend",
+    "install-deps:frontend": "pnpm i --prefix ./frontend",
+    "dev:frontend": "pnpm run --prefix ./frontend dev",
+    "dev:backend": "pnpm run --prefix ./backend dev",
+    "dev:all": "pnpm run dev:frontend & pnpm run dev:backend & wait",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,7 +17,7 @@
     "url": "git+https://github.com/ankaboot-source/wikiadviser.git"
   },
   "devDependencies": {
-    "supabase": "^1.131.3"
+    "supabase": "^1.226.4"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/ankaboot-source/wikiadviser/issues"
   },
-  "homepage": "https://github.com/ankaboot-source/wikiadviser#readme"
+  "homepage": "https://github.com/ankaboot-source/wikiadviser#readme",
+  "dependencies": {
+    "domhandler": "^5.0.3"
+  }
 }

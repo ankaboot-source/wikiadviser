@@ -1,4 +1,5 @@
-import { AnyNode, Cheerio, CheerioAPI, load } from 'cheerio';
+import { AnyNode } from 'domhandler';
+import { Cheerio, CheerioAPI, load } from 'cheerio';
 import { encode } from 'html-entities';
 import Parsoid from '../services/mediawikiAPI/ParsoidApi';
 import { ChildNodeData, Tables, TypeOfEditDictionary } from '../types';
@@ -408,9 +409,8 @@ export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
           return article.trim();
         }
         const label = `l${index + 1}=`;
-        return `wikipedia:${sourceLanguage}:${article.trim()}${
-          articles.includes(label) ? '' : `|${label}${article.trim()}`
-        }`;
+        return `wikipedia:${sourceLanguage}:${article.trim()}${articles.includes(label) ? '' : `|${label}${article.trim()}`
+          }`;
       });
 
     return `{{${templateType}|${parsedArticles.join('|')}}}`;

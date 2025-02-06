@@ -1,4 +1,3 @@
-import { AnyNode } from 'domhandler';
 import { Cheerio, CheerioAPI, load } from 'cheerio';
 import { encode } from 'html-entities';
 import Parsoid from '../services/mediawikiAPI/ParsoidApi';
@@ -52,7 +51,7 @@ function createStrikethroughText(text: string) {
 }
 
 function handleComment(
-  $wrapElement: Cheerio<AnyNode>,
+  $wrapElement: Cheerio<any>,
   elementInnerText: string,
   descriptionList: string[],
   $CheerioAPI: CheerioAPI

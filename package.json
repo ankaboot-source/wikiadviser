@@ -26,7 +26,5 @@
     "url": "https://github.com/ankaboot-source/wikiadviser/issues"
   },
   "homepage": "https://github.com/ankaboot-source/wikiadviser#readme",
-  "dependencies": {
-    "domhandler": "^5.0.3"
-  }
+  "dependencies": {}
 }

@@ -34,17 +34,16 @@ jobs:
     if: ${{ needs.changes.outputs.backend == 'true' || needs.changes.outputs.actions == 'true'  }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "16.x"
-          cache: "pnpm"
       - name: Install pnpm
-        run: npm install -g pnpm 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16.x'
+          cache: 'pnpm'
       - name: Install dependencies
-        run: cd backend && pnpm install --frozen-lockfile 
+        run: cd backend && pnpm install --frozen-lockfile
       - name: Check linting
         run: cd backend && pnpm run lint
       - name: Check formatting
@@ -63,13 +62,12 @@ jobs:
     if: ${{ needs.changes.outputs.frontend == 'true' || needs.changes.outputs.actions == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "16.x"
-          cache: "pnpm" 
+      - uses: actions/checkout@v4
       - name: Install pnpm
-        run: npm install -g pnpm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16.x'
+          cache: 'pnpm'
       - name: Install dependencies
         run: cd frontend && pnpm install --frozen-lockfile
       - name: Check linting

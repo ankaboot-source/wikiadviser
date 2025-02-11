@@ -408,8 +408,9 @@ export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
           return article.trim();
         }
         const label = `l${index + 1}=`;
-        return `wikipedia:${sourceLanguage}:${article.trim()}${articles.includes(label) ? '' : `|${label}${article.trim()}`
-          }`;
+        return `wikipedia:${sourceLanguage}:${article.trim()}${
+          articles.includes(label) ? '' : `|${label}${article.trim()}`
+        }`;
       });
 
     return `{{${templateType}|${parsedArticles.join('|')}}}`;

@@ -8,19 +8,28 @@ on:
 jobs:
   backend:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/actions-setup@v4
         with:
-          node-version: "16.x"
+          version: 10
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - name: Install dependencies
-        run: cd backend && npm ci
+        run: cd backend && pnpm install --frozen-lockfile
       - name: Check linting
-        run: cd backend && npm run lint
+        run: cd backend && pnpm run lint
       - name: Check formatting
-        run: cd backend && npm run prettier
+        run: cd backend && pnpm run prettier
       - name: Run test coverage
-        run: cd backend && npm run test:coverage
+        run: cd backend && pnpm run test:coverage
       - name: Report results to DeepSource
         run: |
           curl https://deepsource.io/cli | sh
@@ -30,14 +39,23 @@ jobs:
 
   frontend:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/actions-setup-node@v4
         with:
-          node-version: "16.x"
+          version: 10
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
       - name: Install dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && pnpm install --frozen-lockfile
       - name: Check linting
-        run: cd frontend && npm run lint
+        run: cd frontend && pnpm run lint
       - name: Check formatting
-        run: cd frontend && npm run prettier
+        run: cd frontend && pnpm run prettier

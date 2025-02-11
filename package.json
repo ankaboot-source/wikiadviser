@@ -4,12 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install-deps": "npm i && npm run install-deps:backend && npm run install-deps:frontend",
-    "install-deps:backend": "npm i --prefix ./backend",
-    "install-deps:frontend": "npm i --prefix ./frontend",
-    "dev:frontend": "npm run dev --prefix ./frontend",
-    "dev:backend": "npm run dev --prefix ./backend",
-    "dev:all": "npm run dev:frontend & npm run dev:backend & wait",
+    "install-deps": "pnpm i && pnpm run install-deps:backend && pnpm run install-deps:frontend",
+    "install-deps:backend": "pnpm i --prefix ./backend",
+    "install-deps:frontend": "pnpm i --prefix ./frontend",
+    "dev:all": "pnpm run dev:frontend & pnpm run dev:backend & wait",
+    "dev:backend": "pnpm run --prefix ./backend dev",
+    "dev:frontend": "pnpm run --prefix ./frontend dev",
+    "lint:all": "pnpm run lint:backend && pnpm run lint:frontend",
+    "lint:backend": "pnpm run --prefix ./backend lint",
+    "lint:frontend": "pnpm run --prefix ./frontend lint",
+    "lint:all:fix": "pnpm run lint:backend:fix && pnpm run lint:frontend:fix",
+    "lint:backend:fix": "pnpm run --prefix ./backend lint:fix",
+    "lint:frontend:fix": "pnpm run --prefix ./frontend lint:fix",
+    "prettier:all": "pnpm run prettier:backend && pnpm run prettier:frontend",
+    "prettier:backend": "pnpm run --prefix ./backend prettier",
+    "prettier:frontend": "pnpm run --prefix ./frontend prettier",
+    "prettier:all:fix": "pnpm run prettier:backend:fix && pnpm run prettier:frontend:fix",
+    "prettier:backend:fix": "pnpm run --prefix ./backend prettier:fix",
+    "prettier:frontend:fix": "pnpm run --prefix ./frontend prettier:fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,7 +29,7 @@
     "url": "git+https://github.com/ankaboot-source/wikiadviser.git"
   },
   "devDependencies": {
-    "supabase": "^1.131.3"
+    "supabase": "^1.226.4"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +37,6 @@
   "bugs": {
     "url": "https://github.com/ankaboot-source/wikiadviser/issues"
   },
-  "homepage": "https://github.com/ankaboot-source/wikiadviser#readme"
+  "homepage": "https://github.com/ankaboot-source/wikiadviser#readme",
+  "dependencies": {}
 }

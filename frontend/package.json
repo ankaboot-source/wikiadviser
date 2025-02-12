@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint . --ext .js,.ts,.vue",
-    "lint:fix": "pnpm run lint -- --fix",
+    "lint:fix": "pnpm run lint --fix",
     "prettier": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "prettier:fix": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"See package.json => scripts for available tests.\" && exit 0",

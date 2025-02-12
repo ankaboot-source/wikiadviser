@@ -51,7 +51,7 @@ function createStrikethroughText(text: string) {
 }
 
 function handleComment(
-  $wrapElement: Cheerio<any>,
+  $wrapElement: Cheerio<any>, // skipcq: JS-0323
   elementInnerText: string,
   descriptionList: string[],
   $CheerioAPI: CheerioAPI

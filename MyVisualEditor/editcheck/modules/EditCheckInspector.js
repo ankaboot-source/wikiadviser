@@ -119,7 +119,6 @@ ve.ui.EditCheckInspector.prototype.getSetupProcess = function ( data ) {
 	return ve.ui.EditCheckInspector.super.prototype.getSetupProcess.call( this, data )
 		.first( function () {
 			this.surface = data.surface;
-			this.saveProcessDeferred = data.saveProcessDeferred;
 			this.answerRadioSelect.selectItem( null );
 		}, this );
 };
@@ -135,6 +134,9 @@ ve.ui.EditCheckInspector.prototype.getReadyProcess = function ( data ) {
 		}, this );
 };
 
+/**
+ * @inheritdoc
+ */
 ve.ui.EditCheckInspector.prototype.getActionProcess = function ( action ) {
 	if ( action === '' ) {
 		return new OO.ui.Process( function () {

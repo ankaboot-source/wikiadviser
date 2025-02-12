@@ -49,12 +49,13 @@
 	}
 }
 
-/* stylelint-disable-next-line selector-class-pattern */
+/* stylelint-disable selector-class-pattern */
 .ve-init-mw-mobileArticleTarget.overlay {
 	// Override MobileFrontend `.overlay` styles.
 	// `padding-top` is instead set on a different element in adjustContentPadding().
 	padding-top: 0;
 }
+/* stylelint-enable selector-class-pattern */
 
 .ve-init-mw-mobileArticleTarget .ve-ui-overlay-local {
 	// Reset line height set by .content
@@ -69,6 +70,14 @@
 .ve-init-mw-mobileArticleTarget-toolbar-popups {
 	// Avoid jittering while scrolling (T209192)
 	position: fixed;
+}
+
+.ve-init-mw-mobileArticleTarget-toolbar.ve-ui-targetToolbar-mobile .oo-ui-toolbar-tools > {
+	.ve-ui-toolbar-group-back,
+	.ve-ui-toolbar-group-save {
+		flex: 0;
+		min-width: 2.75em;
+	}
 }
 
 @media screen and ( max-width: 767px ) {

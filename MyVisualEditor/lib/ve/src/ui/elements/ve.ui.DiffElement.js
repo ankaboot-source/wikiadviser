@@ -225,6 +225,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 	}
 
 	for ( let k = 0, klen = queue.length; k < klen; k++ ) {
+		hasChanges = true;
 		/* Custom WikiAdviser */
 		// remove the code responsible for hiding unchanged data
 		// COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
@@ -234,6 +235,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 			!isUnchanged( queue[ k + 1 ] )
 		) { */
 		/* End WikiAdviser */
+			hasChanges = true;
 			if ( headingContext ) {
 				// Don't render headingContext if current or next node is a heading
 				if ( !isHeading( queue[ k ] ) && !isHeading( queue[ k + 1 ] ) ) {
@@ -1314,7 +1316,7 @@ ve.ui.DiffElement.prototype.getInternalListChangedNodeElements = function ( diff
 	let data = this.getChangedDocListData( newNode, diff, true );
 
 	// Remove internal list wrapper
-	data = data.slice( 1, data.length - 2 );
+	data = data.slice( 1, -1 );
 
 	this.markMove( move, listItemNode );
 	const newDoc = newNode.getRoot().getDocument();

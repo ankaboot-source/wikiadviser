@@ -136,6 +136,14 @@
 			"value": false,
 			"description": "Enable experimental Edit Check feature. Can also be enabled using ?ecenable=1."
 		},
+		"VisualEditorEditCheckSingleCheckMode": {
+			"value": true,
+			"description": "Only allow a single edit check to be surfaced"
+		},
+		"VisualEditorEditCheckLoadExperimental": {
+			"value": false,
+			"description": "Load experimental edit checks"
+		},
 		"VisualEditorEditCheckABTest": {
 			"value": false,
 			"description": "A/B test Edit Check for all users. A/B bucket status will override VisualEditorEditCheck."
@@ -213,7 +221,7 @@
 		"RecentChange_save": "VisualEditorHooks",
 		"RedirectSpecialArticleRedirectParams": "VisualEditorHooks",
 		"ResourceLoaderGetConfigVars": "VisualEditorHooks",
-		"ResourceLoaderRegisterModules": "VisualEditorHooks",
+		"ResourceLoaderRegisterModules": [ "VisualEditorHooks", "EditCheckHooks" ],
 		"SkinEditSectionLinks": "VisualEditorHooks",
 		"SkinTemplateNavigation::Universal": "VisualEditorHooks",
 		"UserLoggedIn": "VisualEditorHooks"
@@ -221,6 +229,9 @@
 	"HookHandlers": {
 		"VisualEditorHooks": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\Hooks"
+		},
+		"EditCheckHooks": {
+			"class": "MediaWiki\\Extension\\VisualEditor\\EditCheck\\Hooks"
 		},
 		"betapreferences": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\BetaPreferenceHooks",
@@ -612,15 +623,12 @@
 			"group": "visualEditorA",
 			"packageFiles": [
 				"editcheck/modules/init.js",
-				"editcheck/modules/EditCheckContextItem.js",
 				"editcheck/modules/EditCheckInspector.js",
 				"editcheck/modules/EditCheckDialog.js",
 				"editcheck/modules/EditCheckFactory.js",
 				"editcheck/modules/EditCheckAction.js",
 				"editcheck/modules/BaseEditCheck.js",
-				"editcheck/modules/AddReferenceEditCheck.js",
-				"editcheck/modules/ConvertReferenceEditCheck.js",
-				"editcheck/modules/TextMatchEditCheck.js",
+				"editcheck/modules/editchecks/AddReferenceEditCheck.js",
 				{
 					"name": "editcheck/modules/config.json",
 					"callback": "\\MediaWiki\\Extension\\VisualEditor\\EditCheck\\ResourceLoaderData::getConfig"
@@ -647,7 +655,12 @@
 				"editcheck-dialog-addref-success-notify",
 				"editcheck-dialog-addref-title",
 				"editcheck-dialog-title",
-				"visualeditor-backbutton-tooltip"
+				"editcheck-copyvio-title",
+				"editcheck-copyvio-description",
+				"editcheck-review-title",
+				"visualeditor-backbutton-tooltip",
+				"next",
+				"last"
 			]
 		},
 		"ext.visualEditor.core.utils": {
@@ -933,6 +946,7 @@
 				"lib/ve/src/dm/nodes/ve.dm.InlineImageNode.js",
 				"lib/ve/src/dm/annotations/ve.dm.LinkAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.TextStyleAnnotation.js",
+				"lib/ve/src/dm/annotations/ve.dm.ImportedDataAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.AbbreviationAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.BidiAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.BigAnnotation.js",
@@ -978,6 +992,9 @@
 				"lib/ve/src/ce/ve.ce.ResizableNode.js",
 				"lib/ve/src/ce/ve.ce.TableCellableNode.js",
 				"lib/ve/src/ce/ve.ce.Selection.js",
+				"lib/ve/src/ce/ve.ce.ClipboardHandler.js",
+				"lib/ve/src/ce/ve.ce.DragDropHandler.js",
+				"lib/ve/src/ce/ve.ce.SelectionManager.js",
 				"lib/ve/src/ce/ve.ce.Surface.js",
 				"lib/ve/src/ce/ve.ce.SurfaceObserver.js",
 				"lib/ve/src/ce/ve.ce.KeyDownHandlerFactory.js",
@@ -1031,6 +1048,7 @@
 				"lib/ve/src/ce/annotations/ve.ce.NailedAnnotation.js",
 				"lib/ve/src/ce/annotations/ve.ce.LinkAnnotation.js",
 				"lib/ve/src/ce/annotations/ve.ce.TextStyleAnnotation.js",
+				"lib/ve/src/ce/annotations/ve.ce.ImportedDataAnnotation.js",
 				"lib/ve/src/ce/annotations/ve.ce.AbbreviationAnnotation.js",
 				"lib/ve/src/ce/annotations/ve.ce.BidiAnnotation.js",
 				"lib/ve/src/ce/annotations/ve.ce.BigAnnotation.js",
@@ -1377,6 +1395,7 @@
 				"visualeditor-shortcuts-text-style",
 				"visualeditor-slug-insert",
 				"visualeditor-specialcharacter-button-tooltip",
+				"visualeditor-specialcharacter-recentlyused",
 				"visualeditor-table-context-col",
 				"visualeditor-table-context-row",
 				"visualeditor-table-contextitem-properties",
@@ -2401,6 +2420,7 @@
 			"scripts": [
 				"modules/ve-mw/dm/ve.dm.MWWikitextSurface.js",
 				"modules/ve-mw/dm/ve.dm.MWWikitextSurfaceFragment.js",
+				"modules/ve-mw/ce/ve.ce.MWWikitextClipboardHandler.js",
 				"modules/ve-mw/ce/ve.ce.MWWikitextSurface.js",
 				"modules/ve-mw/ui/ve.ui.MWWikitextCommandRegistry.js",
 				"modules/ve-mw/ui/ve.ui.MWWikitextSequenceRegistry.js",
@@ -2611,6 +2631,8 @@
 			"lib/ve/tests/ce/ve.ce.test.js",
 			"lib/ve/tests/ce/ve.ce.Document.test.js",
 			"modules/ve-mw/tests/ce/ve.ce.Document.test.js",
+			"lib/ve/tests/ce/ve.ce.ClipboardHandler.test.js",
+			"lib/ve/tests/ce/ve.ce.DragDropHandler.test.js",
 			"lib/ve/tests/ce/ve.ce.Surface.test.js",
 			"modules/ve-mw/tests/ce/ve.ce.Surface.test.js",
 			"lib/ve/tests/ce/ve.ce.RangeState.test.js",

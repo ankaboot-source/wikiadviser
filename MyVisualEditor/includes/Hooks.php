@@ -11,8 +11,6 @@
 namespace MediaWiki\Extension\VisualEditor;
 
 use Article;
-use ExtensionRegistry;
-use Language;
 use MediaWiki\Actions\ActionEntryPoint;
 use MediaWiki\Auth\Hook\UserLoggedInHook;
 use MediaWiki\ChangeTags\Hook\ChangeTagsListActiveHook;
@@ -34,6 +32,7 @@ use MediaWiki\Hook\SkinEditSectionLinksHook;
 use MediaWiki\Hook\SkinTemplateNavigation__UniversalHook;
 use MediaWiki\Html\Html;
 use MediaWiki\HTMLForm\HTMLForm;
+use MediaWiki\Language\Language;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Output\Hook\BeforePageDisplayHook;
 use MediaWiki\Output\Hook\MakeGlobalVariablesScriptHook;
@@ -41,6 +40,7 @@ use MediaWiki\Output\Hook\OutputPageBodyAttributesHook;
 use MediaWiki\Output\OutputPage;
 use MediaWiki\Preferences\Hook\GetPreferencesHook;
 use MediaWiki\Preferences\Hook\PreferencesFormPreSaveHook;
+use MediaWiki\Registration\ExtensionRegistry;
 use MediaWiki\Request\WebRequest;
 use MediaWiki\ResourceLoader\Hook\ResourceLoaderGetConfigVarsHook;
 use MediaWiki\ResourceLoader\Hook\ResourceLoaderRegisterModulesHook;
@@ -410,6 +410,7 @@ class Hooks implements
 			$out = $article->getContext()->getOutput();
 			$titleMsg = $title->exists() ? 'editing' : 'creating';
 			$out->setPageTitleMsg( wfMessage( $titleMsg, $title->getPrefixedText() ) );
+			// @phan-suppress-next-line PhanTypeMismatchArgumentNullable Only null for invalid URL, shouldn't happen
 			$out->showPendingTakeover( $url, 'visualeditor-toload', $urlUtils->expand( $url ) );
 
 			$out->setRevisionId( $req->getInt( 'oldid', $article->getRevIdFetched() ) );
@@ -1020,6 +1021,7 @@ class Hooks implements
 		$preferences['visualeditor-findAndReplace-regex'] = $api;
 		$preferences['visualeditor-findAndReplace-matchCase'] = $api;
 		$preferences['visualeditor-findAndReplace-word'] = $api;
+		$preferences['visualeditor-symbolList-recentlyUsed-specialCharacters'] = $api;
 	}
 
 	/**
@@ -1157,6 +1159,8 @@ class Hooks implements
 			'useChangeTagging' => $veConfig->get( 'VisualEditorUseChangeTagging' ),
 			'editCheckTagging' => $veConfig->get( 'VisualEditorEditCheckTagging' ),
 			'editCheck' => $veConfig->get( 'VisualEditorEditCheck' ),
+			'editCheckSingle' => $veConfig->get( 'VisualEditorEditCheckSingleCheckMode' ),
+			'editCheckExperimental' => $veConfig->get( 'VisualEditorEditCheckLoadExperimental' ),
 			'editCheckABTest' => $veConfig->get( 'VisualEditorEditCheckABTest' ),
 			'editCheckReliabilityAvailable' => ApiEditCheckReferenceUrl::isAvailable(),
 			'namespacesWithSubpages' => $namespacesWithSubpagesEnabled,

@@ -1,10 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
-			"Davidzdh",
-			"LNDDYL",
-			"Yejianfei",
-			"Ztl8702"
+			"Winston Sung"
 		]
 	},
 	"visualeditor": "可視化編輯器",
@@ -83,7 +80,6 @@
 	"visualeditor-mediasizewidget-label-defaulterror": "尺寸值無效。",
 	"visualeditor-mediasizewidget-label-scale": "比例尺",
 	"visualeditor-mediasizewidget-label-scale-percent": "%",
-	"visualeditor-mediasizewidget-sizeoptions-custom": "自定义",
 	"visualeditor-mediasizewidget-sizeoptions-default": "默認",
 	"visualeditor-mediasizewidget-sizeoptions-scale": "比例",
 	"visualeditor-pagemenu-tooltip": "頁面選項",

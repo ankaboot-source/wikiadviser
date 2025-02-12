@@ -10,21 +10,21 @@
 
 namespace MediaWiki\Extension\VisualEditor;
 
-use ApiUsageException;
-use Language;
 use Liuggio\StatsdClient\Factory\StatsdDataFactoryInterface;
+use MediaWiki\Api\ApiUsageException;
+use MediaWiki\Language\Language;
 use MediaWiki\MediaWikiServices;
-use MediaWiki\Message\Message;
 use MediaWiki\Request\WebRequest;
 use MediaWiki\Rest\HttpException;
 use MediaWiki\Rest\LocalizedHttpException;
 use MediaWiki\Revision\RevisionRecord;
 use MediaWiki\Title\Title;
-use NullStatsdDataFactory;
-use PrefixingStatsdDataFactoryProxy;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use Throwable;
+use Wikimedia\Message\MessageSpecifier;
+use Wikimedia\Stats\NullStatsdDataFactory;
+use Wikimedia\Stats\PrefixingStatsdDataFactoryProxy;
 
 trait ApiParsoidTrait {
 
@@ -69,9 +69,7 @@ trait ApiParsoidTrait {
 	 */
 	private function dieWithRestHttpException( HttpException $ex ): void {
 		if ( $ex instanceof LocalizedHttpException ) {
-			$converter = new \MediaWiki\Message\Converter();
-			$msg = $converter->convertMessageValue( $ex->getMessageValue() );
-			$this->dieWithError( $msg, null, $ex->getErrorData() );
+			$this->dieWithError( $ex->getMessageValue(), null, $ex->getErrorData() );
 		} else {
 			$this->dieWithException( $ex, [ 'data' => $ex->getErrorData() ] );
 		}
@@ -112,7 +110,7 @@ trait ApiParsoidTrait {
 	 * @throws ApiUsageException
 	 */
 	protected function transformHTML(
-		Title $title, string $html, int $oldid = null, string $etag = null
+		Title $title, string $html, ?int $oldid = null, ?string $etag = null
 	): array {
 		$lang = self::getPageLanguage( $title );
 
@@ -140,7 +138,7 @@ trait ApiParsoidTrait {
 	 * @throws ApiUsageException
 	 */
 	protected function transformWikitext(
-		Title $title, string $wikitext, bool $bodyOnly, int $oldid = null, bool $stash = false
+		Title $title, string $wikitext, bool $bodyOnly, ?int $oldid = null, bool $stash = false
 	): array {
 		$lang = self::getPageLanguage( $title );
 
@@ -186,19 +184,20 @@ trait ApiParsoidTrait {
 
 	/**
 	 * @see ApiBase
-	 * @param string|array|Message $msg See ApiErrorFormatter::addError()
+	 * @param string|array|MessageSpecifier $msg See ApiErrorFormatter::addError()
 	 * @param string|null $code See ApiErrorFormatter::addError()
 	 * @param array|null $data See ApiErrorFormatter::addError()
-	 * @param int|null $httpCode HTTP error code to use
+	 * @param int $httpCode HTTP error code to use
+	 * @throws ApiUsageException always
 	 * @return never
-	 * @throws ApiUsageException
 	 */
-	abstract public function dieWithError( $msg, $code = null, $data = null, $httpCode = null );
+	abstract public function dieWithError( $msg, $code = null, $data = null, $httpCode = 0 );
 
 	/**
 	 * @see ApiBase
 	 * @param Throwable $exception See ApiErrorFormatter::getMessageFromException()
 	 * @param array $options See ApiErrorFormatter::getMessageFromException()
+	 * @throws ApiUsageException always
 	 * @return never
 	 */
 	abstract public function dieWithException( Throwable $exception, array $options = [] );

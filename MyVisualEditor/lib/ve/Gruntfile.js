@@ -195,7 +195,7 @@ module.exports = function ( grunt ) {
 		},
 		buildloader: {
 			desktopDemoApex: {
-				targetFile: 'demos/ve/desktop.html',
+				targetFile: 'demos/ve/desktop-apex.html',
 				template: 'demos/ve/demo.html.template',
 				modules: modules,
 				load: [
@@ -212,7 +212,7 @@ module.exports = function ( grunt ) {
 				demoPages: demoPages
 			},
 			desktopDemoApexDist: {
-				targetFile: 'demos/ve/desktop-dist.html',
+				targetFile: 'demos/ve/desktop-apex-dist.html',
 				template: 'demos/ve/demo.html.template',
 				modules: modules,
 				load: [
@@ -226,7 +226,7 @@ module.exports = function ( grunt ) {
 				demoPages: demoPages
 			},
 			desktopDemoWikimediaUI: {
-				targetFile: 'demos/ve/desktop-wikimediaui.html',
+				targetFile: 'demos/ve/desktop.html',
 				template: 'demos/ve/demo.html.template',
 				modules: modules,
 				load: [
@@ -243,7 +243,7 @@ module.exports = function ( grunt ) {
 				demoPages: demoPages
 			},
 			desktopDemoWikimediaUIDist: {
-				targetFile: 'demos/ve/desktop-dist-wikimediaui.html',
+				targetFile: 'demos/ve/desktop-dist.html',
 				template: 'demos/ve/demo.html.template',
 				modules: modules,
 				load: [
@@ -292,7 +292,7 @@ module.exports = function ( grunt ) {
 				template: 'demos/ve/minimal.html.template',
 				modules: modules,
 				load: [
-					'visualEditor.standalone.apex.dist',
+					'visualEditor.standalone.wikimediaui.dist',
 					'visualEditor.standalone.read'
 				],
 				run: [ 'visualEditor.minimal.standalone.demo' ],
@@ -307,7 +307,7 @@ module.exports = function ( grunt ) {
 				template: 'demos/ve/minimal.html.template',
 				modules: modules,
 				load: [
-					'visualEditor.standalone.apex.dist',
+					'visualEditor.standalone.wikimediaui.dist',
 					'visualEditor.standalone.read'
 				],
 				run: [ 'visualEditor.minimal.standalone.demo' ],
@@ -322,7 +322,7 @@ module.exports = function ( grunt ) {
 				template: 'demos/ve/performance.html.template',
 				modules: modules,
 				load: [
-					'visualEditor.standalone.apex.dist',
+					'visualEditor.standalone.wikimediaui.dist',
 					'visualEditor.standalone.read'
 				],
 				run: [ 'visualEditor.test.performance' ],
@@ -453,6 +453,8 @@ module.exports = function ( grunt ) {
 								'src/dm/nodes/ve.dm.ImageNode.js',
 								'src/dm/nodes/ve.dm.InternalItemNode.js',
 								// CE
+								'src/ce/ve.ce.DragDropHandler.js',
+								'src/ce/ve.ce.SelectionManager.js',
 								'src/ce/annotations/ve.ce.DeleteAnnotation.js',
 								'src/ce/annotations/ve.ce.InsertAnnotation.js',
 								'src/ce/nodes/ve.ce.CheckListItemNode.js',
@@ -538,7 +540,12 @@ module.exports = function ( grunt ) {
 				grunt.log.error( ret );
 				// Show a condensed diff
 				require( 'child_process' ).exec( 'git diff -U1 | tail -n +3', ( err2, stdout2, stderr2 ) => {
-					grunt.log.write( err2 || stderr2 || stdout2 );
+					const message = err2 || stderr2 || stdout2;
+					grunt.log.write( message );
+					if ( message.includes( 've.availableLanguages' ) ) {
+						grunt.log.subhead( 'CI likely failed because L10n-bot recently added data for a new language, and self +2\'d the change.' );
+						grunt.log.writeln( 'To fix this issue, run "grunt build" locally, then create a commit with the resulting changes.' );
+					}
 					done( false );
 				} );
 			} else {

@@ -225,6 +225,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 	}
 
 	for ( let k = 0, klen = queue.length; k < klen; k++ ) {
+		hasChanges = true;
 		/* Custom WikiAdviser */
 		// remove the code responsible for hiding unchanged data
 		// COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA

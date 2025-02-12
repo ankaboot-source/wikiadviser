@@ -28,5 +28,6 @@
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/ankaboot-source/wikiadviser/issues"
-  }
+  },
+  "homepage": "https://github.com/ankaboot-source/wikiadviser#readme"
 }

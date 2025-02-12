@@ -962,13 +962,7 @@ QUnit.test( 'newFromDocumentInsertion', ( assert ) => {
 						remove: [],
 						insert: [ { type: 'paragraph' }, ...'Foo', { type: '/paragraph' } ]
 					},
-					{ type: 'retain', length: 6 },
-					{
-						type: 'replace',
-						remove: doc.getData( new ve.Range( 6, 20 ) ),
-						insert: doc.getData( new ve.Range( 6, 20 ) )
-					},
-					{ type: 'retain', length: 7 }
+					{ type: 'retain', length: 27 }
 				]
 			},
 			{
@@ -988,13 +982,7 @@ QUnit.test( 'newFromDocumentInsertion', ( assert ) => {
 						remove: [],
 						insert: [ { type: 'paragraph' }, 'F', [ 'o', [ ve.dm.example.boldHash ] ], 'o', { type: '/paragraph' } ]
 					},
-					{ type: 'retain', length: 6 },
-					{
-						type: 'replace',
-						remove: doc.getData( new ve.Range( 6, 20 ) ),
-						insert: doc.getData( new ve.Range( 6, 20 ) )
-					},
-					{ type: 'retain', length: 7 }
+					{ type: 'retain', length: 27 }
 				],
 				expectedStoreItems: {
 					h49981eab0f8056ff: bold
@@ -1111,12 +1099,8 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 		doc = ve.dm.example.createExampleDocument(),
 		doc2 = ve.dm.example.createExampleDocumentFromData( [
 			{ type: 'paragraph' },
-			[ 'F', [ ve.dm.example.bold ] ],
-			[ 'o', [ ve.dm.example.bold ] ],
-			[ 'o', [ ve.dm.example.bold ] ],
-			[ 'B', [ strong ] ],
-			[ 'a', [ strong ] ],
-			[ 'r', [ strong ] ],
+			...ve.dm.example.annotateText( 'Foo', ve.dm.example.bold ),
+			...ve.dm.example.annotateText( 'Bar', strong ),
 			{ type: '/paragraph' },
 			{ type: 'internalList' },
 			{ type: '/internalList' }
@@ -1178,9 +1162,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 					{
 						type: 'replace',
 						remove: [
-							[ 'B', [ ve.dm.example.strongHash ] ],
-							[ 'a', [ ve.dm.example.strongHash ] ],
-							[ 'r', [ ve.dm.example.strongHash ] ]
+							...ve.dm.example.annotateText( 'Bar', ve.dm.example.strongHash )
 						],
 						insert: [ ...'Bar' ]
 					},
@@ -1251,9 +1233,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 						type: 'replace',
 						remove: [ ...'Foo' ],
 						insert: [
-							[ 'F', [ ve.dm.example.boldHash ] ],
-							[ 'o', [ ve.dm.example.boldHash ] ],
-							[ 'o', [ ve.dm.example.boldHash ] ]
+							...ve.dm.example.annotateText( 'Foo', ve.dm.example.boldHash )
 						]
 					},
 					{ type: 'retain', length: 2 },
@@ -1261,9 +1241,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 						type: 'replace',
 						remove: [ ...'Bar' ],
 						insert: [
-							[ 'B', [ ve.dm.example.boldHash ] ],
-							[ 'a', [ ve.dm.example.boldHash ] ],
-							[ 'r', [ ve.dm.example.boldHash ] ]
+							...ve.dm.example.annotateText( 'Bar', ve.dm.example.boldHash )
 						]
 					},
 					{ type: 'retain', length: 21 }
@@ -1277,9 +1255,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 						type: 'replace',
 						remove: [ ...'Foo' ],
 						insert: [
-							[ 'F', [ ve.dm.example.boldHash ] ],
-							[ 'o', [ ve.dm.example.boldHash ] ],
-							[ 'o', [ ve.dm.example.boldHash ] ]
+							...ve.dm.example.annotateText( 'Foo', ve.dm.example.boldHash )
 						]
 					},
 					{ type: 'retain', length: 2 },
@@ -1287,9 +1263,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 						type: 'replace',
 						remove: [ ...'Bar' ],
 						insert: [
-							[ 'B', [ ve.dm.example.boldHash ] ],
-							[ 'a', [ ve.dm.example.boldHash ] ],
-							[ 'r', [ ve.dm.example.boldHash ] ]
+							...ve.dm.example.annotateText( 'Bar', ve.dm.example.boldHash )
 						]
 					},
 					{ type: 'retain', length: 15 },
@@ -1297,9 +1271,7 @@ QUnit.test( 'newFromAnnotation', ( assert ) => {
 						type: 'replace',
 						remove: [ ...'Baz' ],
 						insert: [
-							[ 'B', [ ve.dm.example.boldHash ] ],
-							[ 'a', [ ve.dm.example.boldHash ] ],
-							[ 'z', [ ve.dm.example.boldHash ] ]
+							...ve.dm.example.annotateText( 'Baz', ve.dm.example.boldHash )
 						]
 					},
 					{ type: 'retain', length: 3 }

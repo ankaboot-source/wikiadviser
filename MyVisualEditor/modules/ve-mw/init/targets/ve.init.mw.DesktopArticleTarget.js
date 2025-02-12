@@ -424,7 +424,12 @@ ve.init.mw.DesktopArticleTarget.prototype.activate = function ( dataPromise ) {
  * Edit mode has finished activating
  */
 ve.init.mw.DesktopArticleTarget.prototype.afterActivate = function () {
-	$( 'html' ).removeClass( 've-activating' ).addClass( 've-active' );
+	// eslint-disable-next-line mediawiki/class-doc
+	$( 'html' )
+		// Remove ve-activating when loading for the first time,
+		// and when switching remove previous mode's class.
+		.removeClass( 've-activating ve-active-visual ve-active-source' )
+		.addClass( 've-active ve-active-' + this.getSurface().getMode() );
 
 	// Disable TemplateStyles in the original content
 	// (We do this here because toggling 've-active' class above hides it)
@@ -889,26 +894,23 @@ ve.init.mw.DesktopArticleTarget.prototype.onToolbarMetaButtonClick = function ()
  * 'Edit' and single edit tab are bound in mw.DesktopArticleTarget.init.
  */
 ve.init.mw.DesktopArticleTarget.prototype.setupSkinTabs = function () {
-	if ( this.isViewPage ) {
-		const namespaceNumber = mw.config.get( 'wgNamespaceNumber' );
-		const namespaceName = mw.config.get( 'wgCanonicalNamespace' );
-		const isTalkNamespace = mw.Title.isTalkNamespace( namespaceNumber );
-		// Title::getNamespaceKey()
-		let namespaceKey = namespaceName.toLowerCase() || 'main';
-		if ( namespaceKey === 'file' ) {
-			namespaceKey = 'image';
-		}
-		let namespaceTabId;
-		// SkinTemplate::buildContentNavigationUrls()
-		if ( isTalkNamespace ) {
-			namespaceTabId = 'ca-talk';
-		} else {
-			namespaceTabId = 'ca-nstab-' + namespaceKey;
-		}
-		// Allow instant switching back to view mode, without refresh
-		$( '#ca-view' ).add( '#' + namespaceTabId ).find( 'a' )
-			.on( 'click.ve-target', this.onViewTabClick.bind( this ) );
+	const namespaceNumber = mw.config.get( 'wgNamespaceNumber' );
+	const namespaceName = mw.config.get( 'wgCanonicalNamespace' );
+	const isTalkNamespace = mw.Title.isTalkNamespace( namespaceNumber );
+	// Title::getNamespaceKey()
+	let namespaceKey = namespaceName.toLowerCase() || 'main';
+	if ( namespaceKey === 'file' ) {
+		namespaceKey = 'image';
 	}
+	let namespaceTabId;
+	// SkinTemplate::buildContentNavigationUrls()
+	if ( isTalkNamespace ) {
+		namespaceTabId = 'ca-talk';
+	} else {
+		namespaceTabId = 'ca-nstab-' + namespaceKey;
+	}
+	$( '#ca-view' ).add( '#' + namespaceTabId ).find( 'a' )
+		.on( 'click.ve-target', this.onViewTabClick.bind( this ) );
 
 	// Used by Extension:GuidedTour
 	mw.hook( 've.skinTabSetupComplete' ).fire();

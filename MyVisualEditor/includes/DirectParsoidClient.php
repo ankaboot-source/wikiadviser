@@ -10,6 +10,7 @@
 
 namespace MediaWiki\Extension\VisualEditor;
 
+use MediaWiki\Content\WikitextContent;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Page\PageIdentity;
 use MediaWiki\Permissions\Authority;
@@ -21,7 +22,6 @@ use MediaWiki\Revision\RevisionRecord;
 use MediaWiki\Revision\SlotRecord;
 use MediaWiki\User\User;
 use Wikimedia\Bcp47Code\Bcp47Code;
-use WikitextContent;
 
 class DirectParsoidClient implements ParsoidClient {
 
@@ -48,7 +48,7 @@ class DirectParsoidClient implements ParsoidClient {
 	private function getHtmlOutputRendererHelper(
 		PageIdentity $page,
 		?RevisionRecord $revision = null,
-		Bcp47Code $pageLanguage = null,
+		?Bcp47Code $pageLanguage = null,
 		bool $stash = false,
 		string $flavor = self::FLAVOR_DEFAULT
 	): HtmlOutputRendererHelper {
@@ -83,9 +83,9 @@ class DirectParsoidClient implements ParsoidClient {
 	private function getHtmlInputTransformHelper(
 		PageIdentity $page,
 		string $html,
-		int $oldid = null,
-		string $etag = null,
-		Bcp47Code $pageLanguage = null
+		?int $oldid = null,
+		?string $etag = null,
+		?Bcp47Code $pageLanguage = null
 	): HtmlInputTransformHelper {
 		// Fake REST body
 		$body = [
@@ -108,10 +108,8 @@ class DirectParsoidClient implements ParsoidClient {
 			$pageLanguage
 		);
 
-		$metrics = MediaWikiServices::getInstance()->getParsoidSiteConfig()->metrics();
-		if ( $metrics ) {
-			$helper->setMetrics( $metrics );
-		}
+		$statsFactory = MediaWikiServices::getInstance()->getParsoidSiteConfig()->prefixedStatsFactory();
+		$helper->setMetrics( $statsFactory );
 
 		return $helper;
 	}

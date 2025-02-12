@@ -261,6 +261,11 @@ ve.dm.Converter.static.moveInlineMetaItems = function ( data ) {
 			if ( ve.getProp( item, 'internal', 'isInlineMeta' ) ) {
 				// This is an inline meta item: move it
 				delete item.internal.isInlineMeta;
+				if ( item.annotations ) {
+					// Remove annotations, but save so we could restore
+					item.internal.preservedAnnotations = item.annotations;
+					delete item.annotations;
+				}
 				metaParent = closestMetaParent();
 				if ( metaParent ) {
 					metaParent.item.internal.metaItems.push( item );
@@ -1129,7 +1134,7 @@ ve.dm.Converter.prototype.getDataFromDomSubtree = function ( domElement, wrapper
 					const matches = text.match( this.trailingWhitespacesRegex );
 					if ( matches && matches[ 0 ] !== '' ) {
 						addWhitespace( wrapperElement, 2, matches[ 0 ] );
-						text = text.slice( 0, text.length - matches[ 0 ].length );
+						text = text.slice( 0, -matches[ 0 ].length );
 					}
 				}
 

@@ -160,6 +160,11 @@ OO.inheritClass( ve.init.mw.ArticleTarget, ve.init.mw.Target );
 ve.init.mw.ArticleTarget.static.name = 'article';
 
 /**
+ * @inheritdoc
+ */
+ve.init.mw.ArticleTarget.static.annotateImportedData = true;
+
+/**
  * Tracking name of target class. Used by ArticleTargetEvents to identify which target we are tracking.
  *
  * @static
@@ -1572,12 +1577,13 @@ ve.init.mw.ArticleTarget.prototype.save = function ( doc, options ) {
 		this.getSurface().getMode() === 'visual' &&
 		mw.config.get( 'wgVisualEditorConfig' ).editCheckTagging
 	) {
+		const documentModel = this.getSurface().getModel().getDocument();
 		// New content needing a reference
-		if ( mw.editcheck.hasAddedContentNeedingReference( this.getSurface() ) ) {
+		if ( mw.editcheck.hasAddedContentNeedingReference( documentModel ) ) {
 			taglist.push( 'editcheck-references' );
 		}
 		// New content, regardless of if it needs a reference
-		if ( mw.editcheck.hasAddedContentNeedingReference( this.getSurface(), true ) ) {
+		if ( mw.editcheck.hasAddedContentNeedingReference( documentModel, true ) ) {
 			taglist.push( 'editcheck-newcontent' );
 		}
 		// Rejection reasons for references
@@ -2129,7 +2135,7 @@ ve.init.mw.ArticleTarget.prototype.restoreEditSection = function () {
 		dmDoc.getNodesByType( 'mwHeading' ).some( ( heading ) => {
 			const domElements = heading.getOriginalDomElements( dmDoc.getStore() );
 			if (
-				domElements && domElements[ 0 ].nodeType === Node.ELEMENT_NODE &&
+				domElements && domElements.length && domElements[ 0 ].nodeType === Node.ELEMENT_NODE &&
 				domElements[ 0 ].getAttribute( 'data-mw-section-id' ) === section
 			) {
 				headingModel = heading;

@@ -1,5 +1,5 @@
 mw.editcheck.BaseEditCheck = function MWBaseEditCheck( config ) {
-	this.config = config;
+	this.config = ve.extendObject( {}, this.constructor.static.defaultConfig, config );
 };
 
 OO.initClass( mw.editcheck.BaseEditCheck );
@@ -19,16 +19,34 @@ mw.editcheck.BaseEditCheck.static.choices = [
 	}
 ];
 
+mw.editcheck.BaseEditCheck.static.defaultConfig = {
+	account: false, // 'loggedin', 'loggedout', anything non-truthy means allow either
+	maximumEditcount: 100,
+	ignoreSections: [],
+	ignoreLeadSection: false
+};
+
+mw.editcheck.BaseEditCheck.static.title = ve.msg( 'editcheck-review-title' );
+
 mw.editcheck.BaseEditCheck.static.description = ve.msg( 'editcheck-dialog-addref-description' );
 
 /**
- * @param {mw.editcheck.Diff} diff
+ * Get the name of the check type
+ *
+ * @return {string} Check type name
+ */
+mw.editcheck.BaseEditCheck.prototype.getName = function () {
+	return this.constructor.static.name;
+};
+
+/**
+ * @param {ve.dm.Surface} surfaceModel
  * @return {mw.editcheck.EditCheckAction[]}
  */
 mw.editcheck.BaseEditCheck.prototype.onBeforeSave = null;
 
 /**
- * @param {mw.editcheck.Diff} diff
+ * @param {ve.dm.Surface} surfaceModel
  * @return {mw.editcheck.EditCheckAction[]}
  */
 mw.editcheck.BaseEditCheck.prototype.onDocumentChange = null;
@@ -36,14 +54,34 @@ mw.editcheck.BaseEditCheck.prototype.onDocumentChange = null;
 /**
  * @param {string} choice `action` key from static.choices
  * @param {mw.editcheck.EditCheckAction} action
- * @param {ve.ui.EditCheckContextItem} contextItem
+ * @param {ve.ui.Surface} surface
+ * @return {jQuery.Promise} Promise which resolves when action is complete
  */
 mw.editcheck.BaseEditCheck.prototype.act = null;
 
-mw.editcheck.BaseEditCheck.prototype.getChoices = function ( /* action */ ) {
+/**
+ * @param {mw.editcheck.EditCheckAction} action
+ * @return {Object[]}
+ */
+mw.editcheck.BaseEditCheck.prototype.getChoices = function () {
 	return this.constructor.static.choices;
 };
-mw.editcheck.BaseEditCheck.prototype.getDescription = function ( /* action */ ) {
+
+/**
+ * Get the title of the check
+ *
+ * @param {mw.editcheck.EditCheckAction} action
+ * @return {jQuery|string|Function|OO.ui.HtmlSnippet}
+ */
+mw.editcheck.BaseEditCheck.prototype.getTitle = function () {
+	return this.constructor.static.title;
+};
+
+/**
+ * @param {mw.editcheck.EditCheckAction} action
+ * @return {string}
+ */
+mw.editcheck.BaseEditCheck.prototype.getDescription = function () {
 	return this.constructor.static.description;
 };
 
@@ -81,21 +119,140 @@ mw.editcheck.BaseEditCheck.prototype.canBeShown = function () {
 	return true;
 };
 
-mw.editcheck.BaseEditCheck.prototype.getModifiedRangesFromDiff = function ( diff ) {
-	return diff.getModifiedRanges( this.constructor.static.onlyCoveredNodes )
-		.filter( ( range ) => this.shouldApplyToSection( diff, range ) && range.getLength() >= this.config.minimumCharacters );
+/**
+ * Get content ranges where at least the minimum about of text has been changed
+ *
+ * @param {ve.dm.Document} documentModel
+ * @return {ve.Range[]}
+ */
+mw.editcheck.BaseEditCheck.prototype.getModifiedContentRanges = function ( documentModel ) {
+	return this.getModifiedRanges( documentModel, this.constructor.static.onlyCoveredNodes, true );
 };
 
-mw.editcheck.BaseEditCheck.prototype.shouldApplyToSection = function ( diff, range ) {
+/**
+ * Find nodes that were added during the edit session
+ *
+ * @param {ve.dm.Document} documentModel
+ * @param {string} [type] Type of nodes to find, or all nodes if false
+ * @return {ve.dm.Node[]}
+ */
+mw.editcheck.BaseEditCheck.prototype.getAddedNodes = function ( documentModel, type ) {
+	const matchedNodes = [];
+	this.getModifiedRanges( documentModel ).forEach( ( range ) => {
+		const nodes = documentModel.selectNodes( range, 'covered' );
+		nodes.forEach( ( node ) => {
+			if ( !type || node.node.getType() === type ) {
+				matchedNodes.push( node.node );
+			}
+		} );
+	} );
+	return matchedNodes;
+};
+
+/**
+ * Get content ranges which have been inserted
+ *
+ * @param {ve.dm.Document} documentModel
+ * @param {boolean} coveredNodesOnly Only include ranges which cover the whole of their node
+ * @param {boolean} onlyContentRanges Only return ranges which are content branch node interiors
+ * @return {ve.Range[]}
+ */
+mw.editcheck.BaseEditCheck.prototype.getModifiedRanges = function ( documentModel, coveredNodesOnly, onlyContentRanges ) {
+	if ( !documentModel.completeHistory.getLength() ) {
+		return [];
+	}
+	let operations;
+	try {
+		operations = documentModel.completeHistory.squash().transactions[ 0 ].operations;
+	} catch ( err ) {
+		// TransactionSquasher can sometimes throw errors; until T333710 is
+		// fixed just count this as not needing a reference.
+		mw.errorLogger.logError( err, 'error.visualeditor' );
+		return [];
+	}
+
+	const ranges = [];
+	let offset = 0;
+	const endOffset = documentModel.getDocumentRange().end;
+	operations.every( ( op ) => {
+		if ( op.type === 'retain' ) {
+			offset += op.length;
+		} else if ( op.type === 'replace' ) {
+			const insertedRange = new ve.Range( offset, offset + op.insert.length );
+			offset += op.insert.length;
+			// 1. Only trigger if the check is a pure insertion, with no adjacent content removed (T340088)
+			if ( op.remove.length === 0 ) {
+				if ( onlyContentRanges ) {
+					ve.batchPush(
+						ranges,
+						// 2. Only fully inserted paragraphs (ranges that cover the whole node) (T345121)
+						this.getContentRangesFromRange( documentModel, insertedRange, coveredNodesOnly )
+					);
+				} else {
+					ranges.push( insertedRange );
+				}
+			}
+		}
+		// Reached the end of the doc / start of internal list, stop searching
+		return offset < endOffset;
+	} );
+	return ranges.filter( ( range ) => this.isRangeValid( range, documentModel ) );
+};
+
+/**
+ * Return the content ranges (content branch node interiors) contained within a range
+ *
+ * For a content branch node entirely contained within the range, its entire interior
+ * range will be included. For a content branch node overlapping with the range boundary,
+ * only the covered part of its interior range will be included.
+ *
+ * @param {ve.dm.Document} documentModel The documentModel to search
+ * @param {ve.Range} range The range to include
+ * @param {boolean} covers Only include ranges which cover the whole of their node
+ * @return {ve.Range[]} The contained content ranges (content branch node interiors)
+ */
+mw.editcheck.BaseEditCheck.prototype.getContentRangesFromRange = function ( documentModel, range, covers ) {
+	const ranges = [];
+	documentModel.selectNodes( range, 'branches' ).forEach( ( spec ) => {
+		if (
+			spec.node.canContainContent() && (
+				!covers || (
+					!spec.range || // an empty range means the node is covered
+					spec.range.equalsSelection( spec.nodeRange )
+				)
+			)
+		) {
+			ranges.push( spec.range || spec.nodeRange );
+		}
+	} );
+	return ranges;
+};
+
+/**
+ * Test whether the range is valid for the check to apply
+ *
+ * @param {ve.Range} range
+ * @param {ve.dm.Document} documentModel
+ * @return {boolean}
+ */
+mw.editcheck.BaseEditCheck.prototype.isRangeValid = function ( range, documentModel ) {
+	return this.isRangeInValidSection( range, documentModel );
+};
+
+/**
+ * Check if a modified range is a section we don't ignore (config.ignoreSections)
+ *
+ * @param {ve.Range} range
+ * @param {ve.dm.Document} documentModel
+ * @return {boolean}
+ */
+mw.editcheck.BaseEditCheck.prototype.isRangeInValidSection = function ( range, documentModel ) {
 	const ignoreSections = this.config.ignoreSections || [];
 	if ( ignoreSections.length === 0 && !this.config.ignoreLeadSection ) {
 		// Nothing is forbidden, so everything is permitted
 		return true;
 	}
-	const documentModel = diff.documentModel;
-	const isHeading = function ( nodeType ) {
-		return nodeType === 'mwHeading';
-	};
+	const isHeading = ( nodeType ) => nodeType === 'mwHeading';
 	// Note: we set a limit of 1 here because otherwise this will turn around
 	// to keep looking when it hits the document boundary:
 	const heading = documentModel.getNearestNodeMatching( isHeading, range.start, -1, 1 );
@@ -114,36 +271,48 @@ mw.editcheck.BaseEditCheck.prototype.shouldApplyToSection = function ( diff, ran
 	}
 	const compare = new Intl.Collator( documentModel.getLang(), { sensitivity: 'accent' } ).compare;
 	const headingText = documentModel.data.getText( false, heading.getRange() );
-	for ( let i = ignoreSections.length - 1; i >= 0; i-- ) {
-		if ( compare( headingText, ignoreSections[ i ] ) === 0 ) {
-			return false;
-		}
-	}
-	return true;
+	// If the heading text matches any of ignoreSections, return false.
+	return !ignoreSections.some( ( section ) => compare( headingText, section ) === 0 );
 };
 
-mw.editcheck.BaseEditCheck.prototype.adjustForPunctuation = function ( insertionPointFragment ) {
-	if ( this.config.beforePunctuation ) {
-		// TODO: Use UnicodeJS properties directly once is https://gerrit.wikimedia.org/r/c/unicodejs/+/893832 merged
-		const sentenceProperties = {
-			ATerm: [ 0x002E, 0x2024, 0xFE52, 0xFF0E ],
-			STerm: [ 0x0021, 0x003F, 0x0589, 0x061E, 0x061F, 0x06D4, [ 0x0700, 0x0702 ], 0x07F9, 0x0837, 0x0839, 0x083D, 0x083E, 0x0964, 0x0965, 0x104A, 0x104B, 0x1362, 0x1367, 0x1368, 0x166E, 0x1735, 0x1736, 0x1803, 0x1809, 0x1944, 0x1945, [ 0x1AA8, 0x1AAB ], 0x1B5A, 0x1B5B, 0x1B5E, 0x1B5F, 0x1C3B, 0x1C3C, 0x1C7E, 0x1C7F, 0x203C, 0x203D, [ 0x2047, 0x2049 ], 0x2E2E, 0x2E3C, 0x3002, 0xA4FF, 0xA60E, 0xA60F, 0xA6F3, 0xA6F7, 0xA876, 0xA877, 0xA8CE, 0xA8CF, 0xA92F, 0xA9C8, 0xA9C9, [ 0xAA5D, 0xAA5F ], 0xAAF0, 0xAAF1, 0xABEB, 0xFE56, 0xFE57, 0xFF01, 0xFF1F, 0xFF61, 0x10A56, 0x10A57, [ 0x10F55, 0x10F59 ], 0x11047, 0x11048, [ 0x110BE, 0x110C1 ], [ 0x11141, 0x11143 ], 0x111C5, 0x111C6, 0x111CD, 0x111DE, 0x111DF, 0x11238, 0x11239, 0x1123B, 0x1123C, 0x112A9, 0x1144B, 0x1144C, 0x115C2, 0x115C3, [ 0x115C9, 0x115D7 ], 0x11641, 0x11642, [ 0x1173C, 0x1173E ], 0x11944, 0x11946, 0x11A42, 0x11A43, 0x11A9B, 0x11A9C, 0x11C41, 0x11C42, 0x11EF7, 0x11EF8, 0x16A6E, 0x16A6F, 0x16AF5, 0x16B37, 0x16B38, 0x16B44, 0x16E98, 0x1BC9F, 0x1DA88 ],
-			Close: [ 0x0022, [ 0x0027, 0x0029 ], 0x005B, 0x005D, 0x007B, 0x007D, 0x00AB, 0x00BB, [ 0x0F3A, 0x0F3D ], 0x169B, 0x169C, [ 0x2018, 0x201F ], 0x2039, 0x203A, 0x2045, 0x2046, 0x207D, 0x207E, 0x208D, 0x208E, [ 0x2308, 0x230B ], 0x2329, 0x232A, [ 0x275B, 0x2760 ], [ 0x2768, 0x2775 ], 0x27C5, 0x27C6, [ 0x27E6, 0x27EF ], [ 0x2983, 0x2998 ], [ 0x29D8, 0x29DB ], 0x29FC, 0x29FD, [ 0x2E00, 0x2E0D ], 0x2E1C, 0x2E1D, [ 0x2E20, 0x2E29 ], 0x2E42, [ 0x3008, 0x3011 ], [ 0x3014, 0x301B ], [ 0x301D, 0x301F ], 0xFD3E, 0xFD3F, 0xFE17, 0xFE18, [ 0xFE35, 0xFE44 ], 0xFE47, 0xFE48, [ 0xFE59, 0xFE5E ], 0xFF08, 0xFF09, 0xFF3B, 0xFF3D, 0xFF5B, 0xFF5D, 0xFF5F, 0xFF60, 0xFF62, 0xFF63, [ 0x1F676, 0x1F678 ] ],
-			SContinue: [ 0x002C, 0x002D, 0x003A, 0x055D, 0x060C, 0x060D, 0x07F8, 0x1802, 0x1808, 0x2013, 0x2014, 0x3001, 0xFE10, 0xFE11, 0xFE13, 0xFE31, 0xFE32, 0xFE50, 0xFE51, 0xFE55, 0xFE58, 0xFE63, 0xFF0C, 0xFF0D, 0xFF1A, 0xFF64 ]
-		};
-		const punctuationPattern = new RegExp(
-			unicodeJS.charRangeArrayRegexp( [].concat(
-				sentenceProperties.ATerm,
-				sentenceProperties.STerm,
-				sentenceProperties.Close,
-				sentenceProperties.SContinue
-			) )
-		);
-		let lastCharacter = insertionPointFragment.adjustLinearSelection( -1, 0 ).getText();
-		while ( punctuationPattern.test( lastCharacter ) ) {
-			insertionPointFragment = insertionPointFragment.adjustLinearSelection( -1, -1 );
-			lastCharacter = insertionPointFragment.adjustLinearSelection( -1, 0 ).getText();
-		}
+/**
+ * Dismiss a check action
+ *
+ * @param {mw.editCheck.EditCheckAction} action
+ */
+mw.editcheck.BaseEditCheck.prototype.dismiss = function ( action ) {
+	const name = this.constructor.static.name;
+	if ( action.id ) {
+		const dismissedIds = mw.editcheck.dismissedIds;
+		dismissedIds[ name ] = dismissedIds[ name ] || [];
+		dismissedIds[ name ].push( action.id );
+	} else {
+		const dismissedFragments = mw.editcheck.dismissedFragments;
+		dismissedFragments[ name ] = dismissedFragments[ name ] || [];
+		dismissedFragments[ name ].push( ...action.fragments );
 	}
-	return insertionPointFragment;
+};
+
+/**
+ * Check if this type of check has been dismissed covering a specific range
+ *
+ * @param {ve.Range} range
+ * @return {boolean}
+ */
+mw.editcheck.BaseEditCheck.prototype.isDismissedRange = function ( range ) {
+	const fragments = mw.editcheck.dismissedFragments[ this.constructor.static.name ];
+	return !!fragments && fragments.some(
+		( fragment ) => fragment.getSelection().getCoveringRange().containsRange( range )
+	);
+};
+
+/**
+ * Check if an action with a given ID has been dismissed
+ *
+ * @param {string} id
+ * @return {boolean}
+ */
+mw.editcheck.BaseEditCheck.prototype.isDismissedId = function ( id ) {
+	const ids = mw.editcheck.dismissedIds[ this.constructor.static.name ];
+	return ids && ids.indexOf( id ) !== -1;
 };

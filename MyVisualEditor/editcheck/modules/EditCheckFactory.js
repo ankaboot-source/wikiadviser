@@ -14,6 +14,9 @@ OO.inheritClass( mw.editcheck.EditCheckFactory, OO.Factory );
 
 /* Methods */
 
+/**
+ * @inheritdoc
+ */
 mw.editcheck.EditCheckFactory.prototype.register = function ( constructor, name ) {
 	name = name || ( constructor.static && constructor.static.name );
 
@@ -53,22 +56,34 @@ mw.editcheck.EditCheckFactory.prototype.getNamesByListener = function ( listener
 	return this.checksByListener[ listener ];
 };
 
-mw.editcheck.EditCheckFactory.prototype.createAllByListener = function ( listener, surface ) {
-	const diff = new mw.editcheck.Diff( surface );
-	const newChecks = [];
+/**
+ * Create all checks actions for a given listener
+ *
+ * TODO: Rename to createAllActionsByListener
+ *
+ * @param {string} listener Listener name
+ * @param {ve.dm.Surface} surfaceModel Surface model
+ * @return {mw.editcheck.EditCheckActions[]} Actions, sorted by range
+ */
+mw.editcheck.EditCheckFactory.prototype.createAllByListener = function ( listener, surfaceModel ) {
+	let newChecks = [];
 	this.getNamesByListener( listener ).forEach( ( checkName ) => {
 		const check = this.create( checkName, mw.editcheck.config[ checkName ] );
 		if ( !check.canBeShown() ) {
 			return;
 		}
-		const actions = check[ listener ]( diff );
+		const actions = check[ listener ]( surfaceModel );
 		if ( actions.length > 0 ) {
 			ve.batchPush( newChecks, actions );
 		}
 	} );
 	newChecks.sort(
-		( a, b ) => a.highlight.getSelection().getCoveringRange().start - b.highlight.getSelection().getCoveringRange().start
+		( a, b ) => a.getHighlightSelections()[ 0 ].getCoveringRange().start - b.getHighlightSelections()[ 0 ].getCoveringRange().start
 	);
+	if ( mw.config.get( 'wgVisualEditorConfig' ).editCheckSingle && listener === 'onBeforeSave' ) {
+		newChecks = newChecks.filter( ( action ) => action.getName() === 'addReference' );
+		newChecks.splice( 1 );
+	}
 	return newChecks;
 };
 

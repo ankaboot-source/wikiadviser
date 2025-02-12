@@ -123,6 +123,21 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
 
 				if ( !win.constructor.static.activeSurface ) {
 					surface.getView().deactivate( false );
+				} else {
+					instance.opened.then( () => {
+						// The dialog still automatically receives focus after opening, move it back to the surface.
+						const previousSelection = surface.getModel().getSelection();
+						// On deactivated surfaces (e.g. those using nullSelectionOnBlur), the native selection is
+						// removed after a setTimeout to fix a bug in iOS (T293661, in ve.ce.Surface#deactivate).
+						// Ensure that we restore the selection **after** this happens, otherwise the surface will
+						// get re-blurred. (T318720)
+						setTimeout( () => {
+							surface.getView().focus();
+							if ( !previousSelection.isNull() ) {
+								surface.getModel().setSelection( previousSelection );
+							}
+						} );
+					} );
 				}
 
 				instance.opened.then( () => {
@@ -189,7 +204,7 @@ ve.ui.WindowAction.prototype.open = function ( name, data, action ) {
  *
  * @param {string} name Symbolic name of window to open
  * @param {Object} [data] Window closing data
- * @return {boolean} Action was executed
+ * @return {boolean|jQuery.Promise} Action was executed; if a Promise, it'll resolve once the action is finished executing
  */
 ve.ui.WindowAction.prototype.close = function ( name, data ) {
 	const windowType = this.getWindowType( name ),
@@ -199,8 +214,7 @@ ve.ui.WindowAction.prototype.close = function ( name, data ) {
 		return false;
 	}
 
-	windowManager.closeWindow( name, data );
-	return true;
+	return windowManager.closeWindow( name, data );
 };
 
 /**
@@ -208,7 +222,7 @@ ve.ui.WindowAction.prototype.close = function ( name, data ) {
  *
  * @param {string} name Symbolic name of window to open or close
  * @param {Object} [data] Window opening or closing data
- * @return {boolean} Action was executed
+ * @return {boolean|jQuery.Promise} Action was executed; if a Promise, it'll resolve once the action is finished executing
  */
 ve.ui.WindowAction.prototype.toggle = function ( name, data ) {
 	const windowType = this.getWindowType( name ),
@@ -220,11 +234,10 @@ ve.ui.WindowAction.prototype.toggle = function ( name, data ) {
 
 	const win = windowManager.getCurrentWindow();
 	if ( !win || win.constructor.static.name !== name ) {
-		this.open( name, data );
+		return this.open( name, data );
 	} else {
-		this.close( name, data );
+		return this.close( name, data );
 	}
-	return true;
 };
 
 /**

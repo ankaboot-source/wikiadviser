@@ -1,15 +1,9 @@
 {
 	"@metadata": {
 		"authors": [
-			"Amire80",
-			"Davidzdh",
-			"GnuDoyng",
-			"Yejianfei",
-			"Ztl8702",
-			"唐吉訶德的侍從"
+			"Winston Sung"
 		]
 	},
-	"tooltip-ca-ve-edit": "Siŭ-gāi cī hiĕk",
 	"tooltip-ca-editsource": "編輯茲蜀頁其源代碼",
 	"tooltip-ca-createsource": "創建茲蜀頁其源代碼",
 	"visualeditor-advancedsettings-tool": "高級設置",
@@ -17,11 +11,8 @@
 	"visualeditor-ca-createlocaldescriptionsource": "添加本地描述源代碼",
 	"visualeditor-ca-createsource": "創建源代碼",
 	"visualeditor-ca-editlocaldescriptionsource": "編輯本地描述源代碼",
-	"visualeditor-ca-editsource": "Gāi nguòng-dâi-mā",
-	"visualeditor-ca-editsource-section": "gāi nguòng-dâi-mā",
 	"visualeditor-categories-tool": "類別",
 	"visualeditor-desc": "MediaWiki其可視化編輯器",
-	"visualeditor-descriptionpagelink": "Project:Kō̤-sê-huá biĕng-cĭk-ké",
 	"visualeditor-dialog-media-alttext-section": "替代文本",
 	"visualeditor-dialog-media-alttext-section-help": "汝會使使嚽來為無法看遘項目其人寫蜀段文字描述。描述應該當著讓伊各儂有能耐理解媒體項目提供其目的共信息。嚽對青盲用戶共其他使屏幕閱讀器軟件或者純文本瀏覽器其人來講是嘢重要其。",
 	"visualeditor-dialog-media-change-image": "更改圖片",
@@ -68,7 +59,6 @@
 	"visualeditor-dialog-meta-categories-section": "類別",
 	"visualeditor-dialog-meta-languages-code-label": "語言代碼",
 	"visualeditor-dialog-meta-languages-label": "語言",
-	"visualeditor-dialog-meta-languages-link-label": "链接遘其頁面",
 	"visualeditor-dialog-meta-languages-name-label": "語言",
 	"visualeditor-dialog-meta-languages-section": "語言",
 	"visualeditor-dialog-meta-settings-displaytitle": "顯示其標題",

@@ -1,11 +1,17 @@
 #!/bin/bash
 
+# Check if a version (branch name) is provided; if not, display an error and exit
+# Note: Providing a version is mandatory for the script to run correctly.
+if [ -z "$1" ]; then
+  echo "Error: No version specified. Please provide a branch name."
+  exit 1
+fi
 # Go To root
 cd ..
 
 # Clone the VisualEditor repository and checkout the specified branch
 # Takes branch name (version) as input: https://gerrit.wikimedia.org/r/plugins/gitiles/mediawiki/extensions/VisualEditor/+refs
-# 0. E.g.: sh prepare_VisualEditor_upgrade.sh wmf/1.44.0-wmf.14
+# Example: sh prepare_VisualEditor_upgrade.sh <branch-name>
 
 # 1. Gets the updated branch
 git clone -b "$1" https://gerrit.wikimedia.org/r/mediawiki/extensions/VisualEditor.git && git -C VisualEditor submodule update --init

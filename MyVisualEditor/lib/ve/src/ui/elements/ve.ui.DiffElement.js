@@ -260,7 +260,7 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 				headingContext = null;
 			}
 		/* Custom WikiAdviser */
-		// remove the code responsible for hiding unchanged data
+		// remove the code responsible for hiding unchanged data 
 		// COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
 		/*} else {
 			// Heading skipped, maybe show as context later

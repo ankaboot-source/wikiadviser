@@ -89,7 +89,7 @@ ve.init.mw.Target.static.toolbarGroups = [
 		include: [ { group: 'structure' } ],
 		demote: [ 'outdent', 'indent' ]
 	},
-	/* Custom WikiAdviser  */
+	/* Custom WikiAdviser */
 	{
 		name: 'comment',
 		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),

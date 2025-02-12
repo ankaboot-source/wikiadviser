@@ -43,7 +43,7 @@
 		welcomeDialogDisabled = true,
 		/* End WikiAdviser */
 		educationPopupsDisabled = false,
-		// Defined after document-ready below 
+		// Defined after document-ready below
 		$targetContainer = null;
 
 	if ( mw.config.get( 'wgMFMode' ) ) {

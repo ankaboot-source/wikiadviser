@@ -31,7 +31,7 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	this.$bar = $( '<div>' ).addClass( 've-init-mw-progressBarWidget-bar' ).css( 'width', 0 );
 	this.$element = $( '<div>' ).addClass( 've-init-mw-progressBarWidget' ).append( this.$bar );
 
-	/* Custom WikiAdviser  */
+	/* Custom WikiAdviser */
 	try {
 		// Make inner page full width and hide left bar (TOC)
 		document.querySelectorAll('.mw-page-container-inner, .mw-body')?.forEach((element) => {element?.removeAttribute('class')});

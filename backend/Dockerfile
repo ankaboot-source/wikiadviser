@@ -10,8 +10,8 @@ RUN npm install && npm run build
 FROM mcr.microsoft.com/playwright:v1.36.0-jammy as app-stage
 WORKDIR /app
 COPY package*.json .
-RUN npm install --omit=dev
-RUN npx playwright install --with-deps chromium
+RUN npm install --omit=dev && \
+    npx playwright install --with-deps chromium
 COPY --from=build-stage /wikiadviser-backend/dist .
 
 EXPOSE 3000

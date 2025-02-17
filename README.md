@@ -2,14 +2,13 @@
 
 <div>
   <div align="center">
-    <img width="90" height="90" style="border-radius: 10%;background-color: whitesmoke;" src="https://github.com/ankaboot-source/wikiadviser/raw/main/docs/assets/icons/logo.svg" alt="Wikiadviser Logo">
+    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/main/docs/assets/icons/favicon.ico" alt="Wikiadviser Logo">
   </div>
   <h1 align="center">Wikiadviser</h1>
   <div align="center">
     <p>
     Collaborative Wikipedia editing platform
     </p>
-
   </div>
 </div>
 

@@ -35,7 +35,7 @@
 
 ## 👀 How can I use it?
 
-To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump directly to [Running with Supabase locally](#running-with-supabase-locally).
+To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment).
 
 ## 🛠️ Setting Up a Development Environment
 

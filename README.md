@@ -31,7 +31,7 @@
 
 ## 🤔 Why Wikiadviser?
 
-**Wikiadviser** is an **User-friendly** platform that helps in the **content creation** of Mediawiki articles as it **facilitates** the **communication** and the **collaboration** of experienced editors and non-experienced users.
+**Wikiadviser** is an **User-friendly** platform that helps in the **content creation** of MediaWiki articles as it **facilitates** the **communication** and the **collaboration** of experienced editors and non-experienced users.
 
 ## 👀 How can I use it?
 

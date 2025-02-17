@@ -2,9 +2,9 @@
 
 <div>
   <div align="center">
-    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/762-ready-to-opensource/docs/assets/icons/logo%20with%20background.svg" alt="Wikiadviser Logo">
+    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/762-ready-to-opensource/docs/assets/icons/logo%20with%20background.svg" alt="WikiAdviser Logo">
   </div>
-  <h1 align="center">Wikiadviser</h1>
+  <h1 align="center">WikiAdviser</h1>
   <div align="center">
     <p>
     Collaborative Wikipedia editing platform
@@ -15,7 +15,7 @@
 ## 📑 Table of Contents
 
 - [📑 Table of Contents](#-table-of-contents)
-- [🤔 Why Wikiadviser?](#-why-wikiadviser)
+- [🤔 Why WikiAdviser?](#-why-wikiadviser)
 - [👀 How can I use it?](#-how-can-i-use-it)
 - [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment)
   - [Pre-requisites](#pre-requisites)
@@ -29,9 +29,9 @@
 - [📚 Learn more](#-learn-more)
 - [📜 License](#-license)
 
-## 🤔 Why Wikiadviser?
+## 🤔 Why WikiAdviser?
 
-**Wikiadviser** is an **User-friendly** platform that helps in the **content creation** of MediaWiki articles as it **facilitates** the **communication** and the **collaboration** of experienced editors and non-experienced users.
+**WikiAdviser** is an **User-friendly** platform that helps in the **content creation** of MediaWiki articles as it **facilitates** the **communication** and the **collaboration** of experienced editors and non-experienced users.
 
 ## 👀 How can I use it?
 

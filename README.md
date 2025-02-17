@@ -2,7 +2,7 @@
 
 <div>
   <div align="center">
-    <img width="48" height="48" src="https://github.com/ankaboot-source/wikiadviser/raw/main/docs/assets/icons/favicon.ico" alt="Wikiadviser Logo">
+    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/762-ready-to-opensource/docs/assets/icons/logo%20with%20background.svg" alt="Wikiadviser Logo">
   </div>
   <h1 align="center">Wikiadviser</h1>
   <div align="center">

@@ -7,7 +7,7 @@
   <h1 align="center">WikiAdviser</h1>
   <div align="center">
     <p>
-    Collaborative Wikipedia editing platform
+    Collaborative MediaWiki editing platform
     </p>
   </div>
 </div>

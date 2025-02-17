@@ -78,3 +78,7 @@ npm run dev:frontend
 ## For more information
 
 Refer to [documentation's folder](./docs/) and [notes](./docs/NOTES.md).
+
+## 📜 License
+
+This software is [dual-licensed](DUAL-LICENSE.md) under [GNU AGPL v3](LICENSE).

@@ -375,9 +375,7 @@ Make sure you have setup all the necessary pre-requisits.
 
 ### Using Node
 
-<b>
-In both `/frontend` and `/backend` directory
-</b>
+**In both `/frontend` and `/backend` directory**
 
 - Copy `.env.example` to `.env` and update the missing variables accordingly.
 - Install dependencies via` npm i`

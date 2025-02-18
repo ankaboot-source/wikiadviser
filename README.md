@@ -1,40 +1,70 @@
 [![DeepSource](https://app.deepsource.com/gh/ankaboot-source/wikiadviser.svg/?label=code+coverage&show_trend=true&token=ZTDAa-DQcTJvNvMiXJlquOHn)](https://app.deepsource.com/gh/ankaboot-source/wikiadviser/)
 
-# Wikiadviser
+<div>
+  <div align="center">
+    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/762-ready-to-opensource/docs/assets/icons/logo%20with%20background.svg" alt="WikiAdviser Logo">
+  </div>
+  <h1 align="center">WikiAdviser</h1>
+  <div align="center">
+    <p>
+    Write, edit, and review articles together in real time
+    </p>
+  </div>
+</div>
 
-## MediaWiki
+## 📑 Table of Contents
+- [🤔 What is WikiAdviser?](#-what-is-wikiadviser)
+- [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment)
+  - [Pre-requisites](#pre-requisites)
+  - [Setup](#setup)
+    - [Installing Dependencies](#installing-dependencies)
+    - [Enviroment Variables](#enviroment-variables)
+  - [Run](#run)
+- [🤝 Contributing](#-contributing)
+- [🔧 Support](#-support)
+- [📜 License](#-license)
 
-To set up MediaWiki locally, follow these [steps](/mediawiki-setup/MEDIAWIKI_SETUP.md).
+## 🤔 What is WikiAdviser?
 
-## Pre-requisites
+**WikiAdviser** is a **real-time** **collaborative** platform built on **MediaWiki**, designed for seamless article **writing**, **editing**, and **reviewing**. It enables multiple users to work together efficiently, ensuring high-quality content through instant feedback and structured revisions.
 
+To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment).
+
+## 🛠️ Setting Up a Development Environment
+
+### Pre-requisites
+
+- [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-## Setup the project
+### Setup
 
-After installing Docker and Node.js, you need to install the required system dependencies for the project by running the following command (Debian based distros is required to execute it):
+#### Installing Dependencies
 
-```sh
-sudo npx playwright install-deps
-```
+After installing Docker and Node.js, install the required system dependencies
 
-and also install project dependencies by running this command:
+1. Starting with playwright
 
-```sh
-npm run install-deps
-```
+   ```sh
+   sudo npx playwright install-deps
+   ```
 
-When we finish installing dependencies, we need to start Supabase by running this command:
+2. Then install project dependencies
 
-```sh
-# If you want to use Supabase locally
-sudo npx supabase start
-# else
-npx supabase start
-```
+   ```sh
+   npm run install-deps
+   ```
 
-After running this command, you get this result when shell finishes setup.
+3. And finally we need to start Supabase
+
+   ```sh
+   npx supabase start
+   ```
+
+#### Enviroment Variables
+
+On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
 
 ```yml
 API URL: { your_api_url }
@@ -47,9 +77,7 @@ anon key: { your_anon_key }
 service_role key: { your_service_role_key }
 ```
 
-So you must save it on file because some of the Supabase credentials will be used later in `.env` files.
-
-Copy `.env.example` in frontend and backend to `.env` and update the missing variables according to the file that we saved recently.
+Copy `.env.example` in frontend and backend to `.env` and update the missing variables accordingly.
 
 ```env
 SUPABASE_PROJECT_URL={your_supabase_api_url}
@@ -57,15 +85,15 @@ SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
 ...
 ```
 
-## Running the Project
+### Run
 
-And finally, start frontend and backend servers by running this command.
+And finally, start frontend and backend servers by running this command
 
 ```sh
 npm run dev:all
 ```
 
-Or if you want to run the backend or frontend separately, then run the command:
+Or if you want to run them separately
 
 ```sh
 # to start the backend
@@ -75,6 +103,16 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-## For more information
+## 🤝 Contributing
 
-Refer to [documentation's folder](./docs/) and [notes](./docs/NOTES.md).
+Thank you for taking the time to contribute! Please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and more information on how to get started.
+
+## 🔧 Support
+
+If you encounter any issues, please check the [issues tab](https://github.com/ankaboot-source/wikiadviser/issues) to see if it has already been reported and resolved. Ensure that you are using the latest version before reporting an issue. If the problem persists, feel free to [open a new issue](https://github.com/ankaboot-source/wikiadviser/issues/new).
+
+Please note that this app is provided for free and without any guarantee or official support. If you require additional assistance, you can contact [ankaboot professional services](mailto:contact@ankaboot.fr) for help.
+
+## 📜 License
+
+This software is [dual-licensed](DUAL-LICENSE.md) under [GNU AGPL v3](LICENSE).

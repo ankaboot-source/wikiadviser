@@ -7,16 +7,13 @@
   <h1 align="center">WikiAdviser</h1>
   <div align="center">
     <p>
-    Collaborative MediaWiki editing platform
+    Write, edit, and review articles together in real time
     </p>
   </div>
 </div>
 
 ## 📑 Table of Contents
-
-- [📑 Table of Contents](#-table-of-contents)
-- [🤔 Why WikiAdviser?](#-why-wikiadviser)
-- [👀 How can I use it?](#-how-can-i-use-it)
+- [🤔 What is WikiAdviser?](#-what-is-wikiadviser)
 - [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment)
   - [Pre-requisites](#pre-requisites)
   - [Setup](#setup)
@@ -24,16 +21,12 @@
     - [Enviroment Variables](#enviroment-variables)
   - [Run](#run)
 - [🤝 Contributing](#-contributing)
-- [🎯 Roadmap](#-roadmap)
 - [🔧 Support](#-support)
-- [📚 Learn more](#-learn-more)
 - [📜 License](#-license)
 
-## 🤔 Why WikiAdviser?
+## 🤔 What is WikiAdviser?
 
-**WikiAdviser** is an **User-friendly** platform that helps in the **content creation** of MediaWiki articles as it **facilitates** the **communication** and the **collaboration** of experienced editors and non-experienced users.
-
-## 👀 How can I use it?
+**WikiAdviser** is a **real-time** **collaborative** platform built on **MediaWiki**, designed for seamless article **writing**, **editing**, and **reviewing**. It enables multiple users to work together efficiently, ensuring high-quality content through instant feedback and structured revisions.
 
 To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment).
 
@@ -114,19 +107,11 @@ npm run dev:frontend
 
 Thank you for taking the time to contribute! Please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and more information on how to get started.
 
-## 🎯 Roadmap
-
-For any specific requests or suggestions regarding the roadmap, please feel free to contact [ankaboot professional services](mailto:contact@ankaboot.fr) or check the open issues for ongoing discussions and updates.
-
 ## 🔧 Support
 
 If you encounter any issues, please check the [issues tab](https://github.com/ankaboot-source/wikiadviser/issues) to see if it has already been reported and resolved. Ensure that you are using the latest version before reporting an issue. If the problem persists, feel free to [open a new issue](https://github.com/ankaboot-source/wikiadviser/issues/new).
 
 Please note that this app is provided for free and without any guarantee or official support. If you require additional assistance, you can contact [ankaboot professional services](mailto:contact@ankaboot.fr) for help.
-
-## 📚 Learn more
-
-Refer to [documentation's folder](./docs/) and [notes](./docs/NOTES.md).
 
 ## 📜 License
 

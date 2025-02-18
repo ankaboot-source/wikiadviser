@@ -14,12 +14,7 @@
 
 ## 📑 Table of Contents
 - [🤔 What is WikiAdviser?](#-what-is-wikiadviser)
-- [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment)
-  - [Pre-requisites](#pre-requisites)
-  - [Setup](#setup)
-    - [Installing Dependencies](#installing-dependencies)
-    - [Enviroment Variables](#enviroment-variables)
-  - [Run](#run)
+- [🛠️ Setting Up](#️-setting-up)
 - [🤝 Contributing](#-contributing)
 - [🔧 Support](#-support)
 - [📜 License](#-license)
@@ -28,9 +23,9 @@
 
 **WikiAdviser** is a **real-time** **collaborative** platform built on **MediaWiki**, designed for seamless article **writing**, **editing**, and **reviewing**. It enables multiple users to work together efficiently, ensuring high-quality content through instant feedback and structured revisions.
 
-To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up a Development Environment](#️-setting-up-a-development-environment).
+To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up](#️-setting-up).
 
-## 🛠️ Setting Up a Development Environment
+## 🛠️ Setting Up
 
 ### Pre-requisites
 

@@ -12,17 +12,12 @@ We value all types of contributions and encourage everyone to get involved. Plea
 
 ## Table of Contents
 
-- [Code of Conduct](#code-of-conduct)
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Your First Code Contribution](#your-first-code-contribution)
   - [Improving the Documentation](#improving-the-documentation)
-
-## Code of Conduct
-
-This project and everyone participating in it are governed by the our [Code of Conduct](https://github.com/ankaboot-source/wikiadviser/blob/main/CODE_OF_CONDUCT.md). By participating, you agree to uphold this code. Please report any unacceptable behavior to <contact@ankaboot.io>.
 
 ## I Have a Question
 

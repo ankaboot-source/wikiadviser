@@ -369,3 +369,14 @@ for environment in "${environments[@]}"; do
         php maintenance/run.php ./maintenance/populateInterwiki.php
     done
 done
+
+
+# Generate a 64-character hexadecimal string for $wgSecretKey
+wgSecretKey=$(openssl rand -hex 32)
+
+# Generate a 16-character hexadecimal string for $wgUpgradeKey
+wgUpgradeKey=$(openssl rand -hex 8)
+
+# Output the keys for use in LocalSettings.php
+echo "\$wgUpgradeKey = \"$wgUpgradeKey\";"
+echo "\$wgSecretKey = \"$wgSecretKey\";"

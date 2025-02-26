@@ -13,6 +13,8 @@ user="wiki-user"
 CONF_DIR="/home/$user/wikiadviser/mediawiki-setup"
 languages=("${LANGUAGES[@]}") # Add the list of languages to GitHub Secrets
 environments=("${DATABASE_ENV[@]}") # Add the list of environments to GitHub Secrets
+MEDIAWIKI_SECRET_KEY="$MEDIAWIKI_SECRET_KEY"
+MEDIAWIKI_UPGRADE_KEY="$MEDIAWIKI_UPGRADE_KEY"
 mediawiki_version=("${MEDIAWIKI_VERSION[@]]}") # Add mediawiki version to Github Secrets MEDIAWIKI_VERSION=("1.40" "1.40.1") ##1.40 release version ##1.40.1 file version
 extension_version=${mediawiki_version[0]//./_} # Convert 1.40 => 1_40
 PageForms_version="$PAGEFORMS_VERSION" # Unlike other extensions you need to add this variable to Github Secrets since it not same way of download, please choose PageForms Version according to your mediawiki version!
@@ -188,9 +190,9 @@ for env in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         if [ "$env" = "prod" ]
         then
-             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
+             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY="$MEDIAWIKI_SECRET_KEY" MEDIAWIKI_UPGRADE_KEY="$MEDIAWIKI_UPGRADE_KEY"   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
         else
-             SERVER_ENDPOINT="https://wiki-"$env".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang""  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD' < LocalSettings.php > ./LocalSettings_"$env"_"$lang".php
+             SERVER_ENDPOINT="https://wiki-"$env".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY="$MEDIAWIKI_SECRET_KEY" MEDIAWIKI_UPGRADE_KEY="$MEDIAWIKI_UPGRADE_KEY"   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_"$env"_"$lang".php
         fi
     done
 done
@@ -369,3 +371,4 @@ for environment in "${environments[@]}"; do
         php maintenance/run.php ./maintenance/populateInterwiki.php
     done
 done
+

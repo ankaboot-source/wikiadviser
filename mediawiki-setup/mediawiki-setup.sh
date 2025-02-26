@@ -190,9 +190,9 @@ for env in "${environments[@]}"; do
     for lang in "${languages[@]}"; do
         if [ "$env" = "prod" ]
         then
-             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY=""$env"_wiki_"$lang"" MEDIAWIKI_UPGRADE_KEY=""$env"_wiki_"$lang""   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
+             SERVER_ENDPOINT="https://wiki.wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY="$MEDIAWIKI_SECRET_KEY" MEDIAWIKI_UPGRADE_KEY="$MEDIAWIKI_UPGRADE_KEY"   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_prod_"$lang".php
         else
-             SERVER_ENDPOINT="https://wiki-"$env".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY=""$env"_wiki_"$lang"" MEDIAWIKI_UPGRADE_KEY=""$env"_wiki_"$lang""   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_"$env"_"$lang".php
+             SERVER_ENDPOINT="https://wiki-"$env".wikiadviser.io" URL_PATH="/"$lang"" LANGUAGE="$lang" DB_NAME=""$env"_wiki_"$lang"" DB_USER=""$env"_wiki_"$lang"" DB_PASSWORD=""$env"_wiki_"$lang"" MEDIAWIKI_SECRET_KEY="$MEDIAWIKI_SECRET_KEY" MEDIAWIKI_UPGRADE_KEY="$MEDIAWIKI_UPGRADE_KEY"   envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASSWORD $MEDIAWIKI_SECRET_KEY $MEDIAWIKI_UPGRADE_KEY' < LocalSettings.php > ./LocalSettings_"$env"_"$lang".php
         fi
     done
 done

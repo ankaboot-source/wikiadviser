@@ -126,14 +126,14 @@ $wgLocaltimezone = "UTC";
 ## be publicly accessible from the web.
 #$wgCacheDirectory = "$IP/cache";
 
-$wgSecretKey ="${MEDIAWIKI_SECRET_KEY}";
+$wgSecretKey ="${MW_SECRET_KEY}";
 
 # Changing this will log out all existing sessions.
 $wgAuthenticationTokenVersion = "1";
 
 # Site upgrade key. Must be set to a string (default provided) to turn on the
 # web installer while LocalSettings.php is in place
-$wgUpgradeKey = "${MEDIAWIKI_UPGRADE_KEY}";
+$wgUpgradeKey = "${MW_UPGRADE_KEY}";
 
 ## For attaching licensing metadata to pages, and displaying an
 ## appropriate copyright notice / icon. GNU Free Documentation

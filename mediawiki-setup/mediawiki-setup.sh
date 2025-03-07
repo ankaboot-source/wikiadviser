@@ -42,15 +42,7 @@ common_function() {
         composer update --no-dev
     done
 
-    echo -e "\e[1;35mCopy old configuration to the new installation directories\e[0m"
-    for ln in "${LANGUAGES[@]}"; do
-        cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/LocalSettings.php /var/www/${MW_PROJECT_DIR}/wiki/$ln/LocalSettings.php
-        cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/images /var/www/${MW_PROJECT_DIR}/wiki/$ln
-        cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/icons /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/icons
-        cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/poweredby_wikiadviser_*.png /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/
-        echo $mediawiki_password | sudo -S chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/$ln/images
-        cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions"
-    done
+    
 }
 
 
@@ -114,6 +106,15 @@ if [[ "$1" == "--upgrade" ]]; then
     #Call common_function
     common_function 
 
+    echo -e "\e[1;35mCopy old configuration to the new installation directories\e[0m"
+    for ln in "${LANGUAGES[@]}"; do
+        cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/LocalSettings.php /var/www/${MW_PROJECT_DIR}/wiki/$ln/LocalSettings.php
+        cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/images /var/www/${MW_PROJECT_DIR}/wiki/$ln
+        cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/icons /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/icons
+        cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/poweredby_wikiadviser_*.png /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/
+        echo $mediawiki_password | sudo -S chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/$ln/images
+        cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions"
+    done
     # Setup Wikibase
     for ln in "${LANGUAGES[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
@@ -138,12 +139,13 @@ else
     MW_SECRET_KEY=$(openssl rand -hex 32)
     MW_UPGRADE_KEY=$(openssl rand -hex 8)
 
-    mw_init_dump_fr=""
-    mw_init_dump_en=""
+    mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
+    mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
 
     ###################################################################
     ############# Installation #############################
-    #sudo apt -y update && sudo apt -y upgrade
+
+    sudo apt -y update && sudo apt -y upgrade
 
     # Perl & Ploticus (required for EasyTimeline extension)
     sudo apt install -y perl

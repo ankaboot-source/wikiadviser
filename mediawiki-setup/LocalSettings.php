@@ -85,7 +85,7 @@ $wgDBtype = "mysql";
 $wgDBserver = "localhost";
 $wgDBname = "${DB_NAME}";
 $wgDBuser = "${DB_USER}";
-$wgDBpassword = "${DB_PASSWORD}";
+$wgDBpassword = "${DB_PASS}";
 
 # MySQL specific settings
 $wgDBprefix = "";

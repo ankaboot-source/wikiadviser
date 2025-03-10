@@ -42,6 +42,17 @@ common_function() {
         composer update --no-dev
     done
 
+
+    for ln in "${LANGUAGES[@]}"; do
+        cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
+        mv composer.local.json-sample composer.local.json
+        composer install --no-dev --no-interaction
+        cd extensions/Wikibase && composer install --no-dev && cd ../..
+        php maintenance/run.php ./maintenance/update.php
+        php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
+        php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
+        php maintenance/run.php ./maintenance/populateInterwiki.php
+    done
     
 }
 
@@ -115,18 +126,7 @@ if [[ "$1" == "--upgrade" ]]; then
         echo $mediawiki_password | sudo -S chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/$ln/images
         cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions"
     done
-    # Setup Wikibase
-    for ln in "${LANGUAGES[@]}"; do
-        cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
-         mv composer.local.json-sample composer.local.json
-        composer install --no-dev --no-interaction
-        cd extensions/Wikibase || exit
-        composer install --no-dev && cd ../..
-        php maintenance/run.php ./maintenance/update.php
-        php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
-        php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
-        php maintenance/run.php ./maintenance/populateInterwiki.php
-    done
+    
 
     echo  "Remove unnecessary files"
     rm ./version_page.html
@@ -223,19 +223,21 @@ else
     common_function
 
     for ln in "${LANGUAGES[@]}"; do
+        mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
+        chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
+    done
+
+    # Copy wikiadviser resources into mediawiki
+    for ln in "${LANGUAGES[@]}"; do
+        cp -r "${CONF_DIR}/docs/assets/*"  "/var/www/${MW_PROJECT_DIR}/"$ln"/resources/assets"
+        cp -r "${CONF_DIR}/MyVisualEditor"  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
+    done
+    
+    for ln in "${LANGUAGES[@]}"; do
         SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
     done
 
-    for ln in "${LANGUAGES[@]}"; do
-        cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
-        mv composer.local.json-sample composer.local.json
-        composer install --no-dev --no-interaction
-        cd extensions/Wikibase && composer install --no-dev && cd ../..
-        php maintenance/run.php ./maintenance/update.php
-        php maintenance/run.php ./extensions/Wikibase/lib/maintenance/populateSitesTable.php
-        php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
-        php maintenance/run.php ./maintenance/populateInterwiki.php
-    done
+    
 
     echo  "Remove unnecessary files"
     rm ./version_page.html

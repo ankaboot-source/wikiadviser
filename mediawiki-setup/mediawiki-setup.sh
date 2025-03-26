@@ -1,20 +1,29 @@
 #!/bin/bash
 
+################# VARS #################### 
 ulimit -n 9999
 
 curl -s "https://en.wikipedia.org/wiki/Special:Version" > ./version_page.html
 MW_VERSION=$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' version_page.html | head -n1 | awk '{print $2}')
+MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could have issues when importing dumps in older versions, it's recommended to install v11.4 and newer.
 
 MW_PROJECT_DIR="mediawiki"
 MW_PORT="8080"
 
-CONF_DIR="$HOME/wikiadviser"
-LANGUAGES=("en" "fr")
+CONF_DIR="$HOME/wikiadviser" # Update this variable if you cloned wikiadviser repo other than your home directory
+LANGUAGES=("en" "fr") # Languages of your wiki instances.
 
-DUMP_PATH="dump"
+DUMP_PATH="$CONF_DIR/dump"
 
+MW_SECRET_KEY=$(openssl rand -hex 32)
+MW_UPGRADE_KEY=$(openssl rand -hex 8)
 
-common_function() {
+mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
+mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
+##############################################
+
+# This function is common in the first install and upgrade process.
+common_setup() {
     echo "Install Additional extensions"
     echo ""
     #PageForms
@@ -34,14 +43,13 @@ common_function() {
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/HTMLTags
     done
 
-
     for ln in "${LANGUAGES[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln || exit
         echo "Mediawiki Submodule update (${ln} wiki)..."
         git submodule update --init --recursive # update extensions,skins...
         composer update --no-dev
+        cd extensions/TemplateStyles && composer update --no-dev && cd ../..
     done
-
 
     for ln in "${LANGUAGES[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
@@ -53,10 +61,9 @@ common_function() {
         php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
         php maintenance/run.php ./maintenance/populateInterwiki.php
     done
-    
 }
 
-
+################################### UPGRADE ########################################
 if [[ "$1" == "--upgrade" ]]; then
     echo -e "\e[1;35mStarting MediaWiki upgrade process...\e[0m"
 
@@ -90,14 +97,14 @@ if [[ "$1" == "--upgrade" ]]; then
     done
 
     echo -e "\e[1;35mBacking up old database dump folder\e[0m"
-    if [[ -d "/$DUMP_PATH" ]]; then
-        mv "/$DUMP_PATH" "/$DUMP_PATH.old"
+    if [[ -d "$DUMP_PATH" ]]; then
+        mv "$DUMP_PATH" "$DUMP_PATH.old"
     fi
-    mkdir -p "/$DUMP_PATH"
+    mkdir -p "$DUMP_PATH"
 
     echo -e "\e[1;35mCreating Database dumps\e[0m"
     for ln in "${LANGUAGES[@]}"; do
-        sudo -S mysqldump -u root "wiki_$ln" > "/$DUMP_PATH/dump-$ln.sql"
+        sudo -S mysqldump -u root "wiki_$ln" > "$DUMP_PATH/dump-$ln.sql"
     done
 
     echo -e "\e[1;35mBacking up old MediaWiki folders\e[0m"
@@ -114,8 +121,8 @@ if [[ "$1" == "--upgrade" ]]; then
 
     echo -e "\e[1;32mUpgrade process completed successfully.\e[0m"
 
-    #Call common_function
-    common_function 
+    # Call common_setup
+    common_setup 
 
     echo -e "\e[1;35mCopy old configuration to the new installation directories\e[0m"
     for ln in "${LANGUAGES[@]}"; do
@@ -127,23 +134,15 @@ if [[ "$1" == "--upgrade" ]]; then
         cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions"
     done
     
-
     echo  "Remove unnecessary files"
     rm ./version_page.html
 
     echo "Restarting web server..."
     sudo systemctl restart apache2.service
 
-
 else
-    MW_SECRET_KEY=$(openssl rand -hex 32)
-    MW_UPGRADE_KEY=$(openssl rand -hex 8)
 
-    mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
-    mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
-
-    ###################################################################
-    ############# Installation #############################
+########################################### INSTALL ##############################################################
 
     sudo apt -y update && sudo apt -y upgrade
 
@@ -173,6 +172,8 @@ else
     # Database #recommended MySQL/Mariadb
     echo "Installing MariaDB..."
     echo ""
+    curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=${MARIADB_VERSION}
+    sudo apt update
     sudo apt install -y mariadb-server
     echo ""
     sudo systemctl enable mariadb
@@ -219,9 +220,9 @@ else
 
     sleep 2
 
-    #call common-function
-    common_function
-
+    # Call common_setup
+    common_setup
+    
     for ln in "${LANGUAGES[@]}"; do
         mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
         chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
@@ -229,15 +230,13 @@ else
 
     # Copy wikiadviser resources into mediawiki
     for ln in "${LANGUAGES[@]}"; do
-        cp -r "${CONF_DIR}/docs/assets/*"  "/var/www/${MW_PROJECT_DIR}/"$ln"/resources/assets"
+        cp -r "${CONF_DIR}/docs/assets/*"  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
         cp -r "${CONF_DIR}/MyVisualEditor"  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
     done
     
     for ln in "${LANGUAGES[@]}"; do
         SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
     done
-
-    
 
     echo  "Remove unnecessary files"
     rm ./version_page.html

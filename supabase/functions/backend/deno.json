@@ -1,0 +1,25 @@
+{
+  "imports": {
+    "supabase": "jsr:@supabase/supabase-js@2",
+    "md5": "jsr:@takker/md5",
+    "shared/": "../_shared/",
+    "std/": "https://deno.land/std@0.192.0/",
+    "hono": "jsr:@hono/hono@4.7",
+    "cors": "npm:cors@2.8.5",
+    "undici": "npm:undici@7.5.0",
+    "zod": "npm:zod@3.24.2",
+    "cheerio": "https://esm.sh/cheerio@1.0.0-rc.12",
+    "html-entities": "https://esm.sh/html-entities@2.4.0",
+    "@sentry/deno": "https://esm.sh/@sentry/deno@7.76.0"
+  },
+  "compilerOptions": {
+    "lib": ["dom", "esnext", "deno.ns"]
+  },
+  "tasks": {
+    "start": "deno run --allow-net --allow-read --allow-env src/index.ts",
+    "dev": "deno run --allow-net --allow-read --allow-env --watch src/index.ts"
+  },
+  "lock": true
+}
+
+

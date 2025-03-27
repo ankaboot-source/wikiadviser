@@ -1,0 +1,4 @@
+export default interface Authorization<T> {
+  verifyCookie?(cookieHeader: string | undefined): Promise<T | null>;
+  verifyToken?(authorizationHeader: string | undefined): Promise<T | null>;
+}

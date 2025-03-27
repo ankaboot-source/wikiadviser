@@ -8,6 +8,6 @@ export default function createSupabaseClient(authorization = "") {
       global: {
         headers: { Authorization: authorization },
       },
-    }
+    },
   );
 }

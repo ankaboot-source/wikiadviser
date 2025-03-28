@@ -1,3 +1,11 @@
+#Disable bot crawlings
+{$WIKIADVISER_FRONTEND_ENDPOINT}/robots.txt {
+  respond "User-agent: *
+  Disallow: /
+  Noindex: /
+  Nofollow: /"
+}
+
 # Wikiadviser
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
         log {
@@ -22,7 +30,6 @@
             -X-Frame-Options
             +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
           }
-          rewrite /robots.txt ./robots.txt # Disable search engine indexing
           reverse_proxy wiki:8082
         }
         
@@ -32,8 +39,7 @@
           root * /usr/share/caddy/html
 	        encode gzip
 	        try_files {path} /index.html
-	        file_server
-	        rewrite /robots.txt ./robots.txt # Disable search engine indexing      
+	        file_server   
         }
 }
 

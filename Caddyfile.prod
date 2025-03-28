@@ -12,23 +12,18 @@
 
   handle /wiki/* {
 
-    # Search links in Wikipedia
-    @find_lang path_regexp ^/wiki/([a-z]{2})/api.php
-    # Search links in Wikipedia
-    handle @find_lang {
-      # Matcher for search query parameters
-      @search_query {
-        query action=query
-        query generator=prefixsearch
-      }
-      # If the request matches, rewrite and proxy to Wikipedia
-      handle @search_query {
-        rewrite * /w/api.php?lang={re.1}&{query}
-        reverse_proxy wiki.adminforge.de:443 {
-          header_up Host wiki.adminforge.de
-          transport http {
-            tls
-          }
+    # Search articles in Wikipedia
+    @search_articles {
+      query action=query
+      query generator=prefixsearch
+      path_regexp ^/wiki/([a-z]{2})/api.php
+    }
+    handle @search_articles {
+      rewrite * /w/api.php?lang={re.1}&{query}
+      reverse_proxy wiki.adminforge.de:443 {
+        header_up Host wiki.adminforge.de
+        transport http {
+          tls
         }
       }
     }

@@ -1,18 +1,10 @@
 #Disable bot crawlings
-{$WIKIADVISER_FRONTEND_ENDPOINT}/robots.txt {
+{$WIKIADVISER_FRONTEND_ENDPOINT}/robots.txt, {$MEDIAWIKI_DEV_ENDPOINT}/robots.txt {
   respond "User-agent: *
   Disallow: /
   Noindex: /
   Nofollow: /"
 }
-
-{$MEDIAWIKI_DEV_ENDPOINT}/robots.txt {
-  respond "User-agent: *
-  Disallow: /
-  Noindex: /
-  Nofollow: /"
-}
-
 
 
 # Wikiadviser

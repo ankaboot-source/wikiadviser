@@ -64,8 +64,8 @@
       +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
-    
-    reverse_proxy wiki:8080 {
+
+    reverse_proxy wiki:8082 {
       # Redirecting to Wikipedia if article does not exist
       @404 status 404
       handle_response @404 {

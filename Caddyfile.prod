@@ -11,6 +11,47 @@
   #### Mediawiki Prod ####
 
   handle /wiki/* {
+
+    # Search links in Wikipedia fr
+    handle /wiki/fr/api.php* {
+      # Matcher for search query parameters
+      @search_query {
+        query action=query
+        query generator=prefixsearch
+      }
+
+      # If the request matches, rewrite and proxy to Wikipedia
+      handle @search_query {
+        rewrite * /w/api.php?lang=fr&{query}
+        reverse_proxy wiki.adminforge.de:443 {
+          header_up Host wiki.adminforge.de
+          transport http {
+            tls
+          }
+        }
+      }
+    }
+
+    # Search links in Wikipedia en
+    handle /wiki/en/api.php* {
+      # Matcher for search query parameters
+      @search_query {
+        query action=query
+        query generator=prefixsearch
+      }
+
+      # If the request matches, rewrite and proxy to Wikipedia
+      handle @search_query {
+        rewrite * /w/api.php?lang=en&{query}
+        reverse_proxy wiki.adminforge.de:443 {
+          header_up Host wiki.adminforge.de
+          transport http {
+            tls
+          }
+        }
+      }
+    }
+
     @publicip not client_ip private_ranges
     forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
       header_up Host {upstream_hostport}
@@ -23,6 +64,7 @@
       +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
+    
     reverse_proxy wiki:8080 {
       # Redirecting to Wikipedia if article does not exist
       @404 status 404

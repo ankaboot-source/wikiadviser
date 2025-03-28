@@ -72,6 +72,46 @@
           }
         }
         handle /wiki/* {
+          # Search links in Wikipedia fr
+          handle /wiki/fr/api.php* {
+            # Matcher for search query parameters
+            @search_query {
+                query action=query
+                query generator=prefixsearch
+            }
+
+             # If the request matches, rewrite and proxy to Wikipedia
+             handle @search_query {
+                    rewrite * /w/api.php?lang=fr&{query}
+                    reverse_proxy wiki.adminforge.de:443 {
+                    header_up Host wiki.adminforge.de
+                    transport http {
+                        tls
+                    }
+                }
+             }
+          }
+
+         # Search links in Wikipedia en
+          handle /wiki/en/api.php* {
+            # Matcher for search query parameters
+            @search_query {
+                query action=query
+                query generator=prefixsearch
+            }
+
+             # If the request matches, rewrite and proxy to Wikipedia
+             handle @search_query {
+                    rewrite * /w/api.php?lang=en&{query}
+                    reverse_proxy wiki.adminforge.de:443 {
+                    header_up Host wiki.adminforge.de
+                    transport http {
+                        tls
+                    }
+                }
+             }
+          }
+
             header {
               -X-Frame-Options
             }

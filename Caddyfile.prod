@@ -1,61 +1,61 @@
 # Wikiadviser
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
-        log {
-          output file /var/log/caddy/access-app-prod.log {
-              roll_size 10MiB
-              roll_keep 10
-              roll_keep_for 24h
-          }
-        }
+  log {
+    output file /var/log/caddy/access-app-prod.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+    }
 
-        #### Mediawiki Prod ####
+  #### Mediawiki Prod ####
 
-	 handle /wiki/* {
-          @publicip not client_ip private_ranges
-          forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
-            header_up Host {upstream_hostport}
-            header_up X-Real-IP {remote_host}
-            uri /auth/mediawiki
-            copy_headers X-User X-Client-IP X-Forwarded-Uri
-          }
-          header {
-            -X-Frame-Options
-            +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
-          }
-          rewrite /robots.txt ./robots.txt # Disable search engine indexing
-          reverse_proxy wiki:8080 {
-            # Redirecting to Wikipedia if article does not exist
-            @404 status 404
-            handle_response @404 {
-              @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
-              handle @find_lang_title {
-                redir https://{re.1}.wikipedia.org/wiki/{re.2} permanent
-              }
-            }
-          }
+  handle /wiki/* {
+    @publicip not client_ip private_ranges
+    forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
+      header_up Host {upstream_hostport}
+      header_up X-Real-IP {remote_host}
+      uri /auth/mediawiki
+      copy_headers X-User X-Client-IP X-Forwarded-Uri
+    }
+    header {
+      -X-Frame-Options
+      +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
+    }
+    rewrite /robots.txt ./robots.txt # Disable search engine indexing
+    reverse_proxy wiki:8080 {
+      # Redirecting to Wikipedia if article does not exist
+      @404 status 404
+      handle_response @404 {
+        @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
+        handle @find_lang_title {
+          redir https://{re.1}.wikipedia.org/wiki/{re.2} permanent
         }
+      }
+    }
+  }
         
-        #### WikiAdviser ####
-        
-        handle {
-          root * /usr/share/caddy/html
-	        encode gzip
-	        try_files {path} /index.html
-	        file_server
-	        rewrite /robots.txt ./robots.txt # Disable search engine indexing      
-        }
+  #### WikiAdviser ####
+      
+  handle {
+    root * /usr/share/caddy/html
+    encode gzip
+    try_files {path} /index.html
+    file_server
+    rewrite /robots.txt ./robots.txt # Disable search engine indexing      
+  }
 }
 
 {$WIKIADVISER_API_ENDPOINT} {
-       log {
-          output file /var/log/caddy/access-api-prod.log {
-              roll_size 10MiB
-              roll_keep 10
-              roll_keep_for 24h
-          }
-        }
-	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
-	request_body {
-		max_size 10MB
-	}
+  log {
+    output file /var/log/caddy/access-api-prod.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+  }
+  reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
+  request_body {
+    max_size 10MB
+  }
 }

@@ -1,3 +1,11 @@
+#Disable bot crawlings
+{$WIKIADVISER_FRONTEND_ENDPOINT}/robots.txt, {$MEDIAWIKI_DEV_ENDPOINT}/robots.txt {
+  respond "User-agent: *
+  Disallow: /
+  Noindex: /
+  Nofollow: /"
+}
+
 # Wikiadviser
 {$WIKIADVISER_FRONTEND_ENDPOINT} {
   log {
@@ -59,8 +67,7 @@
     root * /usr/share/caddy/html
     encode gzip
     try_files {path} /index.html
-    file_server
-    rewrite /robots.txt ./robots.txt # Disable search engine indexing      
+    file_server      
   }
 }
 

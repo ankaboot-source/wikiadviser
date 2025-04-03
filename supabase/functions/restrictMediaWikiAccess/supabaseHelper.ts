@@ -1,4 +1,4 @@
-import supabase from "./supabaseClient.ts";
+import supabase from "../_shared/supabaseClient.ts";
 import { Enums } from "./types.ts";
 
 export async function getArticle(articleId: string) {

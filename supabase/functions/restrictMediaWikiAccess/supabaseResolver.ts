@@ -1,14 +1,14 @@
-import { createServerClient, parseCookieHeader } from "supabase-ssr";
-import ENV from "./env.schema.ts";
-import { Context } from "hono";
-import supabaseClient from "./supabaseClient.ts";
-import { setCookie } from "hono/cookie";
-import { CookieOptions } from "hono/utils/cookie";
+import { createServerClient, parseCookieHeader } from "npm:@supabase/ssr@0.6.1";
+import { Context } from "npm:hono@4.7.4";
+import { setCookie } from "npm:hono@4.7.4/cookie";
+import ENV from "../_shared/env.schema.ts";
+import { CookieOptions } from "npm:hono@4.7.4";
+import supabaseClient from "../_shared/supabaseClient.ts";
 
 type Cookie = {
   name: string;
   value: string;
-  options: CookieOptions;
+  options?: CookieOptions;
 };
 
 export default class SupabaseAuthorization {
@@ -35,12 +35,15 @@ export default class SupabaseAuthorization {
         {
           cookies: {
             getAll() {
-              return parseCookieHeader(context.req.header("Cookie") ?? "");
+              const cookies = parseCookieHeader(
+                context.req.header("Cookie") ?? "",
+              );
+              return cookies.map(({ name, value }) => ({ name, value }));
             },
             setAll(cookiesToSet: Cookie[]) {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                setCookie(context, name, value, options)
-              );
+              cookiesToSet.forEach(({ name, value, options }) => {
+                setCookie(context, name, value, options);
+              });
             },
           },
         },

@@ -1,8 +1,8 @@
 // import { getArticle, getUserPermission } from "../helpers/supabaseHelper";
-import ENV from "./env.schema.ts";
+import ENV from "../_shared/env.schema.ts";
 import { getArticle, getUserPermission } from "./supabaseHelper.ts";
 import SupabaseAuthorization from "./supabaseResolver.ts";
-import { Context } from "hono";
+import { Context } from "npm:hono@4.7.4";
 
 const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join("|");
 

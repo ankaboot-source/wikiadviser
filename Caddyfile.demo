@@ -49,8 +49,8 @@
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
+    # Redirect to Wikipedia if article does not exist
     reverse_proxy wiki:8080 {
-      # Redirecting to Wikipedia if article does not exist
       @404 status 404
       handle_response @404 {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$

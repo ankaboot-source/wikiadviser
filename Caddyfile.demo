@@ -58,7 +58,17 @@
           redir https://{re.1}.wikipedia.org/wiki/{re.2} permanent
         }
       }
+      # If not 404
+      handle_response {
+        @is_article path_regexp ^/wiki/[a-z]{2}/index.php/[^/?:]+$
+        handle @is_article {
+          respond "Forbidden" 403
+        }
+        # Continue
+        copy_response
+      }
     }
+
   }
           
   #### WikiAdviser ####

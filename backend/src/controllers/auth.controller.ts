@@ -9,7 +9,7 @@ const articleIdRegEx = new RegExp(
   `^/wiki/(${wikiadviserLanguagesRegex})/index.php(\\?title=|/)([0-9a-f-]{36})(&|$|\\?)`,
   'i'
 );
-// Allow links that could be Redirectable to Wikipedia if article does not exist
+// Allow to: Redirect simple article links to Wikipedia
 const articleIdRedirectableRegEx = 'index.php/([^\\?:]+)$';
 
 export const allowedPrefixRegEx = new RegExp(

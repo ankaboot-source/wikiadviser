@@ -49,22 +49,16 @@
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
-    # Redirect to Wikipedia if article does not exist
+    # Redirect simple article links to Wikipedia
+    # simple e.g. /wiki/en/index.php/Main_page
     reverse_proxy wiki:8080 {
-      @404 status 404
-      handle_response @404 {
+      handle_response {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
+        # Redirect simple articles
         handle @find_lang_title {
           redir https://{re.1}.wikipedia.org/wiki/{re.2} permanent
         }
-      }
-      # If not 404
-      handle_response {
-        @is_article path_regexp ^/wiki/[a-z]{2}/index.php/[^/?:]+$
-        handle @is_article {
-          respond "Forbidden" 403
-        }
-        # Continue
+        # Else, Continue
         copy_response
       }
     }

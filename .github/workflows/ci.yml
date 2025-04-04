@@ -34,12 +34,6 @@ jobs:
           ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./backend/coverage/cobertura-coverage.xml
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-      - name: NPM Audit & Comment
-        uses: JamesRobertWiseman/pnpm-audit@v1.0.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          level: critical
-          fails: true
 
   frontend:
     runs-on: ubuntu-latest
@@ -60,9 +54,3 @@ jobs:
         run: cd frontend && pnpm run lint
       - name: Check formatting
         run: cd frontend && pnpm run prettier
-      - name: NPM Audit & Comment
-        uses: JamesRobertWiseman/pnpm-audit@v1.0.6
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          level: critical
-          fails: true

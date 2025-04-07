@@ -1,5 +1,5 @@
 import supabase from "../_shared/supabaseClient.ts";
-import { Enums } from "./types.ts";
+import { Enums } from "../_shared/types.ts";
 
 export async function getArticle(articleId: string) {
   const { data: articleData, error: articleError } = await supabase()

@@ -1,10 +1,10 @@
-name: Deploy Supabase QA functions
+name: Deploy Supabase Prod functions
+
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'supabase/functions/**'
   workflow_dispatch:
+  release:
+    types: [published]
+
 jobs:
   deploy-functions:
     runs-on: ubuntu-latest

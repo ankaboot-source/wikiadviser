@@ -23,7 +23,7 @@ jobs:
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
 
       - name: set Supabase secrets
-        run: supabase secrets set $WIKIADVISER_BACKGROUND_COLORS $WIKIADVISER_LANGUAGES
+        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS=$WIKIADVISER_BACKGROUND_COLORS WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES
 
       - name: list Supabase secrets
         run: supabase secrets list

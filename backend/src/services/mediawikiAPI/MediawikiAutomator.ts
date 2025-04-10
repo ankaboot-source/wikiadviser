@@ -44,37 +44,6 @@ export class MediawikiAutomator {
   }
 
   /**
-   * Imports an article to Mediawiki.
-   * @param articleId - The ID of the article.
-   * @param exportData - The export data in XML format.
-   */
-  async importMediaWikiPage(
-    articleId: string,
-    exportData: string
-  ): Promise<void> {
-    const page = await this.getPageInContext();
-
-    await page.goto(`${this.mediawikiBaseURL}/index.php?title=Special:Import`, {
-      waitUntil: 'networkidle'
-    });
-
-    await page.locator('#ooui-php-2').setInputFiles([
-      {
-        name: `${articleId}.xml`,
-        mimeType: 'application/xml',
-        buffer: Buffer.from(exportData, 'utf-8')
-      }
-    ]);
-
-    await page.fill('#ooui-php-3', ' ');
-    await page.click('#ooui-php-21 button[type=submit]', {
-      timeout: 10 * 60 * 1000
-    }); // 10 Minutes
-    await page.waitForLoadState('networkidle');
-    await page.close();
-  }
-
-  /**
    * Gets the HTML content of the visual diff between two revisions of a MediaWiki article.
    * @param articleId - The ID of the article.
    * @param originalRevid - The revision ID of the original version.

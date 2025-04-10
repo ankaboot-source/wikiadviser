@@ -1,4 +1,5 @@
 import { AxiosInstance, AxiosResponse } from 'axios';
+import FormData from 'form-data';
 import mediawikiApiInstances from '../../api/mediawikiApiInstances';
 import { refineArticleChanges } from '../../helpers/parsingHelper';
 import {
@@ -196,7 +197,37 @@ export default class MediawikiClient {
 
       // Import
       logger.info(`Importing into our instance file ${title}`);
-      await this.mediawikiAutomator.importMediaWikiPage(articleId, exportData);
+      const csrftoken = await this.loginAndGetCsrf();
+
+      const importForm = new FormData();
+      importForm.append('xml', exportData, {
+        filename: `${articleId}.xml`,
+        contentType: 'application/xml'
+      });
+      importForm.append('action', 'import');
+      importForm.append('interwikiprefix', ' ');
+      importForm.append('token', csrftoken);
+      importForm.append('format', 'json');
+      const headers = {
+        ...importForm.getHeaders(),
+        connection: 'close',
+        timeout: 60000
+      };
+
+      const importResponse = await this.mediawikiApiInstance.post(
+        '',
+        importForm,
+        {
+          headers
+        }
+      );
+      if (importResponse.data.error) {
+        logger.error(
+          `Failed to import article ${articleId} ${title}: ${importResponse.data}`
+        );
+      }
+
+      this.logout(csrftoken);
       logger.info(`Successfully imported file ${title}`);
     } catch (error) {
       logger.error(error, `Error importing article ${title}`);

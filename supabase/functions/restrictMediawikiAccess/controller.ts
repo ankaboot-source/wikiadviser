@@ -3,7 +3,7 @@ import {
   getArticle,
   getUserPermission,
 } from "../_shared/helpers/supabaseHelper.ts";
-import SupabaseAuthorization from "../_shared/supabaseResolver.ts";
+import SupabaseAuthorization from "../_shared/middleware/supabaseUserAuthorization.ts"; // Adjust path
 import { Context } from "npm:hono@4.7.4";
 
 const wikiadviserLanguagesRegex = ENV.WIKIADVISER_LANGUAGES.join("|");

@@ -25,7 +25,3 @@ jobs:
 
       - run: supabase link --project-ref $SUPABASE_PROJECT_ID --debug
       - run: supabase db push --include-all
-      - run: supabase secrets set --env-file ./supabase/functions/.env
-      - name: deploy functions
-        working-directory: .
-        run: supabase functions deploy --debug

@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SAAS_SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_PROJECT_ID: rcsxuyoogygnyjbwbrbb
-      WIKIADVISER_BACKGROUND_COLORS: "f6f8fa, ffffff"
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROD_PROJECT_ID }}
+      WIKIADVISER_BACKGROUND_COLORS: "f6f8fa,ffffff"
       WIKIADVISER_LANGUAGES: "en,fr"
     steps:
       - uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
 
       - name: set Supabase secrets
-        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS=$WIKIADVISER_BACKGROUND_COLORS WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES
+        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES"
 
       - name: list Supabase secrets
         run: supabase secrets list

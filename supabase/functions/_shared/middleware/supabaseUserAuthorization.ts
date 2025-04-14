@@ -7,7 +7,7 @@ import {
 } from "npm:hono@4.7.4/cookie"; // Renamed to avoid clash
 import { type CookieSerializeOptions } from "npm:cookie@0.6.0"; // Import the type expected by @supabase/ssr
 
-import supabaseClient from "../_shared/supabaseClient.ts";
+import supabaseClient from "../supabaseClient.ts";
 
 // Type expected by @supabase/ssr setAll's parameter
 type SupabaseCookieToSet = {

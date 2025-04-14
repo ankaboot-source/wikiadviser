@@ -1,10 +1,11 @@
-import createSupabaseAdmin from "shared/supabaseAdmin.ts";
+import createSupabaseAdmin from "../_shared/supabaseAdmin.ts";
+import { Request, Response } from "npm:express@4.18.2";
+import { Database } from "../_shared/types/database.types.ts";
 
-import { Request, Response } from "express";
-import { Database } from "shared/types.ts";
-
-type ShareLink = Database["public"]["tables"]["share_links"]["row"];
-type Permission = Database["public"]["tables"]["permissions"]["row"];
+type ShareLink = Database["public"]["Tables"]["share_links"]["Row"] & {
+  role: string;
+};
+type Permission = Database["public"]["Tables"]["permissions"]["Row"];
 
 export async function createShareLink(req: Request, res: Response) {
   try {
@@ -17,31 +18,38 @@ export async function createShareLink(req: Request, res: Response) {
       return res.status(400).send("Invalid request body");
     }
 
-    const hasPermission = await supabaseAdmin
-      .from<Permission>("permissions")
+    const { data: permission, error: permissionError } = await supabaseAdmin
+      .from("permissions")
       .select("id")
       .eq("user_id", user.id)
       .eq("article_id", articleId)
       .eq("role", "owner")
-      .single();
+      .single<Permission>();
 
-    if (!hasPermission) {
+    if (permissionError || !permission) {
       return res.status(403).send("Insufficient permissions");
     }
 
-    const { data: shareLink } = await supabaseAdmin
-      .from<ShareLink>("share_links")
+    const { data: shareLink, error: shareLinkError } = await supabaseAdmin
+      .from("share_links")
       .insert({
         article_id: articleId,
         expired_at: expiresAt,
         role,
       })
-      .select("*")
-      .single();
+      .select("id, article_id, expired_at, role")
+      .single<ShareLink>();
 
-    return res.status(201).json({ ...shareLink });
+    if (shareLinkError) {
+      throw shareLinkError;
+    }
+
+    return res.status(201).json(shareLink);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    const message = error instanceof Error
+      ? error.message
+      : "Unknown error occurred";
+    return res.status(500).json({ message });
   }
 }
 
@@ -51,57 +59,72 @@ export async function verifyShareLink(req: Request, res: Response) {
     const { user } = res.locals;
 
     const supabaseAdmin = createSupabaseAdmin();
-    const {
-      data: [shareRecord],
-    } = await supabaseAdmin
-      .from<ShareLink>("share_links")
+
+    const { data: shareRecord, error: shareError } = await supabaseAdmin
+      .from("share_links")
       .select("*")
       .eq("id", token)
       .order("expired_at")
-      .limit(1);
+      .single<ShareLink>();
 
-    if (!shareRecord || shareRecord.length === 0) {
+    if (shareError || !shareRecord) {
       return res.status(404).send("Share link not found");
     }
 
-    if (new Date(shareRecord.expired_at) < new Date()) {
+    if (
+      shareRecord.expired_at && new Date(shareRecord.expired_at) < new Date()
+    ) {
       return res.status(403).send("Share link expired");
     }
 
     const { article_id: articleId, role } = shareRecord;
 
-    const { data: articlePermissions, error: articlesError } =
+    const { data: articlePermissions, error: permissionsError } =
       await supabaseAdmin
-        .from<Permission>("permissions")
-        .select("*")
-        .eq("user_id", user.id);
+        .from("permissions")
+        .select()
+        .eq("user_id", user.id)
+        .returns<Permission[]>();
 
-    if (articlesError) {
-      throw new Error(articlesError.message);
+    if (permissionsError) {
+      throw new Error(permissionsError.message);
     }
 
-    const permissionExists = articlePermissions.find(
-      (permission) => permission.article_id === articleId
+    const permissionExists = articlePermissions?.find(
+      (permission) => permission.article_id === articleId,
     );
 
     if (permissionExists) {
-      return res.status(200).json({ ...shareRecord });
+      return res.status(200).json(shareRecord);
     }
 
-    if (articlePermissions.length >= user.allowed_articles) {
+    if (
+      articlePermissions && articlePermissions.length >= user.allowed_articles
+    ) {
       return res.status(402).json({
         message: "You have reached the maximum number of articles allowed.",
       });
     }
 
-    await supabaseAdmin.from<Permission>("permissions").insert({
-      user_id: user.id,
-      article_id: articleId,
-      role,
-    });
+    const { error: insertError } = await supabaseAdmin
+      .from("permissions")
+      .insert(
+        {
+          user_id: user.id,
+          article_id: articleId,
+          role: role as "owner" | "editor" | "reviewer" | "viewer",
+        } satisfies Partial<Permission>,
+      );
 
-    return res.status(200).json({ ...shareRecord });
+    if (insertError) {
+      throw new Error(insertError.message);
+    }
+
+    return res.status(200).json(shareRecord);
   } catch (error) {
-    return res.status(500).send(error.message);
+    const message = error instanceof Error
+      ? error.message
+      : "Unknown error occurred";
+    return res.status(500).json({ message });
   }
 }

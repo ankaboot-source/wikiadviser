@@ -22,22 +22,39 @@ export class MediawikiAutomator {
   }
 
   private async getPageInContext(): Promise<Page> {
+    // Check if logged in
     const loggedInResponse = await this.browserContext.request.get(
       `${this.mediawikiBaseURL}/api.php?action=query&meta=userinfo&format=json`
     );
-    const data = await loggedInResponse.json();
-    const isLoggedIn = !!data.query.userinfo.id;
+    const loggedInData = await loggedInResponse.json();
+    const isLoggedIn = !!loggedInData.query.userinfo.id;
     const page = await this.browserContext.newPage();
 
     if (!isLoggedIn) {
-      await page.goto(
-        `${this.mediawikiBaseURL}/index.php?title=Special:UserLogin`,
-        { waitUntil: 'networkidle' }
+      // Get login token
+      const loginTokenResponse = await this.browserContext.request.get(
+        `${this.mediawikiBaseURL}/api.php?action=query&meta=tokens&type=login&format=json`
       );
-      await page.fill('#wpName1', this.MediawikiAdminUsername);
-      await page.fill('#wpPassword1', this.MediawikiAdminPassword);
-      await page.click('#wpRemember');
-      await page.click('#wpLoginAttempt');
+      const loginTokenData = await loginTokenResponse.json();
+      const { logintoken } = loginTokenData.query.tokens;
+
+      // Login
+      const loginResponse = await this.browserContext.request.post(
+        `${this.mediawikiBaseURL}/api.php?action=login&lgname=${this.MediawikiAdminUsername}&format=json`,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          form: {
+            lgpassword: this.MediawikiAdminPassword,
+            lgtoken: logintoken
+          }
+        }
+      );
+      const loginData = await loginResponse.json();
+      if (loginData.login.result !== 'Success') {
+        logger.error(loginData.login.reason);
+      }
     }
 
     return page;

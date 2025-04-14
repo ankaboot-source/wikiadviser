@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "axios": "npm:axios@^1.8.4",
+    "cherio": "npm:cherio@^1.0.0-rc.2",
+    "encode": "npm:encode@^1.0.1",
+    "html-entities": "npm:html-entities@^2.6.0"
+  }
+}

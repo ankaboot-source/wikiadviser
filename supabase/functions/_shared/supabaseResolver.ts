@@ -16,7 +16,7 @@ type SupabaseCookieToSet = {
   options?: Partial<CookieSerializeOptions>; // Use the type from 'cookie' package
 };
 
-export default class SupabaseAuthorization {
+class SupabaseAuthorization {
   private readonly jwtKey = "x-sb-jwt";
 
   constructor() {}
@@ -117,3 +117,5 @@ export default class SupabaseAuthorization {
     }
   }
 }
+
+export default SupabaseAuthorization;

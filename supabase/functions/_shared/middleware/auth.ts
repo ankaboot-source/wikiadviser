@@ -1,5 +1,5 @@
 import { Context, Next } from "npm:hono@4.7.4";
-import SupabaseAuthorization from "../../restrictMediawikiAccess/supabaseResolver.ts"; // Adjust path
+import SupabaseAuthorization from "../supabaseResolver.ts"; // Adjust path
 
 async function honoAuthorizationMiddleware(c: Context, next: Next) {
   try {

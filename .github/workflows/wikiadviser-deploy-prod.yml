@@ -94,6 +94,7 @@ jobs:
             echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env
 
             echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
+            echo "SHARE_LINK_DAY_LIMIT=2" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \

@@ -1,14 +1,14 @@
-import createSupabaseClient from "../supabaseClient.ts";
+import createSupabaseAdmin from "../supabaseAdmin.ts";
 import { Enums, Tables } from "../types/index.ts";
 
-const supabase = createSupabaseClient();
+const supabase = createSupabaseAdmin();
 
 export async function insertArticle(
   title: string,
   userId: string,
   language: string,
   description?: string,
-  imported?: boolean,
+  imported?: boolean
 ): Promise<string> {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
@@ -41,7 +41,7 @@ export async function updateChange(toChange: Tables<"changes">): Promise<void> {
 }
 
 export async function upsertChanges(
-  changesToUpsert: Tables<"changes">[],
+  changesToUpsert: Tables<"changes">[]
 ): Promise<void> {
   const { error } = await supabase.from("changes").upsert(changesToUpsert, {
     defaultToNull: false,
@@ -55,7 +55,7 @@ export async function upsertChanges(
 
 export async function updateCurrentHtmlContent(
   articleId: string,
-  current_html_content: string,
+  current_html_content: string
 ) {
   const { error: articleError } = await supabase
     .from("articles")
@@ -98,7 +98,7 @@ export async function getChanges(articleId: string) {
       user: profiles(id, email, avatar_url, default_avatar, allowed_articles), 
       comments(content,created_at, user: profiles(id, email, avatar_url, default_avatar, allowed_articles)),
       revision: revisions(summary, revid)
-      `,
+      `
     )
     .order("index")
     .eq("article_id", articleId);
@@ -122,7 +122,7 @@ export async function deleteArticleDB(articleId: string) {
 
 export async function getUserPermission(
   articleId: string,
-  userId: string,
+  userId: string
 ): Promise<Enums<"role"> | null> {
   const { data } = await supabase
     .from("permissions")
@@ -137,7 +137,7 @@ export async function getUserPermission(
 export async function insertRevision(
   article_id: string,
   revid: string,
-  summary: string,
+  summary: string
 ) {
   const { data: revisionsData, error: revisionsError } = await supabase
     .from("revisions")

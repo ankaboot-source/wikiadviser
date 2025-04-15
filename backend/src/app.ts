@@ -8,7 +8,6 @@ import corsMiddleware from './middleware/cors';
 import errorHandler from './middleware/errorHandler';
 import initializeSentry from './middleware/sentry';
 import articleRouter from './routes/article.routes';
-import authRouter from './routes/auth.routes';
 import wikipediaRouter from './routes/wikipedia.routes';
 import ENV from './schema/env.schema';
 
@@ -26,7 +25,6 @@ if (SENTRY_DSN) {
 app.use(json({ limit: '10mb' }));
 app.use(corsMiddleware);
 app.use(cookieParser());
-app.use(authRouter);
 app.use(authorizationMiddlware);
 
 app.use(articleRouter);

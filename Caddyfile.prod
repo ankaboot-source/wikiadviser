@@ -37,10 +37,10 @@
     }
 
     @publicip not client_ip private_ranges
-    forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
+    forward_auth @publicip {$SAAS_SUPABASE_ENDPOINT} {
       header_up Host {upstream_hostport}
       header_up X-Real-IP {remote_host}
-      uri /auth/mediawiki
+      uri /functions/v1/restrictMediawikiAccess
       copy_headers X-User X-Client-IP X-Forwarded-Uri
     }
     header {

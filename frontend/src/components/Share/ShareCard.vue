@@ -84,7 +84,7 @@ import ENV from 'src/schema/env.schema';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article, Enums, Permission, Profile, User } from 'src/types';
-import { EXPIRATION_DAYS, HOURS_IN_DAY } from 'src/utils/consts';
+import { HOURS_IN_DAY, SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { ref } from 'vue';
 import ShareUser from './ShareUser.vue';
 
@@ -235,7 +235,7 @@ async function copyShareLinkToClipboard() {
   await copyToClipboard(`${window.location.origin}/shares/${token}`);
   $q.notify({
     message: 'Share link copied to clipboard',
-    caption: `This link will expire in ${EXPIRATION_DAYS * HOURS_IN_DAY} hours`,
+    caption: `This link will expire in ${SHARE_LINK_DAY_LIMIT * HOURS_IN_DAY} hours`,
     color: 'positive',
     icon: 'content_copy',
   });

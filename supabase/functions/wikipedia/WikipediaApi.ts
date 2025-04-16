@@ -65,61 +65,6 @@ export class WikipediaApi implements WikipediaInteractor {
     }
     return results;
   }
-
-  async getWikipediaHTML(title: string, language: string) {
-    const response = await this.api.get("", {
-      params: {
-        action: "parse",
-        format: "json",
-        page: title,
-        lang: language,
-      },
-    });
-    const htmlString = response.data.parse.text["*"];
-    if (!htmlString) {
-      throw Error("Could not get article HTML");
-    }
-    return htmlString;
-  }
-
-  async exportArticleData(
-    title: string,
-    articleId: string,
-    language: string,
-  ): Promise<string> {
-    const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
-      params: {
-        title: "Special:Export",
-        pages: title,
-        templates: true,
-        lang: language,
-        curonly: true,
-      },
-      responseType: "stream",
-    });
-
-    return new Promise<string>((resolve, reject) => {
-      let exportData = "";
-      exportResponse.data.on("data", (chunk: string) => {
-        exportData += chunk;
-      });
-
-      //exportResponse.data.on("end", async () => {
-      //  exportData = await processExportedArticle(
-      //    exportData,
-      //    language,
-      //    articleId,
-      //    title,
-      //    await this.getWikipediaHTML(title, language),
-      //  );
-      //  resolve(exportData);
-      //});
-
-      exportResponse.data.on("error", (error: Error) => {
-        reject(error);
-      });
-    });
-  }
 }
 
 const wikipediaApi = new WikipediaApi();

@@ -141,11 +141,11 @@ watch([term, articleLanguage], async ([term]) => {
     return;
   }
   try {
-    
     const response = await supabaseClient.functions.invoke(
-      `wikipedia/articles?term=${term}&language=${articleLanguage.value.value}` ,{
+      `wikipedia/articles?term=${term}&language=${articleLanguage.value.value}`,
+      {
         method: 'GET',
-        }
+      },
     );
     searchResults.value = response.data.searchResults;
   } catch (error) {

@@ -12,13 +12,35 @@ jobs:
     steps:
       - name: Deploy Wikiadviser Demo
         uses: appleboy/ssh-action@master
+        env:
+          SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_QA_PROJECT_URL }}
+          SUPABASE_SECRET_PROJECT_TOKEN: ${{ secrets.SUPABASE_QA_SECRET_PROJECT_TOKEN }}
+          WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
+          SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
+          WIKIADVISER_API_PORT: ${{ vars.WIKIADVISER_API_PORT }}
+          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_QA }}
+          WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT_QA }}
+          WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT_QA }}
+          NODE_ENV: ${{vars.NODE_ENV}}
+          WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
+          MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT_QA }}
+          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_QA }}
+          MW_ADMIN_USERNAME: ${{ secrets.MW_ADMIN_USERNAME_QA }}
+          MW_ADMIN_PASSWORD: ${{ secrets.MW_ADMIN_PASSWORD_QA }}
+          MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME_QA }}
+          MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD_QA }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_QA }}
+          SENTRY_ENV_BACKEND: ${{secrets.SENTRY_ENV_BACKEND_QA}}
+          SENTRY_DSN_FRONTEND: ${{secrets.SENTRY_DSN_FRONTEND_QA}}
+          SENTRY_ENV_FRONTEND: ${{secrets.SENTRY_ENV_FRONTEND_QA}}
+
         with:
           host: ${{ vars.WIKIADVISER_DEMO_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
+          envs: MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_SECRET_PROJECT_TOKEN,SUPABASE_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN,SENTRY_ENV_BACKEND,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV
           script: |
-            wikiadviser_path="/home/wikiadviser-user/wikiadviser"
-            env_path="/home/wikiadviser-user/wikiadviser-env/.env"
+            wikiadviser_path="$HOME/wikiadviser"
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
@@ -30,7 +52,29 @@ jobs:
             fi
 
             cd $wikiadviser_path; docker compose -f docker-compose.demo.yml down; git pull
-            cp $env_path $wikiadviser_path
+
+            # Prepare .env file
+            echo "SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_QA_SECRET_PROJECT_TOKEN" > $wikiadviser_path/.env
+            echo "SUPABASE_PROJECT_URL=$SUPABASE_QA_PROJECT_URL" >> $wikiadviser_path/.env
+            echo "MEDIAWIKI_INTERNAL_ENDPOINT=$MEDIAWIKI_INTERNAL_ENDPOINT" >> $wikiadviser_path/.env
+            echo "MEDIAWIKI_ENDPOINT=$MEDIAWIKI_ENDPOINT" >> $wikiadviser_path/.env
+            echo "MW_ADMIN_USERNAME=$MW_ADMIN_USERNAME" >> $wikiadviser_path/.env
+            echo "MW_ADMIN_PASSWORD=$MW_ADMIN_PASSWORD" >> $wikiadviser_path/.env
+            echo "MW_BOT_USERNAME=$MW_BOT_USERNAME" >> $wikiadviser_path/.env
+            echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" >> $wikiadviser_path/.env
+            echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
+            echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
+            echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env
+            echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
+            echo "SENTRY_DSN=$SENTRY_DSN" >> $wikiadviser_path/.env
+            echo "SENTRY_ENV_BACKEND=$SENTRY_ENV_BACKEND" >> $wikiadviser_path/.env
+            echo "SENTRY_DSN_FRONTEND=$SENTRY_DSN_FRONTEND" >> $wikiadviser_path/.env
+            echo "SENTRY_ENV_FRONTEND=$SENTRY_ENV_FRONTEND" >> $wikiadviser_path/.env
+            echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
+
             docker compose --env-file .env -f docker-compose.demo.yml up -d \
               --build \
               --force-recreate

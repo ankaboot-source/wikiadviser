@@ -28,13 +28,12 @@ jobs:
           WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
           SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
           WIKIADVISER_API_PORT: ${{ vars.WIKIADVISER_API_PORT }}
-          MEDIAWIKI_PROD_ENDPOINT: ${{ vars.MEDIAWIKI_PROD_ENDPOINT }}
+          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_PROD }}
           WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
           WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT_PROD }}
           NODE_ENV: ${{vars.NODE_ENV}}
           WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
           MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT_PROD }}
-          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_PROD }}
           MW_ADMIN_USERNAME: ${{ secrets.MW_ADMIN_USERNAME_PROD }}
           MW_ADMIN_PASSWORD: ${{ secrets.MW_ADMIN_PASSWORD_PROD }}
           MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME_PROD }}
@@ -79,7 +78,6 @@ jobs:
             echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
-            echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env
             echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
             echo "SENTRY_DSN=$SENTRY_DSN" >> $wikiadviser_path/.env

@@ -1,8 +1,8 @@
-import { boot } from "quasar/wrappers";
-import axios, { AxiosInstance } from "axios";
-import ENV from "src/schema/env.schema";
+import { boot } from 'quasar/wrappers';
+import axios, { AxiosInstance } from 'axios';
+import ENV from 'src/schema/env.schema';
 
-declare module "@vue/runtime-core" {
+declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $axios: AxiosInstance;
   }

@@ -30,19 +30,19 @@ jobs:
           WIKIADVISER_API_PORT: ${{ vars.WIKIADVISER_API_PORT }}
           MEDIAWIKI_PROD_ENDPOINT: ${{ vars.MEDIAWIKI_PROD_ENDPOINT }}
           WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
-          WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT }}
+          WIKIADVISER_API_ENDPOINT: ${{ vars.WIKIADVISER_API_ENDPOINT_PROD }}
           NODE_ENV: ${{vars.NODE_ENV}}
           WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
-          MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT }}
-          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT }}
-          MW_ADMIN_USERNAME: ${{ secrets.MW_ADMIN_USERNAME }}
-          MW_ADMIN_PASSWORD: ${{ secrets.MW_ADMIN_PASSWORD }}
-          MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME }}
-          MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SENTRY_ENV_BACKEND: ${{secrets.SENTRY_ENV_BACKEND}}
-          SENTRY_DSN_FRONTEND: ${{secrets.SENTRY_DSN_FRONTEND}}
-          SENTRY_ENV_FRONTEND: ${{secrets.SENTRY_ENV_FRONTEND}}
+          MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT_PROD }}
+          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_PROD }}
+          MW_ADMIN_USERNAME: ${{ secrets.MW_ADMIN_USERNAME_PROD }}
+          MW_ADMIN_PASSWORD: ${{ secrets.MW_ADMIN_PASSWORD_PROD }}
+          MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME_PROD }}
+          MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD_PROD }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN_PROD }}
+          SENTRY_ENV_BACKEND: ${{secrets.SENTRY_ENV_BACKEND_PROD}}
+          SENTRY_DSN_FRONTEND: ${{secrets.SENTRY_DSN_FRONTEND_PROD}}
+          SENTRY_ENV_FRONTEND: ${{secrets.SENTRY_ENV_FRONTEND_PROD}}
           POSTHOG_API_KEY: ${{secrets.POSTHOG_API_KEY}}
           POSTHOG_API_HOST: ${{vars.POSTHOG_API_HOST}}
 
@@ -53,7 +53,7 @@ jobs:
           envs: MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_PROD_SECRET_PROJECT_TOKEN,MEDIAWIKI_ENDPOINT,SUPABASE_PROD_PROJECT_URL,WIKIADVISER_API_PORT,WIKIPEDIA_PROXY,MW_ADMIN_USERNAME,MW_ADMIN_PASSWORD,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN,SENTRY_ENV_BACKEND,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_API_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV,POSTHOG_API_KEY,POSTHOG_API_HOST
 
           script: |
-            wikiadviser_path="/home/wikiadviser-prod/wikiadviser"
+            wikiadviser_path="$HOME/wikiadviser"
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
@@ -69,22 +69,18 @@ jobs:
 
             echo "SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_PROD_SECRET_PROJECT_TOKEN" > $wikiadviser_path/.env
             echo "SUPABASE_PROJECT_URL=$SUPABASE_PROD_PROJECT_URL" >> $wikiadviser_path/.env
-
             echo "MEDIAWIKI_INTERNAL_ENDPOINT=$MEDIAWIKI_INTERNAL_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_ENDPOINT=$MEDIAWIKI_ENDPOINT" >> $wikiadviser_path/.env
             echo "MW_ADMIN_USERNAME=$MW_ADMIN_USERNAME" >> $wikiadviser_path/.env
             echo "MW_ADMIN_PASSWORD=$MW_ADMIN_PASSWORD" >> $wikiadviser_path/.env
             echo "MW_BOT_USERNAME=$MW_BOT_USERNAME" >> $wikiadviser_path/.env
             echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env
-
             echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" >> $wikiadviser_path/.env
             echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_PORT=$WIKIADVISER_API_PORT" >> $wikiadviser_path/.env
             echo "WIKIADVISER_API_ENDPOINT=$WIKIADVISER_API_ENDPOINT" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_PROD_ENDPOINT=$MEDIAWIKI_PROD_ENDPOINT" >> $wikiadviser_path/.env
-
             echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env
-
             echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
             echo "SENTRY_DSN=$SENTRY_DSN" >> $wikiadviser_path/.env
             echo "SENTRY_ENV_BACKEND=$SENTRY_ENV_BACKEND" >> $wikiadviser_path/.env
@@ -94,7 +90,6 @@ jobs:
             echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env
 
             echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
-            echo "SHARE_LINK_DAY_LIMIT=2" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \

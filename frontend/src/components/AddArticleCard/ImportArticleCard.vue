@@ -103,7 +103,6 @@
 <script setup lang="ts">
 import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
 import { computed, ref, watch } from 'vue';
-import { api } from 'src/boot/axios';
 import { useRouter } from 'vue-router';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import { Profile, SearchResult } from 'src/types';
@@ -113,6 +112,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { getDefaultUserLanguage } from 'src/utils/language';
 import { AxiosError } from 'axios';
+import supabaseClient from 'src/api/supabase';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -141,16 +141,12 @@ watch([term, articleLanguage], async ([term]) => {
     return;
   }
   try {
-    isSearching.value = true;
-    const response = await api.get<{
-      message: string;
-      searchResults: SearchResult[];
-    }>('wikipedia/articles', {
-      params: {
-        term,
-        language: articleLanguage.value.value,
+    const response = await supabaseClient.functions.invoke(
+      `wikipedia/articles?term=${term}&language=${articleLanguage.value.value}`,
+      {
+        method: 'GET',
       },
-    });
+    );
     searchResults.value = response.data.searchResults;
   } catch (error) {
     isSearching.value = false;

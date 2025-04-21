@@ -35,4 +35,7 @@ jobs:
         run: supabase functions deploy share_links --debug
 
       - name: deploy user-avatar
-        run: supabase functions deploy  user-avatar --debug
+        run: supabase functions deploy user-avatar --debug
+
+      - name: deploy wikipedia
+        run: supabase functions deploy wikipedia --debug

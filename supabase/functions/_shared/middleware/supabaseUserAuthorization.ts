@@ -1,11 +1,11 @@
-import { createServerClient } from "npm:@supabase/ssr@0.6.1";
-import { type Context } from "npm:hono@4.7.4";
+import { type CookieSerializeOptions } from "cookie"; // Import the type expected by @supabase/ssr
+import { type Context } from "hono";
 import {
   type CookieOptions as HonoCookieOptions,
   getCookie,
   setCookie,
-} from "npm:hono@4.7.4/cookie"; // Renamed to avoid clash
-import { type CookieSerializeOptions } from "npm:cookie@0.6.0"; // Import the type expected by @supabase/ssr
+} from "hono/utils/cookie"; // Renamed to avoid clash
+import { createServerClient } from "supabase-ssr";
 
 import supabaseClient from "../supabaseClient.ts";
 
@@ -42,13 +42,13 @@ class SupabaseAuthorization {
   }
 
   async verifyCookie(context: Context) {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ??
-      Deno.env.get("SUPABASE_PROJECT_URL");
+    const supabaseUrl =
+      Deno.env.get("SUPABASE_URL") ?? Deno.env.get("SUPABASE_PROJECT_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
     if (!supabaseUrl) {
       console.error(
-        "Missing SUPABASE_URL or SUPABASE_PROJECT_URL environment variable.",
+        "Missing SUPABASE_URL or SUPABASE_PROJECT_URL environment variable."
       );
       // Return an error response or null, avoid throwing
       return null; // Or context.json({ error: 'Server config error' }, 500);
@@ -59,46 +59,42 @@ class SupabaseAuthorization {
     }
 
     try {
-      const supabase = createServerClient(
-        supabaseUrl,
-        supabaseAnonKey,
-        {
-          cookies: {
-            getAll() {
-              const cookies = getCookie(context);
-              if (!cookies) {
-                return [];
-              }
-              return Object.entries(cookies).map(([name, value]) => ({
-                name,
-                value,
-              }));
-            },
-            // This function now receives cookies with options: Partial<CookieSerializeOptions>
-            setAll(cookiesToSet: SupabaseCookieToSet[]) {
-              try {
-                cookiesToSet.forEach(({ name, value, options }) => {
-                  // Pass the options directly to Hono's setCookie.
-                  // Hono's setCookie expects HonoCookieOptions.
-                  // Since Partial<CookieSerializeOptions> and HonoCookieOptions
-                  // share common properties, this often works.
-                  // If TypeScript still complains vigorously, use 'as any' or 'as HonoCookieOptions'
-                  // as a workaround, assuming the options set by Supabase are compatible.
-                  setCookie(context, name, value, options as HonoCookieOptions);
-                });
-              } catch (e) {
-                console.error("Error setting cookies:", e);
-              }
-            },
-            // delete(name: string, options: Partial<CookieSerializeOptions>) {
-            //    // If implementing delete, adapt options similarly
-            //    deleteCookie(context, name, options as HonoCookieOptions);
-            // }
+      const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+        cookies: {
+          getAll() {
+            const cookies = getCookie(context);
+            if (!cookies) {
+              return [];
+            }
+            return Object.entries(cookies).map(([name, value]) => ({
+              name,
+              value,
+            }));
           },
-          // Optional: Specify cookie encoding if needed (defaults might be fine)
-          // cookieEncoding: 'raw' // or 'base64url'
+          // This function now receives cookies with options: Partial<CookieSerializeOptions>
+          setAll(cookiesToSet: SupabaseCookieToSet[]) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                // Pass the options directly to Hono's setCookie.
+                // Hono's setCookie expects HonoCookieOptions.
+                // Since Partial<CookieSerializeOptions> and HonoCookieOptions
+                // share common properties, this often works.
+                // If TypeScript still complains vigorously, use 'as any' or 'as HonoCookieOptions'
+                // as a workaround, assuming the options set by Supabase are compatible.
+                setCookie(context, name, value, options as HonoCookieOptions);
+              });
+            } catch (e) {
+              console.error("Error setting cookies:", e);
+            }
+          },
+          // delete(name: string, options: Partial<CookieSerializeOptions>) {
+          //    // If implementing delete, adapt options similarly
+          //    deleteCookie(context, name, options as HonoCookieOptions);
+          // }
         },
-      );
+        // Optional: Specify cookie encoding if needed (defaults might be fine)
+        // cookieEncoding: 'raw' // or 'base64url'
+      });
 
       const { data, error } = await supabase.auth.getSession();
 
@@ -111,7 +107,7 @@ class SupabaseAuthorization {
     } catch (e) {
       console.error(
         "Exception during cookie verification/session retrieval:",
-        e,
+        e
       );
       return null;
     }

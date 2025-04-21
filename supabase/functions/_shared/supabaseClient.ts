@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2.49.4";
+import { createClient } from "supabase";
 
 export default function createSupabaseClient(authorization = "") {
   return createClient(
@@ -8,6 +8,6 @@ export default function createSupabaseClient(authorization = "") {
       global: {
         headers: { Authorization: authorization },
       },
-    },
+    }
   );
 }

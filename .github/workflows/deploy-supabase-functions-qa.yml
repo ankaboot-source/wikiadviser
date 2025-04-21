@@ -12,7 +12,8 @@ jobs:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SAAS_SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
       WIKIADVISER_BACKGROUND_COLORS: "f6f8fa,ffffff"
-      WIKIADVISER_LANGUAGES: "en,fr"
+      WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
+      WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
@@ -23,7 +24,7 @@ jobs:
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
 
       - name: set Supabase secrets
-        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES"
+        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES" WIKIPEDIA_PROXY="$WIKIPEDIA_PROXY"
 
       - name: list Supabase secrets
         run: supabase secrets list

@@ -1,7 +1,7 @@
 import createSupabaseAdmin from "../_shared/supabaseAdmin.ts";
 
 import { Request, Response } from "express";
-import { Database } from "../_shared/types";
+import { Database } from "shared/types";
 
 type ShareLink = Database["public"]["Tables"]["share_links"]["Row"];
 type Permission = Database["public"]["Tables"]["permissions"]["Row"];

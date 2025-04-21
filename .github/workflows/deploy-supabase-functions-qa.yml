@@ -28,11 +28,11 @@ jobs:
       - name: list Supabase secrets
         run: supabase secrets list
 
-      - name: deploy restrictMediawikiAccess
-        run: supabase functions deploy restrictMediawikiAccess --no-verify-jwt --debug
-
       - name: deploy share_links
         run: supabase functions deploy share_links --debug
+        
+      - name: deploy restrictMediawikiAccess
+        run: supabase functions deploy restrictMediawikiAccess --no-verify-jwt --debug
 
       - name: deploy user-avatar
         run: supabase functions deploy  user-avatar --debug

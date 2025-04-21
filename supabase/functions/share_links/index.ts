@@ -1,7 +1,7 @@
 import cors from "cors";
 import express from "express";
 
-import { authorizeUser } from "shared/middlewares.ts";
+import { authorizeUser } from "../_shared/middlewares";
 import { createShareLink, verifyShareLink } from "./controllers.ts";
 
 const app = express();

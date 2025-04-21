@@ -1,8 +1,8 @@
-import createSupabaseClient from "shared/supabaseClient.ts";
-import { Request, Response, NextFunction } from "express";
-import { Database } from "shared/types.ts";
+import { NextFunction, Request, Response } from "express";
+import createSupabaseClient from "./supabaseClient.ts";
+import { Database } from "./types";
 
-type Profile = Database["public"]["tables"]["profiles"]["row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export async function authorizeUser(
   req: Request,
@@ -11,11 +11,9 @@ export async function authorizeUser(
 ) {
   const supabaseClient = createSupabaseClient(req.headers["authorization"]);
   const { user } = (await supabaseClient.auth.getUser()).data;
-  const { data: profile }: Profile = await supabaseClient
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  const profile: Profile = (
+    await supabaseClient.from("profiles").select("*").eq("id", user.id).single()
+  ).data;
 
   if (!profile) {
     return res.status(403).send("Unauthorized");

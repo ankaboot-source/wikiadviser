@@ -14,17 +14,20 @@ export default async function getWikipediaArticle(context: Context) {
     }
 
     const response = await wikipediaApi.getWikipediaArticles(term, language);
-    return context.json({
-      message: "Getting Wikipedia articles succeeded.",
-      searchResults: response,
-    }, 200);
+    return context.json(
+      {
+        message: "Getting Wikipedia articles succeeded.",
+        searchResults: response,
+      },
+      200
+    );
   } catch (error) {
     return context.json(
       {
         message: "Error fetching Wikipedia articles.",
         error: (error as Error).message,
       },
-      500,
+      500
     );
   }
 }

@@ -1,11 +1,6 @@
 {
   "imports": {
-    "supabase-ssr": "npm:@supabase/ssr@0.6.1",
-    "supabase": "npm:@supabase/supabase-js@2.49.4",
     "hono": "npm:hono@4.7.4",
-    "hono/cookie": "npm:hono@4.7.4/cookie",
-    "hono/utils/cookie": "npm:hono@4.7.4/utils/cookie",
-    "pino": "npm:pino@9.6.0",
     "zod": "npm:zod@3.24.2"
   }
 }

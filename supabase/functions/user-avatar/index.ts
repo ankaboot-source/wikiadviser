@@ -1,5 +1,5 @@
-import corsHeaders from "shared/cors.ts";
-import createSupabaseClient from "shared/supabaseClient.ts";
+import corsHeaders from "../_shared/cors.ts";
+import createSupabaseClient from "../_shared/supabaseClient.ts";
 
 import generateAvatar from "./external-avatars/authUi.ts";
 import getGravatar from "./external-avatars/gravatar.ts";

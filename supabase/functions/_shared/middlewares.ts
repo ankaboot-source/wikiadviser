@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import createSupabaseClient from "./supabaseClient.ts";
-import { Database } from "./types";
+import { Database } from "./types/index.ts";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 

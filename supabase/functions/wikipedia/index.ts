@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import corsHeaders from "../_shared/cors.ts";
+import authorizationMiddleware from "../_shared/middleware/auth.ts";
 import getWikipediaArticle from "./controller.ts";
 
 const functionName = "wikipedia";
@@ -14,6 +15,6 @@ app.options("/*", (c) => {
   return c.text("ok", 200);
 });
 
-app.get("/articles", getWikipediaArticle);
+app.get("/articles", authorizationMiddleware, getWikipediaArticle);
 
 Deno.serve(app.fetch);

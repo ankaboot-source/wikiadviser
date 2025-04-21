@@ -38,4 +38,4 @@ jobs:
         run: supabase functions deploy user-avatar --debug
 
       - name: deploy wikipedia
-        run: supabase functions deploy wikipedia --debug
+        run: supabase functions deploy wikipedia --no-verify-jwt --debug

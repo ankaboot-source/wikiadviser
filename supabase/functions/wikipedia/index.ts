@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import getWikipediaArticle from "./controller.ts";
 import corsHeaders from "../_shared/cors.ts";
+import getWikipediaArticle from "./controller.ts";
 
 const functionName = "wikipedia";
 const app = new Hono().basePath(`/${functionName}`);

@@ -1,8 +1,6 @@
 {
   "imports": {
     "axios": "npm:axios@^1.8.4",
-    "cherio": "npm:cherio@^1.0.0-rc.2",
-    "encode": "npm:encode@^1.0.1",
     "zod": "npm:zod@3.24.2",
     "hono": "npm:hono@4.7.4"
   }

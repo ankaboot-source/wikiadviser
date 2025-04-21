@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'supabase/functions/**'
+      - "supabase/functions/**"
   workflow_dispatch:
 jobs:
   deploy-functions:
@@ -28,13 +28,14 @@ jobs:
       - name: list Supabase secrets
         run: supabase secrets list
 
-      - name: deploy share_links
-        run: supabase functions deploy share_links --debug
-        
       - name: deploy restrictMediawikiAccess
         run: supabase functions deploy restrictMediawikiAccess --no-verify-jwt --debug
 
+      - name: deploy share_links
+        run: supabase functions deploy share_links --debug
+
       - name: deploy user-avatar
-        run: supabase functions deploy  user-avatar --debug
+        run: supabase functions deploy user-avatar --debug
 
-
+      - name: deploy wikipedia
+        run: supabase functions deploy wikipedia --debug

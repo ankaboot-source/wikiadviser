@@ -3,8 +3,8 @@ import createSupabaseAdmin from "../_shared/supabaseAdmin.ts";
 import { Request, Response } from "express";
 import { Database } from "../_shared/types";
 
-type ShareLink = Database["public"]["tables"]["share_links"]["row"];
-type Permission = Database["public"]["tables"]["permissions"]["row"];
+type ShareLink = Database["public"]["Tables"]["share_links"]["Row"];
+type Permission = Database["public"]["Tables"]["permissions"]["Row"];
 
 export async function createShareLink(req: Request, res: Response) {
   try {

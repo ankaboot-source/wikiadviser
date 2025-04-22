@@ -8,7 +8,7 @@ const envSchema = z.object({
     .url(),
   WIKIADVISER_LANGUAGES: z
     .string({
-      required_error: "😱 You forgot to add a WikiAdviser languages!",
+      required_error: "😱 You forgot to add WikiAdviser languages!",
     })
     .transform((str) => {
       const regex = /^[a-z]{2,3}(,[a-z]{2,3})*$/g;

@@ -8,7 +8,7 @@ const envSchema = z.object({
     .url(),
   WIKIADVISER_LANGUAGES: z
     .string({
-      required_error: "😱 You forgot to add a WikiAdviser languages!",
+      required_error: "😱 You forgot to add WikiAdviser languages!",
     })
     .transform((str) => {
       const regex = /^[a-z]{2,3}(,[a-z]{2,3})*$/g;
@@ -19,17 +19,11 @@ const envSchema = z.object({
       }
       return str.split(",");
     }),
-  MEDIAWIKI_ENDPOINT: z
-    .string({
-      required_error: "😱 You forgot to add a MediaWiki endpoint!",
-    })
-    .url(),
 });
 
 const envServer = envSchema.safeParse({
   WIKIPEDIA_PROXY: Deno.env.get("WIKIPEDIA_PROXY"),
   WIKIADVISER_LANGUAGES: Deno.env.get("WIKIADVISER_LANGUAGES"),
-  MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
 });
 
 if (!envServer.success) {

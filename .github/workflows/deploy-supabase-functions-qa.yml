@@ -14,6 +14,7 @@ jobs:
       WIKIADVISER_BACKGROUND_COLORS: ${{ vars.WIKIADVISER_BACKGROUND_COLORS }}
       WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
       WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
+      MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT }}
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
@@ -24,7 +25,7 @@ jobs:
         run: supabase link --project-ref $SUPABASE_PROJECT_ID
 
       - name: set Supabase secrets
-        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES" WIKIPEDIA_PROXY="$WIKIPEDIA_PROXY"
+        run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES" WIKIPEDIA_PROXY="$WIKIPEDIA_PROXY" MEDIAWIKI_ENDPOINT="$MEDIAWIKI_ENDPOINT"
 
       - name: list Supabase secrets
         run: supabase secrets list

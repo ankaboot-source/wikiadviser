@@ -8,7 +8,6 @@ import corsMiddleware from './middleware/cors';
 import errorHandler from './middleware/errorHandler';
 import initializeSentry from './middleware/sentry';
 import articleRouter from './routes/article.routes';
-import wikipediaRouter from './routes/wikipedia.routes';
 import ENV from './schema/env.schema';
 
 const { WIKIADVISER_API_PORT, SENTRY_DSN, SENTRY_ENV_BACKEND } = ENV;
@@ -28,7 +27,6 @@ app.use(cookieParser());
 app.use(authorizationMiddlware);
 
 app.use(articleRouter);
-app.use(wikipediaRouter);
 
 if (SENTRY_DSN) {
   app.use(Sentry.Handlers.errorHandler());

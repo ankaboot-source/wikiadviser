@@ -23,10 +23,10 @@
 </template>
 
 <script setup lang="ts">
-import UpgradePage from 'src/components/Subscription/UpgradeAccountPage.vue';
-import { ref, onBeforeMount } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import supabase from 'src/api/supabase';
+import UpgradePage from 'src/components/Subscription/UpgradeAccountPage.vue';
+import { onBeforeMount, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const valid = ref(true);
@@ -38,7 +38,7 @@ onBeforeMount(async () => {
     const { params } = useRoute();
     const token = params.token;
     const { data: shareLink, error: validationError } =
-      await supabase.functions.invoke(`share_links/${token}`, {
+      await supabase.functions.invoke(`share-link/${token}`, {
         method: 'GET',
       });
 

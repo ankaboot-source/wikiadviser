@@ -32,8 +32,8 @@ jobs:
       - name: deploy restrict-mediawiki-access
         run: supabase functions deploy restrict-mediawiki-access --no-verify-jwt --debug
 
-      - name: deploy share_links
-        run: supabase functions deploy share_links --debug
+      - name: deploy share-link
+        run: supabase functions deploy share-link --debug
 
       - name: deploy user-avatar
         run: supabase functions deploy user-avatar --debug

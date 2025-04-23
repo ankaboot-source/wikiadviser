@@ -249,7 +249,7 @@ export async function createLink(articleId: string, role: Enums<'role'>) {
   expiresAt.setDate(expiresAt.getDate() + SHARE_LINK_DAY_LIMIT);
 
   const { data: shareLink, error: tokenCreationError } =
-    await supabase.functions.invoke('share_links', {
+    await supabase.functions.invoke('share-link', {
       method: 'POST',
       body: {
         article_id: articleId,

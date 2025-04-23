@@ -1,3 +1,4 @@
+import { createServerClient } from "@supabase/ssr";
 import { type CookieSerializeOptions } from "cookie"; // Import the type expected by @supabase/ssr
 import { type Context } from "hono";
 import {
@@ -5,7 +6,6 @@ import {
   getCookie,
   setCookie,
 } from "hono/utils/cookie"; // Renamed to avoid clash
-import { createServerClient } from "supabase-ssr";
 
 import supabaseClient from "../supabaseClient.ts";
 

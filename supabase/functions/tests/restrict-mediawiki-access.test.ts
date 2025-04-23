@@ -1,5 +1,5 @@
 import { assertEquals } from "jsr:@std/assert@1";
-import { allowedPrefixRegEx } from "../restrictMediawikiAccess/regex.ts";
+import { allowedPrefixRegEx } from "../restrict-mediawiki-access/regex.ts";
 
 const allowedRequests = [
   "/wiki/en/extensions/wikihiero/img/hiero_T14.png?183d0",

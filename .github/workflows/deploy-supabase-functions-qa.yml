@@ -29,8 +29,8 @@ jobs:
       - name: list Supabase secrets
         run: supabase secrets list
 
-      - name: deploy restrictMediawikiAccess
-        run: supabase functions deploy restrictMediawikiAccess --no-verify-jwt --debug
+      - name: deploy restrict-mediawiki-access
+        run: supabase functions deploy restrict-mediawiki-access --no-verify-jwt --debug
 
       - name: deploy share_links
         run: supabase functions deploy share_links --debug

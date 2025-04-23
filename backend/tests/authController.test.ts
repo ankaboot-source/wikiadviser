@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { allowedPrefixRegEx } from '../../supabase/functions/restrictMediawikiAccess/regex';
+import { allowedPrefixRegEx } from '../../supabase/functions/restrict-mediawiki-access/regex';
 
 const allowedRequests = [
   '/wiki/en/extensions/wikihiero/img/hiero_T14.png?183d0',

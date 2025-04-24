@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import corsHeaders from "../_shared/cors.ts";
 import { createArticle } from "./createArticle.controller.ts";
+import { deleteArticle, hasPermissions } from "./deleteArticle.controller.ts";
 
 const functionName = "article";
 const app = new Hono().basePath(`/${functionName}`);
@@ -14,4 +15,5 @@ app.options("/*", (c) => {
 });
 
 app.post("/", createArticle);
+app.delete("/id", hasPermissions(["owner"]), deleteArticle);
 Deno.serve(app.fetch);

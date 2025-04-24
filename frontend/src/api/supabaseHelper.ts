@@ -236,10 +236,14 @@ export async function deletePermission(permissionId: string) {
 }
 
 export async function deleteArticle(articleId: string) {
-  const apiResponse = await api.delete(`article/${articleId}`);
-  if (apiResponse.status !== 200) {
-    throw new Error('Failed to delete article from API.');
-  }
+  const { data, error } = await supabaseClient.functions.invoke('article', {
+    method: 'DELETE',
+    body: {
+      articleId,
+    },
+  });
+  if (error) throw new Error(error.message);
+  if (data?.error) throw new Error(data.error);
 }
 
 export async function updateChanges(articleId: string) {

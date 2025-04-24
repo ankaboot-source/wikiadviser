@@ -14,7 +14,7 @@ const allowedRequests = [
   "/wiki/en/api.php?action=query&format=json&formatversion=2&meta=siteinfo&siprop=interwikimap&maxage=86400&smaxage=86400&uselang=content",
   "/wiki/en/api.php?action=query&format=json&formatversion=2&prop=imageinfo&iiprop=url&iiurlwidth=300&iiurlheight=&titles=File%3AUSA%202007.svg",
   "/wiki/en/api.php?action=query&format=json&formatversion=2&prop=info%7Cpageprops%7Cdescription&generator=prefixsearch&gpssearch=tes&gpslimit=10&ppprop=disambiguation&redirects=true",
-  "/wiFAILki/en/index.php/Simple_Redirectable_Article",
+  "/wiki/en/index.php/Simple_Redirectable_Article",
 ];
 allowedRequests.forEach((request, index) => {
   Deno.test(`should allow request ${index}`, () => {

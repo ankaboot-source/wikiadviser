@@ -15,4 +15,4 @@ jobs:
         with:
           deno-version: latest
       - run: supabase start
-      - run: deno test supabase --allow-all
+      - run: deno test supabase/functions --allow-all

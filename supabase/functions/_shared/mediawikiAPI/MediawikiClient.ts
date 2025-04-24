@@ -1,17 +1,8 @@
-import { AxiosInstance, AxiosResponse } from "axios";
-import FormData from "form-data";
-import mediawikiApiInstances from "../../api/mediawikiApiInstances";
-import { refineArticleChanges } from "../../helpers/parsingHelper";
-import {
-  insertRevision,
-  updateCurrentHtmlContent,
-  upsertChanges,
-} from "../../helpers/supabaseHelper";
-import logger from "../../logger";
-import ENV from "../../schema/env.schema";
-import { Account } from "../../types";
-import { WikipediaApi } from "../wikipedia/WikipediaApi";
-import { MediawikiAutomator } from "./MediawikiAutomator";
+import { AxiosInstance, AxiosResponse } from "npm:axios@^1.8.4";
+import ENV from "../schema/env.schema.ts";
+import { Account } from "../types/index.ts";
+import { WikipediaApi } from "../wikipedia/WikipediaApi.ts";
+import mediawikiApiInstances from "../mediawikiApiInstances.ts";
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -36,7 +27,6 @@ export default class MediawikiClient {
   constructor(
     private readonly language: string,
     private readonly wikipediaApi: WikipediaApi,
-    private readonly mediawikiAutomator: MediawikiAutomator,
   ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(
       this.language,
@@ -171,9 +161,10 @@ export default class MediawikiClient {
          * This code block handles synchronization issues between the database and MediaWiki during
          * article deletion. Skips error code 'missingtitle' to continue with the deletion process.
          */
-        logger.error(
-          `Article '${articleId}' does not exist. The error is skipped, likely due to synchronization issues.`,
-        );
+        //logger.error(
+        //  `Article '${articleId}' does not exist. The error is skipped,
+        // //likely due to synchronization issues.`,
+        //);
       } else {
         await this.logout(csrftoken);
         throw new Error(
@@ -181,7 +172,7 @@ export default class MediawikiClient {
         );
       }
     }
-    this.logout(csrftoken);
+    await this.logout(csrftoken);
   }
 
   private async getRevisionData(articleId: string, sort: "older" | "newer") {
@@ -197,70 +188,6 @@ export default class MediawikiClient {
       },
     });
     return response.data.query.pages[0].revisions[0];
-  }
-
-  /**
-   * Retrieves the HTML difference between the latest and original revisions of an article.
-   *
-   * @param articleId - The ID of the article.
-   * @returns An object containing the difference HTML and revision IDs of the original and latest revisions.
-   */
-  async getArticleDiffHtml(articleId: string): Promise<{
-    diff: string;
-    originalRevision: { id: string };
-    latestRevision: { id: string; summary: string };
-  }> {
-    const { revid: originalRevid } = await this.getRevisionData(
-      articleId,
-      "newer",
-    );
-    const { revid: latestRevid, comment: latestRevSummary } = await this
-      .getRevisionData(articleId, "older");
-
-    logger.info(
-      `Getting the Diff HTML of Revids: ${originalRevid} -> ${latestRevid}`,
-    );
-
-    const diff = await this.mediawikiAutomator.getMediaWikiDiffHtml(
-      articleId,
-      originalRevid,
-      latestRevid,
-    );
-
-    return {
-      diff,
-      originalRevision: {
-        id: originalRevid,
-      },
-      latestRevision: {
-        id: latestRevid,
-        summary: latestRevSummary,
-      },
-    };
-  }
-
-  async updateChanges(articleId: string, userId: string) {
-    const { diff, latestRevision } = await this.getArticleDiffHtml(articleId);
-
-    const revisionSummary = latestRevision.summary.includes("[[Special:Diff")
-      ? latestRevision.summary.split("[[")[0]
-      : latestRevision.summary;
-
-    const revisionId = await insertRevision(
-      articleId,
-      latestRevision.id,
-      revisionSummary,
-    );
-
-    const { changesToUpsert, htmlContent } = await refineArticleChanges(
-      articleId,
-      diff,
-      userId,
-      revisionId,
-    );
-
-    await upsertChanges(changesToUpsert);
-    await updateCurrentHtmlContent(articleId, htmlContent);
   }
 
   /**

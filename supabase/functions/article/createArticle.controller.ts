@@ -1,22 +1,35 @@
-import supabaseClient from "../_shared/supabaseClient.ts";
 import { Context } from "hono";
 import {
   deleteArticleDB,
   getUserArticlesCount,
   insertArticle,
 } from "../_shared/helpers/supabaseHelper.ts";
-import { MediawikiClient } from "./MediawikiClient.ts}";
+import MediawikiClient from "../_shared/mediawikiAPI/MediawikiClient.ts";
 import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
-import { PlayAutomatorFactory } from "../_shared/mediawikiAPI/MediawikiAutomator.ts";
-
+import createSupabaseClient from "../_shared/supabaseClient.ts";
+import corsHeaders from "../_shared/cors.ts";
 /**
  * Retrieves Wikipedia articles based on the provided search term and language.
  * @param {Context} context - The Hono context object.
  */
 export async function createArticle(context: Context) {
-  const { title, language, description } = await context.req.json();
-  const user = context.get("user");
   let articleId = null;
+  const { title, language, description } = await context.req.json();
+
+  const supabaseClient = createSupabaseClient(
+    context.req.header("Authorization"),
+  );
+
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return new Response("Unauthorized", {
+      headers: corsHeaders,
+      status: 401,
+    });
+  }
 
   if (typeof title !== "string" || !title.length) {
     return context.json({
@@ -65,7 +78,6 @@ export async function createArticle(context: Context) {
     const mediawiki = new MediawikiClient(
       language,
       wikipediaApi,
-      await PlayAutomatorFactory(language),
     );
     await mediawiki.createArticle(articleId, title);
 
@@ -77,6 +89,9 @@ export async function createArticle(context: Context) {
     if (articleId) {
       await deleteArticleDB(articleId);
     }
-    throw error;
+    return context.json({
+      message: "An error occurred while processing your request",
+      error: error instanceof Error ? error.message : String(error),
+    }, 500);
   }
 }

@@ -6,6 +6,7 @@
     "supabase-ssr": "npm:@supabase/ssr@0.6.1",
     "hono/cookie": "npm:hono@4.7.4/cookie",
     "hono/utils/cookie": "npm:hono@4.7.4/utils/cookie",
-    "cookie": "npm:cookie@0.6.0"
+    "cookie": "npm:cookie@0.6.0",
+    "axios": "npm:axios@^1.8.4"
   }
 }

@@ -1,8 +1,8 @@
-import { AxiosInstance, AxiosResponse } from "npm:axios@^1.8.4";
-import ENV from "../schema/env.schema.ts";
-import { Account } from "../types/index.ts";
-import { WikipediaApi } from "../wikipedia/WikipediaApi.ts";
-import mediawikiApiInstances from "../mediawikiApiInstances.ts";
+import { AxiosInstance, AxiosResponse } from "axios";
+import ENV from "../_shared/schema/env.schema.ts";
+import { Account } from "../_shared/types/index.ts";
+import { WikipediaApi } from "../_shared/wikipedia/WikipediaApi.ts";
+import mediawikiApiInstances from "./mediawikiApiInstances.ts";
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 

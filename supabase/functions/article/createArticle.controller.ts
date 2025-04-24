@@ -4,7 +4,7 @@ import {
   getUserArticlesCount,
   insertArticle,
 } from "../_shared/helpers/supabaseHelper.ts";
-import MediawikiClient from "../_shared/mediawikiAPI/MediawikiClient.ts";
+import MediawikiClient from "./MediawikiClient.ts";
 import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import corsHeaders from "../_shared/cors.ts";

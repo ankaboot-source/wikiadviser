@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "npm:axios@^1.8.4";
+import axios, { AxiosInstance } from "axios";
 import https from "node:https";
 import ENV from "../_shared/schema/env.schema.ts";
 

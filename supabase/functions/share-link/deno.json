@@ -1,9 +1,10 @@
 {
   "imports": {
-    "hono": "npm:hono@4.7.4",
-    "zod": "npm:zod@3.24.2",
+    "express": "npm:express@4.18.2",
+    "cors": "npm:cors@2.8.5",
     "supabase": "https://esm.sh/@supabase/supabase-js@2",
-    "supabase-ssr": "npm:@supabase/ssr@0.6.1",
+    "@supabase/ssr": "npm:@supabase/ssr@0.6.1",
+    "hono": "npm:hono@4.7.4",
     "hono/cookie": "npm:hono@4.7.4/cookie",
     "hono/utils/cookie": "npm:hono@4.7.4/utils/cookie",
     "cookie": "npm:cookie@0.6.0"

@@ -40,7 +40,7 @@
     forward_auth @publicip {$SUPABASE_PROJECT_URL} {
       header_up Host {upstream_hostport}
       header_up X-Real-IP {remote_host}
-      uri /functions/v1/restrictMediawikiAccess
+      uri /functions/v1/restrict-mediawiki-access
       copy_headers X-User X-Client-IP X-Forwarded-Uri
     }
     header {

@@ -6,12 +6,6 @@ const envSchema = z.object({
       required_error: "😱 You forgot to add a Supabase URL!",
     })
     .url(),
-  SUPABASE_SECRET_PROJECT_TOKEN: z
-    .string({
-      required_error: "😱 You forgot to add a Supabase secret token!",
-    })
-    .trim()
-    .min(1),
   WIKIADVISER_LANGUAGES: z
     .string({
       required_error: "😱 You forgot to add a WikiAdviser languages!",
@@ -62,16 +56,6 @@ const envSchema = z.object({
     })
     .trim()
     .min(1),
-  MW_BOT_USERNAME: z
-    .string({
-      required_error: "😱 You forgot to add a MediaWiki bot username!",
-    })
-    .min(1),
-  MW_BOT_PASSWORD: z
-    .string({
-      required_error: "😱 You forgot to add a MediaWiki bot password!",
-    })
-    .min(1),
   SENTRY_DSN: z.string().optional(),
   SENTRY_ENV_BACKEND: z.string().optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default(
@@ -81,7 +65,6 @@ const envSchema = z.object({
 
 const envServer = envSchema.safeParse({
   SUPABASE_PROJECT_URL: Deno.env.get("SUPABASE_URL"),
-  SUPABASE_SECRET_PROJECT_TOKEN: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"),
   WIKIADVISER_LANGUAGES: Deno.env.get("WIKIADVISER_LANGUAGES"),
   WIKIADVISER_API_PORT: Deno.env.get("WIKIADVISER_API_PORT"),
   WIKIADVISER_FRONTEND_ENDPOINT: Deno.env.get("WIKIADVISER_FRONTEND_ENDPOINT"),
@@ -90,8 +73,6 @@ const envServer = envSchema.safeParse({
   MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
   MW_ADMIN_USERNAME: Deno.env.get("MW_ADMIN_USERNAME"),
   MW_ADMIN_PASSWORD: Deno.env.get("MW_ADMIN_PASSWORD"),
-  MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),
-  MW_BOT_PASSWORD: Deno.env.get("MW_BOT_PASSWORD"),
   SENTRY_DSN: Deno.env.get("SENTRY_DSN"),
   SENTRY_ENV_BACKEND: Deno.env.get("SENTRY_ENV_BACKEND"),
   NODE_ENV: Deno.env.get("NODE_ENV"),

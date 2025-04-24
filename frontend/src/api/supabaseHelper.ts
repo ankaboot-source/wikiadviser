@@ -4,6 +4,7 @@ import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
 import supabase from './supabase';
+import supabaseClient from 'src/api/supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
@@ -44,13 +45,17 @@ export async function createArticle(
   language: wikiadviserLanguage,
   description?: string,
 ) {
-  const response = await api.post('article', {
-    title,
-    userId,
-    language,
-    description,
+  const { data, error } = await supabaseClient.functions.invoke('article', {
+    method: 'POST',
+    body: {
+      title,
+      userId,
+      language,
+      description,
+    },
   });
-  return response.data.articleId;
+  if (error) throw new Error(error.message);
+  return data.articleId;
 }
 
 export async function importArticle(

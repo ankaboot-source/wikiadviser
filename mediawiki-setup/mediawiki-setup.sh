@@ -10,10 +10,10 @@ MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could
 MW_PROJECT_DIR="mediawiki"
 MW_PORT="8080"
 
-CONF_DIR="$HOME/wikiadviser" # Update this variable if you cloned wikiadviser repo other than your home directory
+CONF_DIR="../" # Wikiadviser root folder
 LANGUAGES=("en" "fr") # Languages of your wiki instances.
 
-DUMP_PATH="$CONF_DIR/dump"
+DUMP_PATH="./dump"
 
 MW_SECRET_KEY=$(openssl rand -hex 32)
 MW_UPGRADE_KEY=$(openssl rand -hex 8)
@@ -65,7 +65,7 @@ common_setup() {
 
 ################################### UPGRADE ########################################
 if [[ "$1" == "--upgrade" ]]; then
-    echo -e "\e[1;35mStarting MediaWiki upgrade process...\e[0m"
+    echo "Starting MediaWiki upgrade process..."
 
     check_job_queue() {
         local lang=$1
@@ -82,7 +82,7 @@ if [[ "$1" == "--upgrade" ]]; then
         fi
     }
 
-    echo -e "\e[1;35mClearing Pending Jobs\e[0m"
+    echo "Clearing Pending Jobs"
     for ln in "${LANGUAGES[@]}"; do
         while true; do
             if check_job_queue "$ln"; then
@@ -96,41 +96,43 @@ if [[ "$1" == "--upgrade" ]]; then
         done
     done
 
-    echo -e "\e[1;35mBacking up old database dump folder\e[0m"
+    echo "Backing up old database dump folder"
     if [[ -d "$DUMP_PATH" ]]; then
-        mv "$DUMP_PATH" "$DUMP_PATH.old"
+        cp "$DUMP_PATH" "$DUMP_PATH-$(date +%Y%m%d-%H%M%S)"
+    else 
+        mkdir -p "$DUMP_PATH"
     fi
-    mkdir -p "$DUMP_PATH"
+  
 
-    echo -e "\e[1;35mCreating Database dumps\e[0m"
+    echo "Creating Database dumps"
     for ln in "${LANGUAGES[@]}"; do
         sudo -S mysqldump -u root "wiki_$ln" > "$DUMP_PATH/dump-$ln.sql"
     done
 
-    echo -e "\e[1;35mBacking up old MediaWiki folders\e[0m"
+    echo "Backing up old MediaWiki folders"
     for ln in "${LANGUAGES[@]}"; do
         if [[ -d "/var/www/${MW_PROJECT_DIR}/wiki/$ln" ]]; then
-            mv "/var/www/${MW_PROJECT_DIR}/wiki/$ln" "/var/www/${MW_PROJECT_DIR}/wiki/$ln.old"
+            mv "/var/www/${MW_PROJECT_DIR}/wiki/$ln" "/var/www/${MW_PROJECT_DIR}/wiki/$ln-$(date +%Y%m%d-%H%M%S)"
         fi
     done
 
-    echo -e "\e[1;35mDownloading new MediaWiki package\e[0m"
+    echo  "Downloading new MediaWiki package"
     for ln in "${LANGUAGES[@]}"; do
         git clone "https://gerrit.wikimedia.org/r/mediawiki/core.git" --branch "wmf/$MW_VERSION" "/var/www/${MW_PROJECT_DIR}/wiki/$ln"
     done
 
-    echo -e "\e[1;32mUpgrade process completed successfully.\e[0m"
+    echo "Upgrade process completed successfully."
 
     # Call common_setup
     common_setup 
 
-    echo -e "\e[1;35mCopy old configuration to the new installation directories\e[0m"
+    echo "Copy old configuration to the new installation directories"
     for ln in "${LANGUAGES[@]}"; do
         cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/LocalSettings.php /var/www/${MW_PROJECT_DIR}/wiki/$ln/LocalSettings.php
         cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/images /var/www/${MW_PROJECT_DIR}/wiki/$ln
         cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/icons /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/icons
         cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/poweredby_wikiadviser_*.png /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/
-        echo $mediawiki_password | sudo -S chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/$ln/images
+        sudo chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/$ln/images
         cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions"
     done
     
@@ -158,8 +160,8 @@ else
 
     # Apache2 setup
     sudo mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
-    sudo MW_PORT="$MW_PORT" envsubst < ./ports.conf > /etc/apache2/ports.conf
-    sudo MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf > /etc/apache2/sites-available/wiki-site.conf
+    MW_PORT="$MW_PORT" envsubst < ./ports.conf | sudo tee /etc/apache2/ports.conf > /dev/null
+    MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf | sudo tee /etc/apache2/sites-available/wiki-site.conf > /dev/null
     sudo a2ensite wiki-site.conf
     sudo systemctl enable apache2 && sudo systemctl restart apache2
 
@@ -225,13 +227,13 @@ else
     
     for ln in "${LANGUAGES[@]}"; do
         mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
-        chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
+        sudo chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
     done
 
     # Copy wikiadviser resources into mediawiki
     for ln in "${LANGUAGES[@]}"; do
-        cp -r "${CONF_DIR}/docs/assets/*"  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
-        cp -r "${CONF_DIR}/MyVisualEditor"  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
+        cp -r ${CONF_DIR}/docs/assets/*  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
+        cp -r ${CONF_DIR}/MyVisualEditor  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
     done
     
     for ln in "${LANGUAGES[@]}"; do

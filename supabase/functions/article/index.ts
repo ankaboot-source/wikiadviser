@@ -15,5 +15,5 @@ app.options("/*", (c) => {
 });
 
 app.post("/", createArticle);
-app.delete("/id", hasPermissions(["owner"]), deleteArticle);
+app.delete("/:id", hasPermissions(["owner"]), deleteArticle);
 Deno.serve(app.fetch);

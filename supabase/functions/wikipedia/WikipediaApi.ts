@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { WikipediaSearchResult } from "../_shared/types/index.ts";
 import WikipediaInteractor from "./WikipediaInteractor.ts";
-import ENV from "./env.schema.ts";
+import ENV from "../_shared/schema/env.schema.ts";
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy: string;
 

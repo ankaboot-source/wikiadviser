@@ -1,11 +1,6 @@
 import z from "npm:zod@3.24.2";
 
 const envSchema = z.object({
-  SUPABASE_PROJECT_URL: z
-    .string({
-      required_error: "😱 You forgot to add a Supabase URL!",
-    })
-    .url(),
   WIKIADVISER_LANGUAGES: z
     .string({
       required_error: "😱 You forgot to add a WikiAdviser languages!",
@@ -74,7 +69,6 @@ const envSchema = z.object({
 });
 
 const envServer = envSchema.safeParse({
-  SUPABASE_PROJECT_URL: Deno.env.get("SUPABASE_URL"),
   WIKIADVISER_LANGUAGES: Deno.env.get("WIKIADVISER_LANGUAGES"),
   WIKIADVISER_API_PORT: Deno.env.get("WIKIADVISER_API_PORT"),
   WIKIADVISER_FRONTEND_ENDPOINT: Deno.env.get("WIKIADVISER_FRONTEND_ENDPOINT"),

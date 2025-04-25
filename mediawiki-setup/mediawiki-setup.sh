@@ -227,9 +227,6 @@ else
 
     sleep 2
 
-    # Call common_setup
-    common_setup
-    
     for ln in "${LANGUAGES[@]}"; do
         mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
         sudo chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
@@ -244,6 +241,9 @@ else
     for ln in "${LANGUAGES[@]}"; do
         SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
     done
+
+    # Call common_setup
+    common_setup
 
     echo  "Remove unnecessary files"
     rm ./version_page.html

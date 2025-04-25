@@ -117,7 +117,7 @@ if [[ "$1" == "--upgrade" ]]; then
     echo "Backing up old MediaWiki folders"
     for ln in "${LANGUAGES[@]}"; do
         if [[ -d "/var/www/${MW_PROJECT_DIR}/wiki/$ln" ]]; then
-            mv "/var/www/${MW_PROJECT_DIR}/wiki/$ln" "/var/www/${MW_PROJECT_DIR}/wiki/$ln-$(date +%Y%m%d-%H%M%S)"
+            mv "/var/www/${MW_PROJECT_DIR}/wiki/$ln" "/var/www/${MW_PROJECT_DIR}/wiki/$ln.old"
         fi
     done
 

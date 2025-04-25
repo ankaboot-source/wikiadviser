@@ -43,6 +43,8 @@ common_setup() {
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/HTMLTags
     done
 
+    CURRENT_DIR="$(pwd)" # save current directory
+
     for ln in "${LANGUAGES[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln || exit
         echo "Mediawiki Submodule update (${ln} wiki)..."
@@ -61,6 +63,9 @@ common_setup() {
         php maintenance/run.php ./extensions/Wikibase/repo/maintenance/rebuildItemsPerSite.php
         php maintenance/run.php ./maintenance/populateInterwiki.php
     done
+
+    cd $CURRENT_DIR # return to original path
+
 }
 
 ################################### UPGRADE ########################################

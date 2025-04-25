@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(authorizeUser);
 
-app.post("/share_links", createShareLink);
-app.get("/share_links/:token", verifyShareLink);
+app.post("/share-link", createShareLink);
+app.get("/share-link/:token", verifyShareLink);
 
 app.listen(3000);

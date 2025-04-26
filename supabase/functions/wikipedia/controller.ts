@@ -1,5 +1,5 @@
 import { Context } from "hono";
-import wikipediaApi from "./WikipediaApi.ts";
+import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
 
 /**
  * Retrieves Wikipedia articles based on the provided search term and language.
@@ -19,7 +19,7 @@ export default async function getWikipediaArticle(context: Context) {
         message: "Getting Wikipedia articles succeeded.",
         searchResults: response,
       },
-      200
+      200,
     );
   } catch (error) {
     return context.json(
@@ -27,7 +27,7 @@ export default async function getWikipediaArticle(context: Context) {
         message: "Error fetching Wikipedia articles.",
         error: (error as Error).message,
       },
-      500
+      500,
     );
   }
 }

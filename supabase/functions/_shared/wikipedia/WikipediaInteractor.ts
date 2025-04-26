@@ -1,4 +1,4 @@
-import { WikipediaSearchResult } from "../_shared/types/index.ts";
+import { WikipediaSearchResult } from "../types/index.ts";
 
 export default interface WikipediaInteractor {
   getWikipediaArticles(

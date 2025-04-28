@@ -4,7 +4,7 @@ import {
   getUserPermission,
 } from "../_shared/helpers/supabaseHelper.ts";
 import SupabaseAuthorization from "../_shared/middleware/supabaseUserAuthorization.ts"; // Adjust path
-import ENV from "./env.schema.ts";
+import ENV from "../_shared/schema/env.schema.ts";
 
 import { allowedPrefixRegEx, articleIdRegEx } from "./regex.ts";
 
@@ -30,17 +30,16 @@ export default async function restrictMediawikiAccess(context: Context) {
     const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3];
 
     const forwardUriAllowedPrefixes = ENV.WIKIADVISER_LANGUAGES.map(
-      (lang: string) => `/wiki/${lang}/api.php`
+      (lang: string) => `/wiki/${lang}/api.php`,
     );
     const forwardUriStartsWith = ENV.WIKIADVISER_LANGUAGES.map(
-      (lang: string) => `/wiki/${lang}/api.php?`
+      (lang: string) => `/wiki/${lang}/api.php?`,
     );
 
-    const hasAllowedPrefixes =
-      (forwardedMethod === "POST" &&
-        forwardUriAllowedPrefixes.some(
-          (prefix: string) => forwardedUri === prefix
-        )) ||
+    const hasAllowedPrefixes = (forwardedMethod === "POST" &&
+      forwardUriAllowedPrefixes.some(
+        (prefix: string) => forwardedUri === prefix,
+      )) ||
       forwardedUri.match(allowedPrefixRegEx);
 
     if (!hasAllowedPrefixes) {
@@ -65,7 +64,7 @@ export default async function restrictMediawikiAccess(context: Context) {
       if (!articleId) {
         return new Response(
           "This user is not authorized to access this content, missing article",
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -75,7 +74,7 @@ export default async function restrictMediawikiAccess(context: Context) {
       if (!permission && !isPublicArticle) {
         return new Response(
           "This user is not authorized to access this content, missing permission",
-          { status: 403 }
+          { status: 403 },
         );
       }
 
@@ -87,7 +86,7 @@ export default async function restrictMediawikiAccess(context: Context) {
       if (isViewer && !isViewArticle) {
         return new Response(
           "This user is not authorized to access this content, editor permissions required",
-          { status: 403 }
+          { status: 403 },
         );
       }
     }

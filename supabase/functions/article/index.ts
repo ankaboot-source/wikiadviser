@@ -15,6 +15,7 @@ app.use("*", async (c, next) => {
   Object.entries(corsHeaders).forEach(([k, v]) => {
     c.res.headers.set(k, v);
   });
+  return c.res;
 });
 
 app.post("/", createArticle);

@@ -2,7 +2,8 @@ import { AxiosInstance, AxiosResponse } from "axios";
 import ENV from "../_shared/schema/env.schema.ts";
 import { Account } from "../_shared/types/index.ts";
 import { WikipediaApi } from "../_shared/wikipedia/WikipediaApi.ts";
-import mediawikiApiInstances from "./mediawikiApiInstances.ts";
+import mediawikiApiInstances from "../_shared/mediawikiAPI/mediawikiApiInstances.ts";
+import FormData from "form-data";
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -161,10 +162,9 @@ export default class MediawikiClient {
          * This code block handles synchronization issues between the database and MediaWiki during
          * article deletion. Skips error code 'missingtitle' to continue with the deletion process.
          */
-        //logger.error(
-        //  `Article '${articleId}' does not exist. The error is skipped,
-        // //likely due to synchronization issues.`,
-        //);
+        console.error(
+          `Article '${articleId}' does not exist. The error is skipped,likely due to synchronization issues.`,
+        );
       } else {
         await this.logout(csrftoken);
         throw new Error(
@@ -256,5 +256,55 @@ export default class MediawikiClient {
     }
 
     return data;
+  }
+  async importArticle(articleId: string, title: string): Promise<void> {
+    try {
+      // Export
+      console.info(`Exporting file ${title}`);
+      const exportData = await this.wikipediaApi.exportArticleData(
+        title,
+        articleId,
+        this.language,
+      );
+      console.info(`Successfully exported file ${title}`);
+
+      // Import
+      console.info(`Importing into our instance file ${title}`);
+      const csrftoken = await this.loginAndGetCsrf();
+
+      const importForm = new FormData();
+      importForm.append("xml", exportData, {
+        filename: `${articleId}.xml`,
+        contentType: "application/xml",
+      });
+      importForm.append("action", "import");
+      importForm.append("interwikiprefix", " ");
+      importForm.append("token", csrftoken);
+      importForm.append("format", "json");
+      const headers = {
+        ...importForm.getHeaders(),
+        connection: "close",
+        timeout: 60000,
+      };
+
+      const importResponse = await this.mediawikiApiInstance.post(
+        "",
+        importForm,
+        {
+          headers,
+        },
+      );
+      if (importResponse.data.error) {
+        console.error(
+          `Failed to import article ${articleId} ${title}: ${importResponse.data}`,
+        );
+      }
+
+      this.logout(csrftoken);
+      console.info(`Successfully imported file ${title}`);
+    } catch (error) {
+      console.error(error, `Error importing article ${title}`);
+      throw error;
+    }
   }
 }

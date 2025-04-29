@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-//import { processExportedArticle } from '../../helpers/parsingHelper';
+import { processExportedArticle } from "../helpers/parsingHelper.ts";
 import { WikipediaSearchResult } from "../types/index.ts";
 import WikipediaInteractor from "./WikipediaInteractor.ts";
 import ENV from "../schema/env.schema.ts";
@@ -84,44 +84,44 @@ export class WikipediaApi implements WikipediaInteractor {
     return htmlString;
   }
 
-  /*async exportArticleData(
+  async exportArticleData(
     title: string,
     articleId: string,
-    language: string
+    language: string,
   ): Promise<string> {
     const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
       params: {
-        title: 'Special:Export',
+        title: "Special:Export",
         pages: title,
         templates: true,
         lang: language,
-        curonly: true
+        curonly: true,
       },
-      responseType: 'stream'
+      responseType: "stream",
     });
 
     return new Promise<string>((resolve, reject) => {
-      let exportData = '';
-      exportResponse.data.on('data', (chunk: string) => {
+      let exportData = "";
+      exportResponse.data.on("data", (chunk: string) => {
         exportData += chunk;
       });
 
-      exportResponse.data.on('end', async () => {
+      exportResponse.data.on("end", async () => {
         exportData = await processExportedArticle(
           exportData,
           language,
           articleId,
           title,
-          await this.getWikipediaHTML(title, language)
+          await this.getWikipediaHTML(title, language),
         );
         resolve(exportData);
       });
 
-      exportResponse.data.on('error', (error: Error) => {
+      exportResponse.data.on("error", (error: Error) => {
         reject(error);
       });
     });
-  }*/
+  }
 }
 
 const wikipediaApi = new WikipediaApi();

@@ -64,13 +64,20 @@ export async function importArticle(
   language: wikiadviserLanguage,
   description?: string,
 ) {
-  const response = await api.post('article/import', {
-    title,
-    userId,
-    language,
-    description,
-  });
-  return response.data.articleId;
+  const { data, error } = await supabaseClient.functions.invoke(
+    'article/import',
+    {
+      method: 'POST',
+      body: {
+        title,
+        userId,
+        language,
+        description,
+      },
+    },
+  );
+  if (error) throw new Error(error.message);
+  return data.articleId;
 }
 
 export async function getArticles(userId: string): Promise<Article[]> {

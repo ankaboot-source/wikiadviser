@@ -75,7 +75,7 @@ common_setup() {
     done
     cd $CURRENT_DIR # return to original path
 
-
+}
 ############################################ UPGRADE #########################################################
 if [[ "$1" == "--upgrade" ]]; then
     echo "Starting MediaWiki upgrade process..."
@@ -226,18 +226,33 @@ else
     # Setup DB
     for env in "${MW_PROJECT_DIR[@]}"; do
         for ln in "${LANGUAGES[@]}"; do
+
+            var_prefix="${env}_${ln}"
+
             echo "Creating base for your '${env}' '${ln}'..."
             echo ""
-            read -p "Enter the database name for '${env}' '${ln}' [default: ${env}_${ln}]: " "${env}"_"${ln}"_DB_NAME
-            "${env}"_"${ln}"_DB_NAME=${"${env}"_"${ln}"_DB_NAME:-${env}_${ln}}
-            read -p "Enter the database username for '${env}' '${ln}' [default: ${env}_${ln}_user]: " "${env}"_"${ln}"_DB_USER
-            "${env}"_"${ln}"_DB_NAME=${"${env}"_"${ln}"_DB_USER:-${env}_${ln}_user}
-            read -s -p "Enter the database password for '${env}' '${ln}': " "${env}"_"${ln}"_DB_PASS
+            
+            read -p "Enter the database name for '${env}' '${ln}' [default: ${env}-${ln}]: " input_db_name
+            db_name=${input_db_name:-${env}-${ln}}
+            eval "${var_prefix}_db_name='${db_name}'"
+            
+            read -p "Enter the database username for '${env}' '${ln}' [default: ${env}-${ln}-user]: " input_db_user
+            db_user=${input_db_user:-${env}-${ln}-user}
+            eval "${var_prefix}_db_user='${db_user}'"
+            
+            read -s -p "Enter the database password for '${env}' '${ln}': " db_pass
+            eval "${var_prefix}_db_pass='${db_pass}'"
+            
+            eval "DB_NAME=\"\${${var_prefix}_db_name}\""
+            eval "DB_USER=\"\${${var_prefix}_db_user}\""
+            eval "DB_PASS=\"\${${var_prefix}_db_pass}\""
+
             echo ""
-            sudo mariadb -u root -e "CREATE DATABASE ${"${env}"_"${ln}"_DB_NAME};"
-            sudo mariadb -u root -e "CREATE USER '${"${env}"_"${ln}"_DB_USER}'@'localhost' IDENTIFIED BY '${"${env}"_"${ln}"_DB_PASS}';"
-            sudo mariadb -u root -e "GRANT ALL PRIVILEGES ON ${"${env}"_"${ln}"_DB_NAME}.* TO '${"${env}"_"${ln}"_DB_USER}'@'localhost' WITH GRANT OPTION;"
-            sudo mariadb -u root -D ${"${env}"_"${ln}"_DB_NAME} < ./init-dump-${ln}.sql
+            sudo mariadb -u root -e "CREATE DATABASE ${DB_NAME};"
+            sudo mariadb -u root -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
+            sudo mariadb -u root -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' WITH GRANT OPTION;"
+            sudo mariadb -u root -D ${DB_NAME} < ./init-dump-${ln}.sql
+            
             echo "'${env}' '${ln}' setup completed!"
         done
     done
@@ -285,7 +300,12 @@ else
         MW_ENV_VALUE="${MW_PROJECT_DIR[$i]}"
         MW_PORT_VALUE="${MW_PORT[$i]}"
         for ln in "${LANGUAGES[@]}"; do
-            SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${"${env}"_"${ln}"_DB_NAME}" DB_USER="${"${env}"_"${ln}"_DB_USER}" DB_PASS="${"${env}"_"${ln}"_DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
+            var_prefix="${MW_ENV_VALUE}_${ln}"
+            eval "DB_NAME=\"\${${var_prefix}_db_name}\""
+            eval "DB_USER=\"\${${var_prefix}_db_user}\""
+            eval "DB_PASS=\"\${${var_prefix}_db_pass}\""
+
+            SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
         done
     done
 

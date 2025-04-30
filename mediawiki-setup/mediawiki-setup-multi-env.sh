@@ -7,7 +7,7 @@ curl -s "https://en.wikipedia.org/wiki/Special:Version" > ./version_page.html
 MW_VERSION=$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' version_page.html | head -n1 | awk '{print $2}')
 MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could have issues when importing dumps in older versions, it's recommended to install v11.4 and newer.
 
-MW_PROJECT_DIR=("wiki-dev" "wiki-demo" "wiki-prod")
+MW_PROJECT_DIR=("dev" "demo" "prod")
 MW_PORT=("8080" "8081" "8082")
 
 CONF_DIR="../" # Wikiadviser root folder
@@ -220,8 +220,10 @@ else
     echo ""
 
     # Download mediawiki init dumps
-    dump_file="mw_init_dump_${ln}"
-    wget "${!dump_file}" -O ./init-dump-${ln}.sql
+    for ln in "${LANGUAGES[@]}"; do
+        dump_file="mw_init_dump_${ln}"
+        wget "${!dump_file}" -O ./init-dump-${ln}.sql
+    done
 
     # Setup DB
     for env in "${MW_PROJECT_DIR[@]}"; do
@@ -232,26 +234,22 @@ else
             echo "Creating base for your '${env}' '${ln}'..."
             echo ""
             
-            read -p "Enter the database name for '${env}' '${ln}' [default: ${env}-${ln}]: " input_db_name
-            db_name=${input_db_name:-${env}-${ln}}
-            eval "${var_prefix}_db_name='${db_name}'"
+            read -p "Enter the database name for '${env}' '${ln}' [default: ${env}_${ln}]: " input_db_name
+            input_db_name=${input_db_name:-${env}_${ln}}
+            declare "${var_prefix}_db_name=${input_db_name}" # assign input_db_name value to dynamic variable (env_ln_db_name) # will be used later within Localsettings.php
+
+            read -p "Enter the database username for '${env}' '${ln}' [default: ${env}_${ln}_user]: " input_db_user
+            input_db_user=${input_db_user:-${env}_${ln}_user}
+            declare "${var_prefix}_db_user=${input_db_user}"
             
-            read -p "Enter the database username for '${env}' '${ln}' [default: ${env}-${ln}-user]: " input_db_user
-            db_user=${input_db_user:-${env}-${ln}-user}
-            eval "${var_prefix}_db_user='${db_user}'"
-            
-            read -s -p "Enter the database password for '${env}' '${ln}': " db_pass
-            eval "${var_prefix}_db_pass='${db_pass}'"
-            
-            eval "DB_NAME=\"\${${var_prefix}_db_name}\""
-            eval "DB_USER=\"\${${var_prefix}_db_user}\""
-            eval "DB_PASS=\"\${${var_prefix}_db_pass}\""
+            read -s -p "Enter the database password for '${env}' '${ln}': " input_db_pass
+            declare "${var_prefix}_db_pass=${input_db_pass}"
 
             echo ""
-            sudo mariadb -u root -e "CREATE DATABASE ${DB_NAME};"
-            sudo mariadb -u root -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
-            sudo mariadb -u root -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' WITH GRANT OPTION;"
-            sudo mariadb -u root -D ${DB_NAME} < ./init-dump-${ln}.sql
+            sudo mariadb -u root -e "CREATE DATABASE ${input_db_name};"
+            sudo mariadb -u root -e "CREATE USER '${input_db_user}'@'localhost' IDENTIFIED BY '${input_db_pass}';"
+            sudo mariadb -u root -e "GRANT ALL PRIVILEGES ON ${input_db_name}.* TO '${input_db_user}'@'localhost' WITH GRANT OPTION;"
+            sudo mariadb -u root -D ${input_db_name} < ./init-dump-${ln}.sql
             
             echo "'${env}' '${ln}' setup completed!"
         done
@@ -301,11 +299,10 @@ else
         MW_PORT_VALUE="${MW_PORT[$i]}"
         for ln in "${LANGUAGES[@]}"; do
             var_prefix="${MW_ENV_VALUE}_${ln}"
-            eval "DB_NAME=\"\${${var_prefix}_db_name}\""
-            eval "DB_USER=\"\${${var_prefix}_db_user}\""
-            eval "DB_PASS=\"\${${var_prefix}_db_pass}\""
-
-            SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
+            DB_NAME="${var_prefix}_db_name"
+            DB_USER="${var_prefix}_db_user"
+            DB_PASS="${var_prefix}_db_pass"
+            SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
         done
     done
 

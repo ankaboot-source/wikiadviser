@@ -8,7 +8,6 @@ import {
   insertArticle
 } from '../helpers/supabaseHelper';
 import logger from '../logger';
-import { PlayAutomatorFactory } from '../services/mediawikiAPI/MediawikiAutomator';
 import MediawikiClient from '../services/mediawikiAPI/MediawikiClient';
 import wikipediaApi from '../services/wikipedia/WikipediaApi';
 
@@ -52,11 +51,7 @@ export async function importArticle(
       true
     );
 
-    const mediawiki = new MediawikiClient(
-      language,
-      wikipediaApi,
-      await PlayAutomatorFactory(language)
-    );
+    const mediawiki = new MediawikiClient(language, wikipediaApi);
     await mediawiki.importArticle(articleId, title);
 
     return res
@@ -121,11 +116,7 @@ export async function createArticle(
       false
     );
 
-    const mediawiki = new MediawikiClient(
-      language,
-      wikipediaApi,
-      await PlayAutomatorFactory(language)
-    );
+    const mediawiki = new MediawikiClient(language, wikipediaApi);
     await mediawiki.createArticle(articleId, title);
 
     return res
@@ -153,11 +144,7 @@ export async function deleteArticle(
   const { id: articleId } = req.params;
   try {
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(
-      language,
-      wikipediaApi,
-      await PlayAutomatorFactory(language)
-    );
+    const mediawiki = new MediawikiClient(language, wikipediaApi);
     await mediawiki.deleteArticleMW(articleId);
     await deleteArticleDB(articleId);
     return res.status(200).json({ message: `Article ${articleId} deleted` });
@@ -179,14 +166,12 @@ export async function updateArticleChanges(
 ) {
   const { user } = res.locals;
   const { id: articleId } = req.params;
+  const { diffHtml } = req.body;
+
   try {
     const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(
-      language,
-      wikipediaApi,
-      await PlayAutomatorFactory(language)
-    );
-    await mediawiki.updateChanges(articleId, user.id);
+    const mediawiki = new MediawikiClient(language, wikipediaApi);
+    await mediawiki.updateChanges(articleId, user.id, diffHtml);
 
     logger.info({ articleId }, 'Updated Changes of article');
     return res.status(200).json({ message: 'Updating changes succeeded.' });
@@ -239,21 +224,12 @@ export async function deleteArticleRevision(
   res: Response,
   next: NextFunction
 ) {
+  const { id: articleId, revId: revisionId } = req.params;
+
   try {
-    const { id: articleId, revId: revisionId } = req.params;
-    const { user } = res.locals;
-
     const { language } = await getArticle(articleId);
-
-    const mediawiki = new MediawikiClient(
-      language,
-      wikipediaApi,
-      await PlayAutomatorFactory(language)
-    );
+    const mediawiki = new MediawikiClient(language, wikipediaApi);
     const revision = await mediawiki.deleteRevision(articleId, revisionId);
-
-    // Update changes in article_html
-    await mediawiki.updateChanges(articleId, user.id);
     await supabaseClient.from('revisions').delete().eq('revid', revisionId);
 
     return res

@@ -86,6 +86,7 @@
   - Install MediaWiki required version `git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$mediawiki_version /var/www/wiki-$environment/wiki/$lang` (Replace `$mediawiki_version` with the desired version, `$lang` with instance language en, fr, ...)
   - On top of apache2 we are running Caddy to auto manage HTTPS, each environment have it's on caddyfile that will be running by docker container.
   - For Wikiadviser QA server we will configure the following Caddyfile:
+
 ```
    {$WIKIADVISER_FRONTEND_ENDPOINT} {
         log {
@@ -112,14 +113,14 @@
           rewrite /robots.txt ./robots.txt # Disable search engine indexing
           reverse_proxy wiki:8080
         }
-        
+
         #### WikiAdviser app-qa ####
         handle {
           root * /usr/share/caddy/html
 	        encode gzip
 	        try_files {path} /index.html
 	        file_server
-	        rewrite /robots.txt ./robots.txt # Disable search engine indexing      
+	        rewrite /robots.txt ./robots.txt # Disable search engine indexing
         }
   }
 
@@ -155,7 +156,9 @@
           }
   }
 ```
-  - Wikiadviser Prod server Caddyfile :
+
+- Wikiadviser Prod server Caddyfile :
+
 ```
        {$WIKIADVISER_FRONTEND_ENDPOINT} {
            log {
@@ -182,14 +185,14 @@
              rewrite /robots.txt ./robots.txt # Disable search engine indexing
              reverse_proxy wiki:8082
            }
-        
+
            #### WikiAdviser app ####
            handle {
              root * /usr/share/caddy/html
 	           encode gzip
 	           try_files {path} /index.html
 	           file_server
-	           rewrite /robots.txt ./robots.txt # Disable search engine indexing      
+	           rewrite /robots.txt ./robots.txt # Disable search engine indexing
            }
    }
 
@@ -208,14 +211,15 @@
    }
 ```
 
-  - [robots.txt](./robots.txt) is used by Caddyfile to Hide the App from appearing on search engines.
-  ```
-    User-agent: *
-    Disallow: /
-  ```
+- [robots.txt](./robots.txt) is used by Caddyfile to Hide the App from appearing on search engines.
 
-  - Open your mediawiki url, first setup will generate a LocalSettings.php file, add it to the root of your mediawiki installation directory.
-  </details>
+```
+  User-agent: *
+  Disallow: /
+```
+
+- Open your mediawiki url, first setup will generate a LocalSettings.php file, add it to the root of your mediawiki installation directory.
+</details>
 
 - You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc..., in the extensions folder of mediawiki (for example `/var/www/wiki-dev/wiki/en/extensions`), Most of the extensions are bundled within the mediawiki package, no need to install them.
 
@@ -327,21 +331,68 @@
         }`
       );
       iframeCssRules.disabled = !isIframe;
-      // Launch Event on Edit Source's "Save"
-      if (mw.config.get("wgPostEdit") == "saved") {
-        if (isIframe) {
-          window.parent.postMessage("updateChanges", "*");
-        } else {
-          const wikiadviserApiHost = "https://api.wikiadviser.io";
-          const articleId = this.getPageName();
-          fetch(`${wikiadviserApiHost}/article/${articleId}/changes`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
+
+      /**
+      * Gets diffHtml
+      */
+      mw.loader.using(['mediawiki.util'], function () {
+        mw.hook('wikipage.diff').add(function ($diff) {
+          elementReady('.ve-init-mw-diffPage-diff').then(function (diffEl) {
+            const diffHtml = diffEl.outerHTML;
+            const articleId = mw.config.get('wgPageName');
+            if (isIframe){
+              window.parent.postMessage(
+                {
+                  type: 'diff-change',
+                  articleId: articleId,
+                  diffHtml: diffHtml
+                },
+                '*'
+              );
+            }
           });
-        }
+        });
+      });
+
+      /**
+      * Waits for a selector to appear in document.documentElement,
+      * resolving with the element once it's in the DOM.
+      * Uses MutationObserver under the hood.
+      *
+      * @param {string} selector
+      * @returns {Promise<Element>}
+      */
+      function elementReady(selector) {
+        return new Promise(function (resolve) {
+          var el = document.querySelector(selector);
+          if (el) {
+            resolve(el);
+            return;
+          }
+          var observer = new MutationObserver(function (mutationRecords, obs) {
+            var found = document.querySelector(selector);
+            if (found) {
+              obs.disconnect();
+              resolve(found);
+            }
+          });
+          // Watch for additions anywhere in the document
+          observer.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+          });
+        });
       }
+
+      // Listen for messages from parent (wikiadviser)
+      window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'wikiadviser') {
+          console.log('Received Wikiadviser event:', event.data);
+          if (event.data.data === 'diff') {
+            console.log('goto diff link');
+          }
+        }
+      });
       ```
 
       </details>
@@ -352,12 +403,15 @@
 - Final step of setting up mediawiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
 
 ### Citoid
-To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your 
-  Mediawiki instance `http://localhost/wiki/(language)/index.php/MediaWiki`:
-  - Cite-tool-definition.json, Citoid-template-type-map.json, Visualeditor-template-tools-definition.json, Visualeditor-cite-tool-name-chapter
+
+To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your
+Mediawiki instance `http://localhost/wiki/(language)/index.php/MediaWiki`:
+
+- Cite-tool-definition.json, Citoid-template-type-map.json, Visualeditor-template-tools-definition.json, Visualeditor-cite-tool-name-chapter
 
 Templates `http://localhost/wiki/(language)/index.php/Template` :
-  - Template:Cite_book, Template:Cite_web, Template:Cite_news, Template:Cite_journal
+
+- Template:Cite_book, Template:Cite_web, Template:Cite_news, Template:Cite_journal
 
 Each template has its own documentation template, make sure to import it as well, it is recommended to export templates by category (citoid category for example) and import them all at once. [More Informations](https://www.mediawiki.org/wiki/Citoid)
 

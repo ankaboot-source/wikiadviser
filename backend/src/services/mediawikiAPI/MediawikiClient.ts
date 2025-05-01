@@ -11,7 +11,6 @@ import logger from '../../logger';
 import ENV from '../../schema/env.schema';
 import { Account } from '../../types';
 import { WikipediaApi } from '../wikipedia/WikipediaApi';
-import { MediawikiAutomator } from './MediawikiAutomator';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -35,8 +34,7 @@ export default class MediawikiClient {
 
   constructor(
     private readonly language: string,
-    private readonly wikipediaApi: WikipediaApi,
-    private readonly mediawikiAutomator: MediawikiAutomator
+    private readonly wikipediaApi: WikipediaApi
   ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(
       this.language
@@ -250,56 +248,17 @@ export default class MediawikiClient {
     return response.data.query.pages[0].revisions[0];
   }
 
-  /**
-   * Retrieves the HTML difference between the latest and original revisions of an article.
-   *
-   * @param articleId - The ID of the article.
-   * @returns An object containing the difference HTML and revision IDs of the original and latest revisions.
-   */
-  async getArticleDiffHtml(articleId: string): Promise<{
-    diff: string;
-    originalRevision: { id: string };
-    latestRevision: { id: string; summary: string };
-  }> {
-    const { revid: originalRevid } = await this.getRevisionData(
-      articleId,
-      'newer'
-    );
+  async updateChanges(articleId: string, userId: string, diff: string) {
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');
 
-    logger.info(
-      `Getting the Diff HTML of Revids: ${originalRevid} -> ${latestRevid}`
-    );
-
-    const diff = await this.mediawikiAutomator.getMediaWikiDiffHtml(
-      articleId,
-      originalRevid,
-      latestRevid
-    );
-
-    return {
-      diff,
-      originalRevision: {
-        id: originalRevid
-      },
-      latestRevision: {
-        id: latestRevid,
-        summary: latestRevSummary
-      }
-    };
-  }
-
-  async updateChanges(articleId: string, userId: string) {
-    const { diff, latestRevision } = await this.getArticleDiffHtml(articleId);
-
-    const revisionSummary = latestRevision.summary.includes('[[Special:Diff')
-      ? latestRevision.summary.split('[[')[0]
-      : latestRevision.summary;
+    const revisionSummary = latestRevSummary.includes('[[Special:Diff')
+      ? latestRevSummary.split('[[')[0]
+      : latestRevSummary;
 
     const revisionId = await insertRevision(
       articleId,
-      latestRevision.id,
+      latestRevid,
       revisionSummary
     );
 

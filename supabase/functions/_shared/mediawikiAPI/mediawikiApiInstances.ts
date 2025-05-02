@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import https from "node:https";
-import ENV from "../_shared/schema/env.schema.ts";
+import ENV from "../schema/env.schema.ts";
 
 const mediawikiApiInstances = new Map<
   (typeof ENV.WIKIADVISER_LANGUAGES)[number],

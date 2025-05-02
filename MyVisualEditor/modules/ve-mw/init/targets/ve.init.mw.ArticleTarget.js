@@ -769,8 +769,7 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 			window.location.replace(diffUrl);
 		})
 		.catch(function(error) {
-			mw.notify('Failed to generate diff: ' + error, { type: 'error' });
-			console.error('Diff generation error:', error);
+			console.error('Failed to redirect to diff:', error);
 		});
 	/* End WikiAdviser */
 };

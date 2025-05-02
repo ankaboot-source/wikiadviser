@@ -30,6 +30,10 @@ import { Article } from 'src/types';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
+  toggleEditTab: {
+    type: Function,
+    required: true,
+  },
   article: { type: Object as () => Article, required: true },
   buttonToggle: { type: String, required: true },
 });
@@ -74,7 +78,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       break;
 
     case 'deleted-revision':
-      // tell mediawiki to goto difflink (which automatically initiates diff-change)
       gotoDiffLink();
       break;
     default:
@@ -97,15 +100,28 @@ async function handleDiffChange(data: {
   await api.put(functionName, { diffHtml: data.diffHtml });
   emit('switchTabEmit', 'view');
   $q.notify({
-    message: 'New changes successfully created',
+    message: 'Changes successfully updated',
     icon: 'check',
     color: 'positive',
   });
   loading.value = loader.editor;
   reloadIframe();
 }
-
+$q.notify({
+  message: 'Updating changes',
+  caption: 'Please wait…',
+  color: 'primary',
+  spinner: true,
+});
 function gotoDiffLink() {
+  $q.notify({
+    message: 'Updating changes',
+    caption: 'Please wait…',
+    color: 'primary',
+    spinner: true,
+  });
+  props.toggleEditTab();
+  // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'wikiadviser',

@@ -111,7 +111,6 @@
 </template>
 
 <script setup lang="ts">
-import { useQuasar } from 'quasar';
 import { api } from 'src/boot/axios';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Enums, Revision } from 'src/types';
@@ -126,7 +125,6 @@ const props = defineProps<{
 }>();
 
 const store = useSelectedChangeStore();
-const $quasar = useQuasar();
 
 const expanded = ref(true);
 const deleteRevisionDialog = ref<boolean>(false);
@@ -177,11 +175,6 @@ async function deleteRevision() {
       },
       '*',
     );
-    $quasar.notify({
-      message: 'Revision has been canceled',
-      icon: 'check',
-      color: 'positive',
-    });
   } catch (error) {
     deletingRevision.value = false;
     deleteRevisionDialog.value = false;

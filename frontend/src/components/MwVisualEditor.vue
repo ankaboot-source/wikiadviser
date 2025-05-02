@@ -62,6 +62,49 @@ async function reloadIframe() {
   renderIframe.value = true;
 }
 
+async function handleDiffChange(data: {
+  type: string;
+  diffHtml: string;
+  articleId: string;
+}) {
+  console.log(data);
+  const functionName = `/article/${data.articleId}/changes`;
+  await api.put(functionName, { diffHtml: data.diffHtml });
+  emit('switchTabEmit', 'view');
+  $q.notify({
+    message: 'Changes successfully updated',
+    icon: 'check',
+    color: 'positive',
+  });
+  loading.value = loader.editor;
+  reloadIframe();
+}
+$q.notify({
+  message: 'Updating changes',
+  caption: 'Please wait…',
+  color: 'primary',
+  spinner: true,
+});
+
+function gotoDiffLink() {
+  $q.notify({
+    message: 'Updating changes',
+    caption: 'Please wait…',
+    color: 'primary',
+    spinner: true,
+  });
+  props.toggleEditTab();
+  // tell mediawiki to goto difflink (which automatically initiates diff-change)
+  iframeRef.value.contentWindow.postMessage(
+    {
+      type: 'wikiadviser',
+      data: 'diff',
+      articleId: props.article.article_id,
+    },
+    '*',
+  );
+}
+
 async function EventHandler(event: MessageEvent): Promise<void> {
   const { data } = event;
   console.log(data);
@@ -88,48 +131,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 async function onIframeLoad() {
   console.log('Iframe loaded');
   loading.value.value = false;
-}
-
-async function handleDiffChange(data: {
-  type: string;
-  diffHtml: string;
-  articleId: string;
-}) {
-  console.log(data);
-  const functionName = `/article/${data.articleId}/changes`;
-  await api.put(functionName, { diffHtml: data.diffHtml });
-  emit('switchTabEmit', 'view');
-  $q.notify({
-    message: 'Changes successfully updated',
-    icon: 'check',
-    color: 'positive',
-  });
-  loading.value = loader.editor;
-  reloadIframe();
-}
-$q.notify({
-  message: 'Updating changes',
-  caption: 'Please wait…',
-  color: 'primary',
-  spinner: true,
-});
-function gotoDiffLink() {
-  $q.notify({
-    message: 'Updating changes',
-    caption: 'Please wait…',
-    color: 'primary',
-    spinner: true,
-  });
-  props.toggleEditTab();
-  // tell mediawiki to goto difflink (which automatically initiates diff-change)
-  iframeRef.value.contentWindow.postMessage(
-    {
-      type: 'wikiadviser',
-      data: 'diff',
-      articleId: props.article.article_id,
-    },
-    '*',
-  );
 }
 
 onMounted(() => {

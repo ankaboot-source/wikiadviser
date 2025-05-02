@@ -79,12 +79,6 @@ async function handleDiffChange(data: {
   loading.value = loader.editor;
   reloadIframe();
 }
-$q.notify({
-  message: 'Updating changes',
-  caption: 'Please wait…',
-  color: 'primary',
-  spinner: true,
-});
 
 function gotoDiffLink() {
   $q.notify({

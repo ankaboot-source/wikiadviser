@@ -75,13 +75,7 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
     case 'deleted-revision':
       // tell mediawiki to goto difflink (which automatically initiates diff-change)
-      iframeRef.value.contentWindow.postMessage(
-        {
-          type: 'wikiadviser',
-          data: 'diff',
-        },
-        '*',
-      );
+      gotoDiffLink();
       break;
     default:
       break;
@@ -109,6 +103,17 @@ async function handleDiffChange(data: {
   });
   loading.value = loader.editor;
   reloadIframe();
+}
+
+function gotoDiffLink() {
+  iframeRef.value.contentWindow.postMessage(
+    {
+      type: 'wikiadviser',
+      data: 'diff',
+      articleId: props.article.article_id,
+    },
+    '*',
+  );
 }
 
 onMounted(() => {

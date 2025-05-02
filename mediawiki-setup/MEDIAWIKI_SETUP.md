@@ -333,6 +333,10 @@
       */
       mw.loader.using(['mediawiki.util'], function () {
         mw.hook('wikipage.diff').add(function ($diff) {
+          // Has param "wikiadviser"
+          const urlParams = new URLSearchParams(window.location.search);
+          if (!urlParams.has('wikiadviser')) return;
+
           elementReady('.ve-init-mw-diffPage-diff').then(function (diffEl) {
             const diffHtml = diffEl.outerHTML;
             const articleId = mw.config.get('wgPageName');
@@ -385,10 +389,60 @@
         if (event.data && event.data.type === 'wikiadviser') {
           console.log('Received Wikiadviser event:', event.data);
           if (event.data.data === 'diff') {
-            console.log('goto diff link');
+            mw.wikiadviser.getDiffUrl(event.data.articleId)
+                .then(function(diffUrl) {
+                    console.log('Redirecting to diff:', diffUrl);
+                    window.location.replace(diffUrl);
+                })
+                .catch(function(error) {
+                    mw.notify('Failed to generate diff: ' + error, { type: 'error' });
+                    console.error('Diff generation error:', error);
+                });
           }
         }
       });
+
+      // Define wikiadviser utilities on mw object
+      mw.wikiadviser = {
+          /**
+          * Get diff URL between oldest and newest revisions
+          * @param {string} articleId Page title
+          * @returns {Promise<string>} Promise resolving to diff URL
+          */
+          getDiffUrl: function(articleId) {
+              const self = this;
+              const mediawikiBaseURL = mw.config.get("wgServer") + mw.config.get("wgScriptPath");
+              
+              return Promise.all([
+                  self.getRevisionData(articleId, 'newer'),
+                  self.getRevisionData(articleId, 'older')
+              ]).then(function(results) {
+                  const originalRevid = results[0].revid;
+                  const latestRevid = results[1].revid;
+                  return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1&wikiadviser`;
+              });
+          },
+
+          /**
+          * Fetch revision data from API
+          * @param {string} articleId Page title
+          * @param {string} sort 'newer' or 'older'
+          * @returns {Promise<Object>} Promise resolving to revision data
+          */
+          getRevisionData: function(articleId, sort) {
+              const api = new mw.Api();
+              return api.get({
+                  action: 'query',
+                  prop: 'revisions',
+                  titles: articleId,
+                  rvlimit: 1,
+                  rvdir: sort,
+                  formatversion: 2
+              }).then(function(data) {
+                  return data.query.pages[0].revisions[0];
+              });
+          }
+      };
       ```
 
       </details>

@@ -755,8 +755,6 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 	}
 	/* Custom WikiAdviser */
 	// On "Save Changes", go to diffUrl
-	const mediawikiBaseURL = mw.config.get("wgServer")+mw.config.get("wgScriptPath");
-
 	const articleId = this.getPageName();
 	window.parent.postMessage(
 		{
@@ -765,43 +763,17 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		},
 		'*'
 		);
-	Promise.all([
-	getRevisionData(articleId, 'newer'),
-	getRevisionData(articleId, 'older')
-	]).then(function (results) {
-		const { revid: originalRevid } = results[0];
-		const { revid: latestRevid } = results[1];
-
-		console.log(
-		`Going to the Diff HTML of Revids: ${originalRevid} -> ${latestRevid}`
-		);
-
-		const diffUrl = `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1`;
-
-		window.location.replace(diffUrl);
-	});
-
+	mw.wikiadviser.getDiffUrl(articleId)
+		.then(function(diffUrl) {
+			console.log('Redirecting to diff:', diffUrl);
+			window.location.replace(diffUrl);
+		})
+		.catch(function(error) {
+			mw.notify('Failed to generate diff: ' + error, { type: 'error' });
+			console.error('Diff generation error:', error);
+		});
 	/* End WikiAdviser */
 };
-/* Custom WikiAdviser */
-async function getRevisionData(articleId, sort) {
-	const mediawikiBaseURL = mw.config.get("wgServer")+mw.config.get("wgScriptPath");
-    const requestUrl = `${mediawikiBaseURL}/api.php?action=query&prop=revisions&titles=${articleId}&rvlimit=1&rvdir=${sort}&format=json&formatversion=2`;
-
-    return fetch(
-      requestUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    }).then(function (response) {
-      return response.json();
-    })
-    .then(function (data) {
-      return data.query.pages[0].revisions[0];
-    });
-}
-/* End WikiAdviser */
 
 /**
  * Handle an unsuccessful save request.

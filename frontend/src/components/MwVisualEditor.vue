@@ -5,7 +5,8 @@
     :src="articleLink"
     class="col-grow rounded-borders borders bg-secondary"
     frameBorder="0"
-    @load="loading.value = false"
+    @load="onIframeLoad()"
+    ref="iframeRef"
   />
   <div
     v-if="buttonToggle === 'edit' && loading.value"
@@ -23,18 +24,25 @@
 
 <script setup lang="ts">
 import { QSpinner, useQuasar } from 'quasar';
-import { updateChanges } from 'src/api/supabaseHelper';
-import { Article } from 'src/types';
-import { onBeforeUnmount, onMounted, ref, nextTick } from 'vue';
+import { api } from 'src/boot/axios';
 import ENV from 'src/schema/env.schema';
+import { Article } from 'src/types';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
+  toggleEditTab: {
+    type: Function,
+    required: true,
+  },
   article: { type: Object as () => Article, required: true },
   buttonToggle: { type: String, required: true },
 });
 
 const $q = useQuasar();
-const articleLink = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}&veaction=edit`;
+const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
+const articleLink = ref(
+  `${mediawikiBaseUrl}/index.php?title=${props.article.article_id}&veaction=edit`,
+);
 const loader = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
@@ -43,6 +51,7 @@ const loader = {
   },
 };
 const loading = ref(loader.editor);
+const iframeRef = ref();
 
 const emit = defineEmits(['switchTabEmit']);
 
@@ -53,46 +62,69 @@ async function reloadIframe() {
   renderIframe.value = true;
 }
 
-async function loadingChanges() {
-  try {
-    loading.value = loader.changes;
-    loading.value.value = true;
+async function handleDiffChange(data: {
+  type: string;
+  diffHtml: string;
+  articleId: string;
+}) {
+  console.log(data);
+  const functionName = `/article/${data.articleId}/changes`;
+  await api.put(functionName, { diffHtml: data.diffHtml });
+  emit('switchTabEmit', 'view');
+  $q.notify({
+    message: 'Changes successfully updated',
+    icon: 'check',
+    color: 'positive',
+  });
+  loading.value = loader.editor;
+  reloadIframe();
+}
 
-    await updateChanges(props.article.article_id);
-
-    emit('switchTabEmit', 'view');
-    $q.notify({
-      message: 'New changes successfully created',
-      icon: 'check',
-      color: 'positive',
-    });
-  } catch (error) {
-    loading.value = loader.editor;
-    loading.value.value = true;
-    throw error;
-  } finally {
-    loading.value = loader.editor;
-    loading.value.value = true;
-    reloadIframe();
-  }
+function gotoDiffLink() {
+  $q.notify({
+    message: 'Updating changes',
+    caption: 'Please wait…',
+    color: 'primary',
+    spinner: true,
+  });
+  props.toggleEditTab();
+  // tell mediawiki to goto difflink (which automatically initiates diff-change)
+  iframeRef.value.contentWindow.postMessage(
+    {
+      type: 'wikiadviser',
+      data: 'diff',
+      articleId: props.article.article_id,
+    },
+    '*',
+  );
 }
 
 async function EventHandler(event: MessageEvent): Promise<void> {
   const { data } = event;
+  console.log(data);
 
-  switch (data) {
-    case 'updateChanges':
-      await loadingChanges();
+  if (data.type === 'diff-change') {
+    await handleDiffChange(data);
+
+    return;
+  }
+
+  switch (data.type) {
+    case 'saved-changes':
+      loading.value = loader.changes;
       break;
 
-    case 'update-revisions':
-      emit('switchTabEmit', 'view');
-      reloadIframe();
+    case 'deleted-revision':
+      gotoDiffLink();
       break;
-
     default:
       break;
   }
+}
+
+async function onIframeLoad() {
+  console.log('Iframe loaded');
+  loading.value.value = false;
 }
 
 onMounted(() => {

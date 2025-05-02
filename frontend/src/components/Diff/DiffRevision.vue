@@ -111,13 +111,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import DiffItem from './DiffItem.vue';
-import { Enums, Revision } from 'src/types';
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { api } from 'src/boot/axios';
-import { useQuasar } from 'quasar';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { Enums, Revision } from 'src/types';
+import { computed, ref, watch } from 'vue';
 import UserComponent from '../UserComponent.vue';
+import DiffItem from './DiffItem.vue';
 
 const props = defineProps<{
   role: Enums<'role'>;
@@ -126,7 +125,6 @@ const props = defineProps<{
 }>();
 
 const store = useSelectedChangeStore();
-const $quasar = useQuasar();
 
 const expanded = ref(true);
 const deleteRevisionDialog = ref<boolean>(false);
@@ -165,15 +163,18 @@ async function deleteRevision() {
   deletingRevision.value = true;
 
   try {
-    window.parent.postMessage('update-revisions', '*');
-    await api.delete(
-      `/article/${props.articleId}/revisions/${props.revision.revid}`,
+    const functionName = `/article/${props.articleId}/revisions/${props.revision.revid}`;
+    // Delete the revision
+    await api.delete(functionName);
+
+    // Notify the parent window to goto diffLink which updates the diff
+    window.parent.postMessage(
+      {
+        type: 'deleted-revision',
+        articleId: props.articleId,
+      },
+      '*',
     );
-    $quasar.notify({
-      message: 'Revision has been canceled',
-      icon: 'check',
-      color: 'positive',
-    });
   } catch (error) {
     deletingRevision.value = false;
     deleteRevisionDialog.value = false;

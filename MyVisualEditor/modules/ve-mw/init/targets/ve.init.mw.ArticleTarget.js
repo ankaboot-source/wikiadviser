@@ -754,20 +754,23 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		this.tryTeardown( true );
 	}
 	/* Custom WikiAdviser */
-	// On "Save Changes", update changes
-	const isIframe =  window.location !== window.parent.location;
-	if (isIframe) {
-		window.parent.postMessage('updateChanges', '*');
-	} else {
-		const wikiadviserApiHost = "https://api.wikiadviser.io";
-		const articleId = this.getPageName();
-		fetch(`${wikiadviserApiHost}/article/${articleId}/changes`, {
-			method: "PUT",
-			headers: {
-			"Content-Type": "application/json",
-			},
+	// On "Save Changes", go to diffUrl
+	const articleId = this.getPageName();
+	window.parent.postMessage(
+		{
+			type: 'saved-changes',
+			articleId: articleId,
+		},
+		'*'
+		);
+	mw.wikiadviser.getDiffUrl(articleId)
+		.then(function(diffUrl) {
+			console.log('Redirecting to diff:', diffUrl);
+			window.location.replace(diffUrl);
 		})
-	}
+		.catch(function(error) {
+			console.error('Failed to redirect to diff:', error);
+		});
 	/* End WikiAdviser */
 };
 

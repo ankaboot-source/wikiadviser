@@ -1,4 +1,3 @@
-import { api } from 'src/boot/axios';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
@@ -253,10 +252,15 @@ export async function deleteArticle(articleId: string) {
 }
 
 export async function updateChanges(articleId: string) {
-  const apiResponse = await api.put(`/article/${articleId}/changes`);
-  if (apiResponse.status !== 200) {
-    throw new Error('Failed to update changes from API.');
-  }
+  const { data, error } = await supabaseClient.functions.invoke(
+    `article/${articleId}/changes`,
+    {
+      method: 'PUT',
+    },
+  );
+
+  if (error) throw new Error('Failed to update changes');
+  return data;
 }
 
 export async function createLink(articleId: string, role: Enums<'role'>) {

@@ -4,6 +4,12 @@ import { Account } from "../_shared/types/index.ts";
 import { WikipediaApi } from "../_shared/wikipedia/WikipediaApi.ts";
 import mediawikiApiInstances from "../_shared/mediawikiAPI/mediawikiApiInstances.ts";
 import FormData from "form-data";
+import {
+  insertRevision,
+  updateCurrentHtmlContent,
+  upsertChanges,
+} from "../_shared/helpers/supabaseHelper.ts";
+import { refineArticleChanges } from "../_shared/helpers/parsingHelper.ts";
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -228,6 +234,30 @@ export default class MediawikiClient {
     return data;
   }
 
+  async updateChanges(articleId: string, userId: string, diff: string) {
+    const { revid: latestRevid, comment: latestRevSummary } = await this
+      .getRevisionData(articleId, "older");
+
+    const revisionSummary = latestRevSummary.includes("[[Special:Diff")
+      ? latestRevSummary.split("[[")[0]
+      : latestRevSummary;
+
+    const revisionId = await insertRevision(
+      articleId,
+      latestRevid,
+      revisionSummary,
+    );
+
+    const { changesToUpsert, htmlContent } = await refineArticleChanges(
+      articleId,
+      diff,
+      userId,
+      revisionId,
+    );
+
+    await upsertChanges(changesToUpsert);
+    await updateCurrentHtmlContent(articleId, htmlContent);
+  }
   async createArticle(articleId: string, title: string) {
     const csrftoken = await this.loginAndGetCsrf();
 

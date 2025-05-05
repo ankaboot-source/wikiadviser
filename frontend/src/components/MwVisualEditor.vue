@@ -24,10 +24,10 @@
 
 <script setup lang="ts">
 import { QSpinner, useQuasar } from 'quasar';
-import { api } from 'src/boot/axios';
 import ENV from 'src/schema/env.schema';
 import { Article } from 'src/types';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import supabaseClient from 'src/api/supabase';
 
 const props = defineProps({
   toggleEditTab: {
@@ -69,7 +69,11 @@ async function handleDiffChange(data: {
 }) {
   console.log(data);
   const functionName = `/article/${data.articleId}/changes`;
-  await api.put(functionName, { diffHtml: data.diffHtml });
+
+  await supabaseClient.functions.invoke(functionName, {
+    method: 'PUT',
+    body: JSON.stringify({ diffHtml: data.diffHtml }),
+  });
   emit('switchTabEmit', 'view');
   $q.notify({
     message: 'Changes successfully updated',

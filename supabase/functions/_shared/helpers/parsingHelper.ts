@@ -1,6 +1,9 @@
-import { load } from "npm:cheerio@1.0.0";
+import { Cheerio, CheerioAPI, load } from "npm:cheerio@1.0.0";
+import { Element } from "npm:domhandler@5.0.3";
 import Parsoid from "../mediawikiAPI/ParasoidApi.ts";
 import { encode } from "npm:html-entities@2.6.0";
+import { ChildNodeData, Tables, TypeOfEditDictionary } from "../types/index.ts";
+import { getChanges } from "./supabaseHelper.ts";
 function fixSources(pageContent: string, sourceLanguage: string) {
   let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
@@ -9,6 +12,18 @@ function fixSources(pageContent: string, sourceLanguage: string) {
     sourceLanguage,
   );
   return updatedPageContent;
+}
+function addPermissionDataToChanges(
+  changesToInsert: Tables<"changes">[],
+  articleId: string,
+  userId: string,
+) {
+  for (const change of changesToInsert) {
+    if (!change.id) {
+      change.article_id = articleId;
+      change.contributor_id = userId;
+    }
+  }
 }
 export function addSourceExternalLinks(
   pageContent: string,
@@ -51,6 +66,255 @@ export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
 
     return `{{${templateType}|${parsedArticles.join("|")}}}`;
   });
+}
+function unindexUnassignedChanges(
+  changesToUpsert: Tables<"changes">[],
+  changes: Tables<"changes">[],
+) {
+  for (const change of changes) {
+    if (
+      !changesToUpsert.some((changeToUpsert) => changeToUpsert.id === change.id)
+    ) {
+      changesToUpsert.push({
+        index: null,
+        archived: change.archived,
+        hidden: change.hidden,
+        id: change.id,
+        status: change.status,
+        content: change.content,
+        article_id: change.article_id,
+        created_at: change.created_at,
+        description: change.description,
+        type_of_edit: change.type_of_edit,
+        contributor_id: change.contributor_id,
+        revision_id: change.revision_id,
+      });
+    }
+  }
+}
+function createStrikethroughText(text: string) {
+  return text
+    .split("")
+    .map((char) => `${char}\u0336`)
+    .join("");
+}
+function handleComment(
+  $wrapElement: Cheerio<Element>, // skipcq: JS-0323
+  elementInnerText: string,
+  descriptionList: string[],
+  $CheerioAPI: CheerioAPI,
+) {
+  const typeOfEdit = "comment-insert";
+  $wrapElement.append($CheerioAPI("<span>").text(elementInnerText));
+  $wrapElement.attr("title", elementInnerText);
+  descriptionList.push(elementInnerText);
+  return typeOfEdit;
+}
+export async function refineArticleChanges(
+  articleId: string,
+  html: string,
+  userId: string,
+  revision_id: string,
+) {
+  const $CheerioAPI = load(html);
+  let changeid = -1;
+  // Loop through elements that have the attribute data-diff-action
+  $CheerioAPI("[data-diff-action]:not([data-diff-action='none'])").each(
+    (_index, element) => {
+      const $element = $CheerioAPI(element);
+      const elementInnerText = $element.prop("innerText")?.trim();
+      if (!elementInnerText && $element.get(0)?.tagName !== "figure") {
+        // If element is empty of innerText Destroy it And if its not a figure
+        $element.remove();
+        return;
+      }
+      const diffAction: string = $element.data("diff-action") as string;
+      let typeOfEdit: string = diffAction;
+      const descriptionList: string[] = [];
+
+      // Create the wrap element with the wanted metadata wrapElement
+      const $wrapElement = $CheerioAPI("<span>");
+
+      const isComment = !!$element.find(".ve-ce-commentNode").length;
+      if (isComment) {
+        typeOfEdit = handleComment(
+          $wrapElement as Cheerio<Element>,
+          elementInnerText ?? "",
+          descriptionList,
+          $CheerioAPI,
+        );
+      } else {
+        // Append a clone of the element to the wrap element
+        $wrapElement.append($element.clone());
+      }
+
+      // Wrapping related changes: Check if next node is an element (Not a text node)
+      // AND if the current element has "change-remove" | "remove" diffAction
+      const node = $element[0].next as ChildNodeData | null;
+      if (
+        !isComment &&
+        !node?.data?.trim() &&
+        (diffAction === "change-remove" || diffAction === "remove")
+      ) {
+        const $nextElement = $element.next();
+        const nextTypeOfEdit = $nextElement.data("diff-action");
+        // Check if the next element has "change-insert" | "insert" diff action
+
+        if (nextTypeOfEdit === "insert" || nextTypeOfEdit === "change-insert") {
+          // Append the next element to the wrap element
+          $wrapElement.append($nextElement.clone());
+
+          typeOfEdit = nextTypeOfEdit === "insert" ? "remove-insert" : "change";
+
+          if (nextTypeOfEdit === "change-insert") {
+            const descriptionListItems = $CheerioAPI(
+              ".ve-ui-diffElement-sidebar >",
+            )
+              .children()
+              .eq(changeid += 1)
+              .children()
+              .children();
+            descriptionListItems.each((_i, elem) => {
+              descriptionList.push($CheerioAPI(elem).text());
+            });
+          }
+          // Remove the last element
+          $nextElement.remove();
+        }
+      }
+
+      if (diffAction === "structural-change") {
+        typeOfEdit = "structural-change";
+
+        const descriptionListItems = $CheerioAPI(".ve-ui-diffElement-sidebar >")
+          .children()
+          .eq(changeid += 1)
+          .children()
+          .children();
+        descriptionListItems.each((_i, elem) => {
+          let description = "";
+          $CheerioAPI(elem)
+            .find("del")
+            .replaceWith(function strikeThrough() {
+              return `${createStrikethroughText($CheerioAPI(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
+            });
+
+          $CheerioAPI(elem)
+            .find("li")
+            .each((_ulElemIndex, ulElem) => {
+              description = description.concat(
+                `- ${$CheerioAPI(ulElem).text()}\n`,
+              );
+            });
+
+          description = description || $CheerioAPI(elem).text();
+
+          descriptionList.push(description);
+        });
+      }
+
+      // Remove data-diff-id & data-parsoid Attributes
+      $wrapElement.find("[data-diff-id]").each((_, el) => {
+        $CheerioAPI(el).removeAttr("data-diff-id");
+      });
+      $wrapElement.find("[data-parsoid]").each((_, el) => {
+        $CheerioAPI(el).removeAttr("data-parsoid");
+      });
+
+      // Add the description and the type of edit and update the element.
+      $wrapElement.attr("data-description", descriptionList.join("\n"));
+      $wrapElement.attr("data-type-of-edit", typeOfEdit);
+
+      $element.replaceWith($wrapElement);
+    },
+  );
+
+  // Remove sidebar
+  $CheerioAPI(".ve-ui-diffElement-sidebar").remove();
+  $CheerioAPI(".ve-ui-diffElement-hasDescriptions").removeClass(
+    "ve-ui-diffElement-hasDescriptions",
+  );
+
+  const changes = await getChanges(articleId);
+  const changeElements = $CheerioAPI("[data-description]");
+
+  const changesToUpsert: Tables<"changes">[] = [];
+  const changesToInsert: Tables<"changes">[] = [];
+  let changeIndex = 0;
+
+  for (const element of changeElements) {
+    const $element = $CheerioAPI(element);
+    let changeId = "";
+    let description: string | undefined;
+
+    const typeOfEdit = $element.attr("data-type-of-edit") as
+      | "change"
+      | "insert"
+      | "remove"
+      | "remove-insert"
+      | "structural-change"
+      | "comment-insert";
+
+    for (const change of changes) {
+      const $changeContent = load(change.content, null, false);
+      const changeContentInnerHTML = $changeContent("span:first").html();
+      if (
+        TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
+        $element.html() === changeContentInnerHTML
+      ) {
+        // Update the change INDEX
+        changeId = change.id;
+
+        changesToUpsert.push({
+          id: change.id,
+          archived: change.archived,
+          hidden: change.hidden,
+          index: changeIndex,
+          status: change.status,
+          content: change.content,
+          article_id: change.article_id,
+          created_at: change.created_at,
+          description: change.description,
+          type_of_edit: change.type_of_edit,
+          contributor_id: change.contributor_id,
+          revision_id: change.revision_id,
+        });
+        changeIndex += 1;
+        break;
+      }
+    }
+
+    if (!changeId) {
+      // Create new change
+      description = $element.attr("data-description");
+      $element.removeAttr("data-description");
+      changesToInsert.push({
+        content: $CheerioAPI.html($element),
+        status: 0,
+        description: description as string,
+        type_of_edit: TypeOfEditDictionary[typeOfEdit] as number,
+        index: changeIndex,
+        revision_id,
+      } as Tables<"changes">);
+      changeIndex += 1;
+    }
+
+    // Remove data-description & data-type-of-edit Attributes of the html content
+    $element.removeAttr("data-description");
+    $element.removeAttr("data-type-of-edit");
+    $element.attr("data-id", "");
+  }
+
+  unindexUnassignedChanges(changesToUpsert, changes);
+
+  // Add 'article_id', 'contributor_id' properties to changeToinsert
+  if (changesToInsert) {
+    addPermissionDataToChanges(changesToInsert, articleId, userId);
+    changesToUpsert.push(...changesToInsert);
+  }
+
+  const htmlContent = $CheerioAPI.html();
+  return { changesToUpsert, htmlContent };
 }
 function generateOuterMostSelectors(classes: string[]) {
   return classes

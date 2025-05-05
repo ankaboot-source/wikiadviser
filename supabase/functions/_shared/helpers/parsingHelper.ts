@@ -1,7 +1,7 @@
 import { Cheerio, CheerioAPI, load } from "npm:cheerio@1.0.0";
 import { Element } from "npm:domhandler@5.0.3";
-import Parsoid from "../mediawikiAPI/ParasoidApi.ts";
 import { encode } from "npm:html-entities@2.6.0";
+import Parsoid from "../mediawikiAPI/ParasoidApi.ts";
 import { ChildNodeData, Tables, TypeOfEditDictionary } from "../types/index.ts";
 import { getChanges } from "./supabaseHelper.ts";
 function fixSources(pageContent: string, sourceLanguage: string) {
@@ -9,14 +9,14 @@ function fixSources(pageContent: string, sourceLanguage: string) {
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
   updatedPageContent = convertSourceTemplateToLink(
     updatedPageContent,
-    sourceLanguage,
+    sourceLanguage
   );
   return updatedPageContent;
 }
 function addPermissionDataToChanges(
   changesToInsert: Tables<"changes">[],
   articleId: string,
-  userId: string,
+  userId: string
 ) {
   for (const change of changesToInsert) {
     if (!change.id) {
@@ -27,29 +27,26 @@ function addPermissionDataToChanges(
 }
 export function addSourceExternalLinks(
   pageContent: string,
-  sourceLanguage: string,
+  sourceLanguage: string
 ) {
   return pageContent.replace(
     /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
-      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`,
+      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
 }
 export function convertSourceTemplateToLink(
   pageContent: string,
-  sourceLanguage: string,
+  sourceLanguage: string
 ) {
-  return pageContent.replace(
-    /{{Lnobr\|([\s\S]*?)}}/gi,
-    (_, group) =>
-      group.includes("|")
-        ? `[[wikipedia:${sourceLanguage}:${group}]]`
-        : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`,
+  return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) =>
+    group.includes("|")
+      ? `[[wikipedia:${sourceLanguage}:${group}]]`
+      : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
   );
 }
 export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
-  const pattern =
-    /{{(Main|See also|Article (?:détaillé|général))\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+  const pattern = /{{(Main|See also|Article (?:détaillé|général))\|([^}]+?)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles
@@ -69,7 +66,7 @@ export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
 }
 function unindexUnassignedChanges(
   changesToUpsert: Tables<"changes">[],
-  changes: Tables<"changes">[],
+  changes: Tables<"changes">[]
 ) {
   for (const change of changes) {
     if (
@@ -102,7 +99,7 @@ function handleComment(
   $wrapElement: Cheerio<Element>, // skipcq: JS-0323
   elementInnerText: string,
   descriptionList: string[],
-  $CheerioAPI: CheerioAPI,
+  $CheerioAPI: CheerioAPI
 ) {
   const typeOfEdit = "comment-insert";
   $wrapElement.append($CheerioAPI("<span>").text(elementInnerText));
@@ -114,7 +111,7 @@ export async function refineArticleChanges(
   articleId: string,
   html: string,
   userId: string,
-  revision_id: string,
+  revision_id: string
 ) {
   const $CheerioAPI = load(html);
   let changeid = -1;
@@ -141,7 +138,7 @@ export async function refineArticleChanges(
           $wrapElement as Cheerio<Element>,
           elementInnerText ?? "",
           descriptionList,
-          $CheerioAPI,
+          $CheerioAPI
         );
       } else {
         // Append a clone of the element to the wrap element
@@ -168,10 +165,10 @@ export async function refineArticleChanges(
 
           if (nextTypeOfEdit === "change-insert") {
             const descriptionListItems = $CheerioAPI(
-              ".ve-ui-diffElement-sidebar >",
+              ".ve-ui-diffElement-sidebar >"
             )
               .children()
-              .eq(changeid += 1)
+              .eq((changeid += 1))
               .children()
               .children();
             descriptionListItems.each((_i, elem) => {
@@ -188,7 +185,7 @@ export async function refineArticleChanges(
 
         const descriptionListItems = $CheerioAPI(".ve-ui-diffElement-sidebar >")
           .children()
-          .eq(changeid += 1)
+          .eq((changeid += 1))
           .children()
           .children();
         descriptionListItems.each((_i, elem) => {
@@ -203,7 +200,7 @@ export async function refineArticleChanges(
             .find("li")
             .each((_ulElemIndex, ulElem) => {
               description = description.concat(
-                `- ${$CheerioAPI(ulElem).text()}\n`,
+                `- ${$CheerioAPI(ulElem).text()}\n`
               );
             });
 
@@ -226,13 +223,13 @@ export async function refineArticleChanges(
       $wrapElement.attr("data-type-of-edit", typeOfEdit);
 
       $element.replaceWith($wrapElement);
-    },
+    }
   );
 
   // Remove sidebar
   $CheerioAPI(".ve-ui-diffElement-sidebar").remove();
   $CheerioAPI(".ve-ui-diffElement-hasDescriptions").removeClass(
-    "ve-ui-diffElement-hasDescriptions",
+    "ve-ui-diffElement-hasDescriptions"
   );
 
   const changes = await getChanges(articleId);
@@ -322,7 +319,7 @@ function generateOuterMostSelectors(classes: string[]) {
     .join(", ");
 }
 function extractInfoboxes(input: string) {
-  const infoboxes = [];
+  const infoboxes: string[] = [];
   let count = 0;
   let start = -1;
   for (let i = 0; i < input.length; i += 1) {
@@ -353,7 +350,7 @@ async function parseWikidataTemplate(
   pageContentXML: string,
   pageContentHTML: string,
   articleId: string,
-  parsoidInstance: Parsoid,
+  parsoidInstance: Parsoid
 ): Promise<string> {
   let newParsedContentXML = pageContentXML;
   const infoboxClasses = [".infobox", ".infobox_v2", ".infobox_v3"];
@@ -381,7 +378,7 @@ async function parseWikidataTemplate(
     const infoboxHtml = $CheerioAPI.html(infobox);
     const wikiText = await parsoidInstance.ParsoidHtmlToWikitext(
       infoboxHtml,
-      articleId,
+      articleId
     );
     const parsedWikitext = wikiText
       .replace(/<style[^>]*>.*<\/style>/g, "")
@@ -390,7 +387,7 @@ async function parseWikidataTemplate(
       .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, "") // Remove wikidata redundant links
       .replace(
         /\|-((?!(\|-))[\s\S])*\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]([\s\S]*?)(?=\n\|)/g,
-        "",
+        ""
       ) // Remove wikidata row (modify/icon) 👉 A wikitext table row start with | (if at the beginning) or |- and ends before the next |
       .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, "[[$1|$2]]"); // [wiki/article_name] => [[article_name]]
     return encode(parsedWikitext);
@@ -415,24 +412,24 @@ export async function processExportedArticle(
   sourceLanguage: string,
   articleId: string,
   displayTitle: string,
-  pageContentHTML: string,
+  pageContentHTML: string
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
   let processedData = pageContentXML.replace(
     "\n    <generator>",
-    "</base>\n    <generator>",
+    "</base>\n    <generator>"
   );
 
   // Rename article
   processedData = processedData.replace(
     /<title>(.*?)<\/title>/s,
-    `<title>${articleId}</title>`,
+    `<title>${articleId}</title>`
   );
 
   // Insert DISPLAYTITLE
   processedData = processedData.replace(
     /<\/text>/s,
-    `\n{{DISPLAYTITLE:${displayTitle}}}</text>`,
+    `\n{{DISPLAYTITLE:${displayTitle}}}</text>`
   );
 
   // Externalize article sources to wikipedia
@@ -444,11 +441,12 @@ export async function processExportedArticle(
     pageContent,
     pageContentHTML,
     articleId,
-    new Parsoid(sourceLanguage),
+    new Parsoid(sourceLanguage)
   );
   updatedPageContent = fixSources(updatedPageContent, sourceLanguage);
 
-  processedData = processedData.substring(0, pageStartIndex) +
+  processedData =
+    processedData.substring(0, pageStartIndex) +
     updatedPageContent +
     processedData.substring(pageEndIndex);
 

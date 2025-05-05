@@ -397,8 +397,7 @@ export function addSourceExternalLinks(
  * @returns The updated page content with modified templates.
  */
 export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
-  const pattern =
-    /{{(Main|See also|Article (?:détaillé|général))\|((?:[^|}]+(?:\s*\|\s*[^|}]+)*)+)}}/g;
+  const pattern = /{{(Main|See also|Article (?:détaillé|général))\|([^}]+?)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles

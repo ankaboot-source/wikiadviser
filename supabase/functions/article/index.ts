@@ -5,6 +5,7 @@ import { deleteArticle } from "./deleteArticle.ts";
 import { hasPermissions } from "./hasPermission.ts";
 import { importArticle } from "./importArticle.ts";
 import { updateArticleChanges } from "./updateArticleChanges.ts";
+import { deleteArticleRevision } from "./deleteArticleRevision.ts";
 
 const functionName = "article";
 const app = new Hono().basePath(`/${functionName}`);
@@ -27,6 +28,11 @@ app.put(
   "/article/:id/changes",
   hasPermissions(["owner", "editor"]),
   updateArticleChanges,
+);
+app.delete(
+  "/:id/revisions/:revId",
+  hasPermissions(["owner"]),
+  deleteArticleRevision,
 );
 
 Deno.serve(app.fetch);

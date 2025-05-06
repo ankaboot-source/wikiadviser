@@ -165,12 +165,9 @@ async function deleteRevision() {
   try {
     const functionName = `/article/${props.articleId}/revisions/${props.revision.revid}`;
     // Delete the revision
-    await supabaseClient.functions.invoke(
-      functionName,
-      {
-        method: 'DELETE',
-      }
-    );
+    await supabaseClient.functions.invoke(functionName, {
+      method: 'DELETE',
+    });
 
     // Notify the parent window to goto diffLink which updates the diff
     window.parent.postMessage(

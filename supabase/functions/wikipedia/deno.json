@@ -2,6 +2,7 @@
   "imports": {
     "axios": "npm:axios@^1.8.4",
     "zod": "npm:zod@3.24.2",
-    "hono": "npm:hono@4.7.4"
+    "hono": "npm:hono@4.7.4",
+    "cors": "npm:cors@2.8.5"
   }
 }

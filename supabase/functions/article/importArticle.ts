@@ -1,5 +1,4 @@
 import { Context } from "hono";
-import corsHeaders from "../_shared/cors.ts";
 import {
   deleteArticleDB,
   getUserArticlesCount,
@@ -13,7 +12,7 @@ export async function importArticle(context: Context) {
   const { title, language, description } = await context.req.json();
   let articleId = null;
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization"),
+    context.req.header("Authorization")
   );
 
   const {
@@ -22,7 +21,6 @@ export async function importArticle(context: Context) {
 
   if (!user) {
     return new Response("Unauthorized", {
-      headers: corsHeaders,
       status: 401,
     });
   }
@@ -40,7 +38,7 @@ export async function importArticle(context: Context) {
     if (totalUserArticles >= allowedArticles) {
       return context.json(
         { message: "You have reached the maximum number of articles allowed." },
-        402,
+        402
       );
     }
 
@@ -49,23 +47,29 @@ export async function importArticle(context: Context) {
       user.id,
       language,
       description,
-      true,
+      true
     );
 
     const mediawiki = new MediawikiClient(language, wikipediaApi);
     await mediawiki.importArticle(articleId, title);
 
-    return context.json({
-      message: "Importing new article succeeded.",
-      articleId,
-    }, 201);
+    return context.json(
+      {
+        message: "Importing new article succeeded.",
+        articleId,
+      },
+      201
+    );
   } catch (error) {
     if (articleId) {
       await deleteArticleDB(articleId);
     }
-    return context.json({
-      message: "An error occurred while processing your request",
-      error: error instanceof Error ? error.message : String(error),
-    }, 500);
+    return context.json(
+      {
+        message: "An error occurred while processing your request",
+        error: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
   }
 }

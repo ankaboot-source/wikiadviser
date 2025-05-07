@@ -24,7 +24,7 @@ app.post("/", createArticle);
 app.post("/import", importArticle);
 app.delete("/:id", hasPermissions(["owner"]), deleteArticle);
 app.put(
-  "/article/:id/changes",
+  "/:id/changes",
   hasPermissions(["owner", "editor"]),
   updateArticleChanges,
 );

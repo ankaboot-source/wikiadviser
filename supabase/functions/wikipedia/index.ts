@@ -1,5 +1,5 @@
-import cors from "cors";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import getWikipediaArticle from "./controller.ts";
 
 const functionName = "wikipedia";

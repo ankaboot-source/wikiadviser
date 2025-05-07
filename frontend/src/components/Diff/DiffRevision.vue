@@ -111,12 +111,12 @@
 </template>
 
 <script setup lang="ts">
-import { api } from 'src/boot/axios';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Enums, Revision } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
+import supabaseClient from 'src/api/supabase';
 
 const props = defineProps<{
   role: Enums<'role'>;
@@ -165,7 +165,9 @@ async function deleteRevision() {
   try {
     const functionName = `/article/${props.articleId}/revisions/${props.revision.revid}`;
     // Delete the revision
-    await api.delete(functionName);
+    await supabaseClient.functions.invoke(functionName, {
+      method: 'DELETE',
+    });
 
     // Notify the parent window to goto diffLink which updates the diff
     window.parent.postMessage(

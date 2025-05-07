@@ -101,18 +101,18 @@
 </template>
 
 <script setup lang="ts">
-import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
+import { AxiosError } from 'axios';
+import { QSpinnerGrid, useQuasar } from 'quasar';
+import supabaseClient from 'src/api/supabase';
+import { importArticle } from 'src/api/supabaseHelper';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useUserStore } from 'src/stores/userStore';
+import { Profile, SearchResult } from 'src/types';
+import { getDefaultUserLanguage } from 'src/utils/language';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { QSpinnerGrid, useQuasar } from 'quasar';
-import { Profile, SearchResult } from 'src/types';
-import { useUserStore } from 'src/stores/userStore';
-import { importArticle } from 'src/api/supabaseHelper';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
-import { getDefaultUserLanguage } from 'src/utils/language';
-import { AxiosError } from 'axios';
-import supabaseClient from 'src/api/supabase';
+import UpgradeAccount from '../Subscription/UpgradeAccountDialoge.vue';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -141,6 +141,7 @@ watch([term, articleLanguage], async ([term]) => {
     return;
   }
   try {
+    isSearching.value = true;
     const response = await supabaseClient.functions.invoke(
       `wikipedia/articles?term=${term}&language=${articleLanguage.value.value}`,
       {

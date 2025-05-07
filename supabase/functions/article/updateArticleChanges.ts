@@ -1,9 +1,8 @@
-import corsHeaders from "../_shared/cors.ts";
+import { Context } from "hono";
 import { getArticle } from "../_shared/helpers/supabaseHelper.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
 import MediawikiClient from "./MediawikiClient.ts";
-import { Context } from "hono";
 
 /**
  * Updates the changes made to a specified article in a MediaWiki instance.
@@ -13,16 +12,13 @@ import { Context } from "hono";
 export async function updateArticleChanges(c: Context) {
   const { id: articleId } = c.req.param();
 
-  const supabaseClient = createSupabaseClient(
-    c.req.header("Authorization"),
-  );
+  const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
 
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
   if (!user) {
     return new Response("", {
-      headers: corsHeaders,
       status: 401,
     });
   }

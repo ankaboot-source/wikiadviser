@@ -41,6 +41,7 @@
       :button-toggle="buttonToggle"
       :article="article"
       @switch-tab-emit="onSwitchTabEmitChange"
+      :toggle-edit-tab="toggleEditTab"
     />
 
     <template v-if="buttonToggle === 'view'">
@@ -208,6 +209,10 @@ function viewArticleInNewTab() {
     `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${props.article.article_id}`,
     '_blank',
   );
+}
+
+function toggleEditTab() {
+  buttonToggle.value = 'edit';
 }
 </script>
 

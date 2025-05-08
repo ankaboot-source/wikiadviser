@@ -43,3 +43,6 @@ jobs:
 
       - name: deploy wikipedia
         run: supabase functions deploy wikipedia --no-verify-jwt --debug
+
+      - name: deploy article
+        run: supabase functions deploy article --debug

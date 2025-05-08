@@ -8,11 +8,15 @@ export const corsHeaders = {
 };
 
 export const corsMiddleware: MiddlewareHandler = async (c, next) => {
-  await next();
-
-  // Attach CORS headers to the final response
-  const res = c.res;
+  // Set CORS headers before handling the request
   for (const [key, value] of Object.entries(corsHeaders)) {
-    res.headers.set(key, value);
+    c.res.headers.set(key, value);
   }
+
+  // Handle OPTIONS preflight request
+  if (c.req.method === "OPTIONS") {
+    return new Response(null, { headers: c.res.headers });
+  }
+
+  await next();
 };

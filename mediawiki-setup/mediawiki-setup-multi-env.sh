@@ -102,7 +102,7 @@ if [[ "$1" == "--upgrade" ]]; then
         for ln in "${LANGUAGES[@]}"; do
             while true; do
                 if check_job_queue $env "$ln"; then
-                    echo "Job queue is empty for $ln."
+                    echo "Job queue is empty for $env/$ln."
                     break
                 else
                     echo "Running jobs for $env/$ln. Queue not empty, re-checking..."
@@ -121,8 +121,12 @@ if [[ "$1" == "--upgrade" ]]; then
     fi
   
     echo "Creating Database dumps"
-    for ln in "${LANGUAGES[@]}"; do
-        sudo -S mysqldump -u root "wiki_$ln" > "$DUMP_PATH/dump-$ln.sql"
+    for env in "${MW_PROJECT_DIR[@]}"; do
+        for ln in "${LANGUAGES[@]}"; do
+            read -p "Enter the database name for '${env}' '${ln}' wiki [If you used the default name ${env}_${ln} during init setup, you can Press Enter to continue]: " input_db_name
+            input_db_name=${input_db_name:-${env}_${ln}}
+            sudo -S mysqldump -u root $input_db_name > "$DUMP_PATH/dump-$env-$ln.sql"
+        done
     done
 
     echo "Backing up old MediaWiki folders"

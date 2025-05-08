@@ -111,7 +111,9 @@ if [[ "$1" == "--upgrade" ]]; then
 
     echo "Creating Database dumps"
     for ln in "${LANGUAGES[@]}"; do
-        sudo -S mysqldump -u root "wiki_$ln" > "$DUMP_PATH/dump-$ln.sql"
+        read -p "Enter the database name for '${ln}' wiki [If you used the default name wiki_${ln} during init setup, you can Press Enter to continue]: " input_db_name
+        input_db_name=${input_db_name:-"wiki_${ln}"}
+        sudo -S mysqldump -u root $input_db_name > "$DUMP_PATH/dump-$ln.sql"
     done
 
     echo "Backing up old MediaWiki folders"
@@ -188,23 +190,39 @@ else
     echo "DATABASE STARTED..."
     echo ""
 
+    # Download mediawiki init dumps
+    for ln in "${LANGUAGES[@]}"; do
+        dump_file="mw_init_dump_${ln}"
+        wget "${!dump_file}" -O ./init-dump-${ln}.sql
+    done
+
     # Setup DB
     for ln in "${LANGUAGES[@]}"; do
+
+        var_prefix="${ln}"
+  
         echo "Creating base for your '${ln}' Wiki..."
         echo ""
+
         read -p "Enter the database name for '${ln}' Wiki [default: wiki_${ln}]: " DB_NAME
         DB_NAME=${DB_NAME:-wiki_${ln}}
+        declare "${var_prefix}_db_name=${DB_NAME}"
+
         read -p "Enter the database username for '${ln}' Wiki [default: wiki_${ln}_user]: " DB_USER
         DB_USER=${DB_USER:-wiki_${ln}_user}
+        declare "${var_prefix}_db_user=${DB_USER}"
+
         read -s -p "Enter the database password for '${ln}' Wiki: " DB_PASS
+        declare "${var_prefix}_db_name=${DB_PASS}"
+
         echo ""
+        echo "Creating Databases..."
         sudo mariadb -u root -e "CREATE DATABASE ${DB_NAME};"
         sudo mariadb -u root -e "CREATE USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';"
         sudo mariadb -u root -e "GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost' WITH GRANT OPTION;"
-        dump_file="mw_init_dump_${ln}"
-        wget "${!dump_file}" -O ./init-dump-${ln}.sql
+        echo "Importing Init Dumps..."
         sudo mariadb -u root -D ${DB_NAME} < ./init-dump-${ln}.sql
-        rm -f ./init-dump-${ln}.sql
+
         echo "'${ln}' wiki setup completed!"
     done
 
@@ -239,7 +257,14 @@ else
     done
     
     for ln in "${LANGUAGES[@]}"; do
-        SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${DB_NAME}" DB_USER="${DB_USER}" DB_PASS="${DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
+
+        var_prefix="${ln}"
+
+        DB_NAME="${var_prefix}_db_name"
+        DB_USER="${var_prefix}_db_user"
+        DB_PASS="${var_prefix}_db_pass"
+
+        SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
     done
 
     # Call common_setup

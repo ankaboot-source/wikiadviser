@@ -36,6 +36,7 @@ export async function deleteArticleRevision(context: Context) {
       200
     );
   } catch (error) {
+    console.error(error);
     return context.json(
       {
         message: "An unexpected error occurred",

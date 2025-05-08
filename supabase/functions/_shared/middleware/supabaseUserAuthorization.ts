@@ -1,19 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
-import { type CookieSerializeOptions } from "cookie"; // Import the type expected by @supabase/ssr
+import { type SerializeOptions } from "cookie"; // Import the type expected by @supabase/ssr
 import { type Context } from "hono";
-import {
-  type CookieOptions as HonoCookieOptions,
-  getCookie,
-  setCookie,
-} from "hono/utils/cookie"; // Renamed to avoid clash
-
+import { getCookie, setCookie } from "hono/cookie";
+import { type CookieOptions } from "hono/utils/cookie";
 import supabaseClient from "../supabaseClient.ts";
 
 // Type expected by @supabase/ssr setAll's parameter
 type SupabaseCookieToSet = {
   name: string;
   value: string;
-  options?: Partial<CookieSerializeOptions>; // Use the type from 'cookie' package
+  options?: Partial<SerializeOptions>; // Use the type from 'cookie' package
 };
 
 class SupabaseAuthorization {
@@ -81,7 +77,7 @@ class SupabaseAuthorization {
                 // share common properties, this often works.
                 // If TypeScript still complains vigorously, use 'as any' or 'as HonoCookieOptions'
                 // as a workaround, assuming the options set by Supabase are compatible.
-                setCookie(context, name, value, options as HonoCookieOptions);
+                setCookie(context, name, value, options as CookieOptions);
               });
             } catch (e) {
               console.error("Error setting cookies:", e);

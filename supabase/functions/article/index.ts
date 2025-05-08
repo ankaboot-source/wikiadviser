@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { corsHeaders, corsMiddleware } from "../_shared/cors.ts";
-import { createArticle } from "./createArticle.controller.ts";
+import { createArticle } from "./createArticle.ts";
 import { deleteArticle } from "./deleteArticle.ts";
 import { deleteArticleRevision } from "./deleteArticleRevision.ts";
 import { hasPermissions } from "./hasPermission.ts";

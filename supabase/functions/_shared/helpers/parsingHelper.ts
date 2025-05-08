@@ -1,9 +1,9 @@
-import { Cheerio, CheerioAPI, load } from "npm:cheerio@1.0.0";
-import { Element } from "npm:domhandler@5.0.3";
-import { encode } from "npm:html-entities@2.6.0";
-import Parsoid from "../mediawikiAPI/ParasoidApi.ts";
-import { ChildNodeData, Tables, TypeOfEditDictionary } from "../types/index.ts";
-import { getChanges } from "./supabaseHelper.ts";
+import { Cheerio, CheerioAPI, load } from 'npm:cheerio@1.0.0';
+import { Element } from 'npm:domhandler@5.0.3';
+import { encode } from 'npm:html-entities@2.6.0';
+import Parsoid from '../mediawikiAPI/ParasoidApi.ts';
+import { ChildNodeData, Tables, TypeOfEditDictionary } from '../types/index.ts';
+import { getChanges } from './supabaseHelper.ts';
 function fixSources(pageContent: string, sourceLanguage: string) {
   let updatedPageContent = addSourceExternalLinks(pageContent, sourceLanguage);
   updatedPageContent = addSourceTemplate(updatedPageContent, sourceLanguage);
@@ -14,7 +14,7 @@ function fixSources(pageContent: string, sourceLanguage: string) {
   return updatedPageContent;
 }
 function addPermissionDataToChanges(
-  changesToInsert: Tables<"changes">[],
+  changesToInsert: Tables<'changes'>[],
   articleId: string,
   userId: string
 ) {
@@ -35,38 +35,58 @@ export function addSourceExternalLinks(
       `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
   );
 }
+/**
+ * Converts certain templates to links.
+ * This function modifies the following templates:
+ *  - lnobr
+ *
+ * @param pageContent The content of the page containing templates.
+ * @param sourceLanguage The source language prefix for Wikipedia articles.
+ * @returns The updated page content with links instead of certain templates.
+ */
 export function convertSourceTemplateToLink(
   pageContent: string,
   sourceLanguage: string
 ) {
   return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) =>
-    group.includes("|")
+    group.includes('|')
       ? `[[wikipedia:${sourceLanguage}:${group}]]`
       : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
   );
 }
+/**
+ * Redirects MediaWiki articles to Wikipedia with the specified source language prefix.
+ * This function modifies the following templates:
+ *   - Main
+ *   - See also
+ *   - Article (détaillé, général)
+ *
+ * @param pageContent The content of the page containing templates.
+ * @param sourceLanguage The source language prefix for Wikipedia articles.
+ * @returns The updated page content with modified templates.
+ */
 export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
   const pattern = /{{(Main|See also|Article (?:détaillé|général))\|([^}]+?)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles
-      .split("|")
+      .split('|')
       .map((article: string, index: number) => {
         if (/^l\d+=/.test(article)) {
           return article.trim();
         }
         const label = `l${index + 1}=`;
         return `wikipedia:${sourceLanguage}:${article.trim()}${
-          articles.includes(label) ? "" : `|${label}${article.trim()}`
+          articles.includes(label) ? '' : `|${label}${article.trim()}`
         }`;
       });
 
-    return `{{${templateType}|${parsedArticles.join("|")}}}`;
+    return `{{${templateType}|${parsedArticles.join('|')}}}`;
   });
 }
 function unindexUnassignedChanges(
-  changesToUpsert: Tables<"changes">[],
-  changes: Tables<"changes">[]
+  changesToUpsert: Tables<'changes'>[],
+  changes: Tables<'changes'>[]
 ) {
   for (const change of changes) {
     if (
@@ -91,9 +111,9 @@ function unindexUnassignedChanges(
 }
 function createStrikethroughText(text: string) {
   return text
-    .split("")
+    .split('')
     .map((char) => `${char}\u0336`)
-    .join("");
+    .join('');
 }
 function handleComment(
   $wrapElement: Cheerio<Element>, // skipcq: JS-0323
@@ -101,9 +121,9 @@ function handleComment(
   descriptionList: string[],
   $CheerioAPI: CheerioAPI
 ) {
-  const typeOfEdit = "comment-insert";
-  $wrapElement.append($CheerioAPI("<span>").text(elementInnerText));
-  $wrapElement.attr("title", elementInnerText);
+  const typeOfEdit = 'comment-insert';
+  $wrapElement.append($CheerioAPI('<span>').text(elementInnerText));
+  $wrapElement.attr('title', elementInnerText);
   descriptionList.push(elementInnerText);
   return typeOfEdit;
 }
@@ -119,24 +139,24 @@ export async function refineArticleChanges(
   $CheerioAPI("[data-diff-action]:not([data-diff-action='none'])").each(
     (_index, element) => {
       const $element = $CheerioAPI(element);
-      const elementInnerText = $element.prop("innerText")?.trim();
-      if (!elementInnerText && $element.get(0)?.tagName !== "figure") {
+      const elementInnerText = $element.prop('innerText')?.trim();
+      if (!elementInnerText && $element.get(0)?.tagName !== 'figure') {
         // If element is empty of innerText Destroy it And if its not a figure
         $element.remove();
         return;
       }
-      const diffAction: string = $element.data("diff-action") as string;
+      const diffAction: string = $element.data('diff-action') as string;
       let typeOfEdit: string = diffAction;
       const descriptionList: string[] = [];
 
       // Create the wrap element with the wanted metadata wrapElement
-      const $wrapElement = $CheerioAPI("<span>");
+      const $wrapElement = $CheerioAPI('<span>');
 
-      const isComment = !!$element.find(".ve-ce-commentNode").length;
+      const isComment = !!$element.find('.ve-ce-commentNode').length;
       if (isComment) {
         typeOfEdit = handleComment(
           $wrapElement as Cheerio<Element>,
-          elementInnerText ?? "",
+          elementInnerText ?? '',
           descriptionList,
           $CheerioAPI
         );
@@ -151,21 +171,21 @@ export async function refineArticleChanges(
       if (
         !isComment &&
         !node?.data?.trim() &&
-        (diffAction === "change-remove" || diffAction === "remove")
+        (diffAction === 'change-remove' || diffAction === 'remove')
       ) {
         const $nextElement = $element.next();
-        const nextTypeOfEdit = $nextElement.data("diff-action");
+        const nextTypeOfEdit = $nextElement.data('diff-action');
         // Check if the next element has "change-insert" | "insert" diff action
 
-        if (nextTypeOfEdit === "insert" || nextTypeOfEdit === "change-insert") {
+        if (nextTypeOfEdit === 'insert' || nextTypeOfEdit === 'change-insert') {
           // Append the next element to the wrap element
           $wrapElement.append($nextElement.clone());
 
-          typeOfEdit = nextTypeOfEdit === "insert" ? "remove-insert" : "change";
+          typeOfEdit = nextTypeOfEdit === 'insert' ? 'remove-insert' : 'change';
 
-          if (nextTypeOfEdit === "change-insert") {
+          if (nextTypeOfEdit === 'change-insert') {
             const descriptionListItems = $CheerioAPI(
-              ".ve-ui-diffElement-sidebar >"
+              '.ve-ui-diffElement-sidebar >'
             )
               .children()
               .eq((changeid += 1))
@@ -180,24 +200,24 @@ export async function refineArticleChanges(
         }
       }
 
-      if (diffAction === "structural-change") {
-        typeOfEdit = "structural-change";
+      if (diffAction === 'structural-change') {
+        typeOfEdit = 'structural-change';
 
-        const descriptionListItems = $CheerioAPI(".ve-ui-diffElement-sidebar >")
+        const descriptionListItems = $CheerioAPI('.ve-ui-diffElement-sidebar >')
           .children()
           .eq((changeid += 1))
           .children()
           .children();
         descriptionListItems.each((_i, elem) => {
-          let description = "";
+          let description = '';
           $CheerioAPI(elem)
-            .find("del")
+            .find('del')
             .replaceWith(function strikeThrough() {
               return `${createStrikethroughText($CheerioAPI(this).text())} `; // E.g. <div><del>2017</del><ins>1999</ins></div> returns '2̶0̶1̶7̶ 1999'
             });
 
           $CheerioAPI(elem)
-            .find("li")
+            .find('li')
             .each((_ulElemIndex, ulElem) => {
               description = description.concat(
                 `- ${$CheerioAPI(ulElem).text()}\n`
@@ -211,50 +231,50 @@ export async function refineArticleChanges(
       }
 
       // Remove data-diff-id & data-parsoid Attributes
-      $wrapElement.find("[data-diff-id]").each((_, el) => {
-        $CheerioAPI(el).removeAttr("data-diff-id");
+      $wrapElement.find('[data-diff-id]').each((_, el) => {
+        $CheerioAPI(el).removeAttr('data-diff-id');
       });
-      $wrapElement.find("[data-parsoid]").each((_, el) => {
-        $CheerioAPI(el).removeAttr("data-parsoid");
+      $wrapElement.find('[data-parsoid]').each((_, el) => {
+        $CheerioAPI(el).removeAttr('data-parsoid');
       });
 
       // Add the description and the type of edit and update the element.
-      $wrapElement.attr("data-description", descriptionList.join("\n"));
-      $wrapElement.attr("data-type-of-edit", typeOfEdit);
+      $wrapElement.attr('data-description', descriptionList.join('\n'));
+      $wrapElement.attr('data-type-of-edit', typeOfEdit);
 
       $element.replaceWith($wrapElement);
     }
   );
 
   // Remove sidebar
-  $CheerioAPI(".ve-ui-diffElement-sidebar").remove();
-  $CheerioAPI(".ve-ui-diffElement-hasDescriptions").removeClass(
-    "ve-ui-diffElement-hasDescriptions"
+  $CheerioAPI('.ve-ui-diffElement-sidebar').remove();
+  $CheerioAPI('.ve-ui-diffElement-hasDescriptions').removeClass(
+    've-ui-diffElement-hasDescriptions'
   );
 
   const changes = await getChanges(articleId);
-  const changeElements = $CheerioAPI("[data-description]");
+  const changeElements = $CheerioAPI('[data-description]');
 
-  const changesToUpsert: Tables<"changes">[] = [];
-  const changesToInsert: Tables<"changes">[] = [];
+  const changesToUpsert: Tables<'changes'>[] = [];
+  const changesToInsert: Tables<'changes'>[] = [];
   let changeIndex = 0;
 
   for (const element of changeElements) {
     const $element = $CheerioAPI(element);
-    let changeId = "";
+    let changeId = '';
     let description: string | undefined;
 
-    const typeOfEdit = $element.attr("data-type-of-edit") as
-      | "change"
-      | "insert"
-      | "remove"
-      | "remove-insert"
-      | "structural-change"
-      | "comment-insert";
+    const typeOfEdit = $element.attr('data-type-of-edit') as
+      | 'change'
+      | 'insert'
+      | 'remove'
+      | 'remove-insert'
+      | 'structural-change'
+      | 'comment-insert';
 
     for (const change of changes) {
       const $changeContent = load(change.content, null, false);
-      const changeContentInnerHTML = $changeContent("span:first").html();
+      const changeContentInnerHTML = $changeContent('span:first').html();
       if (
         TypeOfEditDictionary[typeOfEdit] === change.type_of_edit &&
         $element.html() === changeContentInnerHTML
@@ -283,8 +303,8 @@ export async function refineArticleChanges(
 
     if (!changeId) {
       // Create new change
-      description = $element.attr("data-description");
-      $element.removeAttr("data-description");
+      description = $element.attr('data-description');
+      $element.removeAttr('data-description');
       changesToInsert.push({
         content: $CheerioAPI.html($element),
         status: 0,
@@ -292,14 +312,14 @@ export async function refineArticleChanges(
         type_of_edit: TypeOfEditDictionary[typeOfEdit] as number,
         index: changeIndex,
         revision_id,
-      } as Tables<"changes">);
+      } as Tables<'changes'>);
       changeIndex += 1;
     }
 
     // Remove data-description & data-type-of-edit Attributes of the html content
-    $element.removeAttr("data-description");
-    $element.removeAttr("data-type-of-edit");
-    $element.attr("data-id", "");
+    $element.removeAttr('data-description');
+    $element.removeAttr('data-type-of-edit');
+    $element.attr('data-id', '');
   }
 
   unindexUnassignedChanges(changesToUpsert, changes);
@@ -316,26 +336,26 @@ export async function refineArticleChanges(
 function generateOuterMostSelectors(classes: string[]) {
   return classes
     .map((className) => `${className}:not(${className} *)`)
-    .join(", ");
+    .join(', ');
 }
 function extractInfoboxes(input: string) {
   const infoboxes: string[] = [];
   let count = 0;
   let start = -1;
   for (let i = 0; i < input.length; i += 1) {
-    if (input[i] === "{" && input[i + 1] === "{") {
+    if (input[i] === '{' && input[i + 1] === '{') {
       if (count === 0) {
         start = i;
       }
       count += 1;
       i += 1; // skip next '{'
-    } else if (input[i] === "}" && input[i + 1] === "}") {
+    } else if (input[i] === '}' && input[i + 1] === '}') {
       count -= 1;
       if (count === 0 && start !== -1) {
         const infobox = input.substring(start, i + 2);
         if (
-          infobox.startsWith("{{Infobox") ||
-          infobox.startsWith("{{Taxobox")
+          infobox.startsWith('{{Infobox') ||
+          infobox.startsWith('{{Taxobox')
         ) {
           infoboxes.push(infobox);
         }
@@ -346,6 +366,14 @@ function extractInfoboxes(input: string) {
   }
   return infoboxes;
 }
+/**
+ * Parses Wikidata template from XML and HTML content of a Wikipedia page.
+ * @param pageContentXML - The XML content of the Wikipedia page.
+ * @param pageContentHTML - The HTML content of the Wikipedia page.
+ * @param articleId - The ID of the Wikipedia article.
+ * @param parsoidInstance - The instance of Parsoid for parsing.
+ * @returns The parsed Wikidata template.
+ */
 async function parseWikidataTemplate(
   pageContentXML: string,
   pageContentHTML: string,
@@ -353,7 +381,7 @@ async function parseWikidataTemplate(
   parsoidInstance: Parsoid
 ): Promise<string> {
   let newParsedContentXML = pageContentXML;
-  const infoboxClasses = [".infobox", ".infobox_v2", ".infobox_v3"];
+  const infoboxClasses = ['.infobox', '.infobox_v2', '.infobox_v3'];
 
   const infoboxesWikitext = extractInfoboxes(newParsedContentXML);
 
@@ -366,13 +394,13 @@ async function parseWikidataTemplate(
   const isWikidataTemplate = infoboxesHTML
     .html()
     ?.toLowerCase()
-    .includes("wikidata");
+    .includes('wikidata');
 
   if (!isWikidataTemplate) {
     return newParsedContentXML;
   }
 
-  infoboxesHTML.find(".wikidata-linkback, .navbar").remove();
+  infoboxesHTML.find('.wikidata-linkback, .navbar').remove();
 
   const promises = Array.from(infoboxesHTML).map(async (infobox) => {
     const infoboxHtml = $CheerioAPI.html(infobox);
@@ -381,15 +409,15 @@ async function parseWikidataTemplate(
       articleId
     );
     const parsedWikitext = wikiText
-      .replace(/<style[^>]*>.*<\/style>/g, "")
-      .replace(/\[\[.*(=|\/)((File|Fichier):(.*?))\]\]/g, "[[$2]]") // Replace image links to wikitext
-      .replace(/(&lang=\w+)/g, "") // Remove '&lang=[value]' from wikipedia links
-      .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, "") // Remove wikidata redundant links
+      .replace(/<style[^>]*>.*<\/style>/g, '')
+      .replace(/\[\[.*(=|\/)((File|Fichier):(.*?))\]\]/g, '[[$2]]') // Replace image links to wikitext
+      .replace(/(&lang=\w+)/g, '') // Remove '&lang=[value]' from wikipedia links
+      .replace(/\[\[[^\]]*www\.wikidata\.org[^\]]*(?<!File:)\]\]/g, '') // Remove wikidata redundant links
       .replace(
         /\|-((?!(\|-))[\s\S])*\[\[\/media\/wikipedia\/commons\/(?!.*File:)[^\]]*?\]\]([\s\S]*?)(?=\n\|)/g,
-        ""
+        ''
       ) // Remove wikidata row (modify/icon) 👉 A wikitext table row start with | (if at the beginning) or |- and ends before the next |
-      .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, "[[$1|$2]]"); // [wiki/article_name] => [[article_name]]
+      .replace(/\[\/wiki\/([^ \]]+)\s+([^\]]+)\]/g, '[[$1|$2]]'); // [wiki/article_name] => [[article_name]]
     return encode(parsedWikitext);
   });
 
@@ -399,7 +427,7 @@ async function parseWikidataTemplate(
       newParsedContentXML = newParsedContentXML.replace(infobox, () => {
         const escapedInfobox = parsedInfoboxes.shift();
         if (escapedInfobox === undefined) {
-          throw new Error("Failed to parse all wikidata template");
+          throw new Error('Failed to parse all wikidata template');
         }
         return escapedInfobox;
       });
@@ -407,6 +435,11 @@ async function parseWikidataTemplate(
   }
   return newParsedContentXML;
 }
+/**
+ * Processes exported article data by adding missing tags and externalizing article sources to Wikipedia.
+ * @param {string} exportData - The exported data of the article.
+ * @returns {string} - The processed article data.
+ */
 export async function processExportedArticle(
   pageContentXML: string,
   sourceLanguage: string,
@@ -416,8 +449,8 @@ export async function processExportedArticle(
 ): Promise<string> {
   // Add missing </base> into the file. (Exported files from proxies only)
   let processedData = pageContentXML.replace(
-    "\n    <generator>",
-    "</base>\n    <generator>"
+    '\n    <generator>',
+    '</base>\n    <generator>'
   );
 
   // Rename article
@@ -433,8 +466,8 @@ export async function processExportedArticle(
   );
 
   // Externalize article sources to wikipedia
-  const pageStartIndex = processedData.indexOf("<page>");
-  const pageEndIndex = processedData.indexOf("</page>", pageStartIndex);
+  const pageStartIndex = processedData.indexOf('<page>');
+  const pageEndIndex = processedData.indexOf('</page>', pageStartIndex);
   const pageContent = processedData.substring(pageStartIndex, pageEndIndex);
 
   let updatedPageContent = await parseWikidataTemplate(

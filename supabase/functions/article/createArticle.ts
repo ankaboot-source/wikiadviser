@@ -12,7 +12,7 @@ import MediawikiClient from "./MediawikiClient.ts";
  * @param {Context} context - The Hono context object.
  */
 export async function createArticle(context: Context) {
-  let articleId = null;
+  let articleId: string | null = null;
   const { title, language, description } = await context.req.json();
 
   const supabaseClient = createSupabaseClient(
@@ -93,6 +93,7 @@ export async function createArticle(context: Context) {
       201
     );
   } catch (error) {
+    console.error(error);
     if (articleId) {
       await deleteArticleDB(articleId);
     }

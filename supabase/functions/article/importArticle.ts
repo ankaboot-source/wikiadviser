@@ -10,7 +10,7 @@ import MediawikiClient from "./MediawikiClient.ts";
 
 export async function importArticle(context: Context) {
   const { title, language, description } = await context.req.json();
-  let articleId = null;
+  let articleId: string | null = null;
   const supabaseClient = createSupabaseClient(
     context.req.header("Authorization")
   );
@@ -61,6 +61,7 @@ export async function importArticle(context: Context) {
       201
     );
   } catch (error) {
+    console.error(error);
     if (articleId) {
       await deleteArticleDB(articleId);
     }

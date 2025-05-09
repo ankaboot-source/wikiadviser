@@ -36,7 +36,7 @@ services:
         SENTRY_ENV_FRONTEND: ${SENTRY_ENV_FRONTEND}
         POSTHOG_API_KEY: ${POSTHOG_API_KEY}
         POSTHOG_API_HOST: ${POSTHOG_API_HOST}
-
+        X_API_KEY: ${X_API_KEY}
     ports:
       - 443:443
       - 80:80
@@ -54,8 +54,7 @@ services:
       - POSTHOG_API_HOST=${POSTHOG_API_HOST}
       - SHARE_LINK_DAY_LIMIT=${SHARE_LINK_DAY_LIMIT}
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
-      - X_API_KEY_QA=${X_API_KEY_QA}
-      - X_API_KEY_PROD=${X_API_KEY_PROD}
+      - X_API_KEY=${X_API_KEY}
 
     depends_on:
       - wikiadviser-api

@@ -34,7 +34,7 @@ services:
         SHARE_LINK_DAY_LIMIT: ${SHARE_LINK_DAY_LIMIT}
         SENTRY_DSN_FRONTEND: ${SENTRY_DSN_FRONTEND}
         SENTRY_ENV_FRONTEND: ${SENTRY_ENV_FRONTEND}
-
+        X_API_KEY: ${X_API_KEY}
     ports:
       - 443:443
       - 80:80
@@ -50,8 +50,7 @@ services:
       - SENTRY_ENV_FRONTEND=${SENTRY_ENV_FRONTEND}
       - SHARE_LINK_DAY_LIMIT=${SHARE_LINK_DAY_LIMIT}
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
-      - X_API_KEY_QA=${X_API_KEY_QA}
-      - X_API_KEY_PROD=${X_API_KEY_PROD}
+      - X_API_KEY=${X_API_KEY}
 
     depends_on:
       - wikiadviser-api

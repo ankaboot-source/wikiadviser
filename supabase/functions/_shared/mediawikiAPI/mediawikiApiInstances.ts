@@ -15,6 +15,13 @@ for (const language of ENV.WIKIADVISER_LANGUAGES) {
     }),
   });
 
+  // Attach X-Internal-Request header to all requests
+  axiosInstance.interceptors.request.use((config) => {
+    config.headers = config.headers || {};
+    config.headers["X-Internal-Request"] = "true";
+    return config;
+  });
+
   mediawikiApiInstances.set(language, axiosInstance);
 }
 

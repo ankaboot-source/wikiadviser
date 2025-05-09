@@ -36,14 +36,14 @@
       }
     }
 
-    @needsAuth not header X-Internal-Request true
+    @needsAuth not header X-Wikiadviser-Key {$WIKIADVISER_KEY}
     forward_auth @needsAuth {$SUPABASE_PROJECT_URL} {
       header_up Host {upstream_hostport}
       header_up X-Real-IP {remote_host}
       uri /functions/v1/restrict-mediawiki-access
       copy_headers X-User X-Client-IP X-Forwarded-Uri
     }
-    
+
     header {
       -X-Frame-Options
       +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";

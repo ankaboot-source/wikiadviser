@@ -54,6 +54,7 @@ services:
       - POSTHOG_API_HOST=${POSTHOG_API_HOST}
       - SHARE_LINK_DAY_LIMIT=${SHARE_LINK_DAY_LIMIT}
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
+      - WIKIADVISER_KEY=${WIKIADVISER_KEY}
     depends_on:
       - wikiadviser-api
 

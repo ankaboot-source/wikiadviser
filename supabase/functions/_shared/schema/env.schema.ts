@@ -34,8 +34,8 @@ const envSchema = z.object({
       required_error: "😱 You forgot to add a MediaWiki bot password!",
     })
     .min(1),
-  WIKIADVISER_KEY: z.string({
-    required_error: "😱 You forgot to add a WikiAdviser key!",
+  X_API_KEY: z.string({
+    required_error: "😱 You forgot to add a X_API_KEY key!",
   }),
 });
 
@@ -45,7 +45,7 @@ const envServer = envSchema.safeParse({
   MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
   MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),
   MW_BOT_PASSWORD: Deno.env.get("MW_BOT_PASSWORD"),
-  WIKIADVISER_KEY: Deno.env.get("WIKIADVISER_KEY"),
+  X_API_KEY: Deno.env.get("X_API_KEY"),
 });
 
 if (!envServer.success) {

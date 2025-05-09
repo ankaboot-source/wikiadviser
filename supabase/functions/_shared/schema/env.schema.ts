@@ -9,7 +9,7 @@ const envSchema = z.object({
       const regex = /^[a-z]{2,3}(,[a-z]{2,3})*$/g;
       if (!regex.test(str)) {
         throw new Error(
-          "😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)",
+          "😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)"
         );
       }
       return str.split(",");
@@ -34,6 +34,9 @@ const envSchema = z.object({
       required_error: "😱 You forgot to add a MediaWiki bot password!",
     })
     .min(1),
+  X_API_KEY: z.string({
+    required_error: "😱 You forgot to add a X_API_KEY key!",
+  }),
 });
 
 const envServer = envSchema.safeParse({
@@ -42,6 +45,7 @@ const envServer = envSchema.safeParse({
   MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
   MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),
   MW_BOT_PASSWORD: Deno.env.get("MW_BOT_PASSWORD"),
+  X_API_KEY: Deno.env.get("X_API_KEY"),
 });
 
 if (!envServer.success) {

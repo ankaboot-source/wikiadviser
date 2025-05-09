@@ -36,7 +36,7 @@
       }
     }
 
-    @needsAuth not header X-Internal-Request true
+    @needsAuth not header X-Api-Key {$X_API_KEY}
     forward_auth @needsAuth {$SUPABASE_PROJECT_URL} {
       header_up Host {upstream_hostport}
       header_up X-Real-IP {remote_host}

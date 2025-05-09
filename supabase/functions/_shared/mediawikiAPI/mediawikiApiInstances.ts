@@ -15,10 +15,10 @@ for (const language of ENV.WIKIADVISER_LANGUAGES) {
     }),
   });
 
-  // Attach X-Internal-Request header to all requests
+  // Attach X-Api-Key header to all requests
   axiosInstance.interceptors.request.use((config) => {
     config.headers = config.headers || {};
-    config.headers["X-Internal-Request"] = "true";
+    config.headers["X-Api-Key"] = ENV.X_API_KEY;
     return config;
   });
 

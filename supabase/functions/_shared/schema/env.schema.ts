@@ -37,6 +37,9 @@ const envSchema = z.object({
   X_API_KEY: z.string({
     required_error: "😱 You forgot to add a X_API_KEY key!",
   }),
+  ROOT_DOMAIN: z.string({
+    required_error: "😱 You forgot to add a ROOT_DOMAIN key!",
+  }),
 });
 
 const envServer = envSchema.safeParse({
@@ -46,6 +49,7 @@ const envServer = envSchema.safeParse({
   MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),
   MW_BOT_PASSWORD: Deno.env.get("MW_BOT_PASSWORD"),
   X_API_KEY: Deno.env.get("X_API_KEY"),
+  ROOT_DOMAIN: Deno.env.get("ROOT_DOMAIN"),
 });
 
 if (!envServer.success) {

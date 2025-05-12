@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { corsHeaders, corsMiddleware } from "../_shared/cors.ts";
+import { corsMiddleware } from "../_shared/middleware/cors.ts";
 import { createArticle } from "./createArticle.ts";
 import { deleteArticle } from "./deleteArticle.ts";
 import { deleteArticleRevision } from "./deleteArticleRevision.ts";
@@ -27,11 +27,6 @@ app.delete(
 );
 
 Deno.serve((req) => {
-  // Global CORS preflight handler
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
   // Let Hono handle everything else
   return app.fetch(req);
 });

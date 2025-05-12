@@ -8,6 +8,12 @@ export const corsHeaders = {
 };
 
 export const corsMiddleware: MiddlewareHandler = async (c, next) => {
+  // Global CORS preflight handler
+  const req = c.req;
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   await next();
 
   // Attach CORS headers to the final response

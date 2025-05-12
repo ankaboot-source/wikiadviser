@@ -30,7 +30,7 @@ export const corsMiddleware: MiddlewareHandler = async (c, next) => {
   // Attach CORS headers to the final response
   if (origin && validateOrigin(origin)) {
     res.headers.set("Access-Control-Allow-Origin", origin);
-    for (const [key, value] of Object.entries(corsHeaders)) {
+    for (const [key, value] of Object.entries(staticCorsHeaders)) {
       res.headers.set(key, value);
     }
   }

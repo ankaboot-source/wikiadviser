@@ -2,11 +2,11 @@
   <iframe
     v-if="renderIframe"
     v-show="buttonToggle === 'edit' && !loading.value"
+    ref="iframeRef"
     :src="articleLink"
     class="col-grow rounded-borders borders bg-secondary"
     frameBorder="0"
     @load="onIframeLoad()"
-    ref="iframeRef"
   />
   <div
     v-if="buttonToggle === 'edit' && loading.value"
@@ -43,14 +43,14 @@ const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
 const articleLink = ref(
   `${mediawikiBaseUrl}/index.php?title=${props.article.article_id}&veaction=edit`,
 );
-const loader = {
+const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    message: 'Processing new changes',
+    message: 'Redirecting to visual diff',
   },
 };
-const loading = ref(loader.editor);
+const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
 
 const emit = defineEmits(['switchTabEmit']);
@@ -80,17 +80,11 @@ async function handleDiffChange(data: {
     icon: 'check',
     color: 'positive',
   });
-  loading.value = loader.editor;
+  loading.value = { ...loaderPresets.editor };
   reloadIframe();
 }
 
 function gotoDiffLink() {
-  $q.notify({
-    message: 'Updating changes',
-    caption: 'Please wait…',
-    color: 'primary',
-    spinner: true,
-  });
   props.toggleEditTab();
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
@@ -115,10 +109,11 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   switch (data.type) {
     case 'saved-changes':
-      loading.value = loader.changes;
+      loading.value = { ...loaderPresets.changes };
       break;
 
     case 'deleted-revision':
+      loading.value = { ...loaderPresets.changes };
       gotoDiffLink();
       break;
     default:

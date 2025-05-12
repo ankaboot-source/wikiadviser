@@ -47,10 +47,10 @@ const loader = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    message: 'Processing new changes',
+    message: 'Redirecting to visual diff',
   },
 };
-const loading = ref(loader.editor);
+const loading = ref({ ...loader.editor });
 const iframeRef = ref();
 
 const emit = defineEmits(['switchTabEmit']);
@@ -80,17 +80,11 @@ async function handleDiffChange(data: {
     icon: 'check',
     color: 'positive',
   });
-  loading.value = loader.editor;
+  loading.value = { ...loader.editor };
   reloadIframe();
 }
 
 function gotoDiffLink() {
-  $q.notify({
-    message: 'Updating changes',
-    caption: 'Please wait…',
-    color: 'primary',
-    spinner: true,
-  });
   props.toggleEditTab();
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
@@ -115,10 +109,11 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   switch (data.type) {
     case 'saved-changes':
-      loading.value = loader.changes;
+      loading.value = { ...loader.changes };
       break;
 
     case 'deleted-revision':
+      loading.value = { ...loader.changes };
       gotoDiffLink();
       break;
     default:

@@ -9,7 +9,7 @@ const app = new Hono().basePath(`/${functionName}`);
 app.use("*", corsMiddleware);
 app.post("/", async (c) => {
   const supabaseClient = createSupabaseClient(
-    c.req.header("Authorization")!,
+    c.req.header("Authorization"),
   );
   const {
     data: { user },
@@ -26,8 +26,8 @@ app.post("/", async (c) => {
       .eq("id", user.id)
       .single()
   ).data;
-  const backgrounds = Deno.env
-    .get("WIKIADVISER_BACKGROUND_COLORS")!
+  const backgrounds = (Deno.env
+    .get("WIKIADVISER_BACKGROUND_COLORS") ?? "f6f8fa, ffffff")
     .split(", ");
   let avatar = profile.avatar_url ?? (await getGravatar(profile.email));
   let defaultAvatar = false;
@@ -54,7 +54,7 @@ app.post("/", async (c) => {
 
 app.delete("/:id", async (c) => {
   const supabaseClient = createSupabaseClient(
-    c.req.header("Authorization")!,
+    c.req.header("Authorization"),
   );
   const {
     data: { user },
@@ -71,8 +71,8 @@ app.delete("/:id", async (c) => {
       .eq("id", user.id)
       .single()
   ).data;
-  const backgrounds = Deno.env
-    .get("WIKIADVISER_BACKGROUND_COLORS")!
+  const backgrounds = (Deno.env
+    .get("WIKIADVISER_BACKGROUND_COLORS") ?? "f6f8fa, ffffff")
     .split(", ");
   const { error: deleteError } = await supabaseClient
     .from("profiles")

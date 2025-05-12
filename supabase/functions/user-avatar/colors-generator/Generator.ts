@@ -90,7 +90,7 @@ export default class ColorGenerator {
     for (const bg of this.backgroundColors) {
       while (
         !contrasted &&
-        calculateLuminance(this.baseColor) < this.LUMINANCE_RECOMANDATION
+        calculateLuminance(this.baseColor) < this.CONTRAST_RECOMANDATION
       ) {
         this.baseColor.red = Math.min(255, this.baseColor.red + 10);
         this.baseColor.green = Math.min(255, this.baseColor.green + 10);
@@ -105,7 +105,7 @@ export default class ColorGenerator {
     }
 
     return {
-      color: rgbToHex(this.baseColor),
+      mainColor: rgbToHex(this.baseColor),
       fontColor:
         calculateLuminance(this.baseColor) < this.FONT_WHITE_LUMINANCE
           ? "ffffff"

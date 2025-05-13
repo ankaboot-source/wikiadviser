@@ -17,8 +17,11 @@ const allowedRequests = [
   "/wiki/en/index.php/Simple_Redirectable_Article",
 ];
 allowedRequests.forEach((request, index) => {
-  Deno.test(`should allow request ${index}`, () => {
-    const result = Boolean(request.match(allowedPrefixRegEx));
-    assertEquals(result, true);
-  });
+  Deno.test(
+    `Testing request restriction: Should allow request ${index}`,
+    () => {
+      const result = Boolean(request.match(allowedPrefixRegEx));
+      assertEquals(result, true);
+    }
+  );
 });

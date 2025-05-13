@@ -36,9 +36,3 @@ export const corsMiddleware: MiddlewareHandler = async (c, next) => {
   }
 };
 
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-}; // kept for user-avatar, remove once refactored

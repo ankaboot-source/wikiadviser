@@ -26,7 +26,10 @@ function buildAuthUiAvatar(
  * @param backgroundColors - Array of background colors to choose from.
  * @returns the URL of the generated UI avatar.
  */
-export default function generateAvatar(email: string, backgroundColors: string[]) {
+export default function generateAvatar(
+  email: string,
+  backgroundColors: string[],
+) {
   const { color, fontColor } = new ColorsGenerator(
     encodeMD5(email),
     backgroundColors

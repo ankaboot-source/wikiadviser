@@ -84,7 +84,7 @@ export default class ColorGenerator {
    *
    * @returns {{ color: string, fontColor: string }}
    */
-  generateColors(): { mainColor: string; fontColor: string } {
+  generateColors(): { color: string; fontColor: string } {
     let contrasted = false;
 
     for (const bg of this.backgroundColors) {

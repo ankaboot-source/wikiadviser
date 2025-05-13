@@ -26,34 +26,28 @@ const pageContent = Deno.readTextFileSync(pageContentPath);
 const expectedAddSourceExternalLinks = Deno.readTextFileSync(
   expectedAddSourceExternalLinksPath
 );
-Deno.test(
-  "Testing wikitext parsing (XML file): Adds source to external links",
-  () => {
-    assertEquals(
-      addSourceExternalLinks(pageContent, sourceLanguage),
-      expectedAddSourceExternalLinks
-    );
-  }
-);
+Deno.test("Testing wikitext parsing: Adds source to external links", () => {
+  assertEquals(
+    addSourceExternalLinks(pageContent, sourceLanguage),
+    expectedAddSourceExternalLinks
+  );
+});
 
 const expectedAddSourceTemplate = Deno.readTextFileSync(
   expectedAddSourceTemplatePath
 );
-Deno.test(
-  "Testing wikitext parsing (XML file): Adds source to templates",
-  () => {
-    assertEquals(
-      addSourceTemplate(expectedAddSourceExternalLinks, sourceLanguage),
-      expectedAddSourceTemplate
-    );
-  }
-);
+Deno.test("Testing wikitext parsing: Adds source to templates", () => {
+  assertEquals(
+    addSourceTemplate(expectedAddSourceExternalLinks, sourceLanguage),
+    expectedAddSourceTemplate
+  );
+});
 
 const expectedConvertSourceTemplateToLink = Deno.readTextFileSync(
   expectedConvertSourceTemplateToLinkPath
 );
 Deno.test(
-  "Testing wikitext parsing (XML file): Converts certain templates to links",
+  "Testing wikitext parsing: Converts certain templates to links",
   () => {
     assertEquals(
       convertSourceTemplateToLink(expectedAddSourceTemplate, sourceLanguage),

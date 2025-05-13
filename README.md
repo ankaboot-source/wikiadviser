@@ -72,7 +72,7 @@ anon key: { your_anon_key }
 service_role key: { your_service_role_key }
 ```
 
-Copy `.env.example` in frontend and backend to `.env` and update the missing variables accordingly.
+Copy `.env.example` in frontend and supabase/functions to `.env` and update the missing variables accordingly.
 
 ```env
 SUPABASE_PROJECT_URL={your_supabase_api_url}
@@ -82,7 +82,7 @@ SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
 
 ### Run
 
-And finally, start frontend and backend servers by running this command
+And finally, start frontend and supabase-functions servers by running this command
 
 ```sh
 npm run dev:all
@@ -91,8 +91,8 @@ npm run dev:all
 Or if you want to run them separately
 
 ```sh
-# to start the backend
-npm run dev:backend
+# to start the supabase-functions
+npm run dev:supabase-functions
 
 # to start the frontend
 npm run dev:frontend

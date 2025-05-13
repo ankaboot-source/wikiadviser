@@ -10,8 +10,7 @@
 
 - In `MyVisualEditor`
   - Our custom code is marked by `/* Custom WikiAdviser */` comments.
-  - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (backend).
-- In `./backend/.env` use the `service_role` key from <b>supabase</b> for `SUPABASE_SECRET_PROJECT_TOKEN`
+  - Change `const wikiadviserApiHost = "https://api.wikiadviser.io";` to your local wikiadviser Api Host (supabase-functions).
 
 - Don't forget to copy and paste the email templates from `email-templates` to <b>supabase</b> templates.
 

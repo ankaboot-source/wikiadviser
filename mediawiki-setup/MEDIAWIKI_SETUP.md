@@ -475,7 +475,7 @@ Make sure you have setup all the necessary pre-requisits.
 
 ### Using Node
 
-**In both `/frontend` and `/backend` directory**
+**In both `/frontend` and `/supabase/functions` directory**
 
 - Copy `.env.example` to `.env` and update the missing variables accordingly.
 - Install dependencies via` npm i`

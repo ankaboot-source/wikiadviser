@@ -91,11 +91,17 @@ app.delete("/:id", async (c) => {
 
 Deno.serve((req) => {
   try {
-    if (req.method !== "POST" && req.method !== "DELETE") {
+    // Allow OPTIONS requests to reach the Hono app's CORS middleware
+    if (
+      req.method !== "POST" &&
+      req.method !== "DELETE" &&
+      req.method !== "OPTIONS"
+    ) {
       return new Response("Method not allowed", {
         status: 405,
       });
     }
+
     return app.fetch(req);
   } catch (error) {
     const message = error instanceof Error

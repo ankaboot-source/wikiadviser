@@ -84,13 +84,13 @@ export default class ColorGenerator {
    *
    * @returns {{ color: string, fontColor: string }}
    */
-  generateColors(): { mainColor: string; fontColor: string } {
+  generateColors(): { color: string; fontColor: string } {
     let contrasted = false;
 
     for (const bg of this.backgroundColors) {
       while (
         !contrasted &&
-        calculateLuminance(this.baseColor) < this.CONTRAST_RECOMANDATION
+        calculateLuminance(this.baseColor) < this.LUMINANCE_RECOMANDATION
       ) {
         this.baseColor.red = Math.min(255, this.baseColor.red + 10);
         this.baseColor.green = Math.min(255, this.baseColor.green + 10);
@@ -105,7 +105,7 @@ export default class ColorGenerator {
     }
 
     return {
-      mainColor: rgbToHex(this.baseColor),
+      color: rgbToHex(this.baseColor),
       fontColor:
         calculateLuminance(this.baseColor) < this.FONT_WHITE_LUMINANCE
           ? "ffffff"

@@ -30,9 +30,9 @@ export default function generateAvatar(
   email: string,
   backgroundColors: string[],
 ) {
-  const { mainColor, fontColor } = new ColorsGenerator(
+  const { color, fontColor } = new ColorsGenerator(
     encodeMD5(email),
     backgroundColors
   ).generateColors();
-  return buildAuthUiAvatar(email, mainColor, fontColor);
+  return buildAuthUiAvatar(email, color, fontColor);
 }

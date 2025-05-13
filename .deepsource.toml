@@ -15,7 +15,6 @@ name = "docker"
 
 [analyzers.meta]
 dockerfile_paths = [
-  "backend/Dockerfile",
   "frontend/Dockerfile"
 ]
 

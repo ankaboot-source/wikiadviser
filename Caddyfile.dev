@@ -4,7 +4,3 @@ http://localhost:8081 {
 	try_files {path} /index.html
 	file_server
 }
-
-http://localhost:8082 {
-	reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
-}

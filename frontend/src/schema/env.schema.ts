@@ -25,11 +25,6 @@ const envSchema = z.object({
       }
       return str.split(',');
     }),
-  WIKIADVISER_API_ENDPOINT: z
-    .string({
-      required_error: '😱 You forgot to add a front-end URL!',
-    })
-    .url(),
   MEDIAWIKI_ENDPOINT: z
     .string({
       required_error: '😱 You forgot to add a MediaWiki endpoint!',
@@ -46,7 +41,6 @@ const envServer = envSchema.safeParse({
   SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
   SUPABASE_SECRET_PROJECT_TOKEN: process.env.SUPABASE_SECRET_PROJECT_TOKEN,
   WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
-  WIKIADVISER_API_ENDPOINT: process.env.WIKIADVISER_API_ENDPOINT,
   MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
   SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT,
   SENTRY_DSN_FRONTEND: process.env.SENTRY_DSN_FRONTEND,

@@ -283,7 +283,7 @@
       </details>
 
 - Into your MediaWiki instance add `http://localhost/wiki/(language)/index.php/MediaWiki`: Common.css and Common.js
-- Create a Bot user on `http://localhost/wiki/{fr|en}/index.php/Special:BotPasswords`
+- Create a Bot user on `http://localhost/wiki/(language)/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`
 - Final step of setting up mediawiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
 

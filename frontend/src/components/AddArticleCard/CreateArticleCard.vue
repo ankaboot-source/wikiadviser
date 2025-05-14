@@ -61,16 +61,16 @@
 </template>
 
 <script setup lang="ts">
-import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { useQuasar } from 'quasar';
 import { createArticle } from 'src/api/supabaseHelper';
+import UpgradeAccount from 'src/components/Subscription/UpgradeAccountDialoge.vue';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useUserStore } from 'src/stores/userStore';
 import { Profile } from 'src/types';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUserStore } from 'src/stores/userStore';
-import { AxiosError } from 'axios';
 
 const $q = useQuasar();
 const router = useRouter();
@@ -130,8 +130,8 @@ async function addArticle() {
     loadingCreation.value = false;
     creatingArticle.value = false;
 
-    if (error instanceof AxiosError) {
-      hasReachedLimits.value = error.response?.status === 402;
+    if (error instanceof FunctionsHttpError) {
+      hasReachedLimits.value = error.context?.status === 402;
     }
 
     throw error;

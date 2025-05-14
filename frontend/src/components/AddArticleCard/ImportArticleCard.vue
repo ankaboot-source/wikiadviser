@@ -101,7 +101,7 @@
 </template>
 
 <script setup lang="ts">
-import { AxiosError } from 'axios';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { QSpinnerGrid, useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import { importArticle } from 'src/api/supabaseHelper';
@@ -202,9 +202,11 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
   } catch (error) {
     creatingArticle.value = false;
     $q.loading.hide();
-    if (error instanceof AxiosError) {
-      hasReachedLimits.value = error.response?.status === 402;
+
+    if (error instanceof FunctionsHttpError) {
+      hasReachedLimits.value = error.context?.status === 402;
     }
+
     throw error;
   }
 }

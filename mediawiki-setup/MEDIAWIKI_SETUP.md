@@ -5,223 +5,59 @@
 ### Setup MediaWiki
 
 - <details>
-   <summary>You need to have a running mediawiki instance. Self hosting it on a server require some services to be installed as follow (We will be setting 3 environments: Dev, QA and Prod).</summary>
+  <summary>First of all, you need to have a running Mediawiki instance...</summary>
    
-    - Install Apache2
-    - Install PHP, PHP mmodule and additional PHP packages required by MediaWiki ```apt install php libapache2-mod-php php-mbstring php-mysql php-xml```
-    - If you are willing to use local database, install one of these supported DataBase systems: `MariaDB`, `PostgreSQL`, `SQLite` or `MySQL`, it's recommended to use managed Database for better security and performance.
-    - Don't forget to start all the services above!
-    - Configure your databases (you need to create separate databases as many as your wiki instances): 
-   
-    - Login ```sudo mariadb -u root```: 
-      
-    ``` 
-      CREATE DATABASE my_wiki;
-      CREATE USER 'wikiuser'@'localhost' IDENTIFIED BY 'password';
-      GRANT ALL PRIVILEGES ON my_wiki.* TO 'wikiuser'@'localhost' WITH GRANT OPTION;
-    ```
-   
-    - Configure Apache2 to listen on port 8080 for QA instance, 8081 for Dev and 8082 for Prod by adding the following lines to ```/etc/apache2/ports.conf``` :
+  ## How to install?
+	
+  - After a lot of work and tests, we made installing Mediawiki as simple as running a single bash [script](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/mediawiki-setup.sh), all you need to do is :
+  
+    	1. git clone https://github.com/ankaboot-source/wikiadviser.git
+    	2. cd wikiadviser/mediawiki-setup
+        3. tmux new -s mediawiki (it is recommended to run the script in an unbreakable session, as the script take a while to finish we don't want your terminal session to crush in the middle of the setup)
+    	4. bash mediawiki-setup.sh
+        5. tmux attach -t mediawiki (if you got out of the session and want to get back)
+    
+  - **Note!** Currently the script is targeted to Debian based systems.
 
-  ```
-    Listen 127.0.0.1:8080
-    Listen 127.0.0.1:8081
-    Listen 127.0.0.1:8082
-  ```
+  ## How it works?
+  ### Script overview :
+  Our Bash script is designed to install or upgrade a multilingual MediaWiki project (default: en, fr) with a ready to go database dumps, extension support, and Apache/PHP/MariaDB setup.
+  
+  During the script run, a user interaction is required (you will be asked to enter the database name, user and password, will be used to create the database for each instance and setup Localsettings.php)
+  
+  ### Key features:
+  - --upgrade: Used to upgrade Mediawiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs.
 
-  - Next, create these folders `wiki-dev/wiki`, `wiki-demo/wiki`, `wiki-prod/wiki` under `/var/www` and add new sites configuration files under `/etc/apache2/sites-available` :
-  - `wiki-dev.conf`
+  - Default (no flag): triggers a fresh install, including packages, MariaDB, Apache, PHP, MediaWiki, and loading SQL dumps.
+ 
+  ### What it installs?
 
-  ```
-  <VirtualHost *:8081>
-         ServerAdmin webmaster@localhost
-         DocumentRoot /var/www/wiki-dev
-               <Directory /var/www/wiki-dev>
-                        Options FollowSymLinks
-                        AllowOverride All
-                        Require all granted
-               </Directory>
-               LimitRequestFieldSize 16384
-               ErrorLog ${APACHE_LOG_DIR}/error.dev.log
-         CustomLog ${APACHE_LOG_DIR}/access.dev.log combined
-  </VirtualHost>
-  ```
+  - MediaWiki (latest from Wikipedia's Special:Version page) (Language-specific setups in /var/www/mediawiki/wiki/{lang})
 
-  - `wiki-demo.conf`
+  - Apache2 & PHP with required modules
 
-  ```
-  <VirtualHost *:8080>
-         ServerAdmin webmaster@localhost
-         DocumentRoot /var/www/wiki-demo
-               <Directory /var/www/wiki-demo>
-                        Options FollowSymLinks
-                        AllowOverride All
-                        Require all granted
-               </Directory>
-               LimitRequestFieldSize 16384
-               ErrorLog ${APACHE_LOG_DIR}/error.demo.log
-         CustomLog ${APACHE_LOG_DIR}/access.demo.log combined
-  </VirtualHost>
-  ```
+  - MariaDB (v11.4)
 
-  - `wiki-prod.conf`
+  - Composer
+ 
+  ### Ready to Go database
 
-  ```
-  <VirtualHost *:8082>
-         ServerAdmin webmaster@localhost
-         DocumentRoot /var/www/wiki-prod
-               <Directory /var/www/wiki-prod>
-                        Options FollowSymLinks
-                        AllowOverride All
-                        Require all granted
-               </Directory>
-               LimitRequestFieldSize 16384
-               ErrorLog ${APACHE_LOG_DIR}/error.prod.log
-         CustomLog ${APACHE_LOG_DIR}/access.prod.log combined
-  </VirtualHost>
-  ```
+  - The Init dumps are necessary to avoid the manual Mediawiki setup where you have to generate manually a LocalSettings.php file. 
+  - Instead we made two instances (fr, en), we went through the manual setup, then we exported the database dump of each instance which we will use with our ready to go [Localsetting.php file](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/LocalSettings.php) for the automated setup.
+  - The Init dump contain tables and data about mediawiki including a pre-defined admin user and password, the admin credentials are as follow :
+    - FR, EN instance:
+       - User: Admin
+       - Password: admin#2025
+     
+  - **YOU MUST UPDATE YOUR ADMIN CREDENTIALS ONCE YOU FINISH INSTALLING MEDIAWIKI! [GO HERE FOR FRENCH INSTANCE](http://localhost:8080/wiki/fr/index.php/Sp%C3%A9cial:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest) [GO HERE FOR ENGLISH INSTANCE](http://localhost:8080/wiki/en/index.php?title=Special:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest)**
+ 
+  ### How to access your Mediawiki?
 
-  - Enable the created sites: `a2ensite wiki-dev.conf` `a2ensite wiki-demo.conf` `a2ensite wiki-prod.conf`
-  - Restart Apache2 service !
-  - Install MediaWiki required version `git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$mediawiki_version /var/www/wiki-$environment/wiki/$lang` (Replace `$mediawiki_version` with the desired version, `$lang` with instance language en, fr, ...)
-  - On top of apache2 we are running Caddy to auto manage HTTPS, each environment have it's on caddyfile that will be running by docker container.
-  - For Wikiadviser QA server we will configure the following Caddyfile:
-```
-   {$WIKIADVISER_FRONTEND_ENDPOINT} {
-        log {
-          output file /var/log/caddy/access-app-demo.log {
-              roll_size 10MiB
-              roll_keep 10
-              roll_keep_for 24h
-          }
-        }
+  - Apache is configured to serve mediawiki instance locally on port 8080 (Update it accordingly).
+  - You can access mediawiki by going to http://localhost:8080/wiki/fr/index.php http://localhost:8080/wiki/en/index.php
 
-        #### Mediawiki Demo ####
-	     handle /wiki/* {
-          @publicip not client_ip private_ranges
-          forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
-            header_up Host {upstream_hostport}
-            header_up X-Real-IP {remote_host}
-            uri /auth/mediawiki
-            copy_headers X-User X-Client-IP X-Forwarded-Uri
-          }
-          header {
-            -X-Frame-Options
-            +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
-          }
-          rewrite /robots.txt ./robots.txt # Disable search engine indexing
-          reverse_proxy wiki:8080
-        }
-        
-        #### WikiAdviser app-qa ####
-        handle {
-          root * /usr/share/caddy/html
-	        encode gzip
-	        try_files {path} /index.html
-	        file_server
-	        rewrite /robots.txt ./robots.txt # Disable search engine indexing      
-        }
-  }
-
-  {$WIKIADVISER_API_ENDPOINT} {
-         log {
-            output file /var/log/caddy/access-api-demo.log {
-                roll_size 10MiB
-                roll_keep 10
-                roll_keep_for 24h
-            }
-          }
-          reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
-	        request_body {
-		            max_size 10MB
-	        }
-  }
-
-  # Mediawiki Dev
-  {$MEDIAWIKI_DEV_ENDPOINT} {
-          log {
-            output file /var/log/caddy/access-dev.log {
-                roll_size 10MiB
-                roll_keep 10
-                roll_keep_for 24h
-            }
-          }
-          handle /wiki/* {
-              header {
-                -X-Frame-Options
-              }
-              rewrite /robots.txt ./robots.txt # Disable search engine indexing
-              reverse_proxy wiki:8081
-          }
-  }
-```
-  - Wikiadviser Prod server Caddyfile :
-```
-       {$WIKIADVISER_FRONTEND_ENDPOINT} {
-           log {
-             output file /var/log/caddy/access-app-prod.log {
-                 roll_size 10MiB
-                 roll_keep 10
-                 roll_keep_for 24h
-             }
-           }
-
-           #### Mediawiki Prod ####
-           handle /wiki/* {
-             @publicip not client_ip private_ranges
-             forward_auth @publicip {$WIKIADVISER_API_ENDPOINT} {
-               header_up Host {upstream_hostport}
-               header_up X-Real-IP {remote_host}
-               uri /auth/mediawiki
-               copy_headers X-User X-Client-IP X-Forwarded-Uri
-             }
-             header {
-               -X-Frame-Options
-               +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
-             }
-             rewrite /robots.txt ./robots.txt # Disable search engine indexing
-             reverse_proxy wiki:8082
-           }
-        
-           #### WikiAdviser app ####
-           handle {
-             root * /usr/share/caddy/html
-	           encode gzip
-	           try_files {path} /index.html
-	           file_server
-	           rewrite /robots.txt ./robots.txt # Disable search engine indexing      
-           }
-   }
-
-   {$WIKIADVISER_API_ENDPOINT} {
-          log {
-             output file /var/log/caddy/access-api-prod.log {
-                 roll_size 10MiB
-                 roll_keep 10
-                 roll_keep_for 24h
-             }
-           }
-	   reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
-	   request_body {
-		   max_size 10MB
-	   }
-   }
-```
-
-  - [robots.txt](./robots.txt) is used by Caddyfile to Hide the App from appearing on search engines.
-  ```
-    User-agent: *
-    Disallow: /
-  ```
-
-  - Open your mediawiki url, first setup will generate a LocalSettings.php file, add it to the root of your mediawiki installation directory.
   </details>
-
-- You also need to have `MyVisualEditor` and other extensions such us `Wikibase` etc..., in the extensions folder of mediawiki (for example `/var/www/wiki-dev/wiki/en/extensions`), Most of the extensions are bundled within the mediawiki package, no need to install them.
-
-- Copy this [folder](./docs/icons) into mediawiki's `(mediawiki root folder)/resources/assets` to set our icon in the mediawiki instance (Automated).
-
-- Replace <code>LocalSettings.php</code> in the root folder of your mediawiki instance with [LocalSettings.php](./LocalSettings.php)
+  
 
 - Export/Import the CSS & JS from the source wiki depeding on language
 
@@ -447,7 +283,7 @@
       </details>
 
 - Into your MediaWiki instance add `http://localhost/wiki/(language)/index.php/MediaWiki`: Common.css and Common.js
-- Create a Bot user on `http://localhost/w/index.php/Special:BotPasswords`
+- Create a Bot user on `http://localhost/wiki/(language)/index.php/Special:BotPasswords`
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`
 - Final step of setting up mediawiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
 

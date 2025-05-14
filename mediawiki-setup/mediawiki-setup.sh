@@ -213,7 +213,7 @@ else
         declare "${var_prefix}_db_user=${DB_USER}"
 
         read -s -p "Enter the database password for '${ln}' Wiki: " DB_PASS
-        declare "${var_prefix}_db_name=${DB_PASS}"
+        declare "${var_prefix}_db_pass=${DB_PASS}"
 
         echo ""
         echo "Creating Databases..."

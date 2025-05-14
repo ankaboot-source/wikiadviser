@@ -1,4 +1,4 @@
-import { AxiosError } from 'axios';
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { boot } from 'quasar/wrappers';
 
 interface ErrorStatusMessages {
@@ -18,14 +18,18 @@ const ERROR_STATUS_MESSAGES: ErrorStatusMessages = {
 export default boot(({ app }) => {
   // Register global error handler
   app.config.errorHandler = (error, instance, info) => {
+    if (error instanceof FunctionsHttpError) {
+      console.error('func');
+    }
     let message = ERROR_STATUS_MESSAGES[500];
-
-    if (error instanceof AxiosError && error.message === 'Network Error') {
+    if (
+      error instanceof FunctionsHttpError &&
+      error.message === 'Network Error'
+    ) {
       message = ERROR_STATUS_MESSAGES[503];
     }
-
-    if (error instanceof AxiosError && error.response) {
-      message = ERROR_STATUS_MESSAGES[error.response.status];
+    if (error instanceof FunctionsHttpError && error.context) {
+      message = ERROR_STATUS_MESSAGES[error.context.status];
     }
 
     console.error({ info, error });

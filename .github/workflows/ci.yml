@@ -6,35 +6,6 @@ on:
     paths-ignore:
       - ".github/workflows/**"
 jobs:
-  backend:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - name: Use Node.js 20.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20.x
-          cache: "pnpm"
-      - name: Install dependencies
-        run: cd backend && pnpm install --frozen-lockfile
-      - name: Check linting
-        run: cd backend && pnpm run lint
-      - name: Check formatting
-        run: cd backend && pnpm run prettier
-      - name: Run test coverage
-        run: cd backend && pnpm run test:coverage
-      - name: Report results to DeepSource
-        run: |
-          curl https://deepsource.io/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./backend/coverage/cobertura-coverage.xml
-        env:
-          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-
   frontend:
     runs-on: ubuntu-latest
     steps:

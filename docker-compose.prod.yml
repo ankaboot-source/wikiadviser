@@ -1,17 +1,6 @@
 version: "3.1"
 
 services:
-  wikiadviser-api:
-    image: wikiadviser-api:git
-    restart: on-failure
-    container_name: wikiadviser-api
-    build:
-      context: backend
-    env_file:
-      - .env
-    ports:
-      - 127.0.0.1:${WIKIADVISER_API_PORT}:${WIKIADVISER_API_PORT}
-
   wikiadviser-caddy:
     image: wikiadviser-caddy:git
     container_name: wikiadviser-caddy
@@ -23,7 +12,6 @@ services:
     build:
       context: frontend
       args:
-        WIKIADVISER_API_ENDPOINT: ${WIKIADVISER_API_ENDPOINT}
         SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
         SUPABASE_SECRET_PROJECT_TOKEN: ${SUPABASE_SECRET_PROJECT_TOKEN}
         MEDIAWIKI_ENDPOINT: ${MEDIAWIKI_ENDPOINT}
@@ -38,9 +26,7 @@ services:
       - 443:443
       - 80:80
     environment:
-      - WIKIADVISER_API_PORT=${WIKIADVISER_API_PORT}
       - WIKIADVISER_FRONTEND_ENDPOINT=${WIKIADVISER_FRONTEND_ENDPOINT}
-      - WIKIADVISER_API_ENDPOINT=${WIKIADVISER_API_ENDPOINT}
       - WIKIADVISER_LANGUAGES=${WIKIADVISER_LANGUAGES}
       - SENTRY_DSN_FRONTEND=${SENTRY_DSN_FRONTEND}
       - SENTRY_ENV_FRONTEND=${SENTRY_ENV_FRONTEND}
@@ -49,9 +35,6 @@ services:
       - SHARE_LINK_DAY_LIMIT=${SHARE_LINK_DAY_LIMIT}
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
       - X_API_KEY=${X_API_KEY}
-
-    depends_on:
-      - wikiadviser-api
 
 volumes:
   caddy-data:

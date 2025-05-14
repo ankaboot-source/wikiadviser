@@ -1,16 +1,16 @@
-import cors from "cors";
-import express from "express";
+import { corsMiddleware } from '../_shared/middleware/cors.ts';
+import { Hono } from 'hono';
+import { createShareLink } from './createShareLink.ts';
+import { verifyShareLink } from './verifyShareLink.ts';
 
-import { authorizeUser } from "../_shared/middlewares.ts";
-import { createShareLink, verifyShareLink } from "./controllers.ts";
+const functionName = 'share-link';
+const app = new Hono().basePath(`/${functionName}`);
+// Middleware to handle CORS
+app.use('*', corsMiddleware);
+// Add routes
+app.post('/', createShareLink);
+app.get('/:token', verifyShareLink);
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(authorizeUser);
-
-app.post("/share-link", createShareLink);
-app.get("/share-link/:token", verifyShareLink);
-
-app.listen(3000);
+Deno.serve((req) => {
+  return app.fetch(req);
+});

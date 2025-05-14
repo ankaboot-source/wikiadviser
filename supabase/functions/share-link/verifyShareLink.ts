@@ -42,7 +42,7 @@ export async function verifyShareLink(context: Context) {
       return context.json({ message: 'Share link not found' }, 404);
     }
 
-    if (new Date(shareRecord.expired_at!) < new Date()) {
+    if (shareRecord.expired_at && new Date(shareRecord.expired_at) < new Date()) {
       return context.json({ message: 'Share link expired' }, 403);
     }
 

@@ -76,16 +76,5 @@
   }
 }
 
-{$WIKIADVISER_API_ENDPOINT} {
-  log {
-    output file /var/log/caddy/access-api-prod.log {
-      roll_size 10MiB
-      roll_keep 10
-      roll_keep_for 24h
-    }
-  }
-  reverse_proxy wikiadviser-api:{$WIKIADVISER_API_PORT}
-  request_body {
-    max_size 10MB
-  }
-}
+
+

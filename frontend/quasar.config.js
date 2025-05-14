@@ -77,7 +77,6 @@ module.exports = configure(function (/* ctx */) {
         SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
         SUPABASE_SECRET_PROJECT_TOKEN:
           process.env.SUPABASE_SECRET_PROJECT_TOKEN,
-        WIKIADVISER_API_ENDPOINT: process.env.WIKIADVISER_API_ENDPOINT,
         MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
         WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
         SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT,

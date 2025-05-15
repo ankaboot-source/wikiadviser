@@ -1,11 +1,11 @@
 /**
-* Represents a color in RGB format.
-*/
+ * Represents a color in RGB format.
+ */
 export interface RGB {
   red: number;
   green: number;
   blue: number;
- }
+}
 
 /**
  * Converts a hexadecimal color string to RGB format.
@@ -56,11 +56,11 @@ function calculateLuminance(rgb: RGB): number {
 
 export default class ColorGenerator {
   /**
-   * Recommenedd by WCAG 2.0 for calculating contrast ratio.
+   * Recommended by WCAG 2.0 for calculating contrast ratio.
    */
-  private readonly CONTRAST_RECOMANDATION: number = 4.5;
+  private readonly CONTRAST_RECOMMENDATION: number = 4.5;
   /**
-   * The higher the value, the darker the color.
+   * The higher the value, the lighter the color.
    */
   private readonly CROSS_COLORS_LUMINANCE: number = 0.4;
   /**
@@ -90,7 +90,7 @@ export default class ColorGenerator {
     for (const bg of this.backgroundColors) {
       while (
         !contrasted &&
-        calculateLuminance(this.baseColor) < this.LUMINANCE_RECOMANDATION
+        calculateLuminance(this.baseColor) < this.CROSS_COLORS_LUMINANCE
       ) {
         this.baseColor.red = Math.min(255, this.baseColor.red + 10);
         this.baseColor.green = Math.min(255, this.baseColor.green + 10);
@@ -100,7 +100,7 @@ export default class ColorGenerator {
           Math.max(calculateLuminance(this.baseColor), calculateLuminance(bg)) /
           Math.min(calculateLuminance(this.baseColor), calculateLuminance(bg));
 
-        contrasted = contrastRatio >= this.CONTRAST_RECOMANDATION;
+        contrasted = contrastRatio >= this.CONTRAST_RECOMMENDATION;
       }
     }
 

@@ -317,7 +317,8 @@ $wgRateLimits = [
 # Solves lua error attempt to index field 'TitleBlacklist' (a nil value)
 wfLoadExtension( 'TitleBlacklist' );
 
-$wgUsePathInfo = TRUE;
+# Keeps a distinction between 'pretty' URLs and 'ugly' URLs
+$wgUsePathInfo = true;
 
 define("NS_PORTAL", 3000);
 define("NS_PORTAL_TALK", 3001);

@@ -204,6 +204,7 @@ const onSwitchTabEmitChange = (tab: string) => {
   buttonToggle.value = tab;
 };
 
+// To avoid mediawiki title possible redirection (related to case sensitivity)
 function capitalizeFirstLetter(string: string): string {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }

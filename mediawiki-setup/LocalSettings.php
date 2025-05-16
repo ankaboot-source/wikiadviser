@@ -338,5 +338,5 @@ $wgForeignFileRepos[] = [
 wfLoadExtension( 'WikiEditor' );
 $wgWikiEditorRealtimePreview = true;
 
-# to avoid forcing the first letter of links to capitals
+# To avoid forcing the first letter of links to capitals
 $wgCapitalLinks = false;

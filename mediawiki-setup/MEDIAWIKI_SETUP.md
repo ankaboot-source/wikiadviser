@@ -289,10 +289,10 @@
 
 ### Citoid
 To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your 
-  Mediawiki instance `http://localhost:8080/wiki/(language)/index.php/MediaWiki:{file.json}`:
+  Mediawiki instance `http://localhost:8080/wiki/(language)/index.php/MediaWiki:Cite-tool-definition.json`, More configurations below:
   - Mediawiki:Cite-tool-definition.json, Mediawiki:Citoid-template-type-map.json, Mediawiki:Visualeditor-template-tools-definition.json, Mediawiki:Visualeditor-cite-tool-name-chapter
 
-Templates `http://localhost:8080/wiki/(language)/index.php/Template` :
+Templates `http://localhost:8080/wiki/(language)/index.php/Template:Cite_book`, More templates below:
   - Template:Cite_book, Template:Cite_web, Template:Cite_news, Template:Cite_journal
 
 Each template has its own documentation template, make sure to import it as well, it is recommended to export templates by category (citoid category for example) and import them all at once. [More Informations](https://www.mediawiki.org/wiki/Citoid)

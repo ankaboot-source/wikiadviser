@@ -20,6 +20,8 @@ MW_UPGRADE_KEY=$(openssl rand -hex 8)
 
 mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
 mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
+
+REQUIRED_RESOURCES=("./LocalSettings.php" "./wiki-site.conf" "./ports.conf" "../docs" "../MyVisualEditor")
 ##############################################
 
 # This function is common in the first install and upgrade process.
@@ -70,6 +72,13 @@ common_setup() {
 
 ################################### UPGRADE ########################################
 if [[ "$1" == "--upgrade" ]]; then
+
+    # Must run within wikiadviser/mediawiki-setup check 
+    if [[ "$(basename "$PWD")" != "mediawiki-setup" || "$(basename "$(dirname "$PWD")")" != "wikiadviser" ]]; then
+        echo "Error: Please navigate to wikiadviser/mediawiki-setup before running the script."
+        exit 1
+    fi
+
     echo "Starting MediaWiki upgrade process..."
 
     check_job_queue() {
@@ -153,7 +162,28 @@ else
 
 ########################################### INSTALL ##############################################################
 
+    # Must run within wikiadviser/mediawiki-setup check 
+    if [[ "$(basename "$PWD")" != "mediawiki-setup" || "$(basename "$(dirname "$PWD")")" != "wikiadviser" ]]; then
+        echo "Error: Please navigate to wikiadviser/mediawiki-setup before running the script."
+        exit 1
+    fi
+
+    # Check required resources
+    for resource in "${REQUIRED_RESOURCES[@]}"; do
+        if [ ! -e "$resource" ]; then
+            echo "Error: '$resource' does not exist."
+            exit 1
+        fi
+    done
+    echo ""
+    echo "All required resources exist. Continuing script..."
+    echo ""
+    sleep 2
+
     sudo apt -y update && sudo apt -y upgrade
+    
+    # Git
+    sudo apt install git
 
     # Perl & Ploticus (required for EasyTimeline extension)
     sudo apt install -y perl

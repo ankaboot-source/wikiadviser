@@ -1,11 +1,10 @@
 import { Context } from "hono";
+import ENV from "../_shared/schema/env.schema.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import generateAvatar from "./external-avatars/authUi.ts";
 
 export async function deleteUserAvatar(c: Context) {
-  const supabaseClient = createSupabaseClient(
-    c.req.header("Authorization"),
-  );
+  const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
@@ -15,15 +14,9 @@ export async function deleteUserAvatar(c: Context) {
     });
   }
   const profile = (
-    await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
+    await supabaseClient.from("profiles").select("*").eq("id", user.id).single()
   ).data;
-  const backgrounds = (Deno.env
-    .get("WIKIADVISER_BACKGROUND_COLORS") ?? "f6f8fa, ffffff")
-    .split(", ");
+  const backgrounds = ENV.WIKIADVISER_BACKGROUND_COLORS;
   const { error: deleteError } = await supabaseClient
     .from("profiles")
     .update({

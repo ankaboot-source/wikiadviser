@@ -1,12 +1,11 @@
 import { Context } from "hono";
+import ENV from "../_shared/schema/env.schema.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import generateAvatar from "./external-avatars/authUi.ts";
 import getGravatar from "./external-avatars/gravatar.ts";
 
 export async function updateUserAvatar(c: Context) {
-  const supabaseClient = createSupabaseClient(
-    c.req.header("Authorization"),
-  );
+  const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
@@ -16,15 +15,11 @@ export async function updateUserAvatar(c: Context) {
     });
   }
   const profile = (
-    await supabaseClient
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single()
+    await supabaseClient.from("profiles").select("*").eq("id", user.id).single()
   ).data;
-  const backgrounds = (Deno.env
-    .get("WIKIADVISER_BACKGROUND_COLORS") ?? "f6f8fa, ffffff")
-    .split(", ");
+
+  const backgrounds = ENV.WIKIADVISER_BACKGROUND_COLORS;
+
   let avatar = profile.avatar_url ?? (await getGravatar(profile.email));
   let defaultAvatar = false;
 

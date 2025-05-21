@@ -6,6 +6,7 @@
   "author": "Jaafoura <mehdi.jaafourag@gmail.com>",
   "private": true,
   "scripts": {
+    "install-deps": "pnpm i",
     "lint": "eslint . --ext .js,.ts,.vue",
     "lint:fix": "pnpm run lint --fix",
     "prettier": "prettier --check \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",

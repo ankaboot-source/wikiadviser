@@ -1,4 +1,5 @@
 [![DeepSource](https://app.deepsource.com/gh/ankaboot-source/wikiadviser.svg/?label=code+coverage&show_trend=true&token=ZTDAa-DQcTJvNvMiXJlquOHn)](https://app.deepsource.com/gh/ankaboot-source/wikiadviser/)
+[![Maintainability](https://qlty.sh/badges/612e2b1b-61ab-468f-a868-fc13e0ec47f1/maintainability.svg)](https://qlty.sh/gh/ankaboot-source/projects/wikiadviser)
 
 <div>
   <div align="center">
@@ -39,19 +40,13 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Starting with playwright
-
-   ```sh
-   sudo npx playwright install-deps
-   ```
-
-2. Then install project dependencies
+1. Install project dependencies
 
    ```sh
    npm run install-deps
    ```
 
-3. And finally we need to start Supabase
+2. And then we need to start Supabase
 
    ```sh
    npx supabase start

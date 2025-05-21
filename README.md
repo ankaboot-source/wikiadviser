@@ -39,19 +39,13 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Starting with playwright
-
-   ```sh
-   sudo npx playwright install-deps
-   ```
-
-2. Then install project dependencies
+1. Install project dependencies
 
    ```sh
    npm run install-deps
    ```
 
-3. And finally we need to start Supabase
+2. And then we need to start Supabase
 
    ```sh
    npx supabase start

@@ -14,6 +14,19 @@ const envSchema = z.object({
       }
       return str.split(",");
     }),
+  WIKIADVISER_BACKGROUND_COLORS: z
+    .string({
+      required_error: "😱 You forgot to add WikiAdviser background colors!",
+    })
+    .transform((str) => {
+      const regex = /^[0-9a-f]{6}(,[0-9a-f]{6})*$/gi;
+      if (!regex.test(str)) {
+        throw new Error(
+          "😱 WikiAdviser background colors format is wrong! (E.g.:= f6f8fa,ffffff)"
+        );
+      }
+      return str.split(",");
+    }),
   WIKIPEDIA_PROXY: z
     .string({
       required_error: "😱 You forgot to add a Wikipedia proxy URL!",
@@ -44,6 +57,7 @@ const envSchema = z.object({
 
 const envServer = envSchema.safeParse({
   WIKIADVISER_LANGUAGES: Deno.env.get("WIKIADVISER_LANGUAGES"),
+  WIKIADVISER_BACKGROUND_COLORS: Deno.env.get("WIKIADVISER_BACKGROUND_COLORS"),
   WIKIPEDIA_PROXY: Deno.env.get("WIKIPEDIA_PROXY"),
   MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
   MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),

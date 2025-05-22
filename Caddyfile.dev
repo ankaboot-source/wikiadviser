@@ -47,7 +47,7 @@
 
     # Redirect simple article links to Wikipedia
     # simple e.g. /wiki/en/index.php/Main_page
-    reverse_proxy {$MEDIAWIKI_INTERNAL_ENDPOINT} {
+    reverse_proxy {$MEDIAWIKI_HOST} {
       handle_response {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
         # Redirect simple articles

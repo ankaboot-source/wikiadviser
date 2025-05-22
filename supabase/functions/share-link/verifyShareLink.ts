@@ -10,20 +10,13 @@ export async function verifyShareLink(context: Context) {
 
   const { user } = (await supabaseClient.auth.getUser()).data;
 
-  if (!user) {
-    return context.text('Unauthorized', {
-      status: 401,
-    });
-  }
+  if (!user) throw new Error('Unauthorized', { cause: { status: 401 } });
 
   const profile = (
     await supabaseClient.from('profiles').select('*').eq('id', user.id).single()
   ).data;
 
-  if (!profile) {
-    return context.json({ message: 'Unauthorized' }, 403);
-  }
-
+  if (!profile) throw new Error('Unauthorized', { cause: { status: 403 } });
   context.set('user', profile);
   try {
     const token = context.req.param('token');
@@ -38,12 +31,14 @@ export async function verifyShareLink(context: Context) {
       .limit(1)
       .single();
 
-    if (!shareRecord) {
-      return context.json({ message: 'Share link not found' }, 404);
-    }
+    if (!shareRecord)
+      throw new Error('Share link not found', { cause: { status: 404 } });
 
-    if (shareRecord.expired_at && new Date(shareRecord.expired_at) < new Date()) {
-      return context.json({ message: 'Share link expired' }, 403);
+    if (
+      shareRecord.expired_at &&
+      new Date(shareRecord.expired_at) < new Date()
+    ) {
+      throw new Error('Share link expired', { cause: { status: 403 } });
     }
 
     const { article_id: articleId, role } = shareRecord;
@@ -67,11 +62,9 @@ export async function verifyShareLink(context: Context) {
     }
 
     if (articlePermissions.length >= user.allowed_articles) {
-      return context.json(
-        {
-          message: 'You have reached the maximum number of articles allowed.',
-        },
-        402
+      throw new Error(
+        'You have reached the maximum number of articles allowed.',
+        { cause: { status: 402 } }
       );
     }
 

@@ -6,25 +6,13 @@ import { Database } from '../_shared/types/index.ts';
 type ShareLink = Database['public']['Tables']['share_links']['Row'];
 
 export async function createShareLink(context: Context) {
-  const supabaseClient = createSupabaseClient(
-    context.req.header('Authorization')
-  );
-
+  const supabaseClient = createSupabaseClient(context.req.header('Authorization'));
   const { user } = (await supabaseClient.auth.getUser()).data;
 
-  if (!user) {
-    return context.text('Unauthorized', {
-      status: 401,
-    });
-  }
+  if (!user) throw new Error('Unauthorized', { cause: { status: 401 } });
 
-  const profile = (
-    await supabaseClient.from('profiles').select('*').eq('id', user.id).single()
-  ).data;
-
-  if (!profile) {
-    return context.json({ message: 'Unauthorized' }, 403);
-  }
+  const profile = (await supabaseClient.from('profiles').select('*').eq('id', user.id).single()).data;
+  if (!profile) throw new Error('Unauthorized', { cause: { status: 403 } });
 
   context.set('user', profile);
   try {
@@ -37,9 +25,7 @@ export async function createShareLink(context: Context) {
 
     const supabaseAdmin = createSupabaseAdmin();
 
-    if (!articleId && !expiresAt) {
-      return context.json({ message: 'Invalid request body' }, 400);
-    }
+    if (!articleId || !expiresAt) throw new Error('Invalid request body', { cause: { status: 400 } });
 
     const hasPermission = await supabaseAdmin
       .from('permissions')
@@ -49,9 +35,7 @@ export async function createShareLink(context: Context) {
       .eq('role', 'owner')
       .single();
 
-    if (!hasPermission) {
-      return context.json({ message: 'Insufficient permissions' }, 403);
-    }
+      if (!hasPermission) throw new Error('Insufficient permissions', { cause: { status: 403 } });
 
     const { data: shareLink } = await supabaseAdmin
       .from('share_links')

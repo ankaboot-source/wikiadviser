@@ -40,7 +40,6 @@
       -X-Frame-Options
       +Content-Security-Policy "frame-ancestors http://localhost:9000";
     }
-    rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
     # Redirect simple article links to Wikipedia
     # simple e.g. /wiki/en/index.php/Main_page

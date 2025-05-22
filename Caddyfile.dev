@@ -28,13 +28,17 @@
       }
     }
 
-    @needsAuth not header X-Api-Key {$X_API_KEY}
-    forward_auth @needsAuth {$SUPABASE_PROJECT_URL} {
-      header_up Host {upstream_hostport}
-      header_up X-Real-IP {remote_host}
-      uri /functions/v1/restrict-mediawiki-access
-      copy_headers X-User X-Client-IP X-Forwarded-Uri
-    }
+####
+# For more security, Un-comment the lines below if you decided to serve wikiadviser on a public domain
+# Forward auth will deny access to your mediawiki instance except for wikiadviser users
+#### 
+#    @needsAuth not header X-Api-Key {$X_API_KEY}
+#    forward_auth @needsAuth {$SUPABASE_PROJECT_URL} {
+#      header_up Host {upstream_hostport}
+#      header_up X-Real-IP {remote_host}
+#      uri /functions/v1/restrict-mediawiki-access
+#      copy_headers X-User X-Client-IP X-Forwarded-Uri
+#    }
     
     header {
       -X-Frame-Options

@@ -323,5 +323,5 @@ Make sure you have setup all the necessary pre-requisits.
 - Start wikiadviser services:
 
 ```sh
-docker compose -f docker-compose.prod.yml -f docker-compose.dev.yml up --build --force-recreate -d
+docker compose -f docker-compose.dev.yml up --build --force-recreate -d
 ```

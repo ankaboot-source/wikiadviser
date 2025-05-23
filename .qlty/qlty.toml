@@ -47,10 +47,6 @@ name = "checkov"
 name = "dockerfmt"
 
 [[plugin]]
-name = "dotenv-linter"
-mode = "comment"
-
-[[plugin]]
 name = "eslint"
 version = "8.57.0"
 package_file = "frontend/package.json"

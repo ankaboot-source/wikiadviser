@@ -26,7 +26,7 @@
   During the script run, a user interaction is required (you will be asked to enter the database name, user and password, will be used to create the database for each instance and setup Localsettings.php)
   
   ### Key features:
-  - --upgrade: Used to upgrade Mediawiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs.
+  - --upgrade: Used to upgrade Mediawiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs. (dont forget to upgrade the VisualEditor too using `prepare_VisualEditor_upgrade.sh`)
 
   - Default (no flag): triggers a fresh install, including packages, MariaDB, Apache, PHP, MediaWiki, and loading SQL dumps.
  

@@ -13,7 +13,7 @@
 
 - Don't forget to copy and paste the email templates from `email-templates` to <b>supabase</b> templates.
 
-- When deleting a user, their contributions are reassigned to `deleted-user@wikiadviser.io`, so don't forget to create a user in supabase with that email.
+- When deleting a user, their contributions are reassigned to `deleted-user@wikiadviser.io`.
 
 ## Important links and references
 

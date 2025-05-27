@@ -10,3 +10,7 @@ VALUES (
   'deleted-user@wikiadviser.io',
   crypt(gen_random_uuid()::text, gen_salt('bf')),
   now());
+
+UPDATE public.profiles
+SET avatar_url = '/favicon.ico'
+WHERE email IS 'deleted-user@wikiadviser.io';

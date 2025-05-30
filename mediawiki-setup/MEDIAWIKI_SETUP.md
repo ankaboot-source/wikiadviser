@@ -305,7 +305,7 @@ You need to have a supabase instance (In the cloud or locally hosted):
 
 - If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
 
-- If you have MediaWiki installed locally, make sure allow the MediaWiki port through the firewall (Allows Supabase Edge Functions to access the local MediaWiki instance):
+- If you have MediaWiki installed locally, make sure to allow the MediaWiki port through the firewall (Allows Supabase Edge Functions to access the local MediaWiki instance):
   ```sh
   sudo ufw allow 8080 # 8080 being the MediaWiki port
   ```

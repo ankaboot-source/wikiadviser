@@ -303,7 +303,12 @@ You need to have a supabase instance (In the cloud or locally hosted):
 
 - If using a cloud instance, you need to run the migrations manually.
 
-* If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+- If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+
+- If you have mediawiki installed locally, make sure allow the mediawiki port through the firewall (allows edge-function to local mediawiki communication):
+  ```sh
+  sudo ufw allow 8080 # 8080 being the mediawiki port
+  ```
 
 ## Running the Project
 

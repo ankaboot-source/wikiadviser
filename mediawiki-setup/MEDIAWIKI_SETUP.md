@@ -5,11 +5,11 @@
 ### Setup MediaWiki
 
 - <details>
-  <summary>First of all, you need to have a running Mediawiki instance...</summary>
+  <summary>First of all, you need to have a running MediaWiki instance...</summary>
    
   ## How to install?
 	
-  - After a lot of work and tests, we made installing Mediawiki as simple as running a single bash [script](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/mediawiki-setup.sh), all you need to do is :
+  - After a lot of work and tests, we made installing MediaWiki as simple as running a single bash [script](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/mediawiki-setup.sh), all you need to do is :
   
     	1. git clone https://github.com/ankaboot-source/wikiadviser.git
     	2. cd wikiadviser/mediawiki-setup
@@ -26,7 +26,7 @@
   During the script run, a user interaction is required (you will be asked to enter the database name, user and password, will be used to create the database for each instance and setup Localsettings.php)
   
   ### Key features:
-  - --upgrade: Used to upgrade Mediawiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs. (dont forget to upgrade the VisualEditor too using `prepare_VisualEditor_upgrade.sh`)
+  - --upgrade: Used to upgrade MediaWiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs. (dont forget to upgrade the VisualEditor too using `prepare_VisualEditor_upgrade.sh`)
 
   - Default (no flag): triggers a fresh install, including packages, MariaDB, Apache, PHP, MediaWiki, and loading SQL dumps.
  
@@ -42,19 +42,19 @@
  
   ### Ready to Go database
 
-  - The Init dumps are necessary to avoid the manual Mediawiki setup where you have to generate manually a LocalSettings.php file. 
+  - The Init dumps are necessary to avoid the manual MediaWiki setup where you have to generate manually a LocalSettings.php file. 
   - Instead we made two instances (fr, en), we went through the manual setup, then we exported the database dump of each instance which we will use with our ready to go [Localsetting.php file](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/LocalSettings.php) for the automated setup.
-  - The Init dump contain tables and data about mediawiki including a pre-defined admin user and password, the admin credentials are as follow :
+  - The Init dump contain tables and data about MediaWiki including a pre-defined admin user and password, the admin credentials are as follow :
     - FR, EN instance:
        - User: Admin
        - Password: admin#2025
      
   - **YOU MUST UPDATE YOUR ADMIN CREDENTIALS ONCE YOU FINISH INSTALLING MEDIAWIKI! [GO HERE FOR FRENCH INSTANCE](http://localhost:8080/wiki/fr/index.php/Sp%C3%A9cial:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest) [GO HERE FOR ENGLISH INSTANCE](http://localhost:8080/wiki/en/index.php?title=Special:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest)**
  
-  ### How to access your Mediawiki?
+  ### How to access your MediaWiki?
 
-  - Apache is configured to serve mediawiki instance locally on port 8080 (Update it accordingly).
-  - You can access mediawiki by going to http://localhost:8080/wiki/fr/index.php http://localhost:8080/wiki/en/index.php
+  - Apache is configured to serve MediaWiki instance locally on port 8080 (Update it accordingly).
+  - You can access MediaWiki by going to http://localhost:8080/wiki/fr/index.php http://localhost:8080/wiki/en/index.php
 
   </details>
   
@@ -285,7 +285,7 @@
 - Into your MediaWiki instance add `http://localhost:8080/wiki/(language)/index.php/MediaWiki`: Common.css and Common.js
 - Create a Bot user on `http://localhost:8080/wiki/(language)/index.php/Special:BotPasswords`: Add it to [.env.example](https://github.com/ankaboot-source/wikiadviser/blob/main/.env.example)
 - In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`
-- Final step of setting up mediawiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
+- Final step of setting up MediaWiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
 
 ### Citoid
 To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your 
@@ -305,9 +305,9 @@ You need to have a supabase instance (In the cloud or locally hosted):
 
 - If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
 
-- If you have mediawiki installed locally, make sure allow the mediawiki port through the firewall (allows supabase edge functions to access the local mediawiki):
+- If you have MediaWiki installed locally, make sure allow the MediaWiki port through the firewall (Allows Supabase Edge Functions to access the local MediaWiki instance):
   ```sh
-  sudo ufw allow 8080 # 8080 being the mediawiki port
+  sudo ufw allow 8080 # 8080 being the MediaWiki port
   ```
 
 ## Running the Project

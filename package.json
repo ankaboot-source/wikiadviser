@@ -8,15 +8,15 @@
     "install-deps:frontend": "pnpm i --prefix ./frontend",
     "dev:all": "pnpm run dev:frontend & pnpm run dev:supabase-functions & wait",
     "dev:frontend": "pnpm run --prefix ./frontend dev",
-    "dev:supabase-functions": "supabase functions serve",
-    "test:supabase-functions": "deno test supabase/functions --allow-all"
+    "dev:supabase-functions": "pnpx supabase functions serve --no-verify-jwt --debug",
+    "dev:supabase": "pnpx supabase start --debug"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ankaboot-source/wikiadviser.git"
   },
   "devDependencies": {
-    "supabase": "^1.226.4"
+    "supabase": "^2.23.4"
   },
   "keywords": [],
   "author": "",

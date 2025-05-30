@@ -22,7 +22,8 @@ ENV SENTRY_ENV_FRONTEND ${SENTRY_ENV_FRONTEND}
 ENV POSTHOG_API_KEY ${POSTHOG_API_KEY}
 ENV POSTHOG_API_HOST ${POSTHOG_API_HOST}
 
-RUN npm install && npm run build
+RUN npm install -g pnpm
+RUN pnpm install && pnpm run build
 
 FROM caddy:2.8.0-alpine as production-stage
 COPY --from=build-stage /wikiadviser-frontend/dist/spa /usr/share/caddy/html

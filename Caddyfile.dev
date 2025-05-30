@@ -1,5 +1,5 @@
 # Wikiadviser
-{$WIKIADVISER_FRONTEND_ENDPOINT} {
+{$WIKIADVISER_FRONTEND_ENDPOINT}, {$MEDIAWIKI_REVERSE_PROXY_ENDPOINT} {
   log {
     output file /var/log/caddy/access.log {
       roll_size 10MiB
@@ -40,10 +40,10 @@
 #      copy_headers X-User X-Client-IP X-Forwarded-Uri
 #    }
     
-    header {
-      -X-Frame-Options
-      +Content-Security-Policy "frame-ancestors http://localhost:9000";
-    }
+#    header {
+#      -X-Frame-Options
+#      +Content-Security-Policy "frame-ancestors https://*.domain.com";
+#    }
 
     # Redirect simple article links to Wikipedia
     # simple e.g. /wiki/en/index.php/Main_page

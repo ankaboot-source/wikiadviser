@@ -316,7 +316,7 @@ Make sure you have setup all the necessary pre-requisits.
 
 ### Using Node
 
-**In both `/frontend` and `/supabase/functions` directory**
+**In both `./wikiadviser/frontend` and `./wikiadviser/supabase/functions` directory**
 
 - Copy `.env.example` to `.env` and update the missing variables accordingly.
 - Install dependencies via` npm i`
@@ -324,7 +324,7 @@ Make sure you have setup all the necessary pre-requisits.
 
 ### Using Docker
 
-- Copy `.env.example` to `.env` and update the missing variables accordingly.
+- Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
 - Start wikiadviser services:
 
 ```sh

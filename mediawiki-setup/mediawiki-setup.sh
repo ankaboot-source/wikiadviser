@@ -13,8 +13,8 @@ MW_PORT="8080"
 CONF_DIR="../" # Wikiadviser root folder
 
 #LANGUAGES=("en" "fr") # Languages of your wiki instances.
-read -p "Please enter the wiki instance language to install (fr or en) (default: fr): " LANGUAGES
-LANGUAGES=${LANGUAGES:-"fr"}
+read -p "Please enter the wiki instance language to install (en or fr) (default: en): " LANGUAGES
+LANGUAGES=${LANGUAGES:-"en"}
 read -a LANG_ARRAY <<< "$LANGUAGES"
 # Sanitize input
 for ln in "${LANG_ARRAY[@]}"; do

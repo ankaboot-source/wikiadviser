@@ -16,6 +16,14 @@ CONF_DIR="../" # Wikiadviser root folder
 read -p "Please enter the wiki instance language to install (fr or en) (default: fr): " LANGUAGES
 LANGUAGES=${LANGUAGES:-"fr"}
 read -a LANG_ARRAY <<< "$LANGUAGES"
+# Sanitize input
+for ln in "${LANG_ARRAY[@]}"; do
+    if [[ "$ln" != "fr" && "$ln" != "en" ]]; then
+        echo "Invalid language code: $ln"
+        echo "Allowed values are: fr, en"
+        exit 1
+    fi
+done
 
 DUMP_PATH="./dump"
 
@@ -33,25 +41,25 @@ common_setup() {
     echo "Install Additional extensions"
     echo ""
     #PageForms
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/PageForms.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/PageForms
     done
     #ExternalData
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/ExternalData.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/ExternalData
     done
     #RegularToolTips
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/RegularTooltips.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/RegularTooltips
     done
     #HTMLTags
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/extensions/HTMLTags.git /var/www/${MW_PROJECT_DIR}/wiki/$ln/extensions/HTMLTags
     done
 
     CURRENT_DIR="$(pwd)" # save current directory
 
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln || exit
         echo "Mediawiki Submodule update (${ln} wiki)..."
         git submodule update --init --recursive # update extensions,skins...
@@ -59,7 +67,7 @@ common_setup() {
         cd extensions/TemplateStyles && composer update --no-dev && cd ../..
     done
 
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         cd /var/www/${MW_PROJECT_DIR}/wiki/$ln/ || exit
         mv composer.local.json-sample composer.local.json
         composer install --no-dev --no-interaction
@@ -101,7 +109,7 @@ if [[ "$1" == "--upgrade" ]]; then
     }
 
     echo "Clearing Pending Jobs"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         while true; do
             if check_job_queue "$ln"; then
                 echo "Job queue is empty for $ln."
@@ -123,21 +131,21 @@ if [[ "$1" == "--upgrade" ]]; then
   
 
     echo "Creating Database dumps"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         read -p "Enter the database name for '${ln}' wiki [If you used the default name wiki_${ln} during init setup, you can Press Enter to continue]: " input_db_name
         input_db_name=${input_db_name:-"wiki_${ln}"}
         sudo -S mysqldump -u root $input_db_name > "$DUMP_PATH/dump-$ln.sql"
     done
 
     echo "Backing up old MediaWiki folders"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         if [[ -d "/var/www/${MW_PROJECT_DIR}/wiki/$ln" ]]; then
             mv "/var/www/${MW_PROJECT_DIR}/wiki/$ln" "/var/www/${MW_PROJECT_DIR}/wiki/$ln.old"
         fi
     done
 
     echo  "Downloading new MediaWiki package"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone "https://gerrit.wikimedia.org/r/mediawiki/core.git" --branch "wmf/$MW_VERSION" "/var/www/${MW_PROJECT_DIR}/wiki/$ln"
     done
 
@@ -147,7 +155,7 @@ if [[ "$1" == "--upgrade" ]]; then
     common_setup 
 
     echo "Copy old configuration to the new installation directories"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         cp /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/LocalSettings.php /var/www/${MW_PROJECT_DIR}/wiki/$ln/LocalSettings.php
         cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/images /var/www/${MW_PROJECT_DIR}/wiki/$ln
         cp -r /var/www/${MW_PROJECT_DIR}/wiki/$ln.old/resources/assets/icons /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/assets/icons
@@ -225,13 +233,13 @@ else
     echo ""
 
     # Download mediawiki init dumps
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         dump_file="mw_init_dump_${ln}"
         wget "${!dump_file}" -O ./init-dump-${ln}.sql
     done
 
     # Setup DB
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
 
         var_prefix="${ln}"
   
@@ -273,24 +281,24 @@ else
     echo ""
     sudo chown $USER:$USER /var/www/${MW_PROJECT_DIR}
     echo -e "Install mediawiki version ${MW_VERSION}"
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$MW_VERSION /var/www/${MW_PROJECT_DIR}/wiki/$ln
     done
 
     sleep 2
 
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
         sudo chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
     done
 
     # Copy wikiadviser resources into mediawiki
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
         cp -r ${CONF_DIR}/docs/assets/*  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
         cp -r ${CONF_DIR}/MyVisualEditor  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
     done
     
-    for ln in "${LANGUAGES[@]}"; do
+    for ln in "${LANG_ARRAY[@]}"; do
 
         var_prefix="${ln}"
 

@@ -11,7 +11,11 @@ MW_PROJECT_DIR="mediawiki"
 MW_PORT="8080"
 
 CONF_DIR="../" # Wikiadviser root folder
-LANGUAGES=("en" "fr") # Languages of your wiki instances.
+
+#LANGUAGES=("en" "fr") # Languages of your wiki instances.
+read -p "Please enter the wiki instance language to install (fr or en) (default: fr): " LANGUAGES
+LANGUAGES=${LANGUAGES:-"fr"}
+read -a LANG_ARRAY <<< "$LANGUAGES"
 
 DUMP_PATH="./dump"
 

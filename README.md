@@ -30,6 +30,7 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 ### Pre-requisites
 
+- Clone the repository
 - [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
@@ -40,13 +41,19 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Install project dependencies
+1. Install `pnpm` globally
+
+   ```sh
+   npm install -g pnpm
+   ```
+
+2. Install project dependencies
 
    ```sh
    npm run install-deps
    ```
 
-2. And then we need to start Supabase
+3. And then we need to start Supabase
 
    ```sh
    npx supabase start

@@ -34,8 +34,7 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-### Setup
-
+### Setup (DEV)
 #### Installing Dependencies
 
 After installing Docker and Node.js, install the required system dependencies
@@ -92,6 +91,37 @@ npm run dev:supabase-functions
 # to start the frontend
 npm run dev:frontend
 ```
+
+### Using Docker
+To run the dockerized solution you need first to setup Supabase SaaS, or locally by running :
+
+1. Install project dependencies
+
+   ```sh
+   npm run install-deps
+   ```
+
+2. And then we need to start Supabase
+
+   ```sh
+   npx supabase start
+   ```
+3. Start Supabase functions
+
+   ```sh
+   # to start the supabase-functions
+   npm run dev:supabase-functions
+   ```
+4. Start wikiadviser
+
+   - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
+   - Start wikiadviser services:
+
+   ```sh
+   docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+   ```
+
+
 
 ## 🤝 Contributing
 

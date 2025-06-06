@@ -117,7 +117,6 @@ To run the dockerized solution you need first to setup Supabase SaaS, or locally
 3. Start Supabase functions
 
    ```sh
-   # to start the supabase-functions
    npm run dev:supabase-functions
    ```
 4. Start wikiadviser

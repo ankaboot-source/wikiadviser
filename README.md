@@ -98,7 +98,8 @@ To run the dockerized solution you need first to setup Supabase SaaS, or locally
 1. Install project dependencies
 
    ```sh
-   npm run install-deps
+   npm install -g pnpm
+   pnpm i
    ```
 
 2. And then we need to start Supabase

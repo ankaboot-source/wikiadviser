@@ -299,13 +299,11 @@ Each template has its own documentation template, make sure to import it as well
 
 ### Supabase
 
-You need to have a supabase instance (In the cloud or locally hosted):
+You need to have a supabase instance (locally hosted):
 
-- If using a cloud instance, you need to run the migrations manually.
+- To use the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
 
-- If you're planning on using the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
-
-- If you have MediaWiki installed locally, make sure to allow the MediaWiki port through the firewall (Allows Supabase Edge Functions to access the local MediaWiki instance):
+- If you have MediaWiki installed locally and have enabled firewall, make sure to allow the MediaWiki port (Allows Supabase Edge Functions to access the local MediaWiki instance):
   ```sh
   sudo ufw allow 8080 # 8080 being the MediaWiki port
   ```

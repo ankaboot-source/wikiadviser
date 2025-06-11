@@ -74,37 +74,37 @@ After installing Docker and Node.js, install the required system dependencies
 
 3. Start Supabase functions
 
+    Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
+
     ```sh
     npm run dev:supabase-functions
     ```
-    
-    Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 
 4. Start WikiAdviser 
    - Docker approach
 
       - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-      - Start wikiadviser services:
+      - Start WikiAdviser services:
 
-      ```sh
-      docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-      ```
+        ```sh
+        docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+        ```
    -
        <details>
        <summary> Dev approach</summary>
 
 
-       1. Finish installing project dependencies
+        - Finish installing project dependencies
 
-           ```sh
-           npm run install-deps:frontend
-           ```
+          ```sh
+          npm run install-deps:frontend
+          ```
 
-
-       2. And finally, start the frontend
-           ```sh
-           npm run dev:frontend
-           ```
+        - Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
+        - Start the frontend
+          ```sh
+          npm run dev:frontend
+          ```
        </details>
 
 

@@ -17,7 +17,8 @@
     	4. bash mediawiki-setup.sh
         5. tmux attach -t mediawiki (if you got out of the session and want to get back)
     
-  - **Note!** Currently the script is targeted to Debian based systems.
+  > [!WARNING]  
+  Currently the script is targeted to Debian based systems.
 
   ## How it works?
   ### Script overview :

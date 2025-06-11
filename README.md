@@ -41,75 +41,67 @@ After installing Docker and Node.js, install the required system dependencies
 
 1. Install Supabase dependencies
 
-   ```sh
-   npm install -g pnpm
-   pnpm i
-   ```
+ ```sh
+ npm install -g pnpm
+ pnpm i
+ ```
 
 2. Start Supabase
 
-    ```sh
-    pnpx supabase start
-    ```
+  ```sh
+  pnpx supabase start
+  ```
+  > [!TIP]
+  > If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
+  > ```sh
+  > sudo usermod -aG docker $USER
+  > newgrp docker
+  > ```
 
-    > [!TIP]
-    >If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
-    >```sh
-    >sudo usermod -aG docker $USER
-    >newgrp docker
-    >```
+  > [!NOTE]
+  > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
+  > ```yml
+  > API URL: { your_api_url }
+  > GraphQL URL: { your_graphql_url }
+  > DB URL: { your_db_url }
+  > Studio URL: { your_studio_url }
+  > Inbucket URL: { your_studio_url }
+  > JWT secret: { your_secret_jwt }
+  > anon key: { your_anon_key }
+  > service_role key: { your_service_role_key }
+  > ```
 
-    > [!Note]
-    > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
-    > ```yml
-    > API URL: { your_api_url }
-    > GraphQL URL: { your_graphql_url }
-    > DB URL: { your_db_url }
-    > Studio URL: { your_studio_url }
-    > Inbucket URL: { your_studio_url }
-    > JWT secret: { your_secret_jwt }
-    > anon key: { your_anon_key }
-    > service_role key: { your_service_role_key }
-    > ```
+3. Start Supabase functions
 
-1. Start Supabase functions
+  > Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 
-    > [!Note]
-    Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
+  ```sh
+  npm run dev:supabase-functions
+  ```
 
-    ```sh
-    npm run dev:supabase-functions
-    ```
-
-2. Start WikiAdviser 
-   - Docker approach
-
-      > [!Note]
-      Copy `.env.example.docker` (in `./wikiadviser` folder) to `.env` and update the missing variables accordingly.
-      
-      Start WikiAdviser services:
-
+4. Start WikiAdviser
+    - Docker approach:
+      > Copy `.env.example.docker` (in `./wikiadviser` folder) to `.env` and update the missing variables accordingly.
       ```sh
       docker compose -f docker-compose.dev.yml up --build --force-recreate -d
       ```
-   -  <details>
-       <summary> Dev approach</summary>
-
+  
+    - <details>
+        <summary>Dev approach:</summary>
+        
         Finish installing project dependencies
-
+        
         ```sh
         npm run install-deps:frontend
         ```
-
-        > [!Note]
-        Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
-
+        
+        > Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
+        
         Start the frontend:
         ```sh
         npm run dev:frontend
         ```
-
-    </details>
+      </details>
 
 
 
@@ -121,7 +113,7 @@ Thank you for taking the time to contribute! Please refer to our [CONTRIBUTING.m
 
 If you encounter any issues, please check the [issues tab](https://github.com/ankaboot-source/wikiadviser/issues) to see if it has already been reported and resolved. Ensure that you are using the latest version before reporting an issue. If the problem persists, feel free to [open a new issue](https://github.com/ankaboot-source/wikiadviser/issues/new).
 
-Please note that this app is provided for free and without any guarantee or official support. If you require additional assistance, you can contact [ankaboot professional services](mailto:contact@ankaboot.fr) for help.
+Please NOTE that this app is provided for free and without any guarantee or official support. If you require additional assistance, you can contact [ankaboot professional services](mailto:contact@ankaboot.fr) for help.
 
 ## 📜 License
 

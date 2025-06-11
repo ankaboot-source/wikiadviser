@@ -18,7 +18,7 @@
         5. tmux attach -t mediawiki (if you got out of the session and want to get back)
     
   > [!WARNING]  
-  Currently the script is targeted to Debian based systems.
+  The script is currently targeted to Debian based systems.
 
   ## How it works?
   ### Script overview :

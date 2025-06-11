@@ -52,12 +52,12 @@ After installing Docker and Node.js, install the required system dependencies
     pnpx supabase start
     ```
 
-    If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
-
-    ```sh
-    sudo usermod -aG docker $USER
-    newgrp docker
-    ```
+    > [!TIP]
+    >If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
+    >```sh
+    >sudo usermod -aG docker $USER
+    >newgrp docker
+    >```
 
     On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
 
@@ -72,40 +72,44 @@ After installing Docker and Node.js, install the required system dependencies
     service_role key: { your_service_role_key }
     ```
 
-3. Start Supabase functions
+1. Start Supabase functions
 
+    > [!Note]
     Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 
     ```sh
     npm run dev:supabase-functions
     ```
 
-4. Start WikiAdviser 
+2. Start WikiAdviser 
    - Docker approach
 
-      - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-      - Start WikiAdviser services:
+      > [!Note]
+      Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
+      
+      Start WikiAdviser services:
 
-        ```sh
-        docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-        ```
-   -
-       <details>
+      ```sh
+      docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+      ```
+   -  <details>
        <summary> Dev approach</summary>
 
+        Finish installing project dependencies
 
-        - Finish installing project dependencies
+        ```sh
+        npm run install-deps:frontend
+        ```
 
-          ```sh
-          npm run install-deps:frontend
-          ```
+        > [!Note]
+        Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
 
-        - Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
-        - Start the frontend
-          ```sh
-          npm run dev:frontend
-          ```
-       </details>
+        Start the frontend:
+        ```sh
+        npm run dev:frontend
+        ```
+
+    </details>
 
 
 

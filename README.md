@@ -55,7 +55,7 @@ After installing Docker and Node.js, install the required system dependencies
 3. And then we need to start Supabase
 
    ```sh
-   npx supabase start
+   pnpx supabase start
    ```
 
 #### Enviroment Variables
@@ -112,7 +112,7 @@ To run the dockerized solution you need first to setup Supabase SaaS, or locally
 2. And then we need to start Supabase
 
    ```sh
-   npx supabase start
+   pnpx supabase start
    ```
 3. Start Supabase functions
 

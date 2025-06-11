@@ -59,18 +59,18 @@ After installing Docker and Node.js, install the required system dependencies
     >newgrp docker
     >```
 
-    On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
-
-    ```yml
-    API URL: { your_api_url }
-    GraphQL URL: { your_graphql_url }
-    DB URL: { your_db_url }
-    Studio URL: { your_studio_url }
-    Inbucket URL: { your_studio_url }
-    JWT secret: { your_secret_jwt }
-    anon key: { your_anon_key }
-    service_role key: { your_service_role_key }
-    ```
+    > [!Note]
+    > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
+    > ```yml
+    > API URL: { your_api_url }
+    > GraphQL URL: { your_graphql_url }
+    > DB URL: { your_db_url }
+    > Studio URL: { your_studio_url }
+    > Inbucket URL: { your_studio_url }
+    > JWT secret: { your_secret_jwt }
+    > anon key: { your_anon_key }
+    > service_role key: { your_service_role_key }
+    > ```
 
 1. Start Supabase functions
 

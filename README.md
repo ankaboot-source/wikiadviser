@@ -57,15 +57,17 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
    ```
 
 3. Start Supabase functions
+   
+   - Copy `.env.example` (in ./wikiadviser/supabase/functions folder) to `.env` and update the missing variables accordingly.
 
    ```sh
    npm run dev:supabase-functions
    ```
 4. Start wikiadviser
-
+   
    - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
    - Start wikiadviser services:
-
+   
    ```sh
    docker compose -f docker-compose.dev.yml up --build --force-recreate -d
    ```

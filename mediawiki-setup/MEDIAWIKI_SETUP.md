@@ -17,7 +17,8 @@
     	4. bash mediawiki-setup.sh
         5. tmux attach -t mediawiki (if you got out of the session and want to get back)
     
-  - **Note!** Currently the script is targeted to Debian based systems.
+  > [!WARNING]  
+  The script is currently targeted to Debian based systems.
 
   ## How it works?
   ### Script overview :
@@ -301,7 +302,7 @@ Each template has its own documentation template, make sure to import it as well
 
 You need to have a supabase instance (locally hosted):
 
-- To use the local version, you can just run `npm i` in the root folder of this repository and then `npx supabase start`.
+- To use the local version, you can just run `pnpm i` in the root folder of this repository and then `pnpx supabase start`.
 
 - If you have MediaWiki installed locally and have enabled firewall, make sure to allow the MediaWiki port (Allows Supabase Edge Functions to access the local MediaWiki instance):
   ```sh
@@ -317,7 +318,7 @@ Make sure you have setup all the necessary pre-requisits.
 **In both `./wikiadviser/frontend` and `./wikiadviser/supabase/functions` directory**
 
 - Copy `.env.example` to `.env` and update the missing variables accordingly.
-- Install dependencies via` npm i`
+- Install dependencies via` pnpm i`
 - Run each of the projects via`npm run dev`
 
 ### Using Docker

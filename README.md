@@ -35,98 +35,81 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-### Setup (DEV)
-#### Installing Dependencies
+### Installation
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Install `pnpm` globally
-
-   ```sh
-   npm install -g pnpm
-   ```
-
-2. Install project dependencies
-
-   ```sh
-   npm run install-deps
-   ```
-
-3. And then we need to start Supabase
-
-   ```sh
-   npx supabase start
-   ```
-
-#### Enviroment Variables
-
-On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
-
-```yml
-API URL: { your_api_url }
-GraphQL URL: { your_graphql_url }
-DB URL: { your_db_url }
-Studio URL: { your_studio_url }
-Inbucket URL: { your_studio_url }
-JWT secret: { your_secret_jwt }
-anon key: { your_anon_key }
-service_role key: { your_service_role_key }
-```
-
-Copy `.env.example` in frontend and supabase/functions to `.env` and update the missing variables accordingly.
-
-```env
-SUPABASE_PROJECT_URL={your_supabase_api_url}
-SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
-...
-```
-
-### Run
-
-And finally, start frontend and supabase-functions servers by running this command
-
-```sh
-npm run dev:all
-```
-
-Or if you want to run them separately
-
-```sh
-# to start the supabase-functions
-npm run dev:supabase-functions
-
-# to start the frontend
-npm run dev:frontend
-```
-
-### Using Docker
-To run the dockerized solution you need first to setup Supabase SaaS, or locally by running :
-
-1. Install project dependencies
+1. Install Supabase dependencies
 
    ```sh
    npm install -g pnpm
    pnpm i
    ```
 
-2. And then we need to start Supabase
+2. Start Supabase
 
-   ```sh
-   npx supabase start
-   ```
-3. Start Supabase functions
+    ```sh
+    pnpx supabase start
+    ```
 
-   ```sh
-   npm run dev:supabase-functions
-   ```
-4. Start wikiadviser
+    > [!TIP]
+    >If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
+    >```sh
+    >sudo usermod -aG docker $USER
+    >newgrp docker
+    >```
 
-   - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-   - Start wikiadviser services:
+    > [!Note]
+    > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
+    > ```yml
+    > API URL: { your_api_url }
+    > GraphQL URL: { your_graphql_url }
+    > DB URL: { your_db_url }
+    > Studio URL: { your_studio_url }
+    > Inbucket URL: { your_studio_url }
+    > JWT secret: { your_secret_jwt }
+    > anon key: { your_anon_key }
+    > service_role key: { your_service_role_key }
+    > ```
 
-   ```sh
-   docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-   ```
+1. Start Supabase functions
+
+    > [!Note]
+    Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
+
+    ```sh
+    npm run dev:supabase-functions
+    ```
+
+2. Start WikiAdviser 
+   - Docker approach
+
+      > [!Note]
+      Copy `.env.example.docker` (in `./wikiadviser` folder) to `.env` and update the missing variables accordingly.
+      
+      Start WikiAdviser services:
+
+      ```sh
+      docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+      ```
+   -  <details>
+       <summary> Dev approach</summary>
+
+        Finish installing project dependencies
+
+        ```sh
+        npm run install-deps:frontend
+        ```
+
+        > [!Note]
+        Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
+
+        Start the frontend:
+        ```sh
+        npm run dev:frontend
+        ```
+
+    </details>
 
 
 

@@ -35,74 +35,11 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-### Setup (DEV)
-#### Installing Dependencies
+### Installation
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Install `pnpm` globally
-
-   ```sh
-   npm install -g pnpm
-   ```
-
-2. Install project dependencies
-
-   ```sh
-   npm run install-deps
-   ```
-
-3. And then we need to start Supabase
-
-   ```sh
-   pnpx supabase start
-   ```
-
-#### Enviroment Variables
-
-On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
-
-```yml
-API URL: { your_api_url }
-GraphQL URL: { your_graphql_url }
-DB URL: { your_db_url }
-Studio URL: { your_studio_url }
-Inbucket URL: { your_studio_url }
-JWT secret: { your_secret_jwt }
-anon key: { your_anon_key }
-service_role key: { your_service_role_key }
-```
-
-Copy `.env.example` in frontend and supabase/functions to `.env` and update the missing variables accordingly.
-
-```env
-SUPABASE_PROJECT_URL={your_supabase_api_url}
-SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
-...
-```
-
-### Run
-
-And finally, start frontend and supabase-functions servers by running this command
-
-```sh
-npm run dev:all
-```
-
-Or if you want to run them separately
-
-```sh
-# to start the supabase-functions
-npm run dev:supabase-functions
-
-# to start the frontend
-npm run dev:frontend
-```
-
-### Using Docker
-To run the dockerized solution you need first to setup Supabase SaaS, or locally by running :
-
-1. Install project dependencies
+1. Install supabase dependencies
 
    ```sh
    npm install -g pnpm
@@ -111,15 +48,38 @@ To run the dockerized solution you need first to setup Supabase SaaS, or locally
 
 2. And then we need to start Supabase
 
-   ```sh
-   pnpx supabase start
-   ```
+    ```sh
+    pnpx supabase start
+    ```
+
+    On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
+
+    ```yml
+    API URL: { your_api_url }
+    GraphQL URL: { your_graphql_url }
+    DB URL: { your_db_url }
+    Studio URL: { your_studio_url }
+    Inbucket URL: { your_studio_url }
+    JWT secret: { your_secret_jwt }
+    anon key: { your_anon_key }
+    service_role key: { your_service_role_key }
+    ```
+
 3. Start Supabase functions
 
-   ```sh
-   npm run dev:supabase-functions
-   ```
-4. Start wikiadviser
+    ```sh
+    npm run dev:supabase-functions
+    ```
+    
+    Copy `.env.example` in frontend and `supabase/functions` to `.env` and update the missing variables accordingly.
+
+    ```env
+    SUPABASE_PROJECT_URL={your_supabase_api_url}
+    SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
+    ...
+    ```
+
+4. Start WikiAdviser using Docker (Skip to dev approach otherwise)
 
    - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
    - Start wikiadviser services:
@@ -127,6 +87,23 @@ To run the dockerized solution you need first to setup Supabase SaaS, or locally
    ```sh
    docker compose -f docker-compose.dev.yml up --build --force-recreate -d
    ```
+-
+    <details>
+    <summary> Or Start WikiAdviser without Docker (Dev)</summary>
+
+
+    1. Finish installing project dependencies
+
+        ```sh
+        npm run install-deps:frontend
+        ```
+
+
+    2. And finally, start frontend
+        ```sh
+        npm run dev:frontend
+        ```
+    </details>
 
 
 

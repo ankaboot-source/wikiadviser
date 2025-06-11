@@ -35,28 +35,56 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-### Setup (DEV)
-#### Installing Dependencies
+### How to run?
 
-After installing Docker and Node.js, install the required system dependencies
-
-1. Install `pnpm` globally
+1. Install project dependencies
 
    ```sh
    npm install -g pnpm
+   pnpm i
    ```
 
-2. Install project dependencies
-
-   ```sh
-   npm run install-deps
-   ```
-
-3. And then we need to start Supabase
+2. And then we need to start Supabase
 
    ```sh
    pnpx supabase start
    ```
+3. Start Supabase functions
+
+   ```sh
+   npm run dev:supabase-functions
+   ```
+4. Start wikiadviser
+
+   - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
+   - Start wikiadviser services:
+
+   ```sh
+   docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+   ```
+
+
+<details>
+  <summary>Advanced Setup</summary>
+The advanced setup is intended for development and contribution. To run the app in development mode, follow these steps:
+
+1. Install `pnpm` globally
+
+    ```sh
+    npm install -g pnpm
+    ```
+
+2. Install project dependencies
+
+    ```sh
+    npm run install-deps
+    ```
+
+3. And then we need to start Supabase
+
+    ```sh
+    pnpx supabase start
+    ```
 
 #### Enviroment Variables
 
@@ -99,35 +127,7 @@ npm run dev:supabase-functions
 npm run dev:frontend
 ```
 
-### Using Docker
-To run the dockerized solution you need first to setup Supabase SaaS, or locally by running :
-
-1. Install project dependencies
-
-   ```sh
-   npm install -g pnpm
-   pnpm i
-   ```
-
-2. And then we need to start Supabase
-
-   ```sh
-   pnpx supabase start
-   ```
-3. Start Supabase functions
-
-   ```sh
-   npm run dev:supabase-functions
-   ```
-4. Start wikiadviser
-
-   - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-   - Start wikiadviser services:
-
-   ```sh
-   docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-   ```
-
+</details>
 
 
 ## 🤝 Contributing

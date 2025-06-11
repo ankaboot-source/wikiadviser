@@ -39,14 +39,14 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 After installing Docker and Node.js, install the required system dependencies
 
-1. Install supabase dependencies
+1. Install Supabase dependencies
 
    ```sh
    npm install -g pnpm
    pnpm i
    ```
 
-2. And then we need to start Supabase
+2. Start Supabase
 
     ```sh
     pnpx supabase start

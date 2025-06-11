@@ -49,6 +49,13 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
    ```sh
    pnpx supabase start
    ```
+   If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
+   
+   ```sh
+   sudo usermod -aG docker $USER
+   newgrp docker
+   ```
+
 3. Start Supabase functions
 
    ```sh
@@ -65,7 +72,7 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 
 
 <details>
-  <summary>Advanced Setup</summary>
+  <summary><h2>Advanced Setup</h2></summary>
 The advanced setup is intended for development and contribution. To run the app in development mode, follow these steps:
 
 1. Install `pnpm` globally

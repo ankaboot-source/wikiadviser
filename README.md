@@ -85,7 +85,7 @@ After installing Docker and Node.js, install the required system dependencies
    - Docker approach
 
       > [!Note]
-      Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
+      Copy `.env.example.docker` (in `./wikiadviser` folder) to `.env` and update the missing variables accordingly.
       
       Start WikiAdviser services:
 

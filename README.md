@@ -52,6 +52,13 @@ After installing Docker and Node.js, install the required system dependencies
     pnpx supabase start
     ```
 
+    If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
+
+    ```sh
+    sudo usermod -aG docker $USER
+    newgrp docker
+    ```
+
     On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
 
     ```yml
@@ -71,39 +78,34 @@ After installing Docker and Node.js, install the required system dependencies
     npm run dev:supabase-functions
     ```
     
-    Copy `.env.example` in frontend and `supabase/functions` to `.env` and update the missing variables accordingly.
+    Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 
-    ```env
-    SUPABASE_PROJECT_URL={your_supabase_api_url}
-    SUPABASE_SECRET_PROJECT_TOKEN={your_supabase_service_role_key}
-    ...
-    ```
+4. Start WikiAdviser 
+   - Docker approach
 
-4. Start WikiAdviser using Docker (Skip to dev approach otherwise)
+      - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
+      - Start wikiadviser services:
 
-   - Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-   - Start wikiadviser services:
-
-   ```sh
-   docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-   ```
--
-    <details>
-    <summary> Or Start WikiAdviser without Docker (Dev)</summary>
+      ```sh
+      docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+      ```
+   -
+       <details>
+       <summary> Dev approach</summary>
 
 
-    1. Finish installing project dependencies
+       1. Finish installing project dependencies
 
-        ```sh
-        npm run install-deps:frontend
-        ```
+           ```sh
+           npm run install-deps:frontend
+           ```
 
 
-    2. And finally, start frontend
-        ```sh
-        npm run dev:frontend
-        ```
-    </details>
+       2. And finally, start the frontend
+           ```sh
+           npm run dev:frontend
+           ```
+       </details>
 
 
 

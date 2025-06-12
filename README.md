@@ -53,12 +53,10 @@ After installing Docker and Node.js, install the required system dependencies
   ```
 
   <details>
-    <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo) </summary>
+    <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allows Docker to run without sudo) </summary>
 
-    <code>
-      sudo usermod -aG docker $USER
-      newgrp docker
-    </code>
+    sudo usermod -aG docker $USER
+    newgrp docker
 
   </details>
   

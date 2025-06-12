@@ -3,13 +3,14 @@
 ENV_DIR=("./" "./frontend/" "./supabase/functions/")
 ENV_PATH=("./.env" "./frontend/.env")
 
+export LANG=C
 # Verify log file is passed as an argument
 if [ -z "$1" ]; then
   echo "❌ Use : $0 supabase.log"
   exit 1
 fi
 
-# Must run within wikiadviser/mediawiki-setup check
+# Must run within ./wikiadviser/ check
 if [[ "$(basename "$PWD")" != "wikiadviser" ]]; then
   echo "❌ Error: Please navigate to ./wikiadviser before running the script."
   exit 1
@@ -33,3 +34,4 @@ for env in "${ENV_PATH[@]}"; do
 done
 
 echo "✅ ./.env, ./frontend/.env, ./supabase/functions/.env successfully generated from $LOGFILE"
+

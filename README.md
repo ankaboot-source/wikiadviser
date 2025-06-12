@@ -73,7 +73,7 @@ After installing Docker and Node.js, install the required system dependencies
   > service_role key: { your_service_role_key }
   > ```
 
-1. Start Supabase functions
+3. Start Supabase functions
 
   > Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 

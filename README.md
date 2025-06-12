@@ -51,13 +51,17 @@ After installing Docker and Node.js, install the required system dependencies
   ```sh
   pnpx supabase start
   ```
-  > [!TIP]
-  > If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo)
-  > ```sh
-  > sudo usermod -aG docker $USER
-  > newgrp docker
-  > ```
 
+  <details>
+    <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allow Docker to run without sudo) </summary>
+
+    <code>
+      sudo usermod -aG docker $USER
+      newgrp docker
+    </code>
+
+  </details>
+  
   > [!NOTE]
   > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
   > ```yml
@@ -71,7 +75,7 @@ After installing Docker and Node.js, install the required system dependencies
   > service_role key: { your_service_role_key }
   > ```
 
-3. Start Supabase functions
+1. Start Supabase functions
 
   > Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
 

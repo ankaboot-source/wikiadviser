@@ -42,6 +42,7 @@ After installing Docker and Node.js, install the required system dependencies
 1. Install Supabase dependencies
 
  ```sh
+ cd wikiadviser
  npm install -g pnpm
  pnpm i
  ```
@@ -49,7 +50,7 @@ After installing Docker and Node.js, install the required system dependencies
 2. Start Supabase
 
   ```sh
-  pnpx supabase start
+  pnpx supabase start > supabase.log
   ```
 
   <details>
@@ -60,44 +61,50 @@ After installing Docker and Node.js, install the required system dependencies
 
   </details>
   
+3. Auto-generate .env files (Include pre-configured Supabase variables)
+
+```sh
+./wikiadviser-setup.sh supabase.log
+```
   > [!NOTE]
-  > On starting Supabase, you will get these Supabase credentials, some of which will be used later in `.env` files.
+  > You must update the following variables within the auto-generated .env files
   > ```yml
-  > API URL: { your_api_url }
-  > GraphQL URL: { your_graphql_url }
-  > DB URL: { your_db_url }
-  > Studio URL: { your_studio_url }
-  > Inbucket URL: { your_studio_url }
-  > JWT secret: { your_secret_jwt }
-  > anon key: { your_anon_key }
-  > service_role key: { your_service_role_key }
+  > # These variables are found in ./wikiadviser/.env & ./wikiadviser/supabase/functions/.env
+  > # Refer to https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/MEDIAWIKI_SETUP.md for more informations about Mediawiki Bot creation.
+  > MW_BOT_USERNAME=your-secret-bot-username
+  > MW_BOT_PASSWORD=your-secret-bot-password
   > ```
 
-3. Start Supabase functions
-
-  > Copy `.env.example` (in `./wikiadviser/supabase/functions` folder) to `.env` and update the missing variables accordingly.
+4. Start Supabase functions
 
   ```sh
   npm run dev:supabase-functions
   ```
 
-4. Start WikiAdviser
-    - Docker approach:
-      > Copy `.env.example.docker` (in `./wikiadviser` folder) to `.env` and update the missing variables accordingly.
-      ```sh
-      docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-      ```
+5. Start WikiAdviser
+
+   - Docker approach:
+
+     ```sh
+     docker compose -f docker-compose.dev.yml up -d
+     ```
+
+     > **Note:**  
+     > To rebuild WikiAdviser, run:
+     > ```sh
+     > docker compose -f docker-compose.dev.yml up --build --force-recreate -d
+     > ```
+
+
   
     - <details>
         <summary>Dev approach:</summary>
         
-        Finish installing project dependencies
+        <h6>Finish installing project dependencies</h6>
         
         ```sh
         npm run install-deps:frontend
         ```
-        
-        > Copy `.env.example` (in `./wikiadviser/frontend` folder) to `.env` and update the missing variables accordingly.
         
         Start the frontend:
         ```sh

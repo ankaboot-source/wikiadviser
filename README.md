@@ -69,7 +69,7 @@ After installing Docker and Node.js, install the required system dependencies
   > [!NOTE]
   > You must update the following variables within the auto-generated .env files
   > ```yml
-  > # These variables are found in ./wikiadviser/.env & ./wikiadviser/supabase/functions/.env
+  > # These variables are found in ./wikiadviser/supabase/functions/.env
   > # Refer to https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/MEDIAWIKI_SETUP.md for more informations about Mediawiki Bot creation.
   > MW_BOT_USERNAME=your-secret-bot-username
   > MW_BOT_PASSWORD=your-secret-bot-password

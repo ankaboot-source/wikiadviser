@@ -124,11 +124,11 @@ if [[ "$1" == "--upgrade" ]]; then
 
     echo "Backing up old database dump folder"
     if [[ -d "$DUMP_PATH" ]]; then
-        cp "$DUMP_PATH" "$DUMP_PATH-$(date +%Y%m%d-%H%M%S)"
-    else 
+        cp -r "$DUMP_PATH" "$DUMP_PATH-$(date +%Y%m%d-%H%M%S)"
+    else
         mkdir -p "$DUMP_PATH"
     fi
-  
+
     echo "Creating Database dumps"
     for env in "${MW_PROJECT_DIR[@]}"; do
         for ln in "${LANGUAGES[@]}"; do

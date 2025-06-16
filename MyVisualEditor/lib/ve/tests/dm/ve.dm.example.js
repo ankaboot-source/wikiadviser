@@ -1,7 +1,4 @@
 /*!
-			[ 2, 3, ve.dm.example.italic ],
-			[ 3, 4, ve.dm.example.underline ]
-		],
  * VisualEditor DataModel example data sets.
  *
  * @copyright See AUTHORS.txt
@@ -190,7 +187,11 @@ ve.dm.example.commentNodePreview = function ( text ) {
 			framed: false,
 			tabIndex: null,
 			icon: ve.ce.CommentNode.static.iconWhenInvisible
-		} ).setLabel( text ) ).$element[ 0 ].outerHTML +
+		} ).setLabel( text ) ).$element.append(
+			$( '<img>' )
+				.addClass( 've-ce-focusableNode-invisibleIcon-selectionMask' )
+				.attr( 'src', ve.ce.minImgDataUri )
+		)[ 0 ].outerHTML +
 	'</span>';
 };
 
@@ -1505,7 +1506,7 @@ ve.dm.example.domToDataCases = {
 			{ type: 'internalList' },
 			{ type: '/internalList' }
 		],
-		modify: function ( doc ) {
+		modify: ( doc ) => {
 			doc.commit( ve.dm.TransactionBuilder.static.newFromRemoval(
 				doc,
 				new ve.Range( 4, 5 )
@@ -1604,6 +1605,35 @@ ve.dm.example.domToDataCases = {
 			</p>
 		`,
 		previewBody: '<p>a</p>'
+	},
+	'delete and insert annotations': {
+		body: ve.dm.example.singleLine`
+			<p>
+				<del>removed </del>
+				<ins> added</ins>
+			</p>
+		`,
+		data: [
+			{ type: 'paragraph' },
+			...ve.dm.example.annotateText( 'removed ', { type: 'textStyle/delete', attributes: { nodeName: 'del' } } ),
+			...ve.dm.example.annotateText( ' added', { type: 'textStyle/insert', attributes: { nodeName: 'ins' } } ),
+			{ type: '/paragraph' },
+			{ type: 'internalList' },
+			{ type: '/internalList' }
+		],
+		// Whitespace is moved outside of the annotation. When this annotation was used
+		// for diffing this was not the case.
+		fromDataBody: ve.dm.example.singleLine`
+			<p>
+				<del>removed</del>  <ins>added</ins>
+			</p>
+		`,
+		ceHtml: ve.dm.example.singleLine`
+			${ ve.dm.example.ceParagraph }
+				<del class="${ ve.dm.example.textStyleClasses } ve-ce-deleteAnnotation">removed </del>
+				<ins class="${ ve.dm.example.textStyleClasses } ve-ce-insertAnnotation"> added</ins>
+			</p>
+		`
 	},
 	'other textStyle annotations': {
 		body: ve.dm.example.singleLine`
@@ -1767,7 +1797,7 @@ ve.dm.example.domToDataCases = {
 			{ type: 'internalList' },
 			{ type: '/internalList' }
 		],
-		modify: function ( doc ) {
+		modify: ( doc ) => {
 			doc.commit( ve.dm.TransactionBuilder.static.newFromAnnotation(
 				doc,
 				new ve.Range( 3, 6 ),
@@ -2257,7 +2287,7 @@ ve.dm.example.domToDataCases = {
 			{ type: '/internalList' }
 		],
 		// Inserting content doesn't result in a real <p> node
-		modify: function ( doc ) {
+		modify: ( doc ) => {
 			doc.commit( ve.dm.TransactionBuilder.static.newFromInsertion(
 				doc,
 				3,
@@ -4037,6 +4067,139 @@ ve.dm.example.domToDataCases = {
 			</blockquote>
 			${ ve.dm.example.blockSlug }
 		`
+	},
+	'table cells with alignment': {
+		body: ve.dm.example.singleLine`
+		<table>
+			<thead>
+				<tr>
+					<th>year</th>
+					<th>passengers diesel</th>
+					<th>passengers steam</th>
+					<th>freight</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr style="text-align:center; vertical-align:middle">
+					<td>2000</td>
+					<td style="text-align:right">1.7 M</td>
+					<td style="text-align:right">97,345</td>
+					<td style="text-align:right">442,273</td>
+				</tr>
+			</tbody>
+		</table>
+		`,
+		data: [
+			{ type: 'table' },
+			{
+				attributes: { style: 'header' },
+				type: 'tableSection'
+			},
+			{ type: 'tableRow' },
+			{
+				attributes: { style: 'header' },
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'year',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: { style: 'header' },
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'passengers diesel',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: { style: 'header' },
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'passengers steam',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: { style: 'header' },
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'freight',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{ type: '/tableRow' },
+			{ type: '/tableSection' },
+			{
+				attributes: {
+					style: 'body'
+				},
+				type: 'tableSection'
+			},
+			{
+				attributes: {
+					originalTextAlign: 'center',
+					originalVerticalAlign: 'middle',
+					textAlign: 'center',
+					verticalAlign: 'middle'
+				},
+				originalDomElements: $.parseHTML( '<tr style="text-align:center; vertical-align:middle"><td>2000</td><td style="text-align:right">1.7 M</td><td style="text-align:right">97,345</td><td style="text-align:right">442,273</td></tr>' ),
+				type: 'tableRow' },
+			{
+				attributes: {
+					style: 'data'
+				},
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'2000',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: {
+					originalTextAlign: 'right',
+					style: 'data',
+					textAlign: 'right'
+				},
+				originalDomElements: $.parseHTML( '<td style="text-align:right">1.7 M</td>' ),
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'1.7 M',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: {
+					originalTextAlign: 'right',
+					style: 'data',
+					textAlign: 'right'
+				},
+				originalDomElements: $.parseHTML( '<td style="text-align:right">97,345</td>' ),
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'97,345',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{
+				attributes: {
+					originalTextAlign: 'right',
+					style: 'data',
+					textAlign: 'right'
+				},
+				originalDomElements: $.parseHTML( '<td style="text-align:right">442,273</td>' ),
+				type: 'tableCell'
+			},
+			{ internal: { generated: 'wrapper' }, type: 'paragraph' },
+			...'442,273',
+			{ type: '/paragraph' },
+			{ type: '/tableCell' },
+			{ type: '/tableRow' },
+			{ type: '/tableSection' },
+			{ type: '/table' },
+			{ type: 'internalList' },
+			{ type: '/internalList' }
+		]
 	},
 	'alien table cells': {
 		body: ve.dm.example.singleLine`

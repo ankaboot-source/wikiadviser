@@ -35,9 +35,9 @@ mw.libs.ve.ProgressBarWidget = function VeUiMwProgressBarWidget() {
 	try {
 		// Make inner page full width and hide left bar (TOC)
 		document.querySelectorAll('.mw-page-container-inner, .mw-body')?.forEach((element) => {element?.removeAttribute('class')});
-		} catch (error) {
+	} catch (error) {
 		console.error('An error occurred while trying to hide non editor distractions', error.message);
-		}
+	}
 	/* End WikiAdviser */
 };
 

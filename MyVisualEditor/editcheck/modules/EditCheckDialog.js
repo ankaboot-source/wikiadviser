@@ -13,28 +13,16 @@
  * @constructor
  * @param {Object} [config] Configuration options
  */
-ve.ui.EditCheckDialog = function VeUiEditCheckDialog( config ) {
-	// Parent constructor
-	ve.ui.EditCheckDialog.super.call( this, config );
-
-	// Don't run a scroll if the previous animation is still running (which is jQuery 'fast' === 200ms)
-	this.scrollCurrentCheckIntoViewDebounced = ve.debounce( this.scrollCurrentCheckIntoView.bind( this ), 200, true );
-
+ve.ui.EditCheckDialog = function VeUiEditCheckDialog() {
 	// Pre-initialization
 	this.$element.addClass( 've-ui-editCheckDialog' );
 };
 
 /* Inheritance */
 
-OO.inheritClass( ve.ui.EditCheckDialog, ve.ui.ToolbarDialog );
+OO.initClass( ve.ui.EditCheckDialog );
 
-ve.ui.EditCheckDialog.static.name = 'editCheckDialog';
-
-ve.ui.EditCheckDialog.static.position = OO.ui.isMobile() ? 'below' : 'side';
-
-ve.ui.EditCheckDialog.static.size = OO.ui.isMobile() ? 'full' : 'medium';
-
-ve.ui.EditCheckDialog.static.framed = false;
+/* Static Properties */
 
 // TODO: Keep surface active on mobile for some checks?
 ve.ui.EditCheckDialog.static.activeSurface = !OO.ui.isMobile();
@@ -48,9 +36,6 @@ ve.ui.EditCheckDialog.static.title = OO.ui.deferMsg( 'editcheck-review-title' );
  * @inheritdoc
  */
 ve.ui.EditCheckDialog.prototype.initialize = function () {
-	// Parent method
-	ve.ui.EditCheckDialog.super.prototype.initialize.call( this );
-
 	this.title = new OO.ui.LabelWidget( {
 		label: this.constructor.static.title,
 		classes: [ 've-ui-editCheckDialog-title' ]
@@ -68,8 +53,8 @@ ve.ui.EditCheckDialog.prototype.initialize = function () {
 		click: 'onCloseButtonClick'
 	} );
 
-	this.currentOffset = 0;
-	this.currentChecks = null;
+	this.currentOffset = null;
+	this.currentActions = null;
 
 	this.footerLabel = new OO.ui.LabelWidget();
 	this.previousButton = new OO.ui.ButtonWidget( {
@@ -97,226 +82,159 @@ ve.ui.EditCheckDialog.prototype.initialize = function () {
 		]
 	} );
 
-	this.$checks = $( '<div>' );
-	this.$body.append( this.title.$element, this.closeButton.$element, this.$checks, this.footer.$element );
-
-	this.$highlights = $( '<div>' );
-
-	this.updateDebounced = ve.debounce( this.update.bind( this ), 100 );
-	this.positionDebounced = ve.debounce( this.position.bind( this ), 100 );
+	this.$actions = $( '<div>' );
+	if ( OO.ui.isMobile() ) {
+		this.$body.append( this.title.$element );
+	}
+	this.$body.append( this.closeButton.$element, this.$actions, this.footer.$element );
 };
 
-ve.ui.EditCheckDialog.prototype.update = function ( fromUserAction ) {
-	const surfaceView = this.surface.getView();
-	// We only regenerate the checks on-change during the edit. If we're in
-	// the proofreading step, no new checks should appear based on changes:
-	if ( this.listener === 'onDocumentChange' || !this.currentChecks ) {
-		this.currentChecks = mw.editcheck.editCheckFactory.createAllByListener( this.listener, this.surface.getModel() );
+ve.ui.EditCheckDialog.prototype.onActionsUpdated = function ( listener, actions, newActions, discardedActions, rejected ) {
+	if ( listener !== this.listener ) {
+		return;
 	}
-	if ( this.currentChecks.length === 0 ) {
-		return this.close( 'complete' );
+	if ( this.updateFilter ) {
+		actions = this.updateFilter( actions, newActions, discardedActions, this.currentActions );
 	}
-	const checks = this.currentChecks;
-	const newOffset = Math.min( this.currentOffset, checks.length - 1 );
-	this.$checks.empty();
-	this.$highlights.empty();
+	this.showActions( actions, newActions, rejected );
+};
 
-	checks.forEach( ( check, index ) => {
-		const widget = check.render( index !== newOffset, this.listener === 'onBeforeSave', this.surface );
-		widget.on( 'togglecollapse', this.onToggleCollapse, [ check, index ], this );
-		check.on( 'act', this.onAct, [ widget ], this );
-		this.$checks.append( widget.$element );
+ve.ui.EditCheckDialog.prototype.showActions = function ( actions, newActions, lastActionRejected ) {
+	this.currentActions = actions;
+	if ( actions.length === 0 ) {
+		return this.close( { action: lastActionRejected ? 'reject' : 'complete' } );
+	}
+
+	// This just adjusts so the previously selected check remains selected:
+	let newOffset = Math.min( this.currentOffset, actions.length - 1 );
+	if ( newActions.length ) {
+		newOffset = actions.indexOf( newActions[ 0 ] );
+	}
+
+	this.refresh();
+
+	this.setCurrentOffset( newOffset, false );
+};
+
+ve.ui.EditCheckDialog.prototype.hasAction = function ( action ) {
+	return this.currentActions.some( ( caction ) => action.equals( caction ) );
+};
+
+ve.ui.EditCheckDialog.prototype.refresh = function () {
+	this.$actions.empty();
+
+	this.currentActions.forEach( ( action, index ) => {
+		const widget = action.render( index !== this.currentOffset, this.singleAction, this.surface );
+		widget.on( 'togglecollapse', this.onToggleCollapse, [ action, index ], this );
+		action.off( 'act' ).on( 'act', this.onAct, [ action, widget ], this );
+		this.$actions.append( widget.$element );
 
 		// for scrolling later
-		check.widget = widget;
+		action.widget = widget;
 	} );
-
-	if ( this.reviewMode ) {
-		// Review mode grays out everything that's not highlighted:
-		const highlightNodes = [];
-		checks.forEach( ( check ) => {
-			check.getHighlightSelections().forEach( ( selection ) => {
-				highlightNodes.push.apply( highlightNodes, surfaceView.getDocument().selectNodes( selection.getCoveringRange(), 'branches' ).map( ( spec ) => spec.node ) );
-			} );
-		} );
-		surfaceView.setReviewMode( true, highlightNodes );
-	}
-
-	this.setCurrentOffset( newOffset, fromUserAction );
-};
-
-ve.ui.EditCheckDialog.prototype.position = function () {
-	this.drawHighlights();
-	if ( this.reviewMode ) {
-		this.scrollCurrentCheckIntoViewDebounced();
-	}
-};
-
-ve.ui.EditCheckDialog.prototype.drawHighlights = function () {
-	const surfaceView = this.surface.getView();
-	this.$highlights.empty();
-
-	this.currentChecks.forEach( ( check, index ) => {
-		check.getHighlightSelections().forEach( ( selection ) => {
-			const selectionView = ve.ce.Selection.static.newFromModel( selection, surfaceView );
-			const rect = selectionView.getSelectionBoundingRect();
-			// The following classes are used here:
-			// * ve-ui-editCheck-gutter-highlight-error
-			// * ve-ui-editCheck-gutter-highlight-warning
-			// * ve-ui-editCheck-gutter-highlight-notice
-			// * ve-ui-editCheck-gutter-highlight-success
-			// * ve-ui-editCheck-gutter-highlight-active
-			// * ve-ui-editCheck-gutter-highlight-inactive
-			this.$highlights.append( $( '<div>' )
-				.addClass( 've-ui-editCheck-gutter-highlight' )
-				.addClass( 've-ui-editCheck-gutter-highlight-' + check.getType() )
-				.addClass( 've-ui-editCheck-gutter-highlight-' + ( index === this.currentOffset ? 'active' : 'inactive' ) )
-				.css( {
-					top: rect.top - 2,
-					height: rect.height + 4
-				} )
-				.on( 'click', () => this.setCurrentOffset( index ) )
-			);
-		} );
-	} );
-
-	surfaceView.appendHighlights( this.$highlights, false );
 };
 
 /**
  * Set the offset of the current check, within the list of all checks
  *
- * @param {number} offset
+ * @param {number|null} offset
  * @param {boolean} fromUserAction
+ * @param {boolean} internal
  */
-ve.ui.EditCheckDialog.prototype.setCurrentOffset = function ( offset, fromUserAction ) {
+ve.ui.EditCheckDialog.prototype.setCurrentOffset = function ( offset, fromUserAction, internal ) {
 	// TODO: work out how to tell the window to recalculate height here
-	this.currentOffset = Math.max( 0, offset );
+
+	if ( offset === null || offset === -1 ) {
+		/* That's valid, carry on */
+		offset = null;
+	} else if ( !Number.isSafeInteger( offset ) || ( offset < 0 || offset > ( this.currentActions.length - 1 ) ) ) {
+		throw new Error( `Bad offset ${ offset }, expected an integer between 0 and ${ this.currentActions.length - 1 }` );
+	}
+
+	this.currentOffset = offset;
 
 	this.$body.find( '.ve-ui-editCheckActionWidget' ).each( ( i, el ) => {
 		$( el ).toggleClass( 've-ui-editCheckActionWidget-collapsed', i !== this.currentOffset );
 	} );
 
-	this.footerLabel.setLabel(
-		ve.msg( 'visualeditor-find-and-replace-results',
-			ve.init.platform.formatNumber( this.currentOffset + 1 ),
-			ve.init.platform.formatNumber( this.currentChecks.length )
-		)
-	);
-	this.nextButton.setDisabled( this.currentOffset >= this.currentChecks.length - 1 );
-	this.previousButton.setDisabled( this.currentOffset <= 0 );
+	if ( this.currentOffset !== null ) {
+		this.footerLabel.setLabel(
+			ve.msg( 'visualeditor-find-and-replace-results',
+				ve.init.platform.formatNumber( this.currentOffset + 1 ),
+				ve.init.platform.formatNumber( this.currentActions.length )
+			)
+		);
+	} else {
+		this.footerLabel.setLabel( '' );
+	}
+	this.nextButton.setDisabled( this.currentOffset !== null && this.currentOffset >= this.currentActions.length - 1 );
+	this.previousButton.setDisabled( this.currentOffset === null || this.currentOffset <= 0 );
 
 	this.updateSize();
 
-	if ( this.isOpening() ) {
-		return;
+	if ( !internal ) {
+		this.controller.focusAction( this.currentActions[ this.currentOffset ], fromUserAction );
 	}
-
-	const surfaceView = this.surface.getView();
-	if ( this.currentChecks.length > 0 ) {
-		// The currently-focused check gets a selection:
-		// TODO: clicking the selection should activate the sidebar-action
-		surfaceView.getSelectionManager().drawSelections(
-			'editCheckWarning',
-			this.currentChecks[ this.currentOffset ].getHighlightSelections().map(
-				( selection ) => ve.ce.Selection.static.newFromModel( selection, surfaceView )
-			)
-		);
-
-		if ( fromUserAction || this.reviewMode ) {
-			this.scrollCurrentCheckIntoViewDebounced();
-		}
-	} else {
-		surfaceView.getSelectionManager().drawSelections( 'editCheckWarning', [] );
-	}
-
-	this.drawHighlights();
 };
 
-ve.ui.EditCheckDialog.prototype.scrollCurrentCheckIntoView = function () {
-	const currentCheck = this.currentChecks[ this.currentOffset ];
-	if ( currentCheck ) {
-		// scrollSelectionIntoView scrolls to the focus of a selection, but we
-		// want the very beginning to be in view, so collapse it:
-		const selection = currentCheck.getHighlightSelections()[ 0 ].collapseToStart();
-		this.surface.scrollSelectionIntoView( selection, {
-			animate: true,
-			padding: {
-				top: ( OO.ui.isMobile() ? 80 : currentCheck.widget.$element[ 0 ].getBoundingClientRect().top ),
-				bottom: ( OO.ui.isMobile() ? this.getContentHeight() : 0 ) + 20
-			},
-			alignToTop: true
-		} );
-	}
+ve.ui.EditCheckDialog.prototype.onFocusAction = function ( action, index, scrollTo ) {
+	this.setCurrentOffset( this.currentActions.indexOf( action ), scrollTo, true );
 };
 
 /**
  * @inheritdoc
  */
-ve.ui.EditCheckDialog.prototype.getSetupProcess = function ( data ) {
-	return ve.ui.EditCheckDialog.super.prototype.getSetupProcess.call( this, data )
-		.first( () => {
-			this.currentOffset = 0;
-			this.currentChecks = null;
-			this.listener = data.listener || 'onDocumentChange';
-			this.reviewMode = data.reviewMode;
-			this.surface = data.surface;
+ve.ui.EditCheckDialog.prototype.getSetupProcess = function ( data, process ) {
+	return process.first( () => {
+		this.controller = data.controller;
+		this.controller.on( 'actionsUpdated', this.onActionsUpdated, false, this );
+		this.controller.on( 'focusAction', this.onFocusAction, false, this );
 
-			this.surface.getModel().on( 'undoStackChange', this.updateDebounced );
-			this.surface.getView().on( 'position', this.positionDebounced );
+		const actions = data.actions || this.controller.getActions( this.listener );
 
-			const singleAction = ( this.listener === 'onBeforeSave' ) || OO.ui.isMobile();
+		this.listener = data.listener || 'onDocumentChange';
+		this.surface = data.surface;
+		this.updateFilter = data.updateFilter;
 
-			this.closeButton.toggle( OO.ui.isMobile() );
+		this.singleAction = ( this.listener === 'onBeforeSave' ) || OO.ui.isMobile();
+
+		this.closeButton.toggle( OO.ui.isMobile() );
+		if ( data.footer !== undefined ) {
+			this.footer.toggle( data.footer );
+		} else {
 			this.footer.toggle(
-				singleAction &&
+				this.singleAction &&
 				// If we're in single-check mode don't show even the disabled pagers:
 				!mw.config.get( 'wgVisualEditorConfig' ).editCheckSingle
 			);
-			this.$element.toggleClass( 've-ui-editCheckDialog-singleAction', singleAction );
+		}
+		this.$element.toggleClass( 've-ui-editCheckDialog-singleAction', this.singleAction );
 
-			this.surface.context.hide();
+		this.surface.context.hide();
 
-			this.update();
-		}, this );
+		this.showActions( actions, actions );
+	}, this );
 };
 
 /**
  * @inheritdoc
  */
-ve.ui.EditCheckDialog.prototype.getReadyProcess = function ( data ) {
-	return ve.ui.EditCheckDialog.super.prototype.getReadyProcess.call( this, data )
-		.next( () => {
-			// Call update again after the dialog has transitioned open, as the first
-			// call of update will not have drawn any selections.
-			setTimeout( () => {
-				this.update();
-			}, OO.ui.theme.getDialogTransitionDuration() );
-		}, this );
-};
-
-/**
- * @inheritdoc
- */
-ve.ui.EditCheckDialog.prototype.getTeardownProcess = function ( data ) {
-	return ve.ui.EditCheckDialog.super.prototype.getTeardownProcess.call( this, data )
-		.next( () => {
-			this.surface.getView().setReviewMode( false );
-			this.surface.getView().getSelectionManager().drawSelections( 'editCheckWarning', [] );
-			this.surface.getView().off( 'position', this.positionDebounced );
-			this.surface.getModel().off( 'undoStackChange', this.updateDebounced );
-			this.$highlights.remove().empty();
-			this.$checks.empty();
-		}, this );
+ve.ui.EditCheckDialog.prototype.getTeardownProcess = function ( data, process ) {
+	return process.next( () => {
+		this.controller.off( 'actionsUpdated', this.onActionsUpdated, this );
+		this.controller.off( 'focusAction', this.onFocusAction, this );
+		this.$actions.empty();
+	}, this );
 };
 
 /**
  * Handle 'act' events from the mw.widget.EditCheckActionWidget
  *
+ * @param {mw.editcheck.EditCheckAction} action
  * @param {mw.editcheck.EditCheckActionWidget} widget
  * @param {jQuery.Promise} promise Promise which resolves when the action is complete
  */
-ve.ui.EditCheckDialog.prototype.onAct = function ( widget, promise ) {
+ve.ui.EditCheckDialog.prototype.onAct = function ( action, widget, promise ) {
 	widget.setDisabled( true );
 	this.nextButton.setDisabled( true );
 	this.previousButton.setDisabled( true );
@@ -324,11 +242,6 @@ ve.ui.EditCheckDialog.prototype.onAct = function ( widget, promise ) {
 		widget.setDisabled( false );
 		this.nextButton.setDisabled( false );
 		this.previousButton.setDisabled( false );
-		this.surface.getModel().setNullSelection();
-		if ( OO.ui.isMobile() ) {
-			// Delay on mobile means we need to rehide this
-			setTimeout( () => this.surface.getModel().setNullSelection(), 300 );
-		}
 
 		if ( data && this.listener === 'onBeforeSave' ) {
 			// If an action has been taken, we want to linger for a brief moment
@@ -337,13 +250,11 @@ ve.ui.EditCheckDialog.prototype.onAct = function ( widget, promise ) {
 			// more generic
 			const pause = data.action !== 'reject' ? 500 : 0;
 			setTimeout( () => {
-				// We must have been acting on the currentOffset
-				this.currentChecks.splice( this.currentOffset, 1 );
-				this.currentOffset = Math.max( 0, this.currentOffset - 1 );
-				this.update();
+				const rejected = [ 'feedback', 'reject', 'dismiss' ].includes( data.action );
+				this.controller.removeAction( this.listener, action, rejected );
 			}, pause );
 		} else {
-			this.updateDebounced( true );
+			this.controller.refresh();
 		}
 	} );
 };
@@ -351,14 +262,30 @@ ve.ui.EditCheckDialog.prototype.onAct = function ( widget, promise ) {
 /**
  * Handle 'togglecollapse' events from the mw.widget.EditCheckActionWidget
  *
- * @param {mw.editcheck.EditCheckAction} check
+ * @param {mw.editcheck.EditCheckAction} action
  * @param {number} index
  * @param {boolean} collapsed
  */
-ve.ui.EditCheckDialog.prototype.onToggleCollapse = function ( check, index, collapsed ) {
+ve.ui.EditCheckDialog.prototype.onToggleCollapse = function ( action, index, collapsed ) {
 	if ( !collapsed ) {
 		// expanded one
-		this.setCurrentOffset( this.currentChecks.indexOf( check ), true );
+		this.setCurrentOffset( this.currentActions.indexOf( action ), true );
+		if ( !OO.ui.isMobile() ) {
+			const surfaceModel = this.surface.getModel();
+			const checkRange = action.getFocusSelection().getCoveringRange();
+			const surfaceRange = surfaceModel.getSelection().getCoveringRange();
+			// Collapse and move the selection to the nearest part of the check range
+			// Don't alter it if it touches the check range
+			if ( surfaceRange === null || surfaceRange.end < checkRange.start ) {
+				surfaceModel.setLinearSelection( new ve.Range( checkRange.start ) );
+				this.surface.getView().activate();
+				this.surface.getView().focus();
+			} else if ( surfaceRange.start > checkRange.end ) {
+				surfaceModel.setLinearSelection( new ve.Range( checkRange.end ) );
+				this.surface.getView().activate();
+				this.surface.getView().focus();
+			}
+		}
 	}
 };
 
@@ -376,19 +303,146 @@ ve.ui.EditCheckDialog.prototype.onCloseButtonClick = function () {
  * Handle click events from the next button
  */
 ve.ui.EditCheckDialog.prototype.onNextButtonClick = function () {
-	this.setCurrentOffset( this.currentOffset + 1, true );
+	this.setCurrentOffset( this.currentOffset === null ? 0 : this.currentOffset + 1, true );
 };
 
 /**
  * Handle click events from the previous button
  */
 ve.ui.EditCheckDialog.prototype.onPreviousButtonClick = function () {
-	this.setCurrentOffset( this.currentOffset - 1, true );
+	this.setCurrentOffset( this.currentOffset === null ? this.currentActions.length - 1 : this.currentOffset - 1, true );
+};
+
+ve.ui.SidebarEditCheckDialog = function VeUiSidebarEditCheckDialog( config ) {
+	// Parent constructor
+	ve.ui.SidebarEditCheckDialog.super.call( this, config );
+
+	// Mixin constructor
+	ve.ui.EditCheckDialog.call( this, config );
+};
+
+OO.inheritClass( ve.ui.SidebarEditCheckDialog, ve.ui.SidebarDialog );
+
+OO.mixinClass( ve.ui.SidebarEditCheckDialog, ve.ui.EditCheckDialog );
+
+ve.ui.SidebarEditCheckDialog.static.name = 'sidebarEditCheckDialog';
+
+ve.ui.SidebarEditCheckDialog.static.size = 'medium';
+
+ve.ui.SidebarEditCheckDialog.prototype.initialize = function () {
+	// Parent method
+	ve.ui.SidebarEditCheckDialog.super.prototype.initialize.call( this );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.initialize.call( this );
+};
+
+ve.ui.SidebarEditCheckDialog.prototype.getSetupProcess = function ( data ) {
+	// Parent method
+	const process = ve.ui.SidebarEditCheckDialog.super.prototype.getSetupProcess.call( this, data );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.getSetupProcess.call( this, data, process ).next( () => {
+		this.controller.on( 'position', this.onPosition, null, this );
+	} );
+};
+
+ve.ui.SidebarEditCheckDialog.prototype.getTeardownProcess = function ( data ) {
+	// Parent method
+	const process = ve.ui.SidebarEditCheckDialog.super.prototype.getTeardownProcess.call( this, data );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.getTeardownProcess.call( this, data, process ).next( () => {
+		this.controller.off( 'position', this.onPosition, this );
+	} );
+};
+
+ve.ui.SidebarEditCheckDialog.prototype.onPosition = function () {
+	if ( this.listener === 'onBeforeSave' ) {
+		return;
+	}
+	const surfaceView = this.surface.getView();
+	const surfaceTop = surfaceView.$element.offset().top + 10;
+	this.currentActions.forEach( ( action ) => {
+		const widget = action.widget;
+		if ( widget ) {
+			let top = Infinity;
+			action.getHighlightSelections().forEach( ( selection ) => {
+				const selectionView = ve.ce.Selection.static.newFromModel( selection, surfaceView );
+				const rect = selectionView.getSelectionBoundingRect();
+				if ( !rect ) {
+					return;
+				}
+				top = Math.min( top, rect.top );
+			} );
+			widget.$element.css( 'margin-top', '' );
+			widget.$element.css(
+				'margin-top',
+				Math.max( 0, top + surfaceTop - widget.$element.offset().top )
+			);
+		}
+	} );
+};
+
+ve.ui.SidebarEditCheckDialog.prototype.onToggleCollapse = function () {
+	// mixin
+	ve.ui.EditCheckDialog.prototype.onToggleCollapse.apply( this, arguments );
+
+	this.onPosition();
 };
 
 /* Registration */
 
-ve.ui.windowFactory.register( ve.ui.EditCheckDialog );
+ve.ui.windowFactory.register( ve.ui.SidebarEditCheckDialog );
+
+ve.ui.FixedEditCheckDialog = function VeUiFixedEditCheckDialog( config ) {
+	// Parent constructor
+	ve.ui.FixedEditCheckDialog.super.call( this, config );
+
+	// Mixin constructor
+	ve.ui.EditCheckDialog.call( this, config );
+};
+
+OO.inheritClass( ve.ui.FixedEditCheckDialog, ve.ui.ToolbarDialog );
+
+OO.mixinClass( ve.ui.FixedEditCheckDialog, ve.ui.EditCheckDialog );
+
+ve.ui.FixedEditCheckDialog.static.name = 'fixedEditCheckDialog';
+
+ve.ui.FixedEditCheckDialog.static.position = OO.ui.isMobile() ? 'below' : 'side';
+
+ve.ui.FixedEditCheckDialog.static.size = OO.ui.isMobile() ? 'full' : 'medium';
+
+ve.ui.FixedEditCheckDialog.prototype.initialize = function () {
+	// Parent method
+	ve.ui.FixedEditCheckDialog.super.prototype.initialize.call( this );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.initialize.call( this );
+};
+
+ve.ui.FixedEditCheckDialog.prototype.getSetupProcess = function ( data ) {
+	// Parent method
+	const process = ve.ui.FixedEditCheckDialog.super.prototype.getSetupProcess.call( this, data );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.getSetupProcess.call( this, data, process );
+};
+
+ve.ui.FixedEditCheckDialog.prototype.getTeardownProcess = function ( data ) {
+	// Parent method
+	const process = ve.ui.FixedEditCheckDialog.super.prototype.getTeardownProcess.call( this, data );
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.getTeardownProcess.call( this, data, process );
+};
+
+ve.ui.FixedEditCheckDialog.prototype.onFocusAction = function ( action, index, scrollTo ) {
+	if ( this.singleAction && action === null ) {
+		// Can't unset the offset in single-action mode, because it hides the sidebar contents
+		return;
+	}
+	// Mixin method
+	return ve.ui.EditCheckDialog.prototype.onFocusAction.call( this, action, index, scrollTo );
+};
+
+/* Registration */
+
+ve.ui.windowFactory.register( ve.ui.FixedEditCheckDialog );
 
 ve.ui.commandRegistry.register(
 	new ve.ui.Command(
@@ -404,7 +458,7 @@ ve.ui.commandRegistry.register(
 
 ve.ui.commandRegistry.register(
 	new ve.ui.Command(
-		'editCheckDialogBeforeSave', 'window', 'toggle', { args: [ 'editCheckDialog', { listener: 'onBeforeSave', reviewMode: true } ] }
+		'editCheckDialogBeforeSave', 'window', 'toggle', { args: [ 'editCheckDialog', { listener: 'onBeforeSave' } ] }
 	)
 );
 

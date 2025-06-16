@@ -10,7 +10,6 @@
 
 namespace MediaWiki\Extension\VisualEditor;
 
-use Article;
 use MediaWiki\Actions\ActionEntryPoint;
 use MediaWiki\Auth\Hook\UserLoggedInHook;
 use MediaWiki\ChangeTags\Hook\ChangeTagsListActiveHook;
@@ -38,13 +37,17 @@ use MediaWiki\Output\Hook\BeforePageDisplayHook;
 use MediaWiki\Output\Hook\MakeGlobalVariablesScriptHook;
 use MediaWiki\Output\Hook\OutputPageBodyAttributesHook;
 use MediaWiki\Output\OutputPage;
+use MediaWiki\Page\Article;
 use MediaWiki\Preferences\Hook\GetPreferencesHook;
 use MediaWiki\Preferences\Hook\PreferencesFormPreSaveHook;
+use MediaWiki\RecentChanges\RecentChange;
 use MediaWiki\Registration\ExtensionRegistry;
 use MediaWiki\Request\WebRequest;
 use MediaWiki\ResourceLoader\Hook\ResourceLoaderGetConfigVarsHook;
 use MediaWiki\ResourceLoader\Hook\ResourceLoaderRegisterModulesHook;
 use MediaWiki\ResourceLoader\ResourceLoader;
+use MediaWiki\Skin\Skin;
+use MediaWiki\Skin\SkinTemplate;
 use MediaWiki\SpecialPage\Hook\RedirectSpecialArticleRedirectParamsHook;
 use MediaWiki\SpecialPage\SpecialPage;
 use MediaWiki\Title\Title;
@@ -52,9 +55,6 @@ use MediaWiki\User\User;
 use MediaWiki\User\UserIdentity;
 use OOUI\ButtonGroupWidget;
 use OOUI\ButtonWidget;
-use RecentChange;
-use Skin;
-use SkinTemplate;
 use TextSlotDiffRenderer;
 
 /**
@@ -93,7 +93,6 @@ class Hooks implements
 		// Only for WTE. This parameter is not supported right now, and NWE has a very different design
 		// for previews, so we might not want to support this at all.
 		'preview',
-		'veswitched'
 	];
 
 	private const TAGS = [
@@ -101,17 +100,24 @@ class Hooks implements
 		'visualeditor-wikitext',
 		// Edit check
 		'editcheck-references',
-		'editcheck-references-activated',
+		'editcheck-references-shown',
 		'editcheck-newcontent',
 		'editcheck-newreference',
+		// No longer in active use:
+		'editcheck-references-activated',
 		'editcheck-reference-decline-common-knowledge',
 		'editcheck-reference-decline-irrelevant',
 		'editcheck-reference-decline-uncertain',
 		'editcheck-reference-decline-other',
-		// No longer in active use:
 		'visualeditor-needcheck',
 		'visualeditor-switched'
 	];
+
+	private ExtensionRegistry $extensionRegistry;
+
+	public function __construct( ExtensionRegistry $extensionRegistry ) {
+		$this->extensionRegistry = $extensionRegistry;
+	}
 
 	/**
 	 * Initialise the 'VisualEditorAvailableNamespaces' setting, and add content
@@ -144,7 +150,7 @@ class Hooks implements
 			return;
 		}
 		if ( !(
-			ExtensionRegistry::getInstance()->isLoaded( 'MobileFrontend' ) &&
+			$this->extensionRegistry->isLoaded( 'MobileFrontend' ) &&
 			$services->getService( 'MobileFrontend.Context' )
 				->shouldDisplayMobileView()
 		) ) {
@@ -380,7 +386,7 @@ class Hooks implements
 		$urlUtils = $services->getUrlUtils();
 		$veConfig = $services->getConfigFactory()->makeConfig( 'visualeditor' );
 
-		if ( ExtensionRegistry::getInstance()->isLoaded( 'MobileFrontend' ) ) {
+		if ( $this->extensionRegistry->isLoaded( 'MobileFrontend' ) ) {
 			// If mobilefrontend is involved it can make its own decisions about this
 			$mobFrontContext = MediaWikiServices::getInstance()->getService( 'MobileFrontend.Context' );
 			if ( $mobFrontContext->shouldDisplayMobileView() ) {
@@ -434,6 +440,14 @@ class Hooks implements
 		// On dual-edit-tab wikis, the edit page must mean the user wants wikitext,
 		// unless following a redlink
 		if ( !$config->get( 'VisualEditorUseSingleEditTab' ) && !$isRedLink ) {
+			return 'wikitext';
+		}
+		// Adding a new section is not supported in visual mode
+		if ( $req->getRawVal( 'section' ) === 'new' ) {
+			return 'wikitext';
+		}
+		// Force switched from VE
+		if ( $req->getVal( 'veswitched' ) !== null ) {
 			return 'wikitext';
 		}
 		return self::getPreferredEditor( $user, $req, !$isRedLink );
@@ -518,7 +532,7 @@ class Hooks implements
 		self::onSkinTemplateNavigationSpecialPage( $skin, $links );
 
 		if (
-			ExtensionRegistry::getInstance()->isLoaded( 'MobileFrontend' ) &&
+			$this->extensionRegistry->isLoaded( 'MobileFrontend' ) &&
 			$services->getService( 'MobileFrontend.Context' )->shouldDisplayMobileView()
 		) {
 			return;
@@ -588,11 +602,19 @@ class Hooks implements
 		// us to splice into the middle of an associative array.
 		$newViews = [];
 		$wikiPageFactory = $services->getWikiPageFactory();
-		$isRemote = !$wikiPageFactory->newFromTitle( $title )->isLocal();
+		if ( $title->inNamespace( NS_SPECIAL ) ) {
+			// @see https://phabricator.wikimedia.org/T376487
+			// The WikiPageFactory call would fatal if $title points to a special page, but sometimes,
+			// as unusual as it might be, a special page *can* call the relevant hooks to add an "edit"
+			// tab to itself. Luckily most special pages are smarter than that.
+			$isRemote = false;
+		} else {
+			$isRemote = !$wikiPageFactory->newFromTitle( $title )->isLocal();
+		}
 
 		$skinHasEditIcons = in_array(
 			$skin->getSkinName(),
-			ExtensionRegistry::getInstance()->getAttribute( 'VisualEditorIconSkins' )
+			$this->extensionRegistry->getAttribute( 'VisualEditorIconSkins' )
 		);
 
 		foreach ( $links['views'] as $action => $data ) {
@@ -813,7 +835,7 @@ class Hooks implements
 		}
 
 		if (
-			ExtensionRegistry::getInstance()->isLoaded( 'MobileFrontend' ) &&
+			$this->extensionRegistry->isLoaded( 'MobileFrontend' ) &&
 			$services->getService( 'MobileFrontend.Context' )->shouldDisplayMobileView()
 		) {
 			return;
@@ -870,7 +892,7 @@ class Hooks implements
 
 		$skinHasEditIcons = in_array(
 			$skin->getSkinName(),
-			ExtensionRegistry::getInstance()->getAttribute( 'VisualEditorIconSkins' )
+			$this->extensionRegistry->getAttribute( 'VisualEditorIconSkins' )
 		);
 
 		// add VE edit section in VE available namespaces
@@ -1102,11 +1124,10 @@ class Hooks implements
 		$coreConfig = RequestContext::getMain()->getConfig();
 		$services = MediaWikiServices::getInstance();
 		$veConfig = $services->getConfigFactory()->makeConfig( 'visualeditor' );
-		$extensionRegistry = ExtensionRegistry::getInstance();
 		$availableNamespaces = ApiVisualEditor::getAvailableNamespaceIds( $veConfig );
 		$availableContentModels = array_filter(
 			array_merge(
-				$extensionRegistry->getAttribute( 'VisualEditorAvailableContentModels' ),
+				$this->extensionRegistry->getAttribute( 'VisualEditorAvailableContentModels' ),
 				$veConfig->get( 'VisualEditorAvailableContentModels' )
 			)
 		);
@@ -1133,15 +1154,15 @@ class Hooks implements
 		$defaultSortPrefix = preg_replace( '/:$/', '', $defaultSortPrefix );
 
 		$vars['wgVisualEditorConfig'] = [
-			'usePageImages' => $extensionRegistry->isLoaded( 'PageImages' ),
-			'usePageDescriptions' => $extensionRegistry->isLoaded( 'WikibaseClient' ),
+			'usePageImages' => $this->extensionRegistry->isLoaded( 'PageImages' ),
+			'usePageDescriptions' => $this->extensionRegistry->isLoaded( 'WikibaseClient' ),
 			'isBeta' => $veConfig->get( 'VisualEditorEnableBetaFeature' ),
 			'disableForAnons' => $veConfig->get( 'VisualEditorDisableForAnons' ),
 			'preloadModules' => $veConfig->get( 'VisualEditorPreloadModules' ),
 			'namespaces' => $availableNamespaces,
 			'contentModels' => $availableContentModels,
 			'pluginModules' => array_merge(
-				$extensionRegistry->getAttribute( 'VisualEditorPluginModules' ),
+				$this->extensionRegistry->getAttribute( 'VisualEditorPluginModules' ),
 				// @todo deprecate the global setting
 				$veConfig->get( 'VisualEditorPluginModules' )
 			),
@@ -1160,7 +1181,7 @@ class Hooks implements
 			'editCheckTagging' => $veConfig->get( 'VisualEditorEditCheckTagging' ),
 			'editCheck' => $veConfig->get( 'VisualEditorEditCheck' ),
 			'editCheckSingle' => $veConfig->get( 'VisualEditorEditCheckSingleCheckMode' ),
-			'editCheckExperimental' => $veConfig->get( 'VisualEditorEditCheckLoadExperimental' ),
+			'editCheckExperimental' => (bool)$veConfig->get( 'VisualEditorEditCheckLoadExperimental' ),
 			'editCheckABTest' => $veConfig->get( 'VisualEditorEditCheckABTest' ),
 			'editCheckReliabilityAvailable' => ApiEditCheckReferenceUrl::isAvailable(),
 			'namespacesWithSubpages' => $namespacesWithSubpagesEnabled,
@@ -1169,11 +1190,20 @@ class Hooks implements
 			'feedbackApiUrl' => $veConfig->get( 'VisualEditorFeedbackAPIURL' ),
 			'feedbackTitle' => $veConfig->get( 'VisualEditorFeedbackTitle' ),
 			'sourceFeedbackTitle' => $veConfig->get( 'VisualEditorSourceFeedbackTitle' ),
+			'mobileInsertMenu' => $veConfig->get( 'VisualEditorMobileInsertMenu' ),
 			// TODO: Remove when all usages in .js files are removed
 			'transclusionDialogNewSidebar' => true,
-			'cirrusSearchLookup' => $extensionRegistry->isLoaded( 'CirrusSearch' ),
+			'cirrusSearchLookup' => $this->extensionRegistry->isLoaded( 'CirrusSearch' ),
 			'defaultSortPrefix' => $defaultSortPrefix,
 		];
+
+		// This can be removed and the module added in TemplateData's extension.json
+		// after the feature flag has been removed. T377976.
+		if ( $this->extensionRegistry->isLoaded( 'TemplateData' )
+			&& $coreConfig->get( 'TemplateDataEnableDiscovery' )
+		) {
+			$vars['wgVisualEditorConfig']['pluginModules'][] = 'ext.templateData.templateDiscovery';
+		}
 	}
 
 	/**

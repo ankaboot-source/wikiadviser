@@ -39,6 +39,23 @@ ve.ui.MWTemplatePage = function VeUiMWTemplatePage( template, name, config ) {
 		label: this.spec.getLabel(),
 		icon: 'puzzle'
 	} );
+	this.pageId = this.spec.templateData.pageId;
+
+	// Add favorite button
+	this.usingTemplateDiscovery = mw.templateData !== undefined && mw.templateData.FavoriteButton !== undefined;
+	if ( this.usingTemplateDiscovery ) {
+		this.favoritesStore = new mw.templateData.FavoritesStore();
+		this.favoriteButton = new mw.templateData.FavoriteButton( {
+			pageId: this.pageId,
+			favoritesStore: this.favoritesStore
+		} );
+
+		this.$element.prepend(
+			$( '<div>' )
+				.addClass( 've-ui-mwTemplatePage-favorite' )
+				.append( this.favoriteButton.$element )
+		);
+	}
 
 	// Initialization
 	const description = this.spec.getDescription();
@@ -67,7 +84,7 @@ ve.ui.MWTemplatePage = function VeUiMWTemplatePage( template, name, config ) {
 		} catch ( e ) {
 		}
 		// When {{User:Foo}} can be parsed as "Foo", we know the ":" is not syntax.
-		key = title && title.getMain().indexOf( ':' ) === -1 ?
+		key = title && !title.getMain().includes( ':' ) ?
 			'visualeditor-dialog-transclusion-template-title-nonexistent' :
 			'visualeditor-dialog-transclusion-template-title-modifier';
 	} else {

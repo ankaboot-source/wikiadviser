@@ -801,7 +801,7 @@ ve.dm.Document.prototype.getFullData = function ( range, mode ) {
 				mode === 'noMetadata' ||
 				mode === 'roundTrip' && (
 					// Already inserted
-					insertedMetaItems.indexOf( item.originalDomElementsHash ) !== -1 ||
+					insertedMetaItems.includes( item.originalDomElementsHash ) ||
 					// Removable meta item that was not handled yet, which means that its entire branch node
 					// must have been removed, so it's out of place and should be removed too
 					ve.dm.nodeFactory.isRemovableMetaData( item.type ) && ve.getProp( item, 'internal', 'loadMetaParentOffset' )
@@ -1469,7 +1469,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			do {
 				const allowedParents = ve.dm.nodeFactory.getParentNodeTypes( childType );
 				parentsOK = allowedParents === null ||
-					allowedParents.indexOf( parentType ) !== -1;
+					allowedParents.includes( parentType );
 				if ( !parentsOK ) {
 					// We can't have this as the parent
 					if ( allowedParents.length === 0 ) {
@@ -1489,7 +1489,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			let suggestedParentsOK;
 			do {
 				suggestedParentsOK = suggestedParents === null ||
-					suggestedParents.indexOf( parentType ) !== -1;
+					suggestedParents.includes( parentType );
 				if ( !suggestedParentsOK ) {
 					closeElement( closings, reopenElements, childType, i );
 				}
@@ -1501,7 +1501,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			do {
 				const allowedChildren = ve.dm.nodeFactory.getChildNodeTypes( parentType );
 				childrenOK = allowedChildren === null ||
-					allowedChildren.indexOf( childType ) !== -1;
+					allowedChildren.includes( childType );
 				// Also check if we're trying to insert structure into a node that has to contain
 				// content
 				childrenOK = childrenOK && !(
@@ -1795,12 +1795,17 @@ ve.dm.Document.prototype.getDir = function () {
  * Storage is used for static variables related to document state,
  * such as InternalList's nextUniqueNumber.
  *
+ * Values stored here must be JSON-serializable, as they are written/read
+ * with ve.init.SafeStorage#setObject and getObject.
+ *
  * @param {string|Object} [keyOrStorage] Key, or storage object to restore
  * @param {any} [value] Serializable value, if key is set
  * @fires ve.dm.Document#storage
  */
 ve.dm.Document.prototype.setStorage = function ( keyOrStorage, value ) {
 	if ( typeof keyOrStorage === 'string' ) {
+		// Attempt to JSON-serialize the value now so an error can be thrown if necessary.
+		JSON.stringify( { value: value } );
 		this.persistentStorage[ keyOrStorage ] = value;
 		this.emit( 'storage' );
 	} else {

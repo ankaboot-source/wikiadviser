@@ -156,9 +156,7 @@
 		};
 		if ( !Object.prototype.hasOwnProperty.call( store, 'length' ) ) {
 			Object.defineProperty( store, 'length', {
-				get: function () {
-					return Object.keys( store ).length;
-				}
+				get: () => Object.keys( store ).length
 			} );
 		}
 
@@ -397,6 +395,15 @@
 		}
 
 		surface.getModel().setSelection( selection );
+
+		if ( caseItem.insertionAnnotations ) {
+			caseItem.insertionAnnotations.forEach( ( annotation ) => {
+				surface.getModel().addInsertionAnnotations(
+					ve.dm.annotationFactory.create( annotation.type, annotation.data )
+				);
+			} );
+		}
+
 		action[ caseItem.method ].apply( action, caseItem.args || [] );
 
 		const afterApply = () => {
@@ -405,6 +412,15 @@
 			assert.equalLinearData( actualData, data, caseItem.msg + ': data models match' );
 			if ( expectedSelection ) {
 				assert.equalHash( surface.getModel().getSelection(), expectedSelection, caseItem.msg + ': selections match' );
+			}
+
+			if ( caseItem.expectedInsertionAnnotations ) {
+				const actualAnnotations = surface.getModel().getInsertionAnnotations().get();
+				assert.deepEqual(
+					actualAnnotations.map( ( annotation ) => annotation.getComparableObject() ),
+					caseItem.expectedInsertionAnnotations,
+					'Insertion annotations match expected state'
+				);
 			}
 
 			if ( caseItem.undo ) {

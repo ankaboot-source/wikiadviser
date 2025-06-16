@@ -542,6 +542,9 @@ ve.ce.Surface.prototype.setReviewMode = function ( reviewMode, highlightNodes ) 
 		this.$element.find( '.ve-ce-surface-reviewMode-highlightNode' )
 			.removeClass( 've-ce-surface-reviewMode-highlightNode' );
 	}
+	if ( this.reviewMode ) {
+		this.deactivate( false );
+	}
 };
 
 /**
@@ -562,6 +565,12 @@ ve.ce.Surface.prototype.focus = function () {
 		this.selectFirstVisibleStartContentOffset();
 		selection = this.getSelection();
 	}
+
+	// Ensure the surface is activated, otherwise showModelSelection
+	// will not set the native selection, and the native focus calls
+	// will instead result in the selection being set from observation,
+	// which will be the start of the contenteditable node.
+	this.activate( true );
 
 	// Focus the contentEditable for text selections, or the clipboard handler for focusedNode selections
 	if ( selection.isFocusedNode() ) {
@@ -745,10 +754,11 @@ ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChan
 /**
  * Reactivate the surface and restore the native selection
  *
+ * @param {boolean} [useModelSelection=false] Use the current model selection, instead of restoring from native
  * @fires ve.ce.Surface#activation
  * @fires ve.dm.Surface#contextChange
  */
-ve.ce.Surface.prototype.activate = function () {
+ve.ce.Surface.prototype.activate = function ( useModelSelection ) {
 	if ( this.deactivated ) {
 		this.deactivated = false;
 		this.getSelectionManager().hideDeactivatedSelection();
@@ -761,7 +771,7 @@ ve.ce.Surface.prototype.activate = function () {
 
 		const previousSelection = this.getModel().getSelection();
 
-		if ( OO.ui.contains( this.$attachedRootNode[ 0 ], this.nativeSelection.anchorNode, true ) ) {
+		if ( !useModelSelection && OO.ui.contains( this.$attachedRootNode[ 0 ], this.nativeSelection.anchorNode, true ) ) {
 			// The selection has been placed back in the document, either by the user clicking
 			// or by the closing window updating the model. Poll in case it was the user clicking.
 			this.surfaceObserver.clear();
@@ -1147,7 +1157,7 @@ ve.ce.Surface.prototype.onDocumentKeyDown = function ( e ) {
 		this.readOnly && !(
 			// Allowed keystrokes in readonly mode:
 			// Arrows, simple navigation
-			ve.ce.LinearArrowKeyDownHandler.static.keys.indexOf( e.keyCode ) !== -1 ||
+			ve.ce.LinearArrowKeyDownHandler.static.keys.includes( e.keyCode ) ||
 			// Potential commands:
 			// Function keys...
 			( e.keyCode >= 112 && e.keyCode <= 123 ) ||
@@ -1195,11 +1205,11 @@ ve.ce.Surface.prototype.isBlockedTrigger = function ( trigger ) {
 
 	// Special case: only block Tab/Shift+Tab if indentation commands are enabled on this surface,
 	// otherwise allow them to change focus
-	if ( blockedIfRegisteredTriggers.indexOf( triggerString ) !== -1 ) {
+	if ( blockedIfRegisteredTriggers.includes( triggerString ) ) {
 		return !!this.surface.triggerListener.getCommandByTrigger( triggerString );
 	}
 
-	return blockedTriggers[ platformKey ].indexOf( triggerString ) !== -1;
+	return blockedTriggers[ platformKey ].includes( triggerString );
 };
 
 /**
@@ -1612,7 +1622,10 @@ ve.ce.Surface.prototype.cleanupUnicorns = function ( fixupCursor ) {
 		contentBranchNodeBefore.renderContents();
 	}
 
-	this.showModelSelection();
+	// Don't modify selection while pasting (T368598)
+	if ( !this.clipboardHandler.pasting ) {
+		this.showModelSelection();
+	}
 	return true;
 };
 
@@ -3457,7 +3470,7 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	// Iterate over previously active annotations
 	this.activeAnnotations.forEach( ( annotation ) => {
 		// If not in the new list, turn off
-		if ( activeAnnotations.indexOf( annotation ) === -1 ) {
+		if ( !activeAnnotations.includes( annotation ) ) {
 			annotation.$element.removeClass( 've-ce-annotation-active' );
 			changed = true;
 		}
@@ -3466,7 +3479,7 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	// Iterate over newly active annotations
 	activeAnnotations.forEach( ( annotation ) => {
 		// If not in the old list, turn on
-		if ( this.activeAnnotations.indexOf( annotation ) === -1 ) {
+		if ( !this.activeAnnotations.includes( annotation ) ) {
 			annotation.$element.addClass( 've-ce-annotation-active' );
 			changed = true;
 		}
@@ -3872,7 +3885,7 @@ ve.ce.Surface.prototype.getSelectedModels = function () {
 		return models.filter( ( annModel ) => {
 			// If the model is an annotation that can be active, only show it if it *is* active
 			if ( annModel instanceof ve.dm.Annotation && ve.ce.annotationFactory.canAnnotationBeActive( annModel.getType() ) ) {
-				return activeModels.indexOf( annModel ) !== -1;
+				return activeModels.includes( annModel );
 			}
 			return true;
 		} );

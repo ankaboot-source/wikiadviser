@@ -13,6 +13,7 @@ mw.editcheck.EditCheckAction = function MWEditCheckAction( config ) {
 
 	this.check = config.check;
 	this.fragments = config.fragments;
+	this.focusFragment = config.focusFragment;
 	this.message = config.message;
 	this.id = config.id;
 	this.title = config.title;
@@ -48,6 +49,11 @@ mw.editcheck.EditCheckAction.prototype.getChoices = function () {
  */
 mw.editcheck.EditCheckAction.prototype.getHighlightSelections = function () {
 	return this.fragments.map( ( fragment ) => fragment.getSelection() );
+};
+
+mw.editcheck.EditCheckAction.prototype.getFocusSelection = function () {
+	// TOOD: Instead of fragments[0], create a fragment that covers all fragments?
+	return ( this.focusFragment || this.fragments[ 0 ] ).getSelection();
 };
 
 /**
@@ -92,9 +98,40 @@ mw.editcheck.EditCheckAction.prototype.render = function ( collapsed, singleActi
 	return widget;
 };
 
+/**
+ * Called when a button in the rendered widget is clicked
+ *
+ * @param {ve.ui.Surface} surface
+ * @param {OO.ui.ActionWidget} actionWidget ActionWidget for the choice that was clicked
+ */
 mw.editcheck.EditCheckAction.prototype.onActionClick = function ( surface, actionWidget ) {
 	const promise = this.check.act( actionWidget.action, this, surface );
 	this.emit( 'act', promise || ve.createDeferred().resolve().promise() );
+	ve.track( 'activity.editCheck-' + this.getName(), { action: 'action-' + ( actionWidget.getAction() || 'unknown' ) } );
+};
+
+/**
+ * @param {mw.editcheck.EditCheckAction} other
+ * @return {boolean}
+ */
+mw.editcheck.EditCheckAction.prototype.equals = function ( other ) {
+	// Same check type?
+	if ( this.check.constructor !== other.check.constructor ) {
+		return false;
+	}
+	// If ids are present, they're the only thing that counts
+	if ( this.id || other.id ) {
+		return this.id === other.id;
+	}
+	// Shortcut the fragment check if possible
+	if ( this.fragments.length !== other.fragments.length ) {
+		return false;
+	}
+	// Now they're the same if every fragment is found in both actions
+	return this.fragments.every( ( fragment ) => {
+		const selection = fragment.getSelection();
+		return other.fragments.some( ( otherFragment ) => otherFragment.getSelection().equals( selection ) );
+	} );
 };
 
 mw.editcheck.EditCheckActionWidget = function MWEditCheckActionWidget( config ) {
@@ -113,46 +150,21 @@ mw.editcheck.EditCheckActionWidget = function MWEditCheckActionWidget( config ) 
 	// Parent constructor
 	mw.editcheck.EditCheckActionWidget.super.call( this, config );
 
-	// Mixin constructors
-	OO.ui.mixin.IconElement.call( this, config );
-	OO.ui.mixin.LabelElement.call( this, config );
-	OO.ui.mixin.TitledElement.call( this, config );
-	OO.ui.mixin.FlaggedElement.call( this, config );
-
-	this.setType( config.type );
-
-	if ( config.icon ) {
-		this.setIcon( config.icon );
-	}
-
 	this.message = new OO.ui.LabelWidget( { label: config.message } );
 	this.$actions = $( '<div>' ).addClass( 've-ui-editCheckActionWidget-actions oo-ui-element-hidden' );
 
-	this.$head = $( '<div>' )
-		.append( this.$icon, this.$label )
-		.addClass( 've-ui-editCheckActionWidget-head' )
-		.on( 'click', this.onHeadClick.bind( this ) );
+	this.$element.on( 'click', this.onClick.bind( this ) );
+
 	this.$body = $( '<div>' )
 		.append( this.message.$element, this.$actions )
 		.addClass( 've-ui-editCheckActionWidget-body' );
 
 	this.$element
-		.append( this.$head, this.$body )
-		// .append( this.$icon, this.$label, this.closeButton && this.closeButton.$element )
+		.append( this.$body )
 		.addClass( 've-ui-editCheckActionWidget' );
 };
 
-OO.inheritClass( mw.editcheck.EditCheckActionWidget, OO.ui.Widget );
-OO.mixinClass( mw.editcheck.EditCheckActionWidget, OO.ui.mixin.IconElement );
-OO.mixinClass( mw.editcheck.EditCheckActionWidget, OO.ui.mixin.LabelElement );
-OO.mixinClass( mw.editcheck.EditCheckActionWidget, OO.ui.mixin.TitledElement );
-OO.mixinClass( mw.editcheck.EditCheckActionWidget, OO.ui.mixin.FlaggedElement );
-
-mw.editcheck.EditCheckActionWidget.static.iconMap = {
-	notice: 'infoFilled',
-	error: 'error',
-	warning: 'alert'
-};
+OO.inheritClass( mw.editcheck.EditCheckActionWidget, OO.ui.MessageWidget );
 
 /**
  * Called when actions are changed
@@ -174,25 +186,11 @@ mw.editcheck.EditCheckActionWidget.prototype.setDisabled = function ( disabled )
 	} );
 };
 
-mw.editcheck.EditCheckActionWidget.prototype.setType = function ( type ) {
-	if ( !this.constructor.static.iconMap[ type ] ) {
-		type = 'notice';
-	}
-	if ( type !== this.type ) {
-		this.clearFlags();
-		this.setFlags( type );
-
-		this.setIcon( this.constructor.static.iconMap[ type ] );
-	}
-	this.type = type;
-};
-
-mw.editcheck.EditCheckActionWidget.prototype.getType = function () {
-	return this.type;
-};
-
-mw.editcheck.EditCheckActionWidget.prototype.onHeadClick = function ( e ) {
+mw.editcheck.EditCheckActionWidget.prototype.onClick = function ( e ) {
 	if ( this.singleAction ) {
+		return;
+	}
+	if ( this.$body[ 0 ].contains( e.target ) ) {
 		return;
 	}
 

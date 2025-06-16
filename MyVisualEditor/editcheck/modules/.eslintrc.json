@@ -1,7 +1,9 @@
 {
 	"root": true,
-	"extends": [ "../../modules/.eslintrc" ],
-	"parserOptions": {
-		"sourceType": "commonjs"
+	"extends": [
+		"../../modules/.eslintrc"
+	],
+	"rules": {
+		"no-jquery/no-done-fail": "warn"
 	}
 }

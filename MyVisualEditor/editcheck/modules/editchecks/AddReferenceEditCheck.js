@@ -1,6 +1,6 @@
-mw.editcheck.AddReferenceEditCheck = function MWAddReferenceEditCheck( config ) {
+mw.editcheck.AddReferenceEditCheck = function MWAddReferenceEditCheck() {
 	// Parent constructor
-	mw.editcheck.AddReferenceEditCheck.super.call( this, config );
+	mw.editcheck.AddReferenceEditCheck.super.apply( this, arguments );
 };
 
 OO.inheritClass( mw.editcheck.AddReferenceEditCheck, mw.editcheck.BaseEditCheck );
@@ -16,12 +16,28 @@ mw.editcheck.AddReferenceEditCheck.static.defaultConfig = ve.extendObject( {}, m
 	beforePunctuation: false
 } );
 
+mw.editcheck.AddReferenceEditCheck.static.choices = [ ...mw.editcheck.BaseEditCheck.static.choices,
+	// Note: no `icon` fields on these, to better distinguish them from the non-feedback actions
+	{
+		action: 'feedback',
+		label: ve.msg( 'ooui-dialog-process-continue' ),
+		modes: [ 'feedback' ],
+		flags: [ 'progressive' ]
+	},
+	{
+		action: 'reset',
+		label: ve.msg( 'visualeditor-dialog-action-cancel' ),
+		modes: [ 'feedback' ],
+		flags: [ 'safe', 'back' ]
+	}
+];
+
 mw.editcheck.AddReferenceEditCheck.static.onlyCoveredNodes = true;
 
 mw.editcheck.AddReferenceEditCheck.prototype.onBeforeSave = function ( surfaceModel ) {
 	return this.findAddedContent( surfaceModel.getDocument() ).filter( ( range ) => !this.isDismissedRange( range ) )
 		.map(
-			( range ) => new mw.editcheck.EditCheckAction( {
+			( range ) => new this.constructor.static.Action( {
 				fragments: [ surfaceModel.getLinearFragment( range ) ],
 				check: this
 			} )
@@ -81,30 +97,34 @@ mw.editcheck.AddReferenceEditCheck.prototype.act = function ( choice, action, su
 					// use the data form the Citoid closing promise.
 					citoidOrCiteDataDeferred.resolve( citoidData );
 				}
-				return citoidOrCiteDataDeferred.promise().done( ( data ) => {
+				const citoidOrCiteDataPromise = citoidOrCiteDataDeferred.promise();
+				citoidOrCiteDataPromise.then( ( data ) => {
 					if ( data ) {
 						// Edit check inspector is already closed by this point, but
 						// we need to end the workflow.
 						mw.notify( ve.msg( 'editcheck-dialog-addref-success-notify' ), { type: 'success' } );
 					}
 				} );
+				return citoidOrCiteDataPromise;
 			} );
 		case 'reject':
 			ve.track( 'activity.editCheckReferences', { action: 'edit-check-reject' } );
-			return windowAction.open(
-				'editCheckReferencesInspector',
-				{
-					fragment: action.fragments[ 0 ]
-				}
-			// eslint-disable-next-line arrow-body-style
-			).then( ( instance ) => {
-				return instance.closing;
-			} ).done( ( data ) => {
-				if ( data && data.action === 'reject' && data.reason ) {
-					mw.editcheck.rejections.push( data.reason );
-					this.dismiss( action );
-				}
-			} );
+			this.mode = 'feedback';
+			return; // this will trigger a debounced update, which will redraw the widget
+		case 'reset':
+			this.mode = '';
+			return; // again triggers a redraw
+		case 'feedback':
+			this.mode = '';
+			// eslint-disable-next-line no-case-declarations
+			const selectedItem = action.widget.answerRadioSelect.findSelectedItem();
+			if ( selectedItem && selectedItem.getData() ) {
+				const reason = selectedItem.getData();
+				ve.track( 'activity.editCheckReferences', { action: 'dialog-choose-' + reason } );
+				this.dismiss( action );
+				return ve.createDeferred().resolve( { action: choice, reason: reason } ).promise();
+			}
+			break;
 	}
 };
 
@@ -147,5 +167,66 @@ mw.editcheck.AddReferenceEditCheck.prototype.adjustForPunctuation = function ( i
 	}
 	return insertionPointFragment;
 };
+
+// Support for the feedback panel
+
+const AddReferenceAction = function () {
+	AddReferenceAction.super.apply( this, arguments );
+};
+OO.inheritClass( AddReferenceAction, mw.editcheck.EditCheckAction );
+
+AddReferenceAction.prototype.render = function () {
+	const widget = this.constructor.super.prototype.render.apply( this, arguments );
+
+	if ( this.check.mode === 'feedback' ) {
+		// Survey panel
+		widget.form = new OO.ui.FormLayout( {
+			classes: [ 've-ui-editCheckActionWidget-feedback' ]
+		} );
+		widget.answerRadioSelect = new OO.ui.RadioSelectWidget( {
+			items: [
+				new OO.ui.RadioOptionWidget( {
+					data: 'uncertain',
+					label: ve.msg( 'editcheck-dialog-addref-reject-uncertain' )
+				} ),
+				new OO.ui.RadioOptionWidget( {
+					data: 'common-knowledge',
+					label: ve.msg( 'editcheck-dialog-addref-reject-common-knowledge' )
+				} ),
+				new OO.ui.RadioOptionWidget( {
+					data: 'irrelevant',
+					label: ve.msg( 'editcheck-dialog-addref-reject-irrelevant' )
+				} ),
+				new OO.ui.RadioOptionWidget( {
+					data: 'other',
+					label: ve.msg( 'editcheck-dialog-addref-reject-other' )
+				} )
+			]
+		} );
+		widget.answerRadioSelect.on( 'select', () => {
+			const isSelected = !!widget.answerRadioSelect.findSelectedItem();
+			widget.actions.setAbilities( { feedback: isSelected } );
+		} );
+		widget.form.addItems(
+			new OO.ui.FieldsetLayout( {
+				label: ve.msg( 'editcheck-dialog-addref-reject-question' ),
+				items: [
+					new OO.ui.FieldLayout( widget.answerRadioSelect, {
+						label: ve.msg( 'editcheck-dialog-addref-reject-description' ),
+						align: 'top'
+					} )
+				]
+			} )
+		);
+		widget.message.$element.empty().append( widget.form.$element );
+		widget.actions.setAbilities( { feedback: false } );
+	}
+
+	return widget;
+};
+
+mw.editcheck.AddReferenceEditCheck.static.Action = AddReferenceAction;
+
+// Register
 
 mw.editcheck.editCheckFactory.register( mw.editcheck.AddReferenceEditCheck );

@@ -52,12 +52,10 @@ OO.inheritClass( ve.init.mw.MobileArticleTarget, ve.init.mw.ArticleTarget );
 /* Static Properties */
 
 ve.init.mw.MobileArticleTarget.static.toolbarGroups = [
-	// History
 	{
 		name: 'history',
 		include: [ 'undo' ]
 	},
-	// Style
 	{
 		name: 'style',
 		classes: [ 've-test-toolbar-style' ],
@@ -71,16 +69,37 @@ ve.init.mw.MobileArticleTarget.static.toolbarGroups = [
 		promote: [ 'bold', 'italic' ],
 		demote: [ 'strikethrough', 'code', 'underline', 'language', 'clear' ]
 	},
-	// Link
 	{
 		name: 'link',
 		include: [ 'link' ]
-	},
-	// Placeholder for reference tools (e.g. Cite and/or Citoid)
-	{
-		name: 'reference'
 	}
 ];
+
+const mobileInsertMenu = mw.config.get( 'wgVisualEditorConfig' ).mobileInsertMenu;
+if ( mobileInsertMenu ) {
+	const insertGroup = {
+		name: 'insert',
+		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		narrowConfig: {
+			invisibleLabel: true,
+			icon: 'add'
+		},
+		// This is the default for include=*, but that's not guaranteed:
+		type: 'list'
+	};
+	if ( mobileInsertMenu === true ) {
+		insertGroup.include = '*';
+		insertGroup.forceExpand = [ 'transclusion', 'insertTable' ];
+		insertGroup.promote = [ 'transclusion', 'insertTable' ];
+		insertGroup.exclude = [ { group: 'format' }, { group: 'history' }, { group: 'structure' }, 'gallery', 'media', 'mwSignature' ];
+	} else {
+		insertGroup.include = mobileInsertMenu;
+		// Citoid sets this up, so we need to force it for everything:
+		insertGroup.forceExpand = mobileInsertMenu;
+	}
+	ve.init.mw.MobileArticleTarget.static.toolbarGroups.push( insertGroup );
+}
 
 ve.init.mw.MobileArticleTarget.static.trackingName = 'mobile';
 

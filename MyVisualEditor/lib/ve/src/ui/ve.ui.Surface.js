@@ -55,6 +55,8 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	// * ve-ui-overlay-global-desktop
 	this.globalOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-global', 've-ui-overlay-global-' + ( OO.ui.isMobile() ? 'mobile' : 'desktop' ) ] } );
 	this.localOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-local' ] } );
+	// Selection highlights should appear under text, so need their own overlay for CSS
+	this.localOverlaySelections = new ve.ui.Overlay( { classes: [ 've-ui-overlay-local ve-ui-overlay-local-selections' ] } );
 	this.$selections = $( '<div>' ).addClass( 've-ui-surface-selections' );
 	this.$blockers = $( '<div>' );
 	this.$controls = $( '<div>' );
@@ -85,6 +87,7 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	}
 	this.view = this.createView( this.model );
 	this.dialogs = this.createDialogWindowManager();
+	this.sidebarDialogs = this.createSidebarWindowManager();
 	this.importRules = config.importRules || {};
 	this.multiline = config.multiline !== false;
 	this.context = this.createContext( {
@@ -125,6 +128,9 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 		activation: 'onViewActivation'
 	} );
 	this.getContext().connect( this, { resize: ve.debounce( this.onContextResize.bind( this ) ) } );
+	this.getView().getSelectionManager().on( 'update', ( hasSelections ) => {
+		this.localOverlaySelections.$element.toggleClass( 've-ui-overlay-local-selections-hasSelections', hasSelections );
+	} );
 
 	// Initialization
 	if ( OO.ui.isMobile() ) {
@@ -139,14 +145,15 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 		// * ve-ui-surface-visual
 		// * ve-ui-surface-source
 		.addClass( 've-ui-surface ve-ui-surface-' + this.mode )
-		.append( this.view.$element );
+		.append( this.view.$element, this.sidebarDialogs.$element );
 	if ( this.mode === 'source' ) {
 		// Separate class to make it easier to override
 		this.getView().$element.add( this.$placeholder )
 			.addClass( 've-ui-surface-source-font' );
 	}
-	this.view.$element.after( this.localOverlay.$element );
-	this.localOverlay.$element.append( this.$selections, this.$blockers, this.$controls, this.$menus );
+	this.view.$element.after( this.localOverlaySelections.$element, this.localOverlay.$element );
+	this.localOverlay.$element.append( this.$blockers, this.$controls, this.$menus );
+	this.localOverlaySelections.$element.append( this.$selections );
 	this.globalOverlay.$element.append( this.dialogs.$element );
 };
 
@@ -318,6 +325,15 @@ ve.ui.Surface.prototype.createDialogWindowManager = function () {
 };
 
 /**
+ * Create a sidebar window manager.
+ *
+ * @return {ve.ui.WindowManager} Sidebar window manager
+ */
+ve.ui.Surface.prototype.createSidebarWindowManager = function () {
+	return new ve.ui.SidebarDialogWindowManager( this, { factory: ve.ui.windowFactory } );
+};
+
+/**
  * Create a surface model
  *
  * @param {ve.dm.Document} doc Document model
@@ -359,9 +375,9 @@ ve.ui.Surface.prototype.getBoundingClientRect = function () {
 };
 
 /**
- * Get vertical measurements of the visible area of the surface viewport
+ * Get measurements of the visible area of the surface viewport
  *
- * @return {Object|null} Object with top, left, bottom, and height properties. Null if the surface is not attached.
+ * @return {Object|null} Object with top, bottom, left, right, width and height properties. Null if the surface is not attached.
  */
 ve.ui.Surface.prototype.getViewportDimensions = function () {
 	const rect = this.getBoundingClientRect();
@@ -370,14 +386,21 @@ ve.ui.Surface.prototype.getViewportDimensions = function () {
 		return null;
 	}
 
-	const top = Math.max( this.getPadding().top - rect.top, 0 );
-	const bottom = $( this.getElementWindow() ).height() - rect.top;
+	const padding = this.getPadding();
+	const $window = $( this.getElementWindow() );
+
+	const top = Math.max( ( padding.top || 0 ) - rect.top, 0 );
+	const bottom = $window.height() - rect.top;
+	const left = Math.max( ( padding.left || 0 ) - rect.left, 0 );
+	const right = $window.width() - rect.left;
 
 	return {
-		top: top,
-		left: rect.left,
-		bottom: bottom,
-		height: bottom - top
+		top,
+		bottom,
+		left,
+		right,
+		height: bottom - top,
+		width: right - left
 	};
 };
 
@@ -426,11 +449,17 @@ ve.ui.Surface.prototype.getDialogs = function () {
 ve.ui.Surface.prototype.getToolbarDialogs = function ( position ) {
 	position = position || 'side';
 	this.toolbarDialogs[ position ] = this.toolbarDialogs[ position ] ||
-		new ve.ui.ToolbarDialogWindowManager( this, {
-			factory: ve.ui.windowFactory,
-			modal: false
-		} );
+		new ve.ui.ToolbarDialogWindowManager( this, { factory: ve.ui.windowFactory } );
 	return this.toolbarDialogs[ position ];
+};
+
+/**
+ * Get sidebar dialogs window set.
+ *
+ * @return {ve.ui.WindowManager} Sdiebar dialogs window set
+ */
+ve.ui.Surface.prototype.getSidebarDialogs = function () {
+	return this.sidebarDialogs;
 };
 
 /**

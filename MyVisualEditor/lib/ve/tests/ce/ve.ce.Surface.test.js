@@ -19,18 +19,18 @@ QUnit.module( 've.ce.Surface', {
 
 /* Tests */
 
-ve.test.utils.triggerKeys = ( function () {
+{
 	const keys = {},
 		keyMap = ve.ui.Trigger.static.primaryKeyMap;
 	for ( const keyCode in keyMap ) {
 		keys[ keyMap[ keyCode ].toUpperCase() ] = keyCode;
 	}
-	return keys;
-}() );
+	ve.test.utils.triggerKeys = keys;
+}
 
 ve.test.utils.runSurfaceHandleSpecialKeyTest = function ( assert, caseItem ) {
 	let promise = Promise.resolve();
-	const then = function ( f ) {
+	const then = ( f ) => {
 			promise = promise.then( f );
 		},
 		htmlOrDoc = caseItem.htmlOrDoc,
@@ -130,7 +130,14 @@ ve.test.utils.runSurfaceHandleSpecialKeyTest = function ( assert, caseItem ) {
 		if ( typeof caseItem.expectedHasFocus === 'boolean' ) {
 			assert.strictEqual( document.activeElement === view.getDocument().getDocumentNode().$element[ 0 ], caseItem.expectedHasFocus, msg + ': has focus' );
 		}
-		view.destroy();
+		if ( view.surface && view.surface.destroy ) {
+			// If view was created as part of a UI surface, destroy that too
+			// TODO: This should probably be done by the creator of the UI surface,
+			// but view surfaces don't emit events.
+			view.surface.destroy();
+		} else {
+			view.destroy();
+		}
 	} );
 	return promise.catch( ( error ) => {
 		assert.true( false, caseItem.msg + ': throws ' + error );
@@ -368,9 +375,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 		imageItem = {
 			kind: 'file',
 			type: 'image/jpeg',
-			getAsFile: function () {
-				return image;
-			}
+			getAsFile: () => image
 		},
 		cases = [
 			{
@@ -382,9 +387,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 							type: 'text/uri-list'
 						}
 					],
-					getData: function ( type ) {
-						return type === 'text/uri-list' ? '#comment\nhttp://foo.com\n' : '';
-					}
+					getData: ( type ) => type === 'text/uri-list' ? '#comment\nhttp://foo.com\n' : ''
 				},
 				isPaste: true,
 				expectedData: [
@@ -396,9 +399,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 				dataTransfer: {
 					items: [ imageItem ],
 					files: [ image ],
-					getData: function () {
-						return '';
-					}
+					getData: () => ''
 				},
 				isPaste: true,
 				expectedData: [ ...'image.jpg' ]
@@ -407,9 +408,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 				msg: 'Image only (no items API)',
 				dataTransfer: {
 					files: [ image ],
-					getData: function () {
-						return '';
-					}
+					getData: () => ''
 				},
 				isPaste: true,
 				expectedData: [ ...'image.jpg' ]
@@ -419,9 +418,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 				dataTransfer: {
 					items: [ imageItem ],
 					files: [ image ],
-					getData: function ( type ) {
-						return type === 'text/html' ? '<img src="image.jpg" alt="fallback"><!-- image fallback metadata -->' : '';
-					}
+					getData: ( type ) => type === 'text/html' ? '<img src="image.jpg" alt="fallback"><!-- image fallback metadata -->' : ''
 				},
 				isPaste: true,
 				expectedData: [ ...'image.jpg' ]
@@ -431,9 +428,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 				dataTransfer: {
 					items: [ imageItem ],
 					files: [ image ],
-					getData: function ( type ) {
-						return type === 'text/html' ? 'html' : '';
-					}
+					getData: ( type ) => type === 'text/html' ? 'html' : ''
 				},
 				isPaste: true,
 				// HTML is not handled by handleDataTransfer
@@ -444,9 +439,7 @@ QUnit.test( 'handleDataTransfer/handleDataTransferItems', ( assert ) => {
 				dataTransfer: {
 					items: [ imageItem ],
 					files: [ image ],
-					getData: function ( type ) {
-						return type === 'text/html' ? '<img src="image.jpg"><img src="image2.jpg">' : '';
-					}
+					getData: ( type ) => type === 'text/html' ? '<img src="image.jpg"><img src="image2.jpg">' : ''
 				},
 				isPaste: true,
 				// HTML is not handled by handleDataTransfer

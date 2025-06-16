@@ -58,10 +58,6 @@
 .ve-ui-editCheckDialog {
 	font-size: 0.875rem; // ignore content scaling
 
-	.oo-ui-window-body {
-		padding-left: 12px;
-	}
-
 	&-title {
 		display: block;
 		font-weight: bold;
@@ -81,23 +77,26 @@
 
 	.ve-ui-editCheckActionWidget {
 		box-sizing: border-box;
-		border: @border-base;
-		margin: @spacing-100 0;
 		white-space: normal; // Minerva needs this
+		margin: @spacing-50 0;
+		padding: @spacing-50 @spacing-75;
+		cursor: pointer;
+		overflow: hidden;
 
-		&-head {
-			position: relative;
-			padding: @spacing-50 @spacing-75;
+		> .oo-ui-iconElement-icon {
+			// Fixes icon placement in WMUI theme
+			top: -@spacing-50;
+		}
 
-			> .oo-ui-labelElement-label {
-				display: block;
-				margin-left: 2em;
-				font-weight: @font-weight-semi-bold;
-			}
+		> .oo-ui-labelElement-label {
+			font-weight: @font-weight-semi-bold;
 		}
 
 		&-body {
-			margin: @spacing-50 @spacing-75 @spacing-100;
+			cursor: auto;
+			background-color: @background-color-base;
+			margin: @spacing-50 -@spacing-75 -@spacing-50 -@spacing-75;
+			padding: @spacing-50 @spacing-75 @spacing-100;
 		}
 
 		&-actions {
@@ -141,6 +140,16 @@
 
 			> .ve-ui-editCheckActionWidget-head {
 				background-color: @background-color-notice-subtle;
+			}
+		}
+
+		.ve-ui-editCheckActionWidget-feedback {
+			.oo-ui-fieldLayout-header {
+				padding-bottom: @spacing-100;
+			}
+
+			.oo-ui-labelElement-label {
+				font-size: inherit;
 			}
 		}
 	}
@@ -190,14 +199,12 @@
 		.ve-ui-editCheckActionWidget {
 			margin: 0;
 			border-width: 0;
-
-			&-head {
-				background-color: transparent !important;  /* stylelint-disable-line declaration-no-important */
-			}
+			background-color: transparent !important;  /* stylelint-disable-line declaration-no-important */
 
 			&-body {
+				background-color: transparent;
 				padding-left: 2em;
-				margin-bottom: @spacing-75;
+				margin-left: 0;
 			}
 		}
 	}
@@ -207,6 +214,100 @@
 	// Otherwise the content will be covered by the mobile context at the end
 	// of the document. (Upstream this?)
 	margin-bottom: 100%;
+}
+
+/* Mobile sidebar */
+
+.ve-ui-editCheck-gutter-active {
+	div.ve-ui-editCheckGutterSidebarDialog {
+		background-color: @background-color-interactive-subtle;
+
+		.ve-ui-editCheck-gutter-action {
+			position: absolute;
+			width: 42px;
+			text-align: center;
+			margin-top: -3px;
+			min-height: 24px;
+
+			> .oo-ui-iconElement-icon {
+				width: 20px;
+				height: 20px;
+				margin-top: -4px;
+			}
+
+			label {
+				position: absolute;
+				top: 16px;
+				right: 5px;
+				display: block;
+				border-radius: 3px;
+				background-color: @accent-color-base;
+				color: @color-inverted;
+				font-size: @font-size-x-small;
+				line-height: 0.9;
+				padding: 3px;
+			}
+
+			&-error {
+				border-left: 2px solid @color-error;
+			}
+
+			&-warning {
+				border-left: 2px solid @color-warning;
+			}
+
+			&-notice {
+				border-left: 2px solid @color-notice;
+			}
+
+			&-success {
+				border-left: 2px solid @color-success;
+			}
+
+			&-inactive {
+				border-left: 2px solid @border-color-base;
+			}
+		}
+	}
+}
+
+.ve-editcheck-available .mw-mf .ve-ce-surface {
+	margin-right: 16px;
+}
+
+@media all and ( max-width: 993.4px ) {
+	.ve-editcheck-available .mw-mf {
+		.ve-init-mw-target-surface {
+			margin: 0 0 1em;
+		}
+
+		.ve-ce-surface {
+			// Stop reflow during the transition
+			max-width: calc( 100% - (44px + 16px + 16px) );
+			margin: 0 16px 0 32px;
+		}
+
+		.ve-ui-editCheck-sidebar-active .ve-ce-surface {
+			margin-left: 16px;
+		}
+
+		.ve-ui-editCheck-sidebar-active .ve-init-mw-target-surface {
+			margin: 0;
+		}
+	}
+}
+
+@media all and ( min-width: 993.4px ) and ( max-width: @min-width-breakpoint-desktop ) {
+	.mw-mf .ve-ui-editCheck-sidebar-active .ve-ui-sidebarDialogWindowManager {
+		margin-right: -44px;
+	}
+}
+
+@media all and ( min-width: @min-width-breakpoint-desktop ) {
+	/* stylelint-disable-next-line selector-class-pattern */
+	.mw-mf .ve-ui-editCheck-sidebar-active .overlay-content {
+		width: auto;
+	}
 }
 
 /* Selections */
@@ -219,7 +320,7 @@
 .ve-ce-surface-selections-editCheck .ve-ce-surface-selection > div {
 	mix-blend-mode: darken;
 	// Adjust target colours to account for 50% opacity
-	background: ( #fce7fe - 0.8 * ( #fff ) ) / 0.2;
+	background: ( ( #fce7fe - 0.8 * ( #fff ) ) / 0.2 );
 	// border: 1px solid ( ( #d02aac - 0.8 * ( #fff ) ) / 0.2 );
 	border-radius: 2px;
 	padding: 2px;
@@ -232,7 +333,7 @@
 	> div {
 		mix-blend-mode: darken;
 		// Adjust target colours to account for 50% opacity
-		background: ( #fef6e7 - 0.8 * ( #fff ) ) / 0.2;
+		background: ( ( #fef6e7 - 0.8 * ( #fff ) ) / 0.2 );
 		// border: 1px solid ( ( #a66200 - 0.8 * ( #fff ) ) / 0.2 );
 		border-radius: 2px;
 		padding: 2px;

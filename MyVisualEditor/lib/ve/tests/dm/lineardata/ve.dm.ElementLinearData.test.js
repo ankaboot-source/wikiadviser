@@ -411,10 +411,10 @@ QUnit.test( 'getInsertionAnnotationsFromRange', ( assert ) => {
 	} );
 } );
 
-QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
+QUnit.test( 'getAnnotatedRangeFromOffset/getAnnotatedRangeFromRange', ( assert ) => {
 	const cases = [
 		{
-			msg: 'a bold word',
+			msg: 'a bold word (offset)',
 			data: [
 				// 0
 				'a',
@@ -425,6 +425,20 @@ QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
 			],
 			annotation: { type: 'textStyle/bold' },
 			offset: 3,
+			expected: new ve.Range( 1, 5 )
+		},
+		{
+			msg: 'a bold word (range)',
+			data: [
+				// 0
+				'a',
+				// 1-4
+				...ve.dm.example.annotateText( 'bold', { type: 'textStyle/bold' } ),
+				// 5-8
+				...'word'
+			],
+			annotation: { type: 'textStyle/bold' },
+			range: new ve.Range( 2, 4 ),
 			expected: new ve.Range( 1, 5 )
 		},
 		{
@@ -470,9 +484,14 @@ QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
 	cases.forEach( ( caseItem ) => {
 		const data = ve.dm.example.preprocessAnnotations( caseItem.data );
 		const doc = new ve.dm.Document( data );
+		let range;
+		if ( caseItem.range ) {
+			range = doc.data.getAnnotatedRangeFromRange( caseItem.range, ve.dm.example.createAnnotation( caseItem.annotation ) );
+		} else {
+			range = doc.data.getAnnotatedRangeFromOffset( caseItem.offset, ve.dm.example.createAnnotation( caseItem.annotation ) );
+		}
 		assert.equalRange(
-			doc.data.getAnnotatedRangeFromOffset( caseItem.offset,
-				ve.dm.example.createAnnotation( caseItem.annotation ) ),
+			range,
 			caseItem.expected,
 			caseItem.msg
 		);
@@ -829,9 +848,7 @@ QUnit.test( 'getRelativeOffset', ( assert ) => {
 			offset: 0,
 			distance: 1,
 			data: [],
-			callback: function () {
-				return false;
-			},
+			callback: () => false,
 			expected: -1
 		},
 		{
@@ -839,9 +856,7 @@ QUnit.test( 'getRelativeOffset', ( assert ) => {
 			offset: 0,
 			distance: 2,
 			data: [ ...'ab' ],
-			callback: function () {
-				return true;
-			},
+			callback: () => true,
 			expected: 2
 		},
 		{
@@ -1347,6 +1362,12 @@ QUnit.test( 'getWordRange', ( assert ) => {
 				expected: 'aided'
 			},
 			{
+				phrase: 'Double  space',
+				msg: 'middle of double space',
+				offset: 7,
+				expected: ''
+			},
+			{
 				phrase: 'Water (l\'eau) is',
 				msg: 'apostrophe and parentheses (Latin)',
 				offset: 8,
@@ -1414,15 +1435,33 @@ QUnit.test( 'getWordRange', ( assert ) => {
 			},
 			{
 				phrase: '维基百科',
-				msg: 'Hanzi characters (cursor in middle)',
+				msg: 'Hanzi characters (cursor in middle, so can\'t choose)',
 				offset: 2,
-				expected: '基'
+				expected: ''
 			},
 			{
 				phrase: '维基百科',
 				msg: 'Hanzi characters (cursor at end)',
 				offset: 4,
 				expected: '科'
+			},
+			{
+				phrase: '维基百科',
+				msg: 'Hanzi characters (cursor at start)',
+				offset: 0,
+				expected: '维'
+			},
+			{
+				phrase: '维 基 百科',
+				msg: 'Hanzi character isolated (cursor at start)',
+				offset: 2,
+				expected: '基'
+			},
+			{
+				phrase: '维 基 百科',
+				msg: 'Hanzi character isolated (cursor at end)',
+				offset: 3,
+				expected: '基'
 			},
 			{
 				phrase: 'a b',
@@ -1437,9 +1476,9 @@ QUnit.test( 'getWordRange', ( assert ) => {
 				expected: 'b'
 			},
 			{
-				phrase: '佢地嘅𨋢壞咗',
+				phrase: '"𨋢"=lip1',
 				msg: 'Surrogate-pair word character before cursor',
-				offset: 5,
+				offset: 2,
 				expected: '𨋢'
 			},
 			{
@@ -1500,12 +1539,12 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p style="text-shadow: 0 0 1px #000;">F<b style="color:blue;">o</b>o</p>',
 				data: [
 					{ type: 'paragraph' },
-					'F', [ 'o', [ 'h49981eab0f8056ff' ] ], 'o',
+					'F', [ 'o', [ ve.dm.example.boldHash ] ], 'o',
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
 				],
-				store: { h49981eab0f8056ff: bold },
+				store: { [ ve.dm.example.boldHash ]: bold },
 				rules: { removeOriginalDomElements: true },
 				msg: 'Original DOM elements removed'
 			},
@@ -1542,13 +1581,13 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<span rel="ve:Alien">b</span>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					[ 'a', [ 'h49981eab0f8056ff' ] ],
+					[ 'a', [ ve.dm.example.boldHash ] ],
 					{
 						type: 'alienInline',
-						annotations: [ 'h49981eab0f8056ff' ]
+						annotations: [ ve.dm.example.boldHash ]
 					},
 					{ type: '/alienInline' },
-					[ 'c', [ 'h49981eab0f8056ff' ] ],
+					[ 'c', [ ve.dm.example.boldHash ] ],
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -1563,7 +1602,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<i></i>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( 'ac', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( 'ac', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{
 						type: 'removableAlienMeta',
@@ -1587,7 +1626,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<i></i>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( 'ac', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( 'ac', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -1723,7 +1762,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>1<b>2</b>3</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( '123', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( '123', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -2006,9 +2045,7 @@ QUnit.test( 'hasContent', ( assert ) => {
 } );
 
 QUnit.test( 'getAnnotationHashesFromOffset', ( assert ) => {
-	const boldHash = 'h49981eab0f8056ff',
-		italicHash = 'hefd27ef3bf2041dd',
-		linearData = ve.dm.example.preprocessAnnotations( ve.copy( ve.dm.example.data ) ),
+	const linearData = ve.dm.example.preprocessAnnotations( ve.copy( ve.dm.example.data ) ),
 		elementData = new ve.dm.ElementLinearData( linearData.getStore(), linearData.getData() ),
 		cases = [
 			{
@@ -2021,13 +2058,13 @@ QUnit.test( 'getAnnotationHashesFromOffset', ( assert ) => {
 				msg: '2 has a BoldAnnotation',
 				offset: 2,
 				ignoreClose: true,
-				expected: [ boldHash ]
+				expected: [ ve.dm.example.boldHash ]
 			},
 			{
 				msg: '3 contains an ItalicAnnotation',
 				offset: 3,
 				ignoreClose: true,
-				expected: [ italicHash ]
+				expected: [ ve.dm.example.italicHash ]
 			}
 		],
 		errorCases = [
@@ -2072,30 +2109,30 @@ QUnit.test( 'getUsedStoreValues', ( assert ) => {
 			{
 				msg: 'no range (whole document) contains everything',
 				expected: {
-					h49981eab0f8056ff: bold,
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.boldHash ]: bold,
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
 				msg: '2-4 contains bold and italic',
 				range: new ve.Range( 2, 4 ),
 				expected: {
-					h49981eab0f8056ff: bold,
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.boldHash ]: bold,
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
 				msg: '2-3 contains bold',
 				range: new ve.Range( 2, 3 ),
 				expected: {
-					h49981eab0f8056ff: bold
+					[ ve.dm.example.boldHash ]: bold
 				}
 			},
 			{
 				msg: '3-4 contains italic',
 				range: new ve.Range( 3, 4 ),
 				expected: {
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
@@ -2279,10 +2316,25 @@ QUnit.test( 'compareElements and compareElementsUnannotated', ( assert ) => {
 	} );
 } );
 
-// TODO: ve.dm.ElementLinearData#setAnnotationsAtOffset
-// TODO: ve.dm.ElementLinearData#getCharacterData
-// TODO: ve.dm.ElementLinearData#getAnnotatedRangeFromSelection
-// TODO: ve.dm.ElementLinearData#getNearestContentOffset
+QUnit.test( 'setAnnotationsAtOffset', ( assert ) => {
+	const store = new ve.dm.HashValueStore();
+	const elementData = new ve.dm.ElementLinearData( store, [ { type: 'paragraph' }, ...'abc', { type: '/paragraph' } ] );
+
+	elementData.setAnnotationsAtOffset( 2, ve.dm.example.createAnnotationSet( store, [ ve.dm.example.bold ] ) );
+	elementData.setAnnotationsAtOffset( 3, ve.dm.example.createAnnotationSet( store, [ ve.dm.example.italic ] ) );
+
+	assert.deepEqual(
+		elementData.getAnnotationHashesFromOffset( 2, true ),
+		[ ve.dm.example.boldHash ],
+		'Offset 2 is bold'
+	);
+	assert.deepEqual(
+		elementData.getAnnotationHashesFromOffset( 3, true ),
+		[ ve.dm.example.italicHash ],
+		'Offset 3 is italic'
+	);
+} );
+
 // TODO: ve.dm.ElementLinearData#remapInternalListIndexes
 // TODO: ve.dm.ElementLinearData#remapInternalListKeys
 // TODO: ve.dm.ElementLinearData#cloneElements

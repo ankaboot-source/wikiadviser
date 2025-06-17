@@ -271,8 +271,8 @@ else
     sleep 2
 
     # Secure database
-    echo "Applying mariadb secure installation..."
-    sudo mariadb-secure-installation
+#    echo "Applying mariadb secure installation..."
+#    sudo mariadb-secure-installation
 
     # Mediawiki Setup
     echo "Creating /var/www/${MW_PROJECT_DIR}..."

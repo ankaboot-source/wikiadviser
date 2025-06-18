@@ -11,6 +11,7 @@ We value all types of contributions and encourage everyone to get involved. Plea
 > - Share it at local meetups, with friends/colleagues and on social networks
 
 ## Table of Contents
+
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
   - [Install for development purpose](#install-for-development)
@@ -36,19 +37,24 @@ We will then take care of the issue as soon as possible.
 ## I Want To Contribute
 
 ### Install & Run WikiAdviser for development
+
 1. Install
+
    - [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 
-    - ```sh
-      npm run install-deps:frontend # Install the frontend
-      ```
+   - Install dependencies (This project uses `pnpm`)
+     ```sh
+     npm install -g pnpm # Install pnpm
+     npm run install-deps # Install frontend & Supabase
+     ```
 
 2. Run WikiAdviser
-    ```sh
-    npm run dev:frontend # Start the frontend
-    npm run dev:supabase-functions # Start Supabase functions
-    ```
- 
+   ```sh
+   npm run dev:frontend # Start the frontend
+   npm run dev:supabase # Start Supabase
+   npm run dev:supabase-functions # Start Supabase functions
+   ```
+
 ### Contributor License Agreement (CLA)
 
 By submitting a contribution to the Software, you ("Contributor") agree to the following:

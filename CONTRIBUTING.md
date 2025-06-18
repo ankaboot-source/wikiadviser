@@ -38,6 +38,16 @@ We will then take care of the issue as soon as possible.
 ### Install for development
 - [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 
+- Run WikiAdviser locally
+ ```sh
+ npm run install-deps:frontend
+ ```
+        
+ Start the frontend:
+ ```sh
+ npm run dev:frontend
+ ```
+ 
 ### Contributor License Agreement (CLA)
 
 By submitting a contribution to the Software, you ("Contributor") agree to the following:

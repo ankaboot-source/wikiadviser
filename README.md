@@ -24,7 +24,9 @@
 
 **WikiAdviser** is a **real-time** **collaborative** platform built on **MediaWiki**, designed for seamless article **writing**, **editing**, and **reviewing**. It enables multiple users to work together efficiently, ensuring high-quality content through instant feedback and structured revisions.
 
-To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/). For development purposes, jump to [🛠️ Setting Up](#️-setting-up).
+To give it a try without the hassle of installation, [simply use wikiadviser.io](https://app.wikiadviser.io/).
+To run it locally, jump to [🛠️ Setting Up](#️-setting-up).
+For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## 🛠️ Setting Up
 

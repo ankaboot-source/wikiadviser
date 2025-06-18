@@ -33,7 +33,6 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 ### Pre-requisites
 
 - Clone the repository
-- [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 

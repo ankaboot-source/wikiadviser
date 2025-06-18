@@ -66,13 +66,9 @@ pnpx supabase start > supabase.log
 ./wikiadviser-setup.sh supabase.log
 ```
 
-4. Start Supabase functions
+4. Start WikiAdviser
 ```sh
 pnpm run dev:supabase-functions
-```
-
-5. Start WikiAdviser
-```sh
 docker compose -f docker-compose.dev.yml up -d
 ```
 

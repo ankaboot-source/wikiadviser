@@ -46,26 +46,22 @@ bash mediawiki-setup.sh
 ```
       
 2. Install Supabase dependencies
-
- ```sh
- cd ..
- npm install -g pnpm
- pnpm i
- ```
+```sh
+cd ..
+npm install -g pnpm
+pnpm i
+```
 
 2. Start Supabase
+```sh
+pnpx supabase start > supabase.log
+```
 
-  ```sh
-  pnpx supabase start > supabase.log
-  ```
-
-  <details>
-    <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allows Docker to run without sudo) </summary>
-
-    sudo usermod -aG docker $USER
-    newgrp docker
-
-  </details>
+<details>
+  <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allows Docker to run without sudo) </summary>
+   sudo usermod -aG docker $USER
+   newgrp docker
+</details>
   
 3. Auto-generate .env files (Include auto-configured Supabase and Mediawiki variables)
 

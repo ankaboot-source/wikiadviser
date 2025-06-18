@@ -40,7 +40,7 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - [Install NodeJS](https://nodejs.org)
 
-### WikiAdivser installation
+### WikiAdviser installation
 
 1. Install and configure MediaWiki (User-interactive)
 ```
@@ -48,17 +48,11 @@ git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/mediawiki-setup
 bash mediawiki-setup.sh
 ```
-      
-2. Install pnpm
-```sh
-npm install -g pnpm
-pnpm i
-```
 
 2. Start Supabase
 ```sh
 cd ..
-pnpx supabase start > supabase.log
+npx supabase start > supabase.log
 ```
   
 3. Auto-generate .env files (Include auto-configured Supabase and Mediawiki variables)
@@ -68,7 +62,7 @@ pnpx supabase start > supabase.log
 
 4. Start WikiAdviser
 ```sh
-pnpm run dev:supabase-functions
+npm run dev:supabase-functions
 docker compose -f docker-compose.dev.yml up -d
 ```
 

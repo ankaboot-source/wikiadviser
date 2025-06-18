@@ -11,9 +11,9 @@ We value all types of contributions and encourage everyone to get involved. Plea
 > - Share it at local meetups, with friends/colleagues and on social networks
 
 ## Table of Contents
-
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
+  - [Install for development purpose](#install-for-development)
   - [Reporting Bugs](#reporting-bugs)
   - [Suggesting Enhancements](#suggesting-enhancements)
   - [Your First Code Contribution](#your-first-code-contribution)
@@ -34,6 +34,9 @@ If you then still feel the need to ask a question and need clarification, we rec
 We will then take care of the issue as soon as possible.
 
 ## I Want To Contribute
+
+### Install for development
+- [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 
 ### Contributor License Agreement (CLA)
 

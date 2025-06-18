@@ -49,18 +49,14 @@ cd wikiadviser/mediawiki-setup
 bash mediawiki-setup.sh
 ```
 
-2. Start Supabase
+2. Start Supabase and auto-generate .env files
 ```sh
 cd ..
 npx supabase start > supabase.log
-```
-  
-3. Auto-generate .env files (include auto-configured Supabase and MediaWiki variables)
-```sh
 ./wikiadviser-setup.sh supabase.log
 ```
 
-4. Start WikiAdviser
+3. Start WikiAdviser
 ```sh
 npm run dev:supabase-functions
 docker compose -f docker-compose.dev.yml up -d

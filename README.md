@@ -40,30 +40,11 @@ To give it a try without the hassle of installation, [simply use wikiadviser.io]
 ```
 git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/mediawiki-setup
-tmux new -s mediawiki
 bash mediawiki-setup.sh
 ```
-  <details>
-    <summary><b>💡 Tip: </b> Tmux is useful to stay connected even after disconnection and to run long-running tasks. </summary>
-
-    tmux attach -t mediawiki (To re-attach the session) 
-
-  </details>
-
-#### 2. Create Mediawiki Bot
-- To create the Bot user you need to login first:
-  - [FR] Browse to http://localhost:8080/wiki/fr/index.php/Sp%C3%A9cial:Connexion
-  - [EN] Browse to http://localhost:8080/wiki/en/index.php/Special:UserLogin
-    
-> [!NOTE]  
-> Below are the login credentials (Must be updated before using in Prod)  
-> - User: Admin
-> - Password: admin#2025
-    
-- Create a Bot user by browsing to http://localhost:8080/wiki/(LANGUAGE)/index.php/Special:BotPasswords : Save the credentials to use them later.
 
 > [!NOTE]
-> Above is the basic setup for a minimal working Mediawiki, More advanced setup in this [README](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/MEDIAWIKI_SETUP.md?plain=1).
+> More advanced Configuration in this [README](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/MEDIAWIKI_SETUP.md?plain=1).
       
 ### Wikiadviser Installation
 
@@ -91,20 +72,11 @@ After installing Docker and Node.js, install the required system dependencies
 
   </details>
   
-3. Auto-generate .env files (Include pre-configured Supabase variables)
+3. Auto-generate .env files (Include auto-configured Supabase and Mediawiki variables)
 
 ```sh
 ./wikiadviser-setup.sh supabase.log
 ```
-  > [!NOTE]
-  > You must update the following variables within the auto-generated .env files
-  > ```yml
-  > # These variables are found in ./wikiadviser/supabase/functions/.env
-  > # Use the bot you created in the first steps!
-  > MW_BOT_USERNAME=your-secret-bot-username
-  > MW_BOT_PASSWORD=your-secret-bot-password
-  > ```
-
 4. Start Supabase functions
 
   ```sh

@@ -43,9 +43,6 @@ git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/mediawiki-setup
 bash mediawiki-setup.sh
 ```
-
-> [!NOTE]
-> More advanced Configuration in this [README](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/MEDIAWIKI_SETUP.md?plain=1).
       
 ### Wikiadviser Installation
 

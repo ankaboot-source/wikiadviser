@@ -55,7 +55,7 @@ cd ..
 npx supabase start > supabase.log
 ```
   
-3. Auto-generate .env files (Include auto-configured Supabase and Mediawiki variables)
+3. Auto-generate .env files (include auto-configured Supabase and MediaWiki variables)
 ```sh
 ./wikiadviser-setup.sh supabase.log
 ```

@@ -66,6 +66,10 @@ docker compose -f docker-compose.dev.yml up -d
 
 Thank you for taking the time to contribute! Please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines and more information on how to get started.
 
+If you're setting up the project for development, check out the 
+[Install & Run WikiAdviser for development](CONTRIBUTING.md#install--run-wikiadviser-for-development) section.
+
+
 ## 🔧 Support
 
 If you encounter any issues, please check the [issues tab](https://github.com/ankaboot-source/wikiadviser/issues) to see if it has already been reported and resolved. Ensure that you are using the latest version before reporting an issue. If the problem persists, feel free to [open a new issue](https://github.com/ankaboot-source/wikiadviser/issues/new).

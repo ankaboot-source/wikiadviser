@@ -35,18 +35,19 @@ We will then take care of the issue as soon as possible.
 
 ## I Want To Contribute
 
-### Install for development
-- [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
+### Install & Run WikiAdviser for development
+1. Install
+   - [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
 
-- Run WikiAdviser locally
- ```sh
- npm run install-deps:frontend
- ```
-       
-- Start the frontend:
- ```sh
- npm run dev:frontend
- ```
+    - ```sh
+      npm run install-deps:frontend # Install the frontend
+      ```
+
+2. Run WikiAdviser
+    ```sh
+    npm run dev:frontend # Start the frontend
+    npm run dev:supabase-functions # Start Supabase functions
+    ```
  
 ### Contributor License Agreement (CLA)
 

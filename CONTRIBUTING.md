@@ -42,8 +42,8 @@ We will then take care of the issue as soon as possible.
  ```sh
  npm run install-deps:frontend
  ```
-        
- Start the frontend:
+       
+- Start the frontend:
  ```sh
  npm run dev:frontend
  ```

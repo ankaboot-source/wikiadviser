@@ -36,22 +36,19 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Install Docker](https://docs.docker.com/engine/install)
 - [Install NodeJS](https://nodejs.org)
 
-### Mediawiki Installation
-#### 1. Install and configuration (User-interactive)
+### WikiAdivser installation
+
+1. Install and configure MediaWiki (User-interactive)
 ```
 git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/mediawiki-setup
 bash mediawiki-setup.sh
 ```
       
-### Wikiadviser Installation
-
-After installing Docker and Node.js, install the required system dependencies
-
-1. Install Supabase dependencies
+2. Install Supabase dependencies
 
  ```sh
- cd wikiadviser
+ cd ..
  npm install -g pnpm
  pnpm i
  ```
@@ -75,6 +72,7 @@ After installing Docker and Node.js, install the required system dependencies
 ```sh
 ./wikiadviser-setup.sh supabase.log
 ```
+
 4. Start Supabase functions
 
   ```sh
@@ -82,37 +80,9 @@ After installing Docker and Node.js, install the required system dependencies
   ```
 
 5. Start WikiAdviser
-
-   - Docker approach:
-
-     ```sh
-     docker compose -f docker-compose.dev.yml up -d
-     ```
-
-     > **Note:**  
-     > To rebuild WikiAdviser, run:
-     > ```sh
-     > docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-     > ```
-
-
-  
-    - <details>
-        <summary>Dev approach:</summary>
-        
-        <h6>Finish installing project dependencies</h6>
-        
-        ```sh
-        npm run install-deps:frontend
-        ```
-        
-        Start the frontend:
-        ```sh
-        npm run dev:frontend
-        ```
-      </details>
-
-
+   ```sh
+   docker compose -f docker-compose.dev.yml up -d
+  ```
 
 ## 🤝 Contributing
 

@@ -33,7 +33,11 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 ### Pre-requisites
 
 - Clone the repository
-- [Install Docker](https://docs.docker.com/engine/install)
+- [Install Docker](https://docs.docker.com/engine/install) <details><summary><b>💡 Tip: </b>We recommend to run Docker as user, so don't forget to add your user to docker group these commands: </summary>
+   sudo usermod -aG docker $USER
+   newgrp docker
+</details>
+
 - [Install NodeJS](https://nodejs.org)
 
 ### WikiAdivser installation
@@ -45,40 +49,32 @@ cd wikiadviser/mediawiki-setup
 bash mediawiki-setup.sh
 ```
       
-2. Install Supabase dependencies
+2. Install pnpm
 ```sh
-cd ..
 npm install -g pnpm
 pnpm i
 ```
 
 2. Start Supabase
 ```sh
+cd ..
 pnpx supabase start > supabase.log
 ```
-
-<details>
-  <summary><b>💡 Tip: </b> If you get permission denied problem related to Docker run these commands (allows Docker to run without sudo) </summary>
-   sudo usermod -aG docker $USER
-   newgrp docker
-</details>
   
 3. Auto-generate .env files (Include auto-configured Supabase and Mediawiki variables)
-
 ```sh
 ./wikiadviser-setup.sh supabase.log
 ```
 
 4. Start Supabase functions
-
-  ```sh
-  npm run dev:supabase-functions
-  ```
+```sh
+pnpm run dev:supabase-functions
+```
 
 5. Start WikiAdviser
-   ```sh
-   docker compose -f docker-compose.dev.yml up -d
-  ```
+```sh
+docker compose -f docker-compose.dev.yml up -d
+```
 
 ## 🤝 Contributing
 

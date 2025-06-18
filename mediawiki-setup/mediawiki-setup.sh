@@ -29,6 +29,11 @@ DUMP_PATH="./dump"
 
 MW_SECRET_KEY=$(openssl rand -hex 32)
 MW_UPGRADE_KEY=$(openssl rand -hex 8)
+MW_ADMIN_USER="Admin"
+MW_ADMIN_PASSWORD="admin#2025"
+MW_BOT_USER="wikiadviser-bot"
+
+EDGE_FUNCTIONS_ENV_PATH=("../supabase/functions/.env" "../supabase/functions/.env.example")
 
 mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
 mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
@@ -280,13 +285,37 @@ else
     sudo mkdir -p "/var/www/${MW_PROJECT_DIR}"
     echo ""
     sudo chown $USER:$USER /var/www/${MW_PROJECT_DIR}
-    echo -e "Install mediawiki version ${MW_VERSION}"
     for ln in "${LANG_ARRAY[@]}"; do
+        echo "Install [$ln] mediawiki version ${MW_VERSION}"
+        sleep 2
         git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$MW_VERSION /var/www/${MW_PROJECT_DIR}/wiki/$ln
     done
+    # Creating MW BotPassword
+    for ln in "${LANG_ARRAY[@]}"; do
+        echo "Creating BotPassword for $ln wiki"
+        botpassword_output=$(php /var/www/mediawiki/wiki/$ln/maintenance/createBotPassword.php $MW_ADMIN_USER --appid $MW_BOT_USER --grants "basic,highvolume,import,editpage,editprotected,editmycssjs,editmyoptions,editinterface,editsiteconfig,createeditmovepage,uploadfile,uploadeditmovefile,patrol,rollback,blockusers,viewdeleted,viewrestrictedlogs,delete,oversight,protect,viewmywatchlist,editmywatchlist,sendemail,createaccount,privateinfo,mergehistory")
+    done
+    BOT_USERNAME=$(echo "$botpassword_output" | grep -oP "username:'\K[^']+")
+    BOT_PASSWORD=$(echo "$botpassword_output" | grep -oP "password:'\K[^']+")
+    # Update .env if exists otherwise update .env.example
+    if [ -f "${EDGE_FUNCTIONS_ENV_PATH[0]}" ]; then
+        ENV_FILE="${EDGE_FUNCTIONS_ENV_PATH[0]}"
+    else
+        ENV_FILE="${EDGE_FUNCTIONS_ENV_PATH[1]}"
+    fi
+    # Update the .env file with the new credentials
+    sed -i "s|^MW_BOT_USERNAME=.*|MW_BOT_USERNAME=$BOT_USERNAME|" "$ENV_FILE"
+    sed -i "s|^MW_BOT_PASSWORD=.*|MW_BOT_PASSWORD=$BOT_PASSWORD|" "$ENV_FILE"
+    echo "Updated credentials in $ENV_FILE"
 
-    sleep 2
+    # Save all credentials into a local file
+    echo "Mediawiki admin user: $MW_ADMIN_USER" >> ./MW_credentials.txt
+    echo "Mediawiki admin password: $MW_ADMIN_PASSWORD" >> ./MW_credentials.txt
+    echo "Mediawiki BotPassword user: $BOT_USERNAME" >> ./MW_credentials.txt
+    echo "Mediawiki BotPassword password: $BOT_PASSWORD" >> ./MW_credentials.txt
 
+ 
+    # Change permissions to images folder
     for ln in "${LANG_ARRAY[@]}"; do
         mkdir /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images/timeline
         sudo chown -R www-data:www-data /var/www/${MW_PROJECT_DIR}/wiki/"$ln"/images
@@ -307,6 +336,10 @@ else
         DB_PASS="${var_prefix}_db_pass"
 
         SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
+    
+        echo "[$ln] DB Name: ${!DB_NAME}" >> ./MW_credentials.txt
+        echo "[$ln] DB User: ${!DB_USER}" >> ./MW_credentials.txt
+        echo "[$ln] DB Password: ${!DB_PASS}" >> ./MW_credentials.txt
     done
 
     # Call common_setup
@@ -317,4 +350,6 @@ else
 
     echo "Restarting web server..."
     sudo systemctl restart apache2.service
+
+    echo "Setup is done, all the credentials are saved within ./MW_credentials.txt"
 fi

@@ -1,0 +1,30 @@
+# MediaWiki with MARIADB
+services:
+  mediawiki:
+    restart: always
+    build:
+      dockerfile: ./Dockerfile
+    networks:
+      - docker_network
+    ports:
+      - 8080:${MW_PORT}
+    volumes:
+      - ./MW_CREDENTIALS.txt:/tmp/MW_CREDENTIALS.txt
+    depends_on:
+      - mediawiki_db
+
+
+  mediawiki_db:
+    image: mariadb:11.4
+    restart: always
+    networks:
+      - docker_network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+
+    volumes:
+      - /var/lib/mysql
+
+networks:
+  docker_network:
+    driver: bridge

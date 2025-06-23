@@ -1,7 +1,6 @@
 # MediaWiki with MARIADB
 services:
   mediawiki:
-    restart: always
     build:
       dockerfile: ./Dockerfile
     networks:
@@ -9,7 +8,7 @@ services:
     ports:
       - 8080:${MW_PORT}
     volumes:
-      - ./MW_CREDENTIALS.txt:/tmp/MW_CREDENTIALS.txt
+      - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
     depends_on:
       - mediawiki_db
 

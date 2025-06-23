@@ -127,8 +127,8 @@ done
 
 # Copy wikiadviser resources into mediawiki
 for ln in "${LANG_ARRAY[@]}"; do
-    cp -r ./assets/*  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
-    cp -r ./MyVisualEditor  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
+    cp -r ${CONF_DIR}/assets/*  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/resources/assets"
+    cp -r ${CONF_DIR}/MyVisualEditor  "/var/www/${MW_PROJECT_DIR}/wiki/"$ln"/extensions"
 done
 
 for ln in "${LANG_ARRAY[@]}"; do
@@ -138,9 +138,9 @@ for ln in "${LANG_ARRAY[@]}"; do
 
     SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" MARIADB_HOST=${MARIADB_HOST} LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $MARIADB_HOST $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
 
-    echo "[$ln] DB Name: ${!DB_NAME}" >> /tmp/MW_CREDENTIALS.txt
-    echo "[$ln] DB User: ${!DB_USER}" >> /tmp/MW_CREDENTIALS.txt
-    echo "[$ln] DB Password: ${!DB_PASS}" >> /tmp/MW_CREDENTIALS.txt
+    echo "[$ln] DB Name: ${!DB_NAME}" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+    echo "[$ln] DB User: ${!DB_USER}" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+    echo "[$ln] DB Password: ${!DB_PASS}" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
 done
 
 # Call common_setup

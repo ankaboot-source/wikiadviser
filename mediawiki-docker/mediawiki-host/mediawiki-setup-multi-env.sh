@@ -9,6 +9,7 @@ MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could
 
 MW_PROJECT_DIR=("dev" "demo" "prod")
 MW_PORT=("8080" "8081" "8082")
+APACHE_LOG_DIR="/var/log/apache2"
 
 LANGUAGES=("en" "fr") # Languages of your wiki instances.
 
@@ -221,7 +222,7 @@ else
     for i in "${!MW_PROJECT_DIR[@]}"; do
         SITE="${MW_PROJECT_DIR[$i]}"
         MW_PORT_VALUE="${MW_PORT[$i]}"
-        MW_PROJECT_DIR="$SITE" MW_PORT="$MW_PORT_VALUE" envsubst < ./wiki-site.conf | \
+        APACHE_LOG_DIR="$APACHE_LOG_DIR" MW_PROJECT_DIR="$SITE" MW_PORT="$MW_PORT_VALUE" envsubst < ./wiki-site.conf | \
         sudo tee "/etc/apache2/sites-available/${SITE}.conf" > /dev/null
     done
 

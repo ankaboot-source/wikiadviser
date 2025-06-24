@@ -9,6 +9,7 @@ MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could
 
 MW_PROJECT_DIR="mediawiki"
 MW_PORT="8080"
+APACHE_LOG_DIR="/var/log/apache2"
 
 #LANGUAGES=("en" "fr") # Languages of your wiki instances.
 read -p "Please enter the wiki instance language to install (en or fr) (default: en): " LANGUAGES
@@ -213,7 +214,7 @@ else
     # Apache2 setup
     sudo mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
     MW_PORT="$MW_PORT" envsubst < ./ports.conf | sudo tee /etc/apache2/ports.conf > /dev/null
-    MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf | sudo tee /etc/apache2/sites-available/wiki-site.conf > /dev/null
+    APACHE_LOG_DIR="$APACHE_LOG_DIR" MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf | sudo tee /etc/apache2/sites-available/wiki-site.conf > /dev/null
     sudo a2ensite wiki-site.conf
     sudo systemctl enable apache2 && sudo systemctl restart apache2
 

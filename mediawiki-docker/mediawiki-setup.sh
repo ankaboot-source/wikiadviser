@@ -12,6 +12,7 @@ MW_VERSION=${MW_VERSION:-$(grep -oP 'MediaWiki\s\d+\.\d+\.\d+(-wmf\.\d+)?' versi
 
 MW_PROJECT_DIR=${MW_PROJECT_DIR:-"mediawiki"}
 MW_PORT=${MW_PORT:-"8080"}
+APACHE_LOG_DIR="/var/log/apache2"
 
 CONF_DIR="../" # Wikiadviser root folder
 
@@ -99,7 +100,7 @@ apt install -y php-curl # Required for EmbedVideo
 # Apache2 setup
 mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
 MW_PORT="$MW_PORT" envsubst < ./ports.conf | tee /etc/apache2/ports.conf > /dev/null
-MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf | tee /etc/apache2/sites-available/wiki-site.conf > /dev/null
+APACHE_LOG_DIR="$APACHE_LOG_DIR" MW_PORT="$MW_PORT" MW_PROJECT_DIR="$MW_PROJECT_DIR" envsubst < ./wiki-site.conf | tee /etc/apache2/sites-available/wiki-site.conf > /dev/null
 a2ensite wiki-site.conf
 
 # PHP

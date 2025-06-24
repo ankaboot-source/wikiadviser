@@ -16,7 +16,7 @@ mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign
 
 # Convert space-separated string to array
 LANGUAGES=($LANGUAGES)
-LANG_ARRAY=("${LANGUAGES[@]:-fr}") # Languages of your wiki instances.
+LANG_ARRAY=("${LANGUAGES[@]:-en}") # Languages of your wiki instances.
 
 ############################################
 

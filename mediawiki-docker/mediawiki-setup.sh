@@ -20,7 +20,7 @@ CONF_DIR="../" # Wikiadviser root folder
 LANGUAGES=($LANGUAGES)
 DB_HOST=$DB_HOST
 
-LANG_ARRAY=("${LANGUAGES[@]:-fr}") # Languages of your wiki instances.
+LANG_ARRAY=("${LANGUAGES[@]:-en}") # Languages of your wiki instances.
 
 MW_SECRET_KEY=$(openssl rand -hex 32)
 MW_UPGRADE_KEY=$(openssl rand -hex 8)

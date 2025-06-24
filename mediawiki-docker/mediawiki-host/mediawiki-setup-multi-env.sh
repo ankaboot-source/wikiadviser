@@ -9,8 +9,8 @@ MARIADB_VERSION="11.4" # Our Dumps exported from v11.4 mariadb server, you could
 
 MW_PROJECT_DIR=("dev" "demo" "prod")
 MW_PORT=("8080" "8081" "8082")
+APACHE_LOG_DIR="/var/log/apache2"
 
-CONF_DIR="../" # Wikiadviser root folder
 LANGUAGES=("en" "fr") # Languages of your wiki instances.
 
 DUMP_PATH="./dump"
@@ -21,7 +21,7 @@ MW_UPGRADE_KEY=$(openssl rand -hex 8)
 mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
 mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
 
-REQUIRED_RESOURCES=("./LocalSettings.php" "./wiki-site.conf" "../docs" "../MyVisualEditor")
+REQUIRED_RESOURCES=("../conf/LocalSettings.php" "../conf/wiki-site.conf" "../resources/assets" "../resources/extensions/MyVisualEditor")
 ##############################################
 
 # This function is common in the first install and upgrade process.
@@ -80,10 +80,9 @@ common_setup() {
 }
 ############################################ UPGRADE #########################################################
 if [[ "$1" == "--upgrade" ]]; then
-
-    # Must run within wikiadviser/mediawiki-setup check 
-    if [[ "$(basename "$PWD")" != "mediawiki-setup" || "$(basename "$(dirname "$PWD")")" != "wikiadviser" ]]; then
-        echo "Error: Please navigate to wikiadviser/mediawiki-setup before running the script."
+ 
+    if [[ "$(basename "$PWD")" != "mediawiki-host" ]]; then
+        echo "Error: Please navigate to wikiadviser/mediawiki-docker/mediawiki-host before running the script."
         exit 1
     fi
 
@@ -165,7 +164,7 @@ if [[ "$1" == "--upgrade" ]]; then
             cp -r /var/www/$env/wiki/$ln.old/resources/assets/icons /var/www/$env/wiki/$ln/resources/assets/icons
             cp /var/www/$env/wiki/$ln.old/resources/assets/poweredby_wikiadviser_*.png /var/www/$env/wiki/$ln/resources/assets/
             sudo chown -R www-data:www-data /var/www/$env/wiki/$ln/images
-            cp -r "${CONF_DIR}/MyVisualEditor" "/var/www/$env/wiki/$ln/extensions"
+            cp -r "../resources/extensions/MyVisualEditor" "/var/www/$env/wiki/$ln/extensions"
         done
     done
 
@@ -178,10 +177,9 @@ if [[ "$1" == "--upgrade" ]]; then
 else
 
 ########################################### INSTALL ##############################################################
-
-    # Must run within wikiadviser/mediawiki-setup check 
-    if [[ "$(basename "$PWD")" != "mediawiki-setup" || "$(basename "$(dirname "$PWD")")" != "wikiadviser" ]]; then
-        echo "Error: Please navigate to wikiadviser/mediawiki-setup before running the script."
+ 
+    if [[ "$(basename "$PWD")" != "mediawiki-host" ]]; then
+        echo "Error: Please navigate to wikiadviser/mediawiki-docker/mediawiki-host before running the script."
         exit 1
     fi
 
@@ -224,7 +222,7 @@ else
     for i in "${!MW_PROJECT_DIR[@]}"; do
         SITE="${MW_PROJECT_DIR[$i]}"
         MW_PORT_VALUE="${MW_PORT[$i]}"
-        MW_PROJECT_DIR="$SITE" MW_PORT="$MW_PORT_VALUE" envsubst < ./wiki-site.conf | \
+        APACHE_LOG_DIR="$APACHE_LOG_DIR" MW_PROJECT_DIR="$SITE" MW_PORT="$MW_PORT_VALUE" envsubst < ./wiki-site.conf | \
         sudo tee "/etc/apache2/sites-available/${SITE}.conf" > /dev/null
     done
 
@@ -241,7 +239,7 @@ else
     # composer
     curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 
-    # Database #recommended MySQL/Mariadb
+    # Database (recommended: MySQL/Mariadb)
     echo "Installing MariaDB..."
     echo ""
     curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=${MARIADB_VERSION}
@@ -323,8 +321,8 @@ else
     # Copy wikiadviser resources into mediawiki
     for env in "${MW_PROJECT_DIR[@]}"; do
         for ln in "${LANGUAGES[@]}"; do
-            cp -r ${CONF_DIR}/docs/assets/*  "/var/www/$env/wiki/"$ln"/resources/assets"
-            cp -r ${CONF_DIR}/MyVisualEditor  "/var/www/$env/wiki/"$ln"/extensions"
+            cp -r ../resources/assets/*  "/var/www/$env/wiki/"$ln"/resources/assets"
+            cp -r ../resources/extensions/MyVisualEditor  "/var/www/$env/wiki/"$ln"/extensions"
         done
     done
 
@@ -336,7 +334,7 @@ else
             DB_NAME="${var_prefix}_db_name"
             DB_USER="${var_prefix}_db_user"
             DB_PASS="${var_prefix}_db_pass"
-            SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
+            DB_HOST="localhost" SERVER_ENDPOINT="http://localhost:${MW_PORT_VALUE}" URL_PATH="/wiki/${ln}" LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$DB_HOST $SERVER_ENDPOINT $URL_PATH $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/$MW_ENV_VALUE/wiki/$ln/LocalSettings.php
         done
     done
 

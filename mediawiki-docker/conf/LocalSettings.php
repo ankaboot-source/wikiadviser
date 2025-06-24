@@ -28,7 +28,7 @@ $wgMetaNamespace = "Wikiadviser";
 ## (like /w/index.php/Page_title to /wiki/Page_title) please see:
 ## https://www.mediawiki.org/wiki/Manual:Short_URL
 ## /en | /fr
-$wgScriptPath = "${URL_PATH}"; 
+$wgScriptPath = "${URL_PATH}";
 
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer = "${SERVER_ENDPOINT}";
@@ -82,7 +82,7 @@ $wgEmailAuthentication = true;
 
 ## Database settings
 $wgDBtype = "mysql";
-$wgDBserver = "localhost";
+$wgDBserver = "${DB_HOST}";
 $wgDBname = "${DB_NAME}";
 $wgDBuser = "${DB_USER}";
 $wgDBpassword = "${DB_PASS}";

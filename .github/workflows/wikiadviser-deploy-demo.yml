@@ -87,8 +87,9 @@ jobs:
           username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
+            extensions_path="/home/wiki-user/wikiadviser/mediawiki-docker/resources/extensions"
+            assets_path="/home/wiki-user/wikiadviser/mediawiki-docker/resources/assets/*"
             visual_editor_folder_name="MyVisualEditor"
-            assets_folder="/docs/assets/*"
             extensions_base_path="/var/www/wiki-${{ matrix.env }}"
 
             # Check if the folder exists
@@ -102,10 +103,10 @@ jobs:
             fi
 
             # Copy Visual Editor to Extensions
-            cp -r $wikiadviser_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
+            cp -r $extensions_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
 
             # Copy assets
-            cp -r $wikiadviser_path/$assets_folder /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/resources/assets/
+            cp -r $assets_path /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/resources/assets/
 
             # Run update.php in Maintenance Folder
             # https://www.mediawiki.org/wiki/Manual:Update.php

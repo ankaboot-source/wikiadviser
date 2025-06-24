@@ -82,7 +82,7 @@ $wgEmailAuthentication = true;
 
 ## Database settings
 $wgDBtype = "mysql";
-$wgDBserver = "${MARIADB_HOST}";
+$wgDBserver = "${DB_HOST}";
 $wgDBname = "${DB_NAME}";
 $wgDBuser = "${DB_USER}";
 $wgDBpassword = "${DB_PASS}";

@@ -60,11 +60,11 @@ for ln in "${LANG_ARRAY[@]}"; do
 
     echo "Creating base for your '${ln}' Wiki..."
     echo ""
-    mariadb -h ${MARIADB_HOST} -u root -p${MARIADB_ROOT_PASSWORD} -e "CREATE DATABASE ${!DB_NAME};"
-    mariadb -h ${MARIADB_HOST} -u root -p${MARIADB_ROOT_PASSWORD} -e "CREATE USER '${!DB_USER}'@'%' IDENTIFIED BY '${!DB_PASS}';"
-    mariadb -h ${MARIADB_HOST} -u root -p${MARIADB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${!DB_NAME}.* TO '${!DB_USER}'@'%' WITH GRANT OPTION;"
+    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE ${!DB_NAME};"
+    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE USER '${!DB_USER}'@'%' IDENTIFIED BY '${!DB_PASS}';"
+    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${!DB_NAME}.* TO '${!DB_USER}'@'%' WITH GRANT OPTION;"
     echo "Importing Init Dumps..."
-    mariadb -h ${MARIADB_HOST} -u root -p${MARIADB_ROOT_PASSWORD} -D ${!DB_NAME} < ./init-dump-${ln}.sql
+    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -D ${!DB_NAME} < ./init-dump-${ln}.sql
 
     echo "'${ln}' wiki setup completed!"
 done

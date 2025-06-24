@@ -17,7 +17,7 @@ CONF_DIR="../" # Wikiadviser root folder
 
 # Convert space-separated string to array
 LANGUAGES=($LANGUAGES)
-MARIADB_HOST=$MARIADB_HOST
+DB_HOST=$DB_HOST
 
 LANG_ARRAY=("${LANGUAGES[@]:-fr}") # Languages of your wiki instances.
 
@@ -136,7 +136,7 @@ for ln in "${LANG_ARRAY[@]}"; do
     DB_USER="DB_USER_${ln}"
     DB_PASS="DB_PASS_${ln}"
 
-    SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" MARIADB_HOST=${MARIADB_HOST} LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $MARIADB_HOST $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
+    SERVER_ENDPOINT="http://localhost:${MW_PORT}" URL_PATH="/wiki/${ln}" DB_HOST=${DB_HOST} LANGUAGE="${ln}" DB_NAME="${!DB_NAME}" DB_USER="${!DB_USER}" DB_PASS="${!DB_PASS}" MW_SECRET_KEY="${MW_SECRET_KEY}" MW_UPGRADE_KEY="${MW_UPGRADE_KEY}"  envsubst '$SERVER_ENDPOINT $URL_PATH $DB_HOST $LANGUAGE $DB_NAME $DB_USER $DB_PASS $MW_SECRET_KEY $MW_UPGRADE_KEY' < ./LocalSettings.php > /var/www/${MW_PROJECT_DIR}/wiki/${ln}/LocalSettings.php
 
     echo "[$ln] DB Name: ${!DB_NAME}" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
     echo "[$ln] DB User: ${!DB_USER}" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt

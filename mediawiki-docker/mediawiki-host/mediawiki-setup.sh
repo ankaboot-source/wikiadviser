@@ -224,7 +224,7 @@ else
     # composer
     curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
 
-    # Database #recommended MySQL/Mariadb
+    # Database (recommended: MySQL/Mariadb)
     echo "Installing MariaDB..."
     echo ""
     curl -LsS https://downloads.mariadb.com/MariaDB/mariadb_repo_setup | sudo bash -s -- --mariadb-server-version=${MARIADB_VERSION}

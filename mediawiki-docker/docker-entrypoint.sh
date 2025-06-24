@@ -36,7 +36,7 @@ wait_for_db "mediawiki_db" 3306
 
 echo "Running database setup..."
 
-# Database #recommended MySQL/Mariadb
+# Database (recommended: MySQL/Mariadb)
 echo "Installing MariaDB-server..."
 echo ""
 apt install -y mariadb-server

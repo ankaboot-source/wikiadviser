@@ -206,7 +206,6 @@ else
     sudo apt install -y ploticus
     sudo apt install -y fonts-freefont-ttf
     sudo apt install -y ffmpeg # required for TimedMediaHandler
-    sudo apt install -y php-curl # Required for EmbedVideo
 
     # Apache2
     sudo apt install -y apache2

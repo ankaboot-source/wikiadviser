@@ -95,7 +95,6 @@ apt install -y perl
 apt install -y ploticus
 apt install -y fonts-freefont-ttf
 apt install -y ffmpeg # required for TimedMediaHandler
-apt install -y php-curl # Required for EmbedVideo
 
 # Apache2 setup
 mv /etc/apache2/ports.conf /etc/apache2/ports.conf.old
@@ -114,11 +113,13 @@ echo "Creating /var/www/${MW_PROJECT_DIR}..."
 mkdir -p "/var/www/${MW_PROJECT_DIR}"
 chown $USER:$USER /var/www/${MW_PROJECT_DIR}
 
+set -e
 for ln in "${LANG_ARRAY[@]}"; do
     echo "Install [$ln] mediawiki version ${MW_VERSION}"
     sleep 2
     git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$MW_VERSION /var/www/${MW_PROJECT_DIR}/wiki/$ln
 done
+set +e
 
 # Change permissions to images folder
 for ln in "${LANG_ARRAY[@]}"; do

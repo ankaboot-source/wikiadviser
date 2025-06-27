@@ -118,6 +118,8 @@ for ln in "${LANG_ARRAY[@]}"; do
     echo "Install [$ln] mediawiki version ${MW_VERSION}"
     sleep 2
     git clone https://gerrit.wikimedia.org/r/mediawiki/core.git --branch wmf/$MW_VERSION /var/www/${MW_PROJECT_DIR}/wiki/$ln
+    # Increase Mediawiki API Timeout to 10 minutes
+    sed -i 's/timeout: 30 \* 1000/timeout: 600 * 1000/' /var/www/${MW_PROJECT_DIR}/wiki/$ln/resources/src/mediawiki.api/index.js
 done
 set +e
 

@@ -338,3 +338,5 @@ $wgForeignFileRepos[] = [
 
 wfLoadExtension( 'WikiEditor' );
 $wgWikiEditorRealtimePreview = true;
+
+$wgMaxUploadSize = 1024*1024*100; // 100MB, adjust as needed

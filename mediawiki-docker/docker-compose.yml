@@ -9,6 +9,7 @@ services:
       - 8080:${MW_PORT}
     volumes:
       - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+      - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
     depends_on:
       - mediawiki_db
 

@@ -8,8 +8,6 @@ if [ -z "$1" ]; then
   echo "Error: No version specified. Please provide a branch name."
   exit 1
 fi
-# Go To root
-cd ..
 
 
 # 1. Gets the updated branch

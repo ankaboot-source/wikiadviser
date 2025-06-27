@@ -10,6 +10,7 @@ services:
     volumes:
       - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
       - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
+      - ./resources/extensions/MyVisualEditor:/var/www/mediawiki/wiki/en/extensions/MyVisualEditor
     depends_on:
       - mediawiki_db
 

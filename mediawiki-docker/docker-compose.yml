@@ -11,6 +11,8 @@ services:
       - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
       - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
       - ./resources/extensions/MyVisualEditor:/var/www/mediawiki/wiki/en/extensions/MyVisualEditor
+      - init-data:/data
+
     depends_on:
       - mediawiki_db
 
@@ -24,8 +26,12 @@ services:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
 
     volumes:
-      - /var/lib/mysql
+      - mw-data:/var/lib/mysql
 
 networks:
   docker_network:
     driver: bridge
+
+volumes:
+  init-data:
+  mw-data:

@@ -7,6 +7,8 @@ if [ -f .env ]; then
 fi
 ################## Vars ####################
 
+FLAG_FILE="/data/.initialized"
+
 MW_ADMIN_USER="Admin"
 MW_ADMIN_PASSWORD="admin#2025"
 MW_BOT_USER="wikiadviser-bot"
@@ -31,61 +33,72 @@ wait_for_db() {
   echo "mediawiki_db is up!"
 }
 
-# Wait for the database
-wait_for_db "mediawiki_db" 3306
+if [ ! -f "$FLAG_FILE" ]; then
 
-echo "Running database setup..."
+  echo "Setting up database..."
+  echo ""
+  sleep 2
+  # Wait for the database
+  wait_for_db "mediawiki_db" 3306
 
-# Database (recommended: MySQL/Mariadb)
-echo "Installing MariaDB-server..."
-echo ""
-apt install -y mariadb-server
-echo ""
-echo "MariaDB-server installed!"
-echo ""
+  echo "Running database setup..."
 
-# Download mediawiki init dumps
-for ln in "${LANG_ARRAY[@]}"; do
-    dump_file="mw_init_dump_${ln}"
-    wget "${!dump_file}" -O ./init-dump-${ln}.sql
-done
+  # Database (recommended: MySQL/Mariadb)
+  echo "Installing MariaDB-server..."
+  echo ""
+  apt install -y mariadb-server
+  echo ""
+  echo "MariaDB-server installed!"
+  echo ""
+
+  # Download mediawiki init dumps
+  for ln in "${LANG_ARRAY[@]}"; do
+      dump_file="mw_init_dump_${ln}"
+      wget "${!dump_file}" -O ./init-dump-${ln}.sql
+  done
 
 
-# Setup DB
-for ln in "${LANG_ARRAY[@]}"; do
+  # Setup DB
+  for ln in "${LANG_ARRAY[@]}"; do
 
-    DB_NAME="DB_NAME_${ln}"
-    DB_USER="DB_USER_${ln}"
-    DB_PASS="DB_PASS_${ln}"
+      DB_NAME="DB_NAME_${ln}"
+      DB_USER="DB_USER_${ln}"
+      DB_PASS="DB_PASS_${ln}"
 
-    echo "Creating base for your '${ln}' Wiki..."
-    echo ""
-    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE ${!DB_NAME};"
-    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE USER '${!DB_USER}'@'%' IDENTIFIED BY '${!DB_PASS}';"
-    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${!DB_NAME}.* TO '${!DB_USER}'@'%' WITH GRANT OPTION;"
-    echo "Importing Init Dumps..."
-    mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -D ${!DB_NAME} < ./init-dump-${ln}.sql
+      echo "Creating base for your '${ln}' Wiki..."
+      echo ""
+      mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE DATABASE ${!DB_NAME};"
+      mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "CREATE USER '${!DB_USER}'@'%' IDENTIFIED BY '${!DB_PASS}';"
+      mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -e "GRANT ALL PRIVILEGES ON ${!DB_NAME}.* TO '${!DB_USER}'@'%' WITH GRANT OPTION;"
+      echo "Importing Init Dumps..."
+      mariadb -h ${DB_HOST} -u root -p${DB_ROOT_PASSWORD} -D ${!DB_NAME} < ./init-dump-${ln}.sql
 
-    echo "'${ln}' wiki setup completed!"
-done
+      echo "'${ln}' wiki setup completed!"
+  done
 
-# Creating MW BotPassword
-for ln in "${LANG_ARRAY[@]}"; do
-    echo "Creating BotPassword for $ln wiki"
-    botpassword_output=$(php /var/www/mediawiki/wiki/$ln/maintenance/createBotPassword.php $MW_ADMIN_USER --appid $MW_BOT_USER --grants "basic,highvolume,import,editpage,editprotected,editmycssjs,editmyoptions,editinterface,editsiteconfig,createeditmovepage,uploadfile,uploadeditmovefile,patrol,rollback,blockusers,viewdeleted,viewrestrictedlogs,delete,oversight,protect,viewmywatchlist,editmywatchlist,sendemail,createaccount,privateinfo,mergehistory")
-    php /var/www/mediawiki/wiki/$ln/maintenance/run.php /var/www/mediawiki/wiki/$ln/maintenance/update.php
+  # Creating MW BotPassword
+  for ln in "${LANG_ARRAY[@]}"; do
+      echo "Creating BotPassword for $ln wiki"
+      botpassword_output=$(php /var/www/mediawiki/wiki/$ln/maintenance/createBotPassword.php $MW_ADMIN_USER --appid $MW_BOT_USER --grants "basic,highvolume,import,editpage,editprotected,editmycssjs,editmyoptions,editinterface,editsiteconfig,createeditmovepage,uploadfile,uploadeditmovefile,patrol,rollback,blockusers,viewdeleted,viewrestrictedlogs,delete,oversight,protect,viewmywatchlist,editmywatchlist,sendemail,createaccount,privateinfo,mergehistory")
+      php /var/www/mediawiki/wiki/$ln/maintenance/run.php /var/www/mediawiki/wiki/$ln/maintenance/update.php
 
-BOT_USERNAME=$(echo "$botpassword_output" | grep -oP "username:'\K[^']+")
-BOT_PASSWORD=$(echo "$botpassword_output" | grep -oP "password:'\K[^']+")
+      BOT_USERNAME=$(echo "$botpassword_output" | grep -oP "username:'\K[^']+")
+      BOT_PASSWORD=$(echo "$botpassword_output" | grep -oP "password:'\K[^']+")
 
-# Save all credentials into a local file
-echo "["$ln"] Mediawiki BotPassword user: $BOT_USERNAME" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
-echo "["$ln"] Mediawiki BotPassword password: $BOT_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+      # Save all credentials into a local file
+      echo "["$ln"] Mediawiki BotPassword user: $BOT_USERNAME" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+      echo "["$ln"] Mediawiki BotPassword password: $BOT_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+  done
 
-done
+  echo "Mediawiki admin user: $MW_ADMIN_USER" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+  echo "Mediawiki admin password: $MW_ADMIN_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
 
-echo "Mediawiki admin user: $MW_ADMIN_USER" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
-echo "Mediawiki admin password: $MW_ADMIN_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+  touch "$FLAG_FILE"
+
+else
+
+  echo "Already initialized, skipping database setup"
+fi
 
 # Execute the main container command
 exec "$@"

@@ -1,6 +1,7 @@
 # MediaWiki with MARIADB
 services:
   mediawiki:
+    container_name: mediawiki
     build:
       dockerfile: ./Dockerfile
     networks:
@@ -12,10 +13,14 @@ services:
       - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
       - ./resources/extensions/MyVisualEditor:/var/www/mediawiki/wiki/en/extensions/MyVisualEditor
       - init-data:/data
-
     depends_on:
       - mediawiki_db
-
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /wikiadviser/mediawiki-setup/.setup_complete || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   mediawiki_db:
     image: mariadb:11.4

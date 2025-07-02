@@ -1,70 +1,12 @@
-# Wikiadviser
 
-## Pre-requisites
+## Advanced Mediawiki Configuration
 
-### Setup MediaWiki
+- Common.js and Common.css are pages which influence the interface and layout of Wikipedia.
+- Export/Import the CSS & JS from the source wiki depeding on language ( https://(language).wikipedia.org/wiki/MediaWiki:Common.css | https://(language).wikipedia.org/wiki/MediaWiki:Common.js )
 
-- <details>
-  <summary>First of all, you need to have a running MediaWiki instance...</summary>
-   
-  ## How to install?
-	
-  - After a lot of work and tests, we made installing MediaWiki as simple as running a single bash [script](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/mediawiki-setup.sh), all you need to do is :
-  
-    	1. git clone https://github.com/ankaboot-source/wikiadviser.git
-    	2. cd wikiadviser/mediawiki-setup
-        3. tmux new -s mediawiki (it is recommended to run the script in an unbreakable session, as the script take a while to finish we don't want your terminal session to crush in the middle of the setup)
-    	4. bash mediawiki-setup.sh
-        5. tmux attach -t mediawiki (if you got out of the session and want to get back)
-    
-	> **Note:**  
-	> The script is currently targeted to Debian based systems.
+- You can use our custom files below
 
-  ## How it works?
-  ### Script overview :
-  Our Bash script is designed to install or upgrade a multilingual MediaWiki project (default: en, fr) with a ready to go database dumps, extension support, and Apache/PHP/MariaDB setup.
-  
-  During the script run, a user interaction is required (you will be asked to enter the database name, user and password, will be used to create the database for each instance and setup Localsettings.php)
-  
-  ### Key features:
-  - --upgrade: Used to upgrade MediaWiki, it creates database dump, core code backup, fetch latest MediaWiki version, and restores configs. (dont forget to upgrade the VisualEditor too using `prepare_VisualEditor_upgrade.sh`)
-
-  - Default (no flag): triggers a fresh install, including packages, MariaDB, Apache, PHP, MediaWiki, and loading SQL dumps.
- 
-  ### What it installs?
-
-  - MediaWiki (latest from Wikipedia's Special:Version page) (Language-specific setups in /var/www/mediawiki/wiki/{lang})
-
-  - Apache2 & PHP with required modules
-
-  - MariaDB (v11.4)
-
-  - Composer
- 
-  ### Ready to Go database
-
-  - The Init dumps are necessary to avoid the manual MediaWiki setup where you have to generate manually a LocalSettings.php file. 
-  - Instead we made two instances (fr, en), we went through the manual setup, then we exported the database dump of each instance which we will use with our ready to go [Localsetting.php file](https://github.com/ankaboot-source/wikiadviser/blob/main/mediawiki-setup/LocalSettings.php) for the automated setup.
-  - The Init dump contain tables and data about MediaWiki including a pre-defined admin user and password, the admin credentials are as follow :
-    - FR, EN instance:
-       - User: Admin
-       - Password: admin#2025
-     
-  - **YOU MUST UPDATE YOUR ADMIN CREDENTIALS ONCE YOU FINISH INSTALLING MEDIAWIKI! [GO HERE FOR FRENCH INSTANCE](http://localhost:8080/wiki/fr/index.php/Sp%C3%A9cial:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest) [GO HERE FOR ENGLISH INSTANCE](http://localhost:8080/wiki/en/index.php?title=Special:ChangeCredentials/MediaWiki%5CAuth%5CPasswordAuthenticationRequest)**
- 
-  ### How to access your MediaWiki?
-
-  - Apache is configured to serve MediaWiki instance locally on port 8080 (Update it accordingly).
-  - You can access MediaWiki by going to http://localhost:8080/wiki/fr/index.php http://localhost:8080/wiki/en/index.php
-
-  </details>
-  
-
-- Export/Import the CSS & JS from the source wiki depeding on language
-
-  - https://(language).wikipedia.org/wiki/MediaWiki:Common.css
-
-    - <details> <summary> Add CSS rules: </summary>
+    - <details> <summary> common.css </summary>
 
       ```css
       /* Hide "Notice" popup */
@@ -149,9 +91,8 @@
 
       </details>
 
-  - https://(language).wikipedia.org/wiki/MediaWiki:Common.js
 
-    - <details> <summary> Add JS: right above the last <code>} );</code> </summary>
+    - <details> <summary> common.js: right above the last <code>} );</code> </summary>
 
       ```js
       // Add a stylesheet rule when Iframe (Editor)
@@ -283,10 +224,8 @@
 
       </details>
 
-- Into your MediaWiki instance add `http://localhost:8080/wiki/(language)/index.php/MediaWiki`: Common.css and Common.js
-- Create a Bot user on `http://localhost:8080/wiki/(language)/index.php/Special:BotPasswords`: Add it to [.env.example](https://github.com/ankaboot-source/wikiadviser/blob/main/.env.example)
-- In some cases VisualEditor fails to open due to large article size, to fix that increase the `timeout` in the following file: `mediawiki/resources/src/mediawiki.api/index.js`
-- Final step of setting up MediaWiki is to run the job queue separately for better performance using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
+- Import into your MediaWiki instance: `http://localhost:8080/wiki/(language)/index.php/MediaWiki:Common.css` and Common.js
+- For better performance, run the job queue separately, using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)
 
 ### Citoid
 To add the advanced reference button into VisualEditor toolbar you need to add the following configuration files from wikipedia into your 
@@ -297,35 +236,3 @@ Templates `http://localhost:8080/wiki/(language)/index.php/Template:Cite_book`, 
   - Template:Cite_book, Template:Cite_web, Template:Cite_news, Template:Cite_journal
 
 Each template has its own documentation template, make sure to import it as well, it is recommended to export templates by category (citoid category for example) and import them all at once. [More Informations](https://www.mediawiki.org/wiki/Citoid)
-
-### Supabase
-
-You need to have a supabase instance (locally hosted):
-
-- To use the local version, you can just run `pnpm i` in the root folder of this repository and then `pnpx supabase start`.
-
-- If you have MediaWiki installed locally and have enabled firewall, make sure to allow the MediaWiki port (Allows Supabase Edge Functions to access the local MediaWiki instance):
-  ```sh
-  sudo ufw allow 8080 # 8080 being the MediaWiki port
-  ```
-
-## Running the Project
-
-Make sure you have setup all the necessary pre-requisits.
-
-### Using Node
-
-**In both `./wikiadviser/frontend` and `./wikiadviser/supabase/functions` directory**
-
-- Copy `.env.example` to `.env` and update the missing variables accordingly.
-- Install dependencies via` pnpm i`
-- Run each of the projects via`npm run dev`
-
-### Using Docker
-
-- Copy `.env.example.docker` (in ./wikiadviser folder) to `.env` and update the missing variables accordingly.
-- Start wikiadviser services:
-
-```sh
-docker compose -f docker-compose.dev.yml up --build --force-recreate -d
-```

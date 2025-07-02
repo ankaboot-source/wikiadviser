@@ -34,19 +34,19 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 - Clone the repository
 - [Install Docker](https://docs.docker.com/engine/install) <details><summary><b>💡 Tip: </b>We recommend to run Docker as user, so don't forget to add your user to docker group these commands: </summary>
-   sudo usermod -aG docker $USER
-   newgrp docker
+   sudo usermod -aG docker $USER && newgrp docker
 </details>
 
 - [Install NodeJS](https://nodejs.org)
 
 ### WikiAdviser installation
 
-1. Install and configure MediaWiki (User-interactive)
+1. Install MediaWiki
 ```
 git clone https://github.com/ankaboot-source/wikiadviser.git
-cd wikiadviser/mediawiki-setup
-bash mediawiki-setup.sh
+cd wikiadviser/mediawiki-docker
+cp .env.example .env
+docker compose up -d
 ```
 
 2. Start Supabase and auto-generate .env files

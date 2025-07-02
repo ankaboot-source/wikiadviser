@@ -45,6 +45,7 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 ```
 git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/mediawiki-docker
+cp .env.example .env
 docker compose up -d
 ```
 

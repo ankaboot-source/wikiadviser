@@ -4,6 +4,7 @@ ENV_DIR=("./" "./frontend/" "./supabase/functions/")
 ENV_PATH=("./.env" "./frontend/.env")
 SUPABASE_ENV_PATH="./supabase/functions/.env"
 MW_CREDENTIALS_FILE="./mediawiki-docker/MW_CREDENTIALS.txt"
+CONTAINER_NAME="mediawiki"
 
 export LANG=C
 # Verify log file is passed as an argument
@@ -16,6 +17,24 @@ fi
 if [[ "$(basename "$PWD")" != "wikiadviser" ]]; then
   echo "❌ Error: Please navigate to ./wikiadviser before running the script."
   exit 1
+fi
+
+# Function to check container health
+wait_for_container_healthy() {
+    echo "⌛ Waiting for container '$CONTAINER_NAME' to become healthy..."
+    while true; do
+        # Get container health status
+        health_status=$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER_NAME" 2>/dev/null)
+        if [ "$health_status" = "healthy" ]; then
+            echo "✅ Container is healthy"
+            return 0
+        fi
+     done
+}
+
+# Wait for container to be healthy
+if ! wait_for_container_healthy; then
+    exit 1
 fi
 
 LOGFILE="$1"

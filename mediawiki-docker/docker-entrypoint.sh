@@ -8,7 +8,7 @@ fi
 ################## Vars ####################
 
 FLAG_FILE="/data/.initialized"
-
+HC_FLAG_FILE="/wikiadviser/mediawiki-setup/.setup_complete"
 MW_ADMIN_USER="Admin"
 MW_ADMIN_PASSWORD="admin#2025"
 MW_BOT_USER="wikiadviser-bot"
@@ -94,10 +94,12 @@ if [ ! -f "$FLAG_FILE" ]; then
   echo "Mediawiki admin password: $MW_ADMIN_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
 
   touch "$FLAG_FILE"
+  touch "$HC_FLAG_FILE"
 
 else
 
   echo "Already initialized, skipping database setup"
+  touch "$HC_FLAG_FILE"
 fi
 
 # Execute the main container command

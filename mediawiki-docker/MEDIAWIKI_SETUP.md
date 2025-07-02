@@ -220,6 +220,18 @@
               });
           }
       };
+
+      mw.hook('ve.activationStart').add(function () {
+        try {
+          // Make inner page full width and hide left bar (TOC)
+          var elements = document.querySelectorAll('.mw-page-container-inner, .mw-body');
+          for (var i = 0; i < elements.length; i++) {
+            elements[i].removeAttribute('class');
+          }
+        } catch (error) {
+          console.error('An error occurred while trying to hide non-editor distractions', error.message);
+        }
+      });
       ```
 
       </details>

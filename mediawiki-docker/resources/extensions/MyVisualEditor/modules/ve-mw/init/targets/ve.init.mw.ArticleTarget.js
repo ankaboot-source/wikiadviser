@@ -753,25 +753,6 @@ ve.init.mw.ArticleTarget.prototype.saveComplete = function ( data ) {
 		// Not passing trackMechanism because this isn't an abort action
 		this.tryTeardown( true );
 	}
-	/* Custom WikiAdviser */
-	// On "Save Changes", go to diffUrl
-	const articleId = this.getPageName();
-	window.parent.postMessage(
-		{
-			type: 'saved-changes',
-			articleId: articleId,
-		},
-		'*'
-		);
-	mw.wikiadviser.getDiffUrl(articleId)
-		.then(function(diffUrl) {
-			console.log('Redirecting to diff:', diffUrl);
-			window.location.replace(diffUrl);
-		})
-		.catch(function(error) {
-			console.error('Failed to redirect to diff:', error);
-		});
-	/* End WikiAdviser */
 };
 
 /**

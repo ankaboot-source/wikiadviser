@@ -1,13 +1,47 @@
+# Mediawiki + Wikiadviser
 services:
+  mediawiki:
+    container_name: mediawiki
+    build:
+      dockerfile: ./Dockerfile
+    networks:
+      - docker_network
+    ports:
+      - 8080:${MW_PORT}
+    volumes:
+      - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+      - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
+      - ./resources/extensions/MyVisualEditor:/var/www/mediawiki/wiki/en/extensions/MyVisualEditor
+      - init-data:/data
+    depends_on:
+      - mediawiki_db
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /wikiadviser/mediawiki-setup/.setup_complete || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  mediawiki_db:
+    image: mariadb:11.4
+    restart: always
+    networks:
+      - docker_network
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+    volumes:
+      - mw-data:/var/lib/mysql
+
   wikiadviser-caddy:
     image: wikiadviser-caddy:git
     container_name: wikiadviser-caddy
     volumes:
       - caddy-data:/data
-      - ./Caddyfile.dev:/etc/caddy/Caddyfile:ro
+      - ./conf/Caddyfile.dev:/etc/caddy/Caddyfile:ro
       - /var/log/caddy/:/var/log/caddy/
     build:
-      context: frontend
+      context: ../frontend
       args:
         SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
         SUPABASE_SECRET_PROJECT_TOKEN: ${SUPABASE_SECRET_PROJECT_TOKEN}
@@ -35,5 +69,11 @@ services:
       - MEDIAWIKI_REVERSE_PROXY_ENDPOINT=${MEDIAWIKI_REVERSE_PROXY_ENDPOINT}
       - MEDIAWIKI_ENDPOINT=${MEDIAWIKI_ENDPOINT}
 
+networks:
+  docker_network:
+    driver: bridge
+
 volumes:
+  init-data:
+  mw-data:
   caddy-data:

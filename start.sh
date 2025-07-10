@@ -9,9 +9,9 @@ else
 fi
 
 npx supabase start > supabase.log
-./generate-env.sh --supabase-creds supabase.log
+bash ./generate-env.sh --supabase-creds supabase.log
 pushd docker && docker compose up -d && popd
-./generate-env.sh --bot-creds
+bash ./generate-env.sh --bot-creds
 npx supabase functions serve
 
 

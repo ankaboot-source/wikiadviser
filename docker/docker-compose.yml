@@ -35,7 +35,6 @@ services:
       - mw-data:/var/lib/mysql
 
   wikiadviser-caddy:
-    image: wikiadviser-caddy:git
     container_name: wikiadviser-caddy
     volumes:
       - caddy-data:/data

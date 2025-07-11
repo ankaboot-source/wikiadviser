@@ -40,27 +40,41 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 - [Install NodeJS](https://nodejs.org)
 
 ### WikiAdviser installation
+<details open>
+<summary><h4>One-Click Install (Faster Setup)</h4></summary>
 
-1. Install MediaWiki
-```
-git clone https://github.com/ankaboot-source/wikiadviser.git
-cd wikiadviser/mediawiki-docker
-cp .env.example .env
-docker compose up -d
-```
-
-2. Start Supabase and auto-generate .env files
 ```sh
+git clone https://github.com/ankaboot-source/wikiadviser.git
+cd wikiadviser/
+./start.sh
+```
+</details>
+
+<details>
+<summary><h4>Install services separately</h4></summary>
+
+1. Start Supabase and auto-generate .env files
+
+```sh
+git clone https://github.com/ankaboot-source/wikiadviser.git
+cd wikiadviser/
 npm i # To install Supabase dependencies
 npx supabase start > supabase.log
-./wikiadviser-setup.sh supabase.log
+./generate-env.sh --supabase-creds supabase.log
 ```
 
-3. Start WikiAdviser
+2. Start WikiAdviser + Mediawiki
+
 ```sh
-npx supabase functions serve # To start Supabase functions
-docker compose -f docker-compose.dev.yml up -d
+pushd docker && docker compose up -d && popd
 ```
+
+3. Start supabase Edge functions
+```sh
+./generate-env.sh --bot-creds
+npx supabase functions serve
+```
+</details>
 
 ## 🤝 Contributing
 

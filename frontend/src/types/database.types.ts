@@ -7,6 +7,31 @@ export type Json =
   | Json[];
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+          extensions?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+  };
   public: {
     Tables: {
       articles: {
@@ -158,6 +183,30 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          is_read: boolean | null;
+          message: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          is_read?: boolean | null;
+          message: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          is_read?: boolean | null;
+          message?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       permissions: {
         Row: {
           article_id: string | null;
@@ -219,22 +268,7 @@ export type Database = {
           email?: string;
           id?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: 'profiles_id_fkey';
-            columns: ['id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'profiles_id_fkey';
-            columns: ['id'];
-            isOneToOne: true;
-            referencedRelation: 'users';
-            referencedColumns: ['id'];
-          },
-        ];
+        Relationships: [];
       };
       revisions: {
         Row: {
@@ -273,16 +307,19 @@ export type Database = {
           article_id: string;
           expired_at: string | null;
           id: string;
+          role: Database['public']['Enums']['role'];
         };
         Insert: {
           article_id: string;
           expired_at?: string | null;
           id?: string;
+          role?: Database['public']['Enums']['role'];
         };
         Update: {
           article_id?: string;
           expired_at?: string | null;
           id?: string;
+          role?: Database['public']['Enums']['role'];
         };
         Relationships: [
           {
@@ -296,151 +333,85 @@ export type Database = {
       };
     };
     Views: {
-      users: {
-        Row: {
-          aud: string | null;
-          banned_until: string | null;
-          confirmation_sent_at: string | null;
-          confirmation_token: string | null;
-          confirmed_at: string | null;
-          created_at: string | null;
-          deleted_at: string | null;
-          email: string | null;
-          email_change: string | null;
-          email_change_confirm_status: number | null;
-          email_change_sent_at: string | null;
-          email_change_token_current: string | null;
-          email_change_token_new: string | null;
-          email_confirmed_at: string | null;
-          encrypted_password: string | null;
-          id: string | null;
-          instance_id: string | null;
-          invited_at: string | null;
-          is_sso_user: boolean | null;
-          is_super_admin: boolean | null;
-          last_sign_in_at: string | null;
-          phone: string | null;
-          phone_change: string | null;
-          phone_change_sent_at: string | null;
-          phone_change_token: string | null;
-          phone_confirmed_at: string | null;
-          raw_app_meta_data: Json | null;
-          raw_user_meta_data: Json | null;
-          reauthentication_sent_at: string | null;
-          reauthentication_token: string | null;
-          recovery_sent_at: string | null;
-          recovery_token: string | null;
-          role: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          aud?: string | null;
-          banned_until?: string | null;
-          confirmation_sent_at?: string | null;
-          confirmation_token?: string | null;
-          confirmed_at?: string | null;
-          created_at?: string | null;
-          deleted_at?: string | null;
-          email?: string | null;
-          email_change?: string | null;
-          email_change_confirm_status?: number | null;
-          email_change_sent_at?: string | null;
-          email_change_token_current?: string | null;
-          email_change_token_new?: string | null;
-          email_confirmed_at?: string | null;
-          encrypted_password?: string | null;
-          id?: string | null;
-          instance_id?: string | null;
-          invited_at?: string | null;
-          is_sso_user?: boolean | null;
-          is_super_admin?: boolean | null;
-          last_sign_in_at?: string | null;
-          phone?: string | null;
-          phone_change?: string | null;
-          phone_change_sent_at?: string | null;
-          phone_change_token?: string | null;
-          phone_confirmed_at?: string | null;
-          raw_app_meta_data?: Json | null;
-          raw_user_meta_data?: Json | null;
-          reauthentication_sent_at?: string | null;
-          reauthentication_token?: string | null;
-          recovery_sent_at?: string | null;
-          recovery_token?: string | null;
-          role?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          aud?: string | null;
-          banned_until?: string | null;
-          confirmation_sent_at?: string | null;
-          confirmation_token?: string | null;
-          confirmed_at?: string | null;
-          created_at?: string | null;
-          deleted_at?: string | null;
-          email?: string | null;
-          email_change?: string | null;
-          email_change_confirm_status?: number | null;
-          email_change_sent_at?: string | null;
-          email_change_token_current?: string | null;
-          email_change_token_new?: string | null;
-          email_confirmed_at?: string | null;
-          encrypted_password?: string | null;
-          id?: string | null;
-          instance_id?: string | null;
-          invited_at?: string | null;
-          is_sso_user?: boolean | null;
-          is_super_admin?: boolean | null;
-          last_sign_in_at?: string | null;
-          phone?: string | null;
-          phone_change?: string | null;
-          phone_change_sent_at?: string | null;
-          phone_change_token?: string | null;
-          phone_confirmed_at?: string | null;
-          raw_app_meta_data?: Json | null;
-          raw_user_meta_data?: Json | null;
-          reauthentication_sent_at?: string | null;
-          reauthentication_token?: string | null;
-          recovery_sent_at?: string | null;
-          recovery_token?: string | null;
-          role?: string | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
-      };
+      [_ in never]: never;
     };
     Functions: {
-      add_viewer_to_article:
-        | {
-            Args: {
-              token: string;
-            };
-            Returns: string;
-          }
-        | {
-            Args: {
-              user_id: string;
-              token: string;
-            };
-            Returns: string;
-          };
+      bytea_to_text: {
+        Args: { data: string };
+        Returns: string;
+      };
       delete_user_and_anonymize_data: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
-      delete_user_and_keep_data: {
+      get_article_stakeholders: {
+        Args: { p_article_id: string };
+        Returns: {
+          user_id: string;
+          role: string;
+        }[];
+      };
+      http: {
+        Args: { request: Database['public']['CompositeTypes']['http_request'] };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_delete: {
+        Args:
+          | { uri: string }
+          | { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_get: {
+        Args: { uri: string } | { uri: string; data: Json };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_head: {
+        Args: { uri: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_header: {
+        Args: { field: string; value: string };
+        Returns: Database['public']['CompositeTypes']['http_header'];
+      };
+      http_list_curlopt: {
         Args: Record<PropertyKey, never>;
-        Returns: undefined;
+        Returns: {
+          curlopt: string;
+          value: string;
+        }[];
+      };
+      http_patch: {
+        Args: { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_post: {
+        Args:
+          | { uri: string; content: string; content_type: string }
+          | { uri: string; data: Json };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_put: {
+        Args: { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_reset_curlopt: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      http_set_curlopt: {
+        Args: { curlopt: string; value: string };
+        Returns: boolean;
       };
       is_article_exists: {
-        Args: {
-          article_id: string;
-        };
+        Args: { article_id: string };
         Returns: string;
       };
-      read_secret: {
-        Args: {
-          secret_name: string;
-        };
+      text_to_bytea: {
+        Args: { data: string };
+        Returns: string;
+      };
+      urlencode: {
+        Args: { data: Json } | { string: string } | { string: string };
         Returns: string;
       };
     };
@@ -448,30 +419,50 @@ export type Database = {
       role: 'owner' | 'editor' | 'reviewer' | 'viewer';
     };
     CompositeTypes: {
-      [_ in never]: never;
+      http_header: {
+        field: string | null;
+        value: string | null;
+      };
+      http_request: {
+        method: unknown | null;
+        uri: string | null;
+        headers: Database['public']['CompositeTypes']['http_header'][] | null;
+        content_type: string | null;
+        content: string | null;
+      };
+      http_response: {
+        status: number | null;
+        content_type: string | null;
+        headers: Database['public']['CompositeTypes']['http_header'][] | null;
+        content: string | null;
+      };
     };
   };
 };
 
+type DefaultSchema = Database[Extract<keyof Database, 'public'>];
+
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (Database['public']['Tables'] & Database['public']['Views'])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
-        Database[PublicTableNameOrOptions['schema']]['Views'])
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
-      Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      Database[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (Database['public']['Tables'] &
-        Database['public']['Views'])
-    ? (Database['public']['Tables'] &
-        Database['public']['Views'])[PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R;
       }
       ? R
@@ -479,20 +470,22 @@ export type Tables<
     : never;
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof Database['public']['Tables']
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema['Tables']
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-    ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I;
       }
       ? I
@@ -500,20 +493,22 @@ export type TablesInsert<
     : never;
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof Database['public']['Tables']
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema['Tables']
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions['schema']]['Tables']
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof Database['public']['Tables']
-    ? Database['public']['Tables'][PublicTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U;
       }
       ? U
@@ -521,14 +516,42 @@ export type TablesUpdate<
     : never;
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof Database['public']['Enums']
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema['Enums']
     | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
     : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
-  : PublicEnumNameOrOptions extends keyof Database['public']['Enums']
-    ? Database['public']['Enums'][PublicEnumNameOrOptions]
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema['CompositeTypes']
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database;
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+    : never;
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {
+      role: ['owner', 'editor', 'reviewer', 'viewer'],
+    },
+  },
+} as const;

@@ -27,6 +27,7 @@
           section="profile"
         />
       </q-btn>
+      <NotificationsBell />
       <q-btn
         v-if="user"
         clickable
@@ -48,6 +49,7 @@ import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserComponent from './UserComponent.vue';
+import NotificationsBell from './NotificationsBell.vue';
 
 const router = useRouter();
 const $q = useQuasar();

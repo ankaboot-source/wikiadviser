@@ -20,9 +20,7 @@
  * @param {string} [config.server] IO server
  * @param {string} [config.defaultName] Default username
  */
-ve.dm.SurfaceSynchronizer = function VeDmSurfaceSynchronizer( surface, documentId, config ) {
-	config = config || {};
-
+ve.dm.SurfaceSynchronizer = function VeDmSurfaceSynchronizer( surface, documentId, config = {} ) {
 	// Mixin constructors
 	OO.EventEmitter.call( this );
 	ve.dm.RebaseClient.call( this );
@@ -375,9 +373,15 @@ ve.dm.SurfaceSynchronizer.prototype.getAuthorData = function ( authorId ) {
 };
 
 ve.dm.SurfaceSynchronizer.prototype.onAuthorChange = function ( data ) {
-	this.authors[ data.authorId ] = data.authorData;
+	let authorData = this.authors[ data.authorId ];
+	if ( authorData === undefined ) {
+		authorData = Object.create( null );
+		this.authors[ data.authorId ] = authorData;
+	}
+	Object.keys( data.authorData ).forEach( ( key ) => {
+		authorData[ key ] = data.authorData[ key ];
+	} );
 	this.emit( 'authorChange', data.authorId );
-
 	if ( data.authorId === this.getAuthorId() ) {
 		ve.init.platform.sessionStorage.setObject( 've-collab-author', data.authorData );
 	}

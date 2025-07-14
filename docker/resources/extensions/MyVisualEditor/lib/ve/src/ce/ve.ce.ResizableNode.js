@@ -18,9 +18,7 @@
  * @param {boolean} [config.showSizeLabel=true] Show a label with the current dimensions while resizing
  * @param {boolean} [config.showScaleLabel=true] Show a label with the current scale while resizing
  */
-ve.ce.ResizableNode = function VeCeResizableNode( $resizable, config ) {
-	config = config || {};
-
+ve.ce.ResizableNode = function VeCeResizableNode( $resizable, config = {} ) {
 	// Properties
 	this.$resizable = $resizable || this.$element;
 	this.resizing = false;
@@ -221,7 +219,7 @@ ve.ce.ResizableNode.prototype.showHandles = function ( handles ) {
 		allDirections = [ 'nw', 'ne', 'sw', 'se' ];
 
 	for ( let i = 0, len = allDirections.length; i < len; i++ ) {
-		if ( handles === undefined || handles.indexOf( allDirections[ i ] ) !== -1 ) {
+		if ( handles === undefined || handles.includes( allDirections[ i ] ) ) {
 			remove.push( 've-ce-resizableNode-hide-' + allDirections[ i ] );
 		} else {
 			add.push( 've-ce-resizableNode-hide-' + allDirections[ i ] );

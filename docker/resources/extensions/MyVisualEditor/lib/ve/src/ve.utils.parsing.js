@@ -12,7 +12,7 @@
  */
 ve.isBlockElement = function ( element ) {
 	const elementName = typeof element === 'string' ? element : element.nodeName;
-	return ve.elementTypes.block.indexOf( elementName.toLowerCase() ) !== -1;
+	return ve.elementTypes.block.includes( elementName.toLowerCase() );
 };
 
 /**
@@ -23,7 +23,7 @@ ve.isBlockElement = function ( element ) {
  */
 ve.isVoidElement = function ( element ) {
 	const elementName = typeof element === 'string' ? element : element.nodeName;
-	return ve.elementTypes.void.indexOf( elementName.toLowerCase() ) !== -1;
+	return ve.elementTypes.void.includes( elementName.toLowerCase() );
 };
 
 ve.elementTypes = {
@@ -260,8 +260,8 @@ ve.fixupPreBug = function ( element ) {
  * @param {string} [nodeName='div'] Element name
  * @return {string} Normalized attribute value
  */
-ve.normalizeAttributeValue = function ( name, value, nodeName ) {
-	const node = document.createElement( nodeName || 'div' );
+ve.normalizeAttributeValue = function ( name, value, nodeName = 'div' ) {
+	const node = document.createElement( nodeName );
 	node.setAttribute( name, value );
 	return node.getAttribute( name );
 };

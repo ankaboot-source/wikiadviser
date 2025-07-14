@@ -379,6 +379,7 @@ module.exports = function ( grunt ) {
 		},
 		stylelint: {
 			options: {
+				cache: true,
 				reportNeedlessDisables: true
 			},
 			all: fg.globSync( [
@@ -444,6 +445,7 @@ module.exports = function ( grunt ) {
 								'src/init/**/*.js',
 								// DM
 								'src/dm/ve.dm.InternalList.js',
+								'src/dm/ve.dm.InternalListNodeGroup.js',
 								'src/dm/ve.dm.SourceSurfaceFragment.js',
 								'src/dm/ve.dm.SurfaceSynchronizer.js',
 								'src/dm/ve.dm.TableSlice.js',
@@ -470,6 +472,7 @@ module.exports = function ( grunt ) {
 								'src/ui/datatransferhandlers/*.js',
 								'src/ui/dialogs/*.js',
 								'src/ui/inspectors/ve.ui.CommentAnnotationInspector.js',
+								'src/ui/inspectors/ve.ui.FragmentInspector.js',
 								'src/ui/layouts/*.js',
 								'src/ui/pages/*.js',
 								'src/ui/tools/*.js',

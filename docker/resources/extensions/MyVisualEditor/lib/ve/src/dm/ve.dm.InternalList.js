@@ -21,7 +21,13 @@ ve.dm.InternalList = function VeDmInternalList( doc ) {
 	this.document = doc;
 	this.itemHtmlQueue = [];
 	this.listNode = null;
+
+	/**
+	 * @private Please use {@link getNodeGroups} instead
+	 * @property {Object.<string,ve.dm.InternalListNodeGroup>} nodes Keyed by group name
+	 */
 	this.nodes = {};
+
 	this.groupsChanged = [];
 	this.keyIndexes = {};
 	this.keys = [];
@@ -76,15 +82,6 @@ ve.dm.InternalList.prototype.queueItemHtml = function ( groupName, key, html ) {
 };
 
 /**
- * Gets all the item's HTML strings
- *
- * @return {Object} Name-indexed object containing HTMLElements
- */
-ve.dm.InternalList.prototype.getItemHtmlQueue = function () {
-	return this.itemHtmlQueue;
-};
-
-/**
  * Gets the internal list's document model
  *
  * @return {ve.dm.Document} Document model
@@ -134,7 +131,7 @@ ve.dm.InternalList.prototype.getItemNode = function ( index ) {
 /**
  * Get all node groups.
  *
- * @return {Object.<string,Object>} Node groups, keyed by group name
+ * @return {Object.<string,ve.dm.InternalListNodeGroup>} Node groups, keyed by group name
  */
 ve.dm.InternalList.prototype.getNodeGroups = function () {
 	return this.nodes;
@@ -144,39 +141,17 @@ ve.dm.InternalList.prototype.getNodeGroups = function () {
  * Get the node group object for a specified group name.
  *
  * @param {string} groupName Name of the group
- * @return {Object|undefined} Node group object, containing nodes and key order array
+ * @return {ve.dm.InternalListNodeGroup|undefined} Node group object, containing nodes and key order array
  */
 ve.dm.InternalList.prototype.getNodeGroup = function ( groupName ) {
 	return this.nodes[ groupName ];
 };
 
 /**
- * Get a unique list key for a given group.
- *
- * The returned list key is added to the list of unique list keys used in this group so that it
- * won't be allocated again. It will also be associated to oldListKey so that if the same oldListKey
- * is passed in again later, the previously allocated name will be returned.
- *
- * @param {string} groupName Name of the group
- * @param {string} oldListKey Current list key to associate the generated list key with
- * @param {string} prefix Prefix to distinguish generated keys from non-generated ones
- * @return {string} Generated unique list key, or existing unique key associated with oldListKey
+ * @deprecated please use `.getNodeGroup( … ).getUniqueListKey( … )` instead
  */
 ve.dm.InternalList.prototype.getUniqueListKey = function ( groupName, oldListKey, prefix ) {
-	const group = this.getNodeGroup( groupName );
-
-	if ( group.uniqueListKeys[ oldListKey ] !== undefined ) {
-		return group.uniqueListKeys[ oldListKey ];
-	}
-
-	let num = 0;
-	while ( group.keyedNodes[ prefix + num ] || group.uniqueListKeysInUse[ prefix + num ] ) {
-		num++;
-	}
-
-	group.uniqueListKeys[ oldListKey ] = prefix + num;
-	group.uniqueListKeysInUse[ prefix + num ] = true;
-	return prefix + num;
+	return this.getNodeGroup( groupName ).getUniqueListKey( oldListKey, prefix );
 };
 
 /**
@@ -204,7 +179,7 @@ ve.dm.InternalList.prototype.getNextUniqueNumber = function () {
  * @return {Array} Linear model data
  */
 ve.dm.InternalList.prototype.convertToData = function ( converter, doc ) {
-	const itemHtmlQueue = this.getItemHtmlQueue();
+	const itemHtmlQueue = this.itemHtmlQueue;
 
 	const list = [];
 	list.push( { type: 'internalList' } );
@@ -265,17 +240,6 @@ ve.dm.InternalList.prototype.getItemInsertion = function ( groupName, key, data 
 };
 
 /**
- * Get position of a key within a group
- *
- * @param {string} groupName Name of the group
- * @param {string} key Name of the key
- * @return {number} Position within the key ordering for that group
- */
-ve.dm.InternalList.prototype.getIndexPosition = function ( groupName, key ) {
-	return this.nodes[ groupName ].indexOrder.indexOf( key );
-};
-
-/**
  * Get the internal item index of a group key if it already exists
  *
  * @param {string} groupName Item group
@@ -297,15 +261,10 @@ ve.dm.InternalList.prototype.getKeyIndex = function ( groupName, key ) {
 ve.dm.InternalList.prototype.addNode = function ( groupName, key, index, node ) {
 	let group = this.nodes[ groupName ];
 	// The group may not exist yet
-	if ( group === undefined ) {
-		group = this.nodes[ groupName ] = {
-			keyedNodes: {},
-			firstNodes: [],
-			indexOrder: [],
-			uniqueListKeys: {},
-			uniqueListKeysInUse: {}
-		};
+	if ( !group ) {
+		group = this.nodes[ groupName ] = new ve.dm.InternalListNodeGroup();
 	}
+
 	let keyedNodes = group.keyedNodes[ key ];
 	this.keys[ index ] = key;
 	// The key may not exist yet
@@ -335,7 +294,7 @@ ve.dm.InternalList.prototype.addNode = function ( groupName, key, index, node ) 
 			group.firstNodes[ index ] = node;
 		}
 	}
-	if ( group.indexOrder.indexOf( index ) === -1 ) {
+	if ( !group.indexOrder.includes( index ) ) {
 		group.indexOrder.push( index );
 	}
 	this.markGroupAsChanged( groupName );
@@ -344,10 +303,11 @@ ve.dm.InternalList.prototype.addNode = function ( groupName, key, index, node ) 
 /**
  * Mark a node group as having been changed since the last transaction.
  *
+ * @private
  * @param {string} groupName Name of group which has changed
  */
 ve.dm.InternalList.prototype.markGroupAsChanged = function ( groupName ) {
-	if ( this.groupsChanged.indexOf( groupName ) === -1 ) {
+	if ( !this.groupsChanged.includes( groupName ) ) {
 		this.groupsChanged.push( groupName );
 	}
 };
@@ -406,7 +366,8 @@ ve.dm.InternalList.prototype.removeNode = function ( groupName, key, index, node
  * has the 'placeholder' attribute, in which case it moved to the end of the
  * list, where it should be ignored.
  *
- * @param {Object} group
+ * @private
+ * @param {ve.dm.InternalListNodeGroup} group
  */
 ve.dm.InternalList.prototype.sortGroupIndexes = function ( group ) {
 	// Sort indexOrder

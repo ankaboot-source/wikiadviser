@@ -17,9 +17,7 @@
  * @param {string} itemGroup Tool group to use, 'col', 'row', or 'table'
  * @param {Object} [config] Configuration options
  */
-ve.ui.TableLineContext = function VeUiTableLineContext( tableNode, itemGroup, config ) {
-	config = config || {};
-
+ve.ui.TableLineContext = function VeUiTableLineContext( tableNode, itemGroup, config = {} ) {
 	// Parent constructor
 	ve.ui.TableLineContext.super.call( this, tableNode.surface.getSurface(), config );
 
@@ -95,14 +93,10 @@ ve.ui.TableLineContext.prototype.getRelatedSources = function () {
 	const items = this.constructor.static.groups[ this.itemGroup ];
 
 	if ( !this.relatedSources ) {
-		this.relatedSources = [];
-
-		for ( let i = 0, l = items.length; i < l; i++ ) {
-			this.relatedSources.push( {
-				type: 'item',
-				name: items[ i ]
-			} );
-		}
+		this.relatedSources = items.map( ( item ) => ( {
+			type: 'item',
+			name: item
+		} ) );
 	}
 	return this.relatedSources;
 };

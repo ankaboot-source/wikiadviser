@@ -104,22 +104,23 @@ ve.dm.Converter.static.getDataContentFromText = function ( text, annotations ) {
  * @param {ve.dm.AnnotationSet} targetSet The set of annotations we want to have.
  * @param {Function} open Callback called when an annotation is opened. Passed a ve.dm.Annotation.
  * @param {Function} close Callback called when an annotation is closed. Passed a ve.dm.Annotation.
+ * @param {boolean} [forSerialization=true] Compare annotations for serialization
  */
-ve.dm.Converter.static.openAndCloseAnnotations = function ( currentSet, targetSet, open, close ) {
-	let hash, i, len;
+ve.dm.Converter.static.openAndCloseAnnotations = function ( currentSet, targetSet, open, close, forSerialization = true ) {
+	const comparisonMethod = forSerialization ? 'containsComparableForSerialization' : 'containsComparable';
 	// Close annotations as needed
 	// Go through annotationStack from bottom to top (low to high),
 	// and find the first annotation that's not in annotations.
 	if ( currentSet.getLength() ) {
 		const targetSetOpen = targetSet.clone();
 		let startClosingAt;
-		for ( i = 0, len = currentSet.getLength(); i < len; i++ ) {
-			hash = currentSet.getHash( i );
+		for ( let i = 0, len = currentSet.getLength(); i < len; i++ ) {
+			const hash = currentSet.getHash( i );
 			// containsComparableForSerialization is expensive,
 			// so do a simple contains check first
 			if (
 				targetSetOpen.containsHash( hash ) ||
-				targetSetOpen.containsComparableForSerialization( currentSet.get( i ) )
+				targetSetOpen[ comparisonMethod ]( currentSet.get( i ) )
 			) {
 				targetSetOpen.removeHash( hash );
 			} else {
@@ -130,7 +131,7 @@ ve.dm.Converter.static.openAndCloseAnnotations = function ( currentSet, targetSe
 		if ( startClosingAt !== undefined ) {
 			// Close all annotations from top to bottom (high to low)
 			// until we reach startClosingAt
-			for ( i = currentSet.getLength() - 1; i >= startClosingAt; i-- ) {
+			for ( let i = currentSet.getLength() - 1; i >= startClosingAt; i-- ) {
 				close( currentSet.get( i ) );
 				// Remove from currentClone
 				currentSet.removeAt( i );
@@ -141,13 +142,13 @@ ve.dm.Converter.static.openAndCloseAnnotations = function ( currentSet, targetSe
 	if ( targetSet.getLength() ) {
 		const currentSetOpen = currentSet.clone();
 		// Open annotations as needed
-		for ( i = 0, len = targetSet.getLength(); i < len; i++ ) {
-			hash = targetSet.getHash( i );
+		for ( let i = 0, len = targetSet.getLength(); i < len; i++ ) {
+			const hash = targetSet.getHash( i );
 			// containsComparableForSerialization is expensive,
 			// so do a simple contains check first
 			if (
 				currentSetOpen.containsHash( hash ) ||
-				currentSetOpen.containsComparableForSerialization( targetSet.get( i ) )
+				currentSetOpen[ comparisonMethod ]( targetSet.get( i ) )
 			) {
 				// If an annotation is already open remove it from the currentSetOpen list
 				// as it may exist multiple times in the targetSet, and so may need to be
@@ -172,7 +173,7 @@ ve.dm.Converter.static.openAndCloseAnnotations = function ( currentSet, targetSe
  * @param {boolean} [computed=false] If true, use the computed values of attributes where available
  * @param {boolean} [deep=false] Recurse into child nodes
  */
-ve.dm.Converter.static.renderHtmlAttributeList = function ( originalDomElements, targetDomElements, filter, computed, deep ) {
+ve.dm.Converter.static.renderHtmlAttributeList = function ( originalDomElements, targetDomElements, filter = true, computed = false, deep = false ) {
 	if ( filter === undefined ) {
 		filter = true;
 	}
@@ -195,7 +196,7 @@ ve.dm.Converter.static.renderHtmlAttributeList = function ( originalDomElements,
 				( filter === true || filter( attrs[ j ].name ) )
 			) {
 				let value;
-				if ( computed && this.computedAttributes.indexOf( attrs[ j ].name ) !== -1 ) {
+				if ( computed && this.computedAttributes.includes( attrs[ j ].name ) ) {
 					value = originalDomElements[ i ][ attrs[ j ].name ];
 				} else {
 					value = attrs[ j ].value;
@@ -449,7 +450,7 @@ ve.dm.Converter.prototype.isValidChildNodeType = function ( nodeType ) {
 		return null;
 	}
 	const childTypes = this.nodeFactory.getChildNodeTypes( context.branchType );
-	return ( childTypes === null || childTypes.indexOf( nodeType ) !== -1 );
+	return ( childTypes === null || childTypes.includes( nodeType ) );
 };
 
 /**
@@ -605,15 +606,12 @@ ve.dm.Converter.prototype.getDomElementFromDataAnnotation = function ( dataAnnot
  * @param {boolean} [options.fromClipboard=false] Conversion is from clipboard
  * @param {string} [options.lang] Document language code
  * @param {string} [options.dir] Document directionality (ltr/rtl)
- * @param {ve.dm.HashValueStore} [store] Hash value store
+ * @param {ve.dm.HashValueStore} [store=new ve.dm.HashValueStore()] Hash value store
  * @return {ve.dm.Document} Document model
  */
-ve.dm.Converter.prototype.getModelFromDom = function ( doc, options, store ) {
+ve.dm.Converter.prototype.getModelFromDom = function ( doc, options = {}, store = new ve.dm.HashValueStore() ) {
 	const tmpDoc = new ve.dm.Document();
 	const internalList = new ve.dm.InternalList( tmpDoc );
-
-	store = store || new ve.dm.HashValueStore();
-	options = options || {};
 
 	// Set up the converter state
 	this.doc = doc;
@@ -1231,13 +1229,7 @@ ve.dm.Converter.prototype.getInnerWhitespace = function ( data ) {
  * @param {number} [mode=PARSER_MODE] Conversion mode, defaults to PARSER_MODE
  * @return {HTMLDocument} Document containing the resulting HTML
  */
-ve.dm.Converter.prototype.getDomFromModel = function ( model, mode ) {
-	// Backwards compatibility with 'forClipboard' argument
-	if ( typeof mode === 'boolean' ) {
-		mode = mode ? this.constructor.static.CLIPBOARD_MODE : this.constructor.static.PARSER_MODE;
-	}
-	mode = mode || this.constructor.static.PARSER_MODE;
-
+ve.dm.Converter.prototype.getDomFromModel = function ( model, mode = ve.dm.Converter.static.PARSER_MODE ) {
 	const doc = ve.createDocumentFromHtml( '' );
 	this.getDomSubtreeFromModel( model, doc.body, mode );
 
@@ -1251,12 +1243,7 @@ ve.dm.Converter.prototype.getDomFromModel = function ( model, mode ) {
  * @param {number} [mode=PARSER_MODE] Conversion mode, defaults to PARSER_MODE
  * @return {HTMLDocument} Document containing the resulting HTML
  */
-ve.dm.Converter.prototype.getDomFromNode = function ( node, mode ) {
-	// Backwards compatibility with 'forClipboard' argument
-	if ( typeof mode === 'boolean' ) {
-		mode = mode ? this.constructor.static.CLIPBOARD_MODE : this.constructor.static.PARSER_MODE;
-	}
-	mode = mode || this.constructor.static.PARSER_MODE;
+ve.dm.Converter.prototype.getDomFromNode = function ( node, mode = ve.dm.Converter.static.PARSER_MODE ) {
 	return this.getDomFromModel(
 		node.getDocument().shallowCloneFromRange( node.isInternal() ? node.getRange() : node.getOuterRange() ),
 		mode
@@ -1270,11 +1257,10 @@ ve.dm.Converter.prototype.getDomFromNode = function ( node, mode ) {
  * @param {HTMLElement} container DOM element to add the generated elements to. Should be empty.
  * @param {number} [mode=PARSER_MODE] Conversion mode, defaults to PARSER_MODE
  */
-ve.dm.Converter.prototype.getDomSubtreeFromModel = function ( model, container, mode ) {
+ve.dm.Converter.prototype.getDomSubtreeFromModel = function ( model, container, mode = ve.dm.Converter.static.PARSER_MODE ) {
 	if ( typeof mode === 'boolean' ) {
 		mode = mode ? this.constructor.static.CLIPBOARD_MODE : this.constructor.static.PARSER_MODE;
 	}
-	mode = mode || this.constructor.static.PARSER_MODE;
 	// Set up the converter state
 	this.documentData = model.getFullData( undefined, 'roundTrip' );
 	this.store = model.getStore();
@@ -1494,7 +1480,7 @@ ve.dm.Converter.prototype.getDomSubtreeFromData = function ( data, container, in
 					this.store, data[ i ].annotations || data[ i ][ 1 ]
 				);
 				this.constructor.static.openAndCloseAnnotations( annotationStack, annotations,
-					openAnnotation, closeAnnotation
+					openAnnotation, closeAnnotation, !this.isForPreview()
 				);
 
 				if ( data[ i ].annotations === undefined ) {
@@ -1531,7 +1517,7 @@ ve.dm.Converter.prototype.getDomSubtreeFromData = function ( data, container, in
 			}
 			// Close any remaining annotations
 			this.constructor.static.openAndCloseAnnotations( annotationStack, new ve.dm.AnnotationSet( this.store ),
-				openAnnotation, closeAnnotation
+				openAnnotation, closeAnnotation, !this.isForPreview()
 			);
 			// Put the annotated nodes in the DOM
 			for ( let j = 0; j < annotatedDomElements.length; j++ ) {

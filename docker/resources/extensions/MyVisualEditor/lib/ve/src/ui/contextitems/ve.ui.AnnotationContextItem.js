@@ -15,7 +15,7 @@
  * @param {ve.dm.Model} model Model the item is related to
  * @param {Object} [config] Configuration options
  */
-ve.ui.AnnotationContextItem = function VeUiAnnotationContextItem( context, model, config ) {
+ve.ui.AnnotationContextItem = function VeUiAnnotationContextItem( context, model, config = {} ) {
 	// Parent constructor
 	ve.ui.AnnotationContextItem.super.call( this, context, model, config );
 
@@ -100,9 +100,9 @@ ve.ui.AnnotationContextItem.prototype.applyToAnnotations = function ( callback )
 
 		annotations = fragment.getAnnotations( true ).filter( ( annotation ) => ve.isInstanceOfAny( annotation, modelClasses ) ).get();
 	}
-	for ( let i = 0, len = annotations.length; i < len; i++ ) {
-		callback( fragment.expandLinearSelection( 'annotation', annotations[ i ] ), annotations[ i ] );
-	}
+	annotations.forEach(
+		( annotation ) => callback( fragment.expandLinearSelection( 'annotation', annotation ), annotation )
+	);
 };
 
 /**

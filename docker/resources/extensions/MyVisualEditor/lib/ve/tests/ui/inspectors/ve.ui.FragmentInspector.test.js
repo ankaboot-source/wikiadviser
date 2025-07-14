@@ -20,6 +20,11 @@ ve.test.utils.runFragmentInspectorTests = function ( surface, assert, cases ) {
 
 			surfaceModel.setLinearSelection( caseItem.range );
 			const setupData = ve.extendObject( { surface: surface, fragment: surfaceModel.getFragment() }, caseItem.setupData );
+			const isMobile = OO.ui.isMobile;
+			if ( caseItem.isMobile ) {
+				// Mock isMobile
+				OO.ui.isMobile = () => true;
+			}
 			return inspector.setup( setupData ).then( () => inspector.ready( setupData ).then( () => {
 				if ( caseItem.input ) {
 					caseItem.input.call( inspector );
@@ -47,6 +52,9 @@ ve.test.utils.runFragmentInspectorTests = function ( surface, assert, cases ) {
 					}
 					// Insertion annotations are not cleared by undo
 					surfaceModel.setInsertionAnnotations( null );
+
+					// Restore isMobile
+					OO.ui.isMobile = isMobile;
 				} );
 			} ) );
 		} ) );
@@ -70,12 +78,10 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'link',
 				range: new ve.Range( 2 ),
 				expectedRange: new ve.Range( 1, 4 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						1, 3,
-						[ 'F', [ fooHash ] ],
-						[ 'o', [ fooHash ] ],
-						[ 'o', [ fooHash ] ]
+						...ve.dm.example.annotateText( 'Foo', fooHash )
 					);
 				}
 			},
@@ -85,14 +91,14 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				range: new ve.Range( 2 ),
 				setupData: { noExpand: true },
 				expectedRange: new ve.Range( 2 ),
-				expectedData: function () {}
+				expectedData: () => {}
 			},
 			{
 				msg: 'Cancel restores original data & selection',
 				name: 'link',
 				range: new ve.Range( 2 ),
 				expectedRange: new ve.Range( 2 ),
-				expectedData: function () {},
+				expectedData: () => {},
 				actionData: {}
 			},
 			{
@@ -100,25 +106,24 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'link',
 				range: new ve.Range( 6 ),
 				expectedRange: new ve.Range( 5, 8 ),
-				expectedData: function () {}
+				expectedData: () => {}
 			},
 			{
 				msg: 'Selection inside existing link',
 				name: 'link',
 				range: new ve.Range( 6, 7 ),
 				expectedRange: new ve.Range( 5, 8 ),
-				expectedData: function () {}
+				expectedData: () => {}
 			},
 			{
 				msg: 'Selection spanning existing link',
 				name: 'link',
 				range: new ve.Range( 6, 10 ),
 				expectedRange: new ve.Range( 5, 10 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						8, 2,
-						[ ' ', [ barHash ] ],
-						[ 'b', [ barHash ] ]
+						...ve.dm.example.annotateText( ' b', barHash )
 					);
 				}
 			},
@@ -127,11 +132,10 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'link',
 				range: new ve.Range( 30 ),
 				expectedRange: new ve.Range( 29, 36 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						29, 2,
-						[ 'F', [ barHash ] ],
-						[ 'o', [ barHash ] ]
+						...ve.dm.example.annotateText( 'Fo', barHash )
 					);
 				}
 			},
@@ -149,13 +153,10 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 					this.annotationInput.getTextInputWidget().setValue( 'quux' );
 				},
 				expectedRange: new ve.Range( 17 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						13, 0,
-						[ 'q', [ quuxHash ] ],
-						[ 'u', [ quuxHash ] ],
-						[ 'u', [ quuxHash ] ],
-						[ 'x', [ quuxHash ] ]
+						...ve.dm.example.annotateText( 'quux', quuxHash )
 					);
 				}
 			},
@@ -164,34 +165,32 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'link',
 				range: new ve.Range( 13 ),
 				expectedRange: new ve.Range( 13 ),
-				expectedData: function () {}
+				expectedData: () => {}
 			},
 			{
-				msg: 'Link modified',
+				msg: 'Link target modified',
 				name: 'link',
 				range: new ve.Range( 5, 8 ),
 				input: function () {
 					this.annotationInput.getTextInputWidget().setValue( 'quux' );
 				},
 				expectedRange: new ve.Range( 5, 8 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						5, 3,
-						[ 'b', [ quuxHash ] ],
-						[ 'a', [ quuxHash ] ],
-						[ 'r', [ quuxHash ] ]
+						...ve.dm.example.annotateText( 'bar', quuxHash )
 					);
 				}
 			},
 			{
-				msg: 'Link removed (clear input)',
+				msg: 'Link target removed (clear input)',
 				name: 'link',
 				range: new ve.Range( 5, 8 ),
 				input: function () {
 					this.annotationInput.getTextInputWidget().setValue( '' );
 				},
 				expectedRange: new ve.Range( 5, 8 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						5, 3,
 						...'bar'
@@ -199,15 +198,64 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				}
 			},
 			{
-				msg: 'Clear input & cancel is still a no-op',
+				msg: 'Link target removed input then cancel is still a no-op',
 				name: 'link',
 				range: new ve.Range( 5, 8 ),
 				input: function () {
 					this.annotationInput.getTextInputWidget().setValue( '' );
 				},
 				expectedRange: new ve.Range( 5, 8 ),
-				expectedData: function () {},
+				expectedData: () => {},
 				actionData: {}
+			},
+			{
+				msg: 'Link label modified (mobile)',
+				name: 'link',
+				range: new ve.Range( 5, 8 ),
+				isMobile: true,
+				input: function () {
+					this.labelInput.setValue( 'bat' );
+				},
+				expectedRange: new ve.Range( 5, 8 ),
+				expectedData: function ( data ) {
+					data.splice(
+						5, 3,
+						...ve.dm.example.annotateText( 'bat', barHash )
+					);
+				}
+			},
+			{
+				msg: 'Link label and link target (mobile)',
+				name: 'link',
+				range: new ve.Range( 5, 8 ),
+				isMobile: true,
+				input: function () {
+					this.labelInput.setValue( 'bat' );
+					this.annotationInput.getTextInputWidget().setValue( 'quux' );
+				},
+				expectedRange: new ve.Range( 5, 8 ),
+				expectedData: function ( data ) {
+					data.splice(
+						5, 3,
+						...ve.dm.example.annotateText( 'bat', quuxHash )
+					);
+				}
+			},
+			{
+				msg: 'Removing link label defaults to using link target as label (mobile)',
+				name: 'link',
+				range: new ve.Range( 34 ),
+				isMobile: true,
+				input: function () {
+					this.labelInput.setValue( '' );
+				},
+				expectedRange: new ve.Range( 31, 34 ),
+				expectedData: function ( data ) {
+					data.splice(
+						31, 5,
+						...ve.dm.example.annotateText( 'bar', barHash )
+					);
+				}
 			},
 			{
 				msg: 'Comment change',
@@ -217,7 +265,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 					this.textWidget.setValue( 'new' );
 				},
 				expectedRange: new ve.Range( 17, 19 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						17, 2,
 						{
@@ -237,7 +285,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				},
 				actionData: {},
 				expectedRange: new ve.Range( 17, 19 ),
-				expectedData: function () {}
+				expectedData: () => {}
 			},
 			{
 				msg: 'Comment clear (empty input)',
@@ -247,7 +295,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 					this.textWidget.setValue( '' );
 				},
 				expectedRange: new ve.Range( 17 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice( 17, 2 );
 				}
 			},
@@ -257,7 +305,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				range: new ve.Range( 17, 19 ),
 				actionData: { action: 'remove' },
 				expectedRange: new ve.Range( 17 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice( 17, 2 );
 				}
 			},
@@ -266,7 +314,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'language',
 				range: new ve.Range( 2, 3 ),
 				expectedRange: new ve.Range( 2, 3 ),
-				expectedData: function ( data ) {
+				expectedData: ( data ) => {
 					data.splice(
 						2, 1,
 						[ 'o', [ 'h785e2045ecc398c1' ] ]
@@ -278,7 +326,7 @@ QUnit.test( 'Different selections and inputs', ( assert ) => {
 				name: 'language',
 				range: new ve.Range( 13 ),
 				expectedRange: new ve.Range( 13 ),
-				expectedData: function () {},
+				expectedData: () => {},
 				expectedInsertionAnnotations: [ 'h785e2045ecc398c1' ]
 			}
 		];

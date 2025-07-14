@@ -63,7 +63,7 @@ ve.dm.MWTransclusionNode.static.enableAboutGrouping = true;
 // We handle rendering ourselves, no need to render attributes from originalDomElements (T207325),
 // except for data-parsoid/RESTBase ID (T207325)
 ve.dm.MWTransclusionNode.static.preserveHtmlAttributes = function ( attribute ) {
-	return [ 'data-parsoid', 'id' ].indexOf( attribute ) !== -1;
+	return [ 'data-parsoid', 'id' ].includes( attribute );
 };
 
 ve.dm.MWTransclusionNode.static.getHashObject = function ( dataElement ) {
@@ -491,7 +491,12 @@ ve.dm.MWTransclusionNode.prototype.getPartsList = function () {
  * @return {string} Wikitext
  */
 ve.dm.MWTransclusionNode.prototype.getWikitext = function () {
-	return this.constructor.static.getWikitext( this.getAttribute( 'mw' ) );
+	try {
+		return this.constructor.static.getWikitext( this.getAttribute( 'mw' ) );
+	} catch ( e ) {
+		// Temporary logging for T380432
+		throw new Error( 'Failed to generate wikitext for MWTransclusionNode: ' + JSON.stringify( this.element ) );
+	}
 };
 
 /* Registration */

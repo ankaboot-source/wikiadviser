@@ -2,11 +2,16 @@
 	"@metadata": {
 		"authors": [
 			"Dyolf77 (WMF)",
-			"Meno25"
+			"Meno25",
+			"محمد أحمد عبد الفتاح"
 		]
 	},
 	"editcheck-dialog-action-no": "لا",
 	"editcheck-dialog-action-yes": "نعم",
+	"editcheck-dialog-action-decline": "رفض",
+	"editcheck-dialog-action-revise": "مراجعة",
+	"editcheck-dialog-action-back": "رجوع",
+	"editcheck-dialog-action-submit": "إرسال",
 	"editcheck-dialog-addref-description": "ساعدوا القراء على فهم مصدر هذه المعلومات عن طريق إضافة استشهاد.",
 	"editcheck-dialog-addref-reject-question": "لماذا لن تضيفوا استشهادًا؟",
 	"editcheck-dialog-addref-reject-description": "سيقدر المحرّرون الآخرون معرفة المزيد عن قرارك بتجاوز الاستشهاد.",
@@ -17,8 +22,17 @@
 	"editcheck-dialog-addref-success-notify": "شكرًا لكم على إضافة استشهاد!",
 	"editcheck-dialog-addref-title": "إضافة استشهاد",
 	"editcheck-dialog-title": "قبل النشر",
-	"editcheck-copyvio-title": "محتوى مُلصَق",
+	"editcheck-copyvio-title": "محتوى ملصوق",
 	"editcheck-copyvio-description": "كقاعدة عامة، لا تنسخ نصًا من مصادر أخرى. هذا عادة ما يشكل انتهاكًا لحقوق الطبع والنشر وسرقة أدبية.",
+	"editcheck-tone-title": "إعادة النظر في الأسلوب؟",
+	"editcheck-tone-description": "غالبًا ما يقوم المستخدمون الآخرون بمراجعة هذا النوع من العبارات، استنادًا على أنّ الأسلوب غير متّزن. [$1 التعرف على المزيد]",
+	"editcheck-tone-footer": "تم التحديد باستخدام [$1 نموذج BERT]",
+	"editcheck-tone-title-acted": "مراجعة الأسلوب",
+	"editcheck-tone-description-acted": "الحذر من التعبيرات المجاملة، أو المهينة، أو الغامضة، أو المبتذلة، أو المؤيدة لوجهة نظر معينة.",
+	"editcheck-tone-reject-appropriate": "الأسلوب مناسب",
+	"editcheck-tone-reject-uncertain": "أنا لست متيقنًا من كيفية مراجعة الأسلوب",
+	"editcheck-tone-reject-other": "غيرها",
+	"editcheck-reject-description": "سيكون من المفيد للمحررين الآخرين معرفة سبب اختيارك لهذا.",
 	"editcheck-review-title": "مراجعة التغييرات",
 	"tag-editcheck-reference-decline-common-knowledge": "تم رفض (ثقافة عامة) التحقّق من التحرير (مراجع)",
 	"tag-editcheck-reference-decline-common-knowledge-description": "تم رفض مرجع EditCheck (أداة التحقّق) باعتباره ثقافةً عامة",

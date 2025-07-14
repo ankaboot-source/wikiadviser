@@ -120,6 +120,12 @@ ve.ui.MWSaveDialog.static.actions = [
  * @event ve.ui.MWSaveDialog#retry
  */
 
+/**
+ * Emitted when the save dialog changes panel, and when it opens
+ *
+ * @event ve.ui.MWSaveDialog#changePanel
+ */
+
 /* Methods */
 
 /**
@@ -278,7 +284,7 @@ ve.ui.MWSaveDialog.prototype.clearDiff = function () {
  * @throws {Error} Unknown saveDialog panel
  */
 ve.ui.MWSaveDialog.prototype.swapPanel = function ( panel, noFocus ) {
-	if ( ( [ 'save', 'review', 'preview', 'conflict' ].indexOf( panel ) ) === -1 ) {
+	if ( ![ 'save', 'review', 'preview', 'conflict' ].includes( panel ) ) {
 		throw new Error( 'Unknown saveDialog panel: ' + panel );
 	}
 
@@ -354,7 +360,8 @@ ve.ui.MWSaveDialog.prototype.swapPanel = function ( panel, noFocus ) {
 					title: ve.init.target.getPageName(),
 					prop: '',
 					summary: currentEditSummaryWikitext
-				} ).done( ( result ) => {
+				} );
+				this.editSummaryXhr.then( ( result ) => {
 					if ( result.parse.parsedsummary === '' ) {
 						this.$previewEditSummary.parent().addClass( 'oo-ui-element-hidden' );
 						this.$previewEditSummary.empty();
@@ -364,7 +371,7 @@ ve.ui.MWSaveDialog.prototype.swapPanel = function ( panel, noFocus ) {
 						this.$previewEditSummary.html( ve.msg( 'parentheses', result.parse.parsedsummary ) );
 						ve.targetLinksToNewWindow( this.$previewEditSummary[ 0 ] );
 					}
-				} ).fail( () => {
+				}, () => {
 					this.$previewEditSummary.parent().addClass( 'oo-ui-element-hidden' );
 					this.$previewEditSummary.empty();
 				} ).always( () => {
@@ -484,7 +491,7 @@ ve.ui.MWSaveDialog.prototype.reset = function () {
  * @param {OO.ui.FieldLayout[]} checkboxFields Checkbox fields
  */
 ve.ui.MWSaveDialog.prototype.setupCheckboxes = function ( checkboxFields ) {
-	this.setupDeferred.done( () => {
+	this.setupDeferred.then( () => {
 		checkboxFields.forEach( ( field ) => {
 			this.$saveCheckboxes.append( field.$element );
 		} );
@@ -500,7 +507,7 @@ ve.ui.MWSaveDialog.prototype.setupCheckboxes = function ( checkboxFields ) {
  * @param {string} summary Edit summary to prefill
  */
 ve.ui.MWSaveDialog.prototype.setEditSummary = function ( summary ) {
-	this.setupDeferred.done( () => {
+	this.setupDeferred.then( () => {
 		this.editSummaryInput.setValue( summary );
 	} );
 };
@@ -516,6 +523,8 @@ ve.ui.MWSaveDialog.prototype.initialize = function () {
 
 	// Properties
 	this.panels = new OO.ui.StackLayout( { scrollable: false } );
+	this.panels.connect( this, { set: [ 'emit', 'changePanel' ] } );
+
 	this.savePanel = new OO.ui.PanelLayout( {
 		expanded: false,
 		padded: true,
@@ -863,6 +872,7 @@ ve.ui.MWSaveDialog.prototype.getReadyProcess = function ( data ) {
 				// This includes a #focus call
 				this.editSummaryInput.moveCursorToEnd();
 			}
+			this.emit( 'changePanel' );
 		} );
 };
 

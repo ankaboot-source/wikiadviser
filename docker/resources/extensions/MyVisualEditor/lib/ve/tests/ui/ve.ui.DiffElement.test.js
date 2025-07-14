@@ -10,7 +10,7 @@ QUnit.module( 've.ui.DiffElement' );
 
 QUnit.test( 'Diffing', ( assert ) => {
 	const spacer = '<div class="ve-ui-diffElement-spacer">⋮</div>',
-		listSpacer = '<li data-diff-list-spacer><p data-diff-action="none">…</p></li>',
+		listSpacer = '<li class="ve-ui-diffElement-spacer">⋮</li>',
 		listSpacerOpen = listSpacer.slice( 0, -5 ),
 		noChanges = '<div class="ve-ui-diffElement-no-changes">' + ve.msg( 'visualeditor-diff-no-changes' ) + '</div>',
 		comment = ve.dm.example.commentNodePreview,
@@ -1174,6 +1174,35 @@ QUnit.test( 'Diffing', ( assert ) => {
 				]
 			},
 			{
+				msg: 'Comparable link change (T344927)',
+				oldDoc: ve.dm.example.singleLine`
+					<p>
+						on his website at
+						<a href="http://example.org/website/" data-ignored="foo">http://example.org/website</a>.
+						Lorem ipsum sit dolor amet.
+					</p>
+				`,
+				newDoc: ve.dm.example.singleLine`
+					<p>
+						on
+						<a href="http://example.org/website/" data-ignored="bar">his website</a>.
+						Lorem ipsum sit dolor amet.
+					</p>
+				`,
+				expected: ve.dm.example.singleLine`
+					<p>
+						on
+						<del data-diff-action="remove">
+							 his website at
+							<a href="http://example.org/website/" data-ignored="bar">http://example.org/</a>
+						</del>
+						<ins data-diff-action="insert"><a href="http://example.org/website/" data-ignored="bar">his</a> </ins>
+						<a href="http://example.org/website/" data-ignored="bar">website</a>.
+						Lorem ipsum sit dolor amet.
+					</p>
+				`
+			},
+			{
 				msg: 'Nested annotation change',
 				oldDoc: '<p><a href="http://example.org/">foo bar baz</a></p>',
 				newDoc: '<p><a href="http://example.org/">foo <b>bar</b> baz</a></p>',
@@ -1819,7 +1848,7 @@ QUnit.test( 'Diffing', ( assert ) => {
 						<li value="1">Foo<ins data-diff-action="insert"> 1</ins></li>
 						<li value="2"><p data-diff-action="remove">Bar</p></li>
 						<li value="2"><p data-diff-action="none">Baz1</p></li>
-						<li class="ve-ui-diffElement-internalListSpacer">${ spacer }</li>
+						${ listSpacer }
 						<li value="5"><p data-diff-action="none">Baz4</p></li>
 						<li value="6"><p data-diff-action="insert">Quux</p></li>
 					</ol>
@@ -1845,7 +1874,7 @@ QUnit.test( 'Diffing', ( assert ) => {
 						<li value="2"><p data-diff-action="none">Baz</p></li>
 					</ol>
 					<ol>
-						<li class="ve-ui-diffElement-internalListSpacer"><div class="ve-ui-diffElement-spacer">⋮</div></li>
+						${ listSpacer }
 						<li value="2"><p data-diff-action="none">Bar</p></li>
 						<li value="3"><p data-diff-action="insert">Baz</p></li>
 					</ol>

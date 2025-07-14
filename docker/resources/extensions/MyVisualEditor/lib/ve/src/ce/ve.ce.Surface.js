@@ -16,7 +16,7 @@
  * @param {ve.ui.Surface} ui Surface user interface
  * @param {Object} [config] Configuration options
  */
-ve.ce.Surface = function VeCeSurface( model, ui, config ) {
+ve.ce.Surface = function VeCeSurface( model, ui, config = {} ) {
 	// Parent constructor
 	ve.ce.Surface.super.call( this, config );
 
@@ -207,8 +207,9 @@ OO.mixinClass( ve.ce.Surface, OO.EventEmitter );
  * (only after initialize has already been called).
  *
  * @event ve.ce.Surface#position
- * @param {boolean} [wasSynchronizing=false] The surface was positioned due to
- *  synchronization (ve.dm.SurfaceSynchronizer)
+ * @param {boolean} [passive=false] Passive position events will
+ *  not try to keep the selection in view, e.g. when triggered
+ *  by ve.dm.SurfaceSynchronizer, or the toolbar unfloating.
  */
 
 /**
@@ -542,6 +543,9 @@ ve.ce.Surface.prototype.setReviewMode = function ( reviewMode, highlightNodes ) 
 		this.$element.find( '.ve-ce-surface-reviewMode-highlightNode' )
 			.removeClass( 've-ce-surface-reviewMode-highlightNode' );
 	}
+	if ( this.reviewMode ) {
+		this.deactivate( false );
+	}
 };
 
 /**
@@ -562,6 +566,12 @@ ve.ce.Surface.prototype.focus = function () {
 		this.selectFirstVisibleStartContentOffset();
 		selection = this.getSelection();
 	}
+
+	// Ensure the surface is activated, otherwise showModelSelection
+	// will not set the native selection, and the native focus calls
+	// will instead result in the selection being set from observation,
+	// which will be the start of the contenteditable node.
+	this.activate( true );
 
 	// Focus the contentEditable for text selections, or the clipboard handler for focusedNode selections
 	if ( selection.isFocusedNode() ) {
@@ -708,7 +718,7 @@ ve.ce.Surface.prototype.isShownAsDeactivated = function () {
  * @param {boolean} [hideSelection=false] Completely hide the selection
  * @fires ve.ce.Surface#activation
  */
-ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChange, hideSelection ) {
+ve.ce.Surface.prototype.deactivate = function ( showAsActivated = true, noSelectionChange = false, hideSelection = false ) {
 	if ( !this.deactivated ) {
 		// Disable the surface observer, there can be no observable changes
 		// until the surface is activated
@@ -745,10 +755,11 @@ ve.ce.Surface.prototype.deactivate = function ( showAsActivated, noSelectionChan
 /**
  * Reactivate the surface and restore the native selection
  *
+ * @param {boolean} [useModelSelection=false] Use the current model selection, instead of restoring from native
  * @fires ve.ce.Surface#activation
  * @fires ve.dm.Surface#contextChange
  */
-ve.ce.Surface.prototype.activate = function () {
+ve.ce.Surface.prototype.activate = function ( useModelSelection ) {
 	if ( this.deactivated ) {
 		this.deactivated = false;
 		this.getSelectionManager().hideDeactivatedSelection();
@@ -761,7 +772,7 @@ ve.ce.Surface.prototype.activate = function () {
 
 		const previousSelection = this.getModel().getSelection();
 
-		if ( OO.ui.contains( this.$attachedRootNode[ 0 ], this.nativeSelection.anchorNode, true ) ) {
+		if ( !useModelSelection && OO.ui.contains( this.$attachedRootNode[ 0 ], this.nativeSelection.anchorNode, true ) ) {
 			// The selection has been placed back in the document, either by the user clicking
 			// or by the closing window updating the model. Poll in case it was the user clicking.
 			this.surfaceObserver.clear();
@@ -1147,7 +1158,7 @@ ve.ce.Surface.prototype.onDocumentKeyDown = function ( e ) {
 		this.readOnly && !(
 			// Allowed keystrokes in readonly mode:
 			// Arrows, simple navigation
-			ve.ce.LinearArrowKeyDownHandler.static.keys.indexOf( e.keyCode ) !== -1 ||
+			ve.ce.LinearArrowKeyDownHandler.static.keys.includes( e.keyCode ) ||
 			// Potential commands:
 			// Function keys...
 			( e.keyCode >= 112 && e.keyCode <= 123 ) ||
@@ -1195,11 +1206,11 @@ ve.ce.Surface.prototype.isBlockedTrigger = function ( trigger ) {
 
 	// Special case: only block Tab/Shift+Tab if indentation commands are enabled on this surface,
 	// otherwise allow them to change focus
-	if ( blockedIfRegisteredTriggers.indexOf( triggerString ) !== -1 ) {
+	if ( blockedIfRegisteredTriggers.includes( triggerString ) ) {
 		return !!this.surface.triggerListener.getCommandByTrigger( triggerString );
 	}
 
-	return blockedTriggers[ platformKey ].indexOf( triggerString ) !== -1;
+	return blockedTriggers[ platformKey ].includes( triggerString );
 };
 
 /**
@@ -1612,7 +1623,10 @@ ve.ce.Surface.prototype.cleanupUnicorns = function ( fixupCursor ) {
 		contentBranchNodeBefore.renderContents();
 	}
 
-	this.showModelSelection();
+	// Don't modify selection while pasting (T368598)
+	if ( !this.clipboardHandler.pasting ) {
+		this.showModelSelection();
+	}
 	return true;
 };
 
@@ -1698,7 +1712,7 @@ ve.ce.Surface.prototype.handleDataTransfer = function ( dataTransfer, isPaste, t
 		for ( let i = 0, l = dataTransfer.items.length; i < l; i++ ) {
 			if (
 				dataTransfer.items[ i ].kind === 'string' &&
-				dataTransfer.items[ i ].type.slice( 0, 5 ) === 'text/'
+				dataTransfer.items[ i ].type.startsWith( 'text/' )
 			) {
 				items.push( ve.ui.DataTransferItem.static.newFromString(
 					dataTransfer.getData( dataTransfer.items[ i ].type ),
@@ -1826,7 +1840,7 @@ ve.ce.Surface.prototype.onDocumentBeforeInput = function ( e ) {
 		// Handle IMEs that emit text fragments with a trailing newline on Enter keypress (T312558)
 		if (
 			( inputType === 'insertText' || inputType === 'insertCompositionText' ) &&
-			e.originalEvent.data && e.originalEvent.data.slice( -1 ) === '\n'
+			e.originalEvent.data && e.originalEvent.data.endsWith( '\n' )
 		) {
 			// The event will have inserted a newline into the CE view,
 			// so fix up the DM accordingly depending on the context.
@@ -3098,7 +3112,7 @@ ve.ce.Surface.prototype.selectLastSelectableContentOffset = function () {
  * @param {number} [padding=0] Increase computed size of viewport by this amount at the top and bottom
  * @return {ve.Range|null} Range covering data visible in the viewport, null if the surface is not attached
  */
-ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
+ve.ce.Surface.prototype.getViewportRange = function ( covering, padding = 0 ) {
 	const documentModel = this.getModel().getDocument(),
 		data = documentModel.data,
 		dimensions = this.surface.getViewportDimensions();
@@ -3108,7 +3122,6 @@ ve.ce.Surface.prototype.getViewportRange = function ( covering, padding ) {
 		return null;
 	}
 
-	padding = padding || 0;
 	const top = Math.max( 0, dimensions.top - padding );
 	const bottom = dimensions.bottom + ( padding * 2 );
 	const documentRange = this.attachedRoot === this.getDocument().getDocumentNode() ?
@@ -3457,7 +3470,7 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	// Iterate over previously active annotations
 	this.activeAnnotations.forEach( ( annotation ) => {
 		// If not in the new list, turn off
-		if ( activeAnnotations.indexOf( annotation ) === -1 ) {
+		if ( !activeAnnotations.includes( annotation ) ) {
 			annotation.$element.removeClass( 've-ce-annotation-active' );
 			changed = true;
 		}
@@ -3466,7 +3479,7 @@ ve.ce.Surface.prototype.updateActiveAnnotations = function ( fromModelOrNode ) {
 	// Iterate over newly active annotations
 	activeAnnotations.forEach( ( annotation ) => {
 		// If not in the old list, turn on
-		if ( this.activeAnnotations.indexOf( annotation ) === -1 ) {
+		if ( !this.activeAnnotations.includes( annotation ) ) {
 			annotation.$element.addClass( 've-ce-annotation-active' );
 			changed = true;
 		}
@@ -3872,7 +3885,7 @@ ve.ce.Surface.prototype.getSelectedModels = function () {
 		return models.filter( ( annModel ) => {
 			// If the model is an annotation that can be active, only show it if it *is* active
 			if ( annModel instanceof ve.dm.Annotation && ve.ce.annotationFactory.canAnnotationBeActive( annModel.getType() ) ) {
-				return activeModels.indexOf( annModel ) !== -1;
+				return activeModels.includes( annModel );
 			}
 			return true;
 		} );

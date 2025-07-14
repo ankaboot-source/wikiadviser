@@ -16,9 +16,7 @@
  * @param {jQuery} [config.$popupContainer] Clipping container for context popup
  * @param {number} [config.popupPadding=10] Padding between popup and $popupContainer, can be negative
  */
-ve.ui.DesktopContext = function VeUiDesktopContext( surface, config ) {
-	config = config || {};
-
+ve.ui.DesktopContext = function VeUiDesktopContext( surface, config = {} ) {
 	// Parent constructor
 	ve.ui.DesktopContext.super.apply( this, arguments );
 
@@ -26,7 +24,7 @@ ve.ui.DesktopContext = function VeUiDesktopContext( surface, config ) {
 	this.popup = new OO.ui.PopupWidget( {
 		hideWhenOutOfView: false,
 		autoFlip: false,
-		$container: config.$popupContainer || this.surface.$element,
+		$container: config.$popupContainer || this.surface.getView().$element,
 		containerPadding: config.popupPadding
 	} );
 	this.position = null;
@@ -125,8 +123,7 @@ ve.ui.DesktopContext.prototype.onPosition = function () {
 ve.ui.DesktopContext.prototype.createInspectorWindowManager = function () {
 	return new ve.ui.DesktopInspectorWindowManager( this.surface, {
 		factory: ve.ui.windowFactory,
-		overlay: this.surface.getLocalOverlay(),
-		modal: false
+		overlay: this.surface.getLocalOverlay()
 	} );
 };
 
@@ -311,15 +308,7 @@ ve.ui.DesktopContext.prototype.onWindowScroll = function () {
  * @return {boolean} Context menu is embeddable
  */
 ve.ui.DesktopContext.prototype.isEmbeddable = function () {
-	const sources = this.getRelatedSources();
-
-	for ( let i = 0, len = sources.length; i < len; i++ ) {
-		if ( !sources[ i ].embeddable ) {
-			return false;
-		}
-	}
-
-	return true;
+	return this.getRelatedSources().every( ( source ) => source.embeddable );
 };
 
 /**

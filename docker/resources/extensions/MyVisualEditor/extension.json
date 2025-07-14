@@ -23,7 +23,7 @@
 	"license-name": "MIT",
 	"type": "editor",
 	"requires": {
-		"MediaWiki": ">= 1.43"
+		"MediaWiki": ">= 1.45"
 	},
 	"callback": "MediaWiki\\Extension\\VisualEditor\\Hooks::onRegistration",
 	"ServiceWiringFiles": [
@@ -62,6 +62,7 @@
 			"value": true
 		},
 		"VisualEditorEnableVisualSectionEditing": {
+			"description": "When opened from a section edit link, only show that section in the editor (like in the wikitext editor). Can be boolean true for desktop and mobile, or 'mobile' for just mobile.",
 			"value": "mobile"
 		},
 		"VisualEditorEnableWikitext": {
@@ -105,6 +106,10 @@
 		"VisualEditorSourceFeedbackTitle": {
 			"value": false
 		},
+		"VisualEditorMobileInsertMenu": {
+			"description": "Temporary deployment flag for adding an insert menu on mobile. If true, includes all tools. If an array of strings, includes only the listed tools.",
+			"value": false
+		},
 		"VisualEditorTabMessages": {
 			"value": {
 				"edit": null,
@@ -136,13 +141,9 @@
 			"value": false,
 			"description": "Enable experimental Edit Check feature. Can also be enabled using ?ecenable=1."
 		},
-		"VisualEditorEditCheckSingleCheckMode": {
-			"value": true,
-			"description": "Only allow a single edit check to be surfaced"
-		},
 		"VisualEditorEditCheckLoadExperimental": {
 			"value": false,
-			"description": "Load experimental edit checks"
+			"description": "Load experimental edit checks from the `editchecks/experimental` directory. Can be `false` to not load anything, `true` to load everything, or an array of filenames to load only those checks"
 		},
 		"VisualEditorEditCheckABTest": {
 			"value": false,
@@ -162,7 +163,7 @@
 				"UserOptionsLookup",
 				"WatchlistManager",
 				"ContentTransformer",
-				"StatsdDataFactory",
+				"StatsFactory",
 				"WikiPageFactory",
 				"IntroMessageBuilder",
 				"PreloadedContentBuilder",
@@ -174,7 +175,7 @@
 			"class": "MediaWiki\\Extension\\VisualEditor\\ApiVisualEditorEdit",
 			"services": [
 				"HookContainer",
-				"StatsdDataFactory",
+				"StatsFactory",
 				"PageEditStash",
 				"SkinFactory",
 				"WikiPageFactory",
@@ -185,7 +186,8 @@
 		"editcheckreferenceurl": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\EditCheck\\ApiEditCheckReferenceUrl",
 			"optional_services": [
-				"AbuseFilterBlockedDomainStorage"
+				"AbuseFilterBlockedDomainStorage",
+				"AbuseFilterBlockedDomainValidator"
 			]
 		}
 	},
@@ -221,14 +223,20 @@
 		"RecentChange_save": "VisualEditorHooks",
 		"RedirectSpecialArticleRedirectParams": "VisualEditorHooks",
 		"ResourceLoaderGetConfigVars": "VisualEditorHooks",
-		"ResourceLoaderRegisterModules": [ "VisualEditorHooks", "EditCheckHooks" ],
+		"ResourceLoaderRegisterModules": [
+			"VisualEditorHooks",
+			"EditCheckHooks"
+		],
 		"SkinEditSectionLinks": "VisualEditorHooks",
 		"SkinTemplateNavigation::Universal": "VisualEditorHooks",
 		"UserLoggedIn": "VisualEditorHooks"
 	},
 	"HookHandlers": {
 		"VisualEditorHooks": {
-			"class": "MediaWiki\\Extension\\VisualEditor\\Hooks"
+			"class": "MediaWiki\\Extension\\VisualEditor\\Hooks",
+			"services": [
+				"ExtensionRegistry"
+			]
 		},
 		"EditCheckHooks": {
 			"class": "MediaWiki\\Extension\\VisualEditor\\EditCheck\\Hooks"
@@ -296,13 +304,13 @@
 		"ext.visualEditor.progressBarWidget": {
 			"group": "visualEditorA",
 			"scripts": "modules/ve-mw/preinit/ve.init.mw.ProgressBarWidget.js",
-			"styles": "modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget.css",
+			"styles": "modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget.less",
 			"skinStyles": {
 				"default": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget-wikimediatheme.css"
+					"modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget-wikimediatheme.less"
 				],
 				"monobook": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget-apextheme.css"
+					"modules/ve-mw/preinit/styles/ve.init.mw.ProgressBarWidget-apextheme.less"
 				]
 			}
 		},
@@ -328,19 +336,19 @@
 			"styles": "modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init.less",
 			"skinStyles": {
 				"default": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.css"
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.less"
 				],
 				"vector": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.css",
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.less",
 					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-vector.less"
 				],
 				"vector-2022": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.css",
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-wikimediatheme.less",
 					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-vector-2022.less"
 				],
 				"monobook": [
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-apextheme.css",
-					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-monobook.css"
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-apextheme.less",
+					"modules/ve-mw/preinit/styles/ve.init.mw.DesktopArticleTarget.init-monobook.less"
 				]
 			},
 			"dependencies": [
@@ -563,7 +571,7 @@
 		},
 		"ext.visualEditor.collabTarget.init.styles": {
 			"styles": [
-				"modules/ve-mw-collab/ve.init.mw.CollabTarget.css"
+				"modules/ve-mw-collab/ve.init.mw.CollabTarget.less"
 			]
 		},
 		"ext.visualEditor.collab": {
@@ -623,11 +631,18 @@
 			"group": "visualEditorA",
 			"packageFiles": [
 				"editcheck/modules/init.js",
-				"editcheck/modules/EditCheckInspector.js",
-				"editcheck/modules/EditCheckDialog.js",
+				"editcheck/modules/utils.js",
+				"editcheck/modules/controller.js",
+				"editcheck/modules/EditCheckPreSaveToolbarTools.js",
 				"editcheck/modules/EditCheckFactory.js",
 				"editcheck/modules/EditCheckAction.js",
-				"editcheck/modules/BaseEditCheck.js",
+				"editcheck/modules/EditCheckActionWidget.js",
+				"editcheck/modules/dialogs/EditCheckDialog.js",
+				"editcheck/modules/dialogs/FixedEditCheckDialog.js",
+				"editcheck/modules/dialogs/SidebarEditCheckDialog.js",
+				"editcheck/modules/dialogs/GutterSidebarEditCheckDialog.js",
+				"editcheck/modules/editchecks/BaseEditCheck.js",
+				"editcheck/modules/editchecks/AsyncTextCheck.js",
 				"editcheck/modules/editchecks/AddReferenceEditCheck.js",
 				{
 					"name": "editcheck/modules/config.json",
@@ -645,6 +660,10 @@
 			"messages": [
 				"editcheck-dialog-action-no",
 				"editcheck-dialog-action-yes",
+				"editcheck-dialog-action-decline",
+				"editcheck-dialog-action-revise",
+				"editcheck-dialog-action-back",
+				"editcheck-dialog-action-submit",
 				"editcheck-dialog-addref-description",
 				"editcheck-dialog-addref-reject-question",
 				"editcheck-dialog-addref-reject-description",
@@ -657,6 +676,17 @@
 				"editcheck-dialog-title",
 				"editcheck-copyvio-title",
 				"editcheck-copyvio-description",
+				"editcheck-tone-title",
+				"editcheck-tone-title-acted",
+				"editcheck-tone-description",
+				"editcheck-tone-descriptionlink",
+				"editcheck-tone-footer",
+				"editcheck-tone-footerlink",
+				"editcheck-tone-description-acted",
+				"editcheck-tone-reject-appropriate",
+				"editcheck-tone-reject-uncertain",
+				"editcheck-tone-reject-other",
+				"editcheck-reject-description",
 				"editcheck-review-title",
 				"visualeditor-backbutton-tooltip",
 				"next",
@@ -717,6 +747,7 @@
 				"modules/ve-mw/init/apiresponsecache/ve.init.mw.GalleryImageInfoCache.js",
 				"modules/ve-mw/init/ve.init.mw.Platform.js",
 				"modules/ve-mw/init/ve.init.mw.Platform.init.js",
+				"modules/ve-mw/init/ve.init.mw.TargetFactory.js",
 				"modules/ve-mw/init/targets/ve.init.mw.Target.js"
 			],
 			"styles": [
@@ -882,6 +913,7 @@
 				"lib/ve/src/dm/ve.dm.LeafNode.js",
 				"lib/ve/src/dm/ve.dm.Annotation.js",
 				"lib/ve/src/dm/ve.dm.InternalList.js",
+				"lib/ve/src/dm/ve.dm.InternalListNodeGroup.js",
 				"lib/ve/src/dm/ve.dm.MetaItem.js",
 				"lib/ve/src/dm/ve.dm.MetaList.js",
 				"lib/ve/src/dm/ve.dm.TableMatrix.js",
@@ -956,6 +988,7 @@
 				"lib/ve/src/dm/annotations/ve.dm.DatetimeAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.DefinitionAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.DeleteAnnotation.js",
+				"lib/ve/src/dm/annotations/ve.dm.DiffAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.FontAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.HighlightAnnotation.js",
 				"lib/ve/src/dm/annotations/ve.dm.InsertAnnotation.js",
@@ -1102,7 +1135,6 @@
 				"lib/ve/src/ui/ve.ui.FragmentWindow.js",
 				"lib/ve/src/ui/ve.ui.NodeWindow.js",
 				"lib/ve/src/ui/ve.ui.TabIndexScope.js",
-				"lib/ve/src/ui/windowmanagers/ve.ui.SurfaceWindowManager.js",
 				"lib/ve/src/ui/actions/ve.ui.AnnotationAction.js",
 				"lib/ve/src/ui/actions/ve.ui.BlockquoteAction.js",
 				"lib/ve/src/ui/actions/ve.ui.CompletionAction.js",
@@ -1133,6 +1165,7 @@
 				"lib/ve/src/ui/commands/ve.ui.MergeCellsCommand.js",
 				"lib/ve/src/ui/dialogs/ve.ui.FragmentDialog.js",
 				"lib/ve/src/ui/dialogs/ve.ui.NodeDialog.js",
+				"lib/ve/src/ui/dialogs/ve.ui.SidebarDialog.js",
 				"lib/ve/src/ui/dialogs/ve.ui.ToolbarDialog.js",
 				"lib/ve/src/ui/dialogs/ve.ui.CommandHelpDialog.js",
 				"lib/ve/src/ui/dialogs/ve.ui.FindAndReplaceDialog.js",
@@ -1146,6 +1179,8 @@
 				"lib/ve/src/ui/datatransferhandlers/ve.ui.HTMLFileTransferHandler.js",
 				"lib/ve/src/ui/datatransferhandlers/ve.ui.UrlStringTransferHandler.js",
 				"lib/ve/src/ui/elements/ve.ui.PreviewElement.js",
+				"lib/ve/src/ui/windowmanagers/ve.ui.SurfaceWindowManager.js",
+				"lib/ve/src/ui/windowmanagers/ve.ui.SidebarDialogWindowManager.js",
 				"lib/ve/src/ui/windowmanagers/ve.ui.ToolbarDialogWindowManager.js",
 				"lib/ve/src/ui/widgets/ve.ui.AlignWidget.js",
 				"lib/ve/src/ui/widgets/ve.ui.TargetWidget.js",
@@ -1205,6 +1240,7 @@
 				"lib/ve/src/ce/styles/ve.ce.less",
 				"lib/ve/src/ce/styles/ve.ce.Surface.less",
 				"lib/ve/src/ui/styles/ve.ui.icons.less",
+				"lib/ve/src/ui/styles/dialogs/ve.ui.SidebarDialog.less",
 				"lib/ve/src/ui/styles/dialogs/ve.ui.ToolbarDialog.less",
 				"lib/ve/src/ui/styles/dialogs/ve.ui.CommandHelpDialog.less",
 				"lib/ve/src/ui/styles/dialogs/ve.ui.FindAndReplaceDialog.less",
@@ -1221,6 +1257,7 @@
 				"lib/ve/src/ui/styles/inspectors/ve.ui.FragmentInspector.less",
 				"lib/ve/src/ui/styles/layouts/ve.ui.SymbolListBookletLayout.less",
 				"lib/ve/src/ui/styles/widgets/ve.ui.TargetWidget.less",
+				"lib/ve/src/ui/styles/windowmanagers/ve.ui.SidebarDialogWindowManager.less",
 				"lib/ve/src/ui/styles/ve.ui.Context.less",
 				"lib/ve/src/ui/styles/ve.ui.ContextItem.less",
 				"lib/ve/src/ui/styles/contextitems/ve.ui.LinearContextItem.less",
@@ -1535,7 +1572,7 @@
 				"modules/ve-mw/preinit/ve.init.MWEditModeTool.js"
 			],
 			"styles": [
-				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog.css",
+				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchConfirmDialog.less",
 				"modules/ve-mw/preinit/styles/ve.init.MWVESwitchPopupWidget.less"
 			],
 			"skinStyles": {
@@ -1603,6 +1640,7 @@
 				"modules/ve-mw/ui/ve.ui.MWSurface.js",
 				"modules/ve-mw/ui/ve.ui.MWExtensionWindow.js",
 				"modules/ve-mw/ui/ve.ui.MWWikitextTransferRegistry.js",
+				"modules/ve-mw/ui/commands/ve.ui.MWLinkCommand.js",
 				"modules/ve-mw/ui/commands/ve.ui.MWWikitextWarningCommand.js",
 				"modules/ve-mw/ui/datatransferhandlers/ve.ui.MWWikitextStringTransferHandler.js",
 				"modules/ve-mw/ui/widgets/ve.ui.MWAceEditorWidget.js",
@@ -1643,23 +1681,23 @@
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWExpandableErrorElement.less",
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWFloatingHelpElement.less",
 				"modules/ve-mw/ui/styles/elements/ve.ui.MWPreviewElement.less",
-				"modules/ve-mw/ui/styles/tools/ve.ui.MWPopupTool.css",
+				"modules/ve-mw/ui/styles/tools/ve.ui.MWPopupTool.less",
 				"modules/ve-mw/ui/styles/toolgroups/ve.ui.MWHelpListToolGroup.less",
 				"modules/ve-mw/ui/styles/widgets/ve.ui.MWAceEditorWidget.less",
 				"modules/ve-mw/ui/styles/widgets/ve.ui.MWEducationPopupWidget.less"
 			],
 			"skinStyles": {
 				"default": [
-					"modules/ve-mw/themes/wikimediaui.css"
+					"modules/ve-mw/themes/wikimediaui.less"
 				],
 				"vector": [
-					"modules/ve-mw/themes/wikimediaui.css"
+					"modules/ve-mw/themes/wikimediaui.less"
 				],
 				"vector-2022": [
-					"modules/ve-mw/themes/wikimediaui.css"
+					"modules/ve-mw/themes/wikimediaui.less"
 				],
 				"monobook": [
-					"modules/ve-mw/themes/apex.css"
+					"modules/ve-mw/themes/apex.less"
 				]
 			},
 			"dependencies": [
@@ -1748,16 +1786,16 @@
 			],
 			"skinStyles": {
 				"vector": [
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-vector.css"
+					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-vector.less"
 				],
 				"vector-2022": [
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-vector.css"
+					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-vector.less"
 				],
 				"minerva": [
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-minerva.css"
+					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-minerva.less"
 				],
 				"monobook": [
-					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-monobook.css"
+					"modules/ve-mw/ui/styles/tools/ve.ui.MWFormatTool-monobook.less"
 				]
 			},
 			"dependencies": [
@@ -1885,7 +1923,7 @@
 			"styles": [
 				"modules/ve-mw/ui/styles/contextitems/ve.ui.MWInternalLinkContextItem.less",
 				"modules/ve-mw/ui/styles/inspectors/ve.ui.MWLinkAnnotationInspector.less",
-				"modules/ve-mw/ui/styles/tools/ve.ui.MWLinkInspectorTool.css",
+				"modules/ve-mw/ui/styles/tools/ve.ui.MWLinkInspectorTool.less",
 				"modules/ve-mw/ce/styles/annotations/ve.ce.MWExternalLinkAnnotation.less"
 			],
 			"dependencies": [
@@ -1894,6 +1932,7 @@
 			"messages": [
 				"pubmedurl",
 				"rfcurl",
+				"visualeditor-linkcontext-uneditable",
 				"visualeditor-linkinspector-button-link-external",
 				"visualeditor-linkinspector-button-link-internal",
 				"visualeditor-linkinspector-convert-link-isbn",
@@ -1947,7 +1986,7 @@
 				"modules/ve-mw/ui/styles/widgets/ve.ui.MWCategoryItemWidget.less",
 				"modules/ve-mw/ui/styles/widgets/ve.ui.MWCategoryPopupWidget.less",
 				"modules/ve-mw/ui/styles/widgets/ve.ui.MWCategoryWidget.less",
-				"modules/ve-mw/ui/styles/widgets/ve.ui.MWTocWidget.css",
+				"modules/ve-mw/ui/styles/widgets/ve.ui.MWTocWidget.less",
 				"modules/ve-mw/ui/styles/dialogs/ve.ui.MWMetaDialog.less"
 			],
 			"dependencies": [
@@ -2177,12 +2216,14 @@
 				"visualeditor-dialog-transclusion-wikitext-widget-aria-selected-single",
 				"visualeditor-dialogbutton-template-tooltip",
 				"visualeditor-expandable-less",
-				"visualeditor-expandable-more"
+				"visualeditor-expandable-more",
+				"visualeditor-template-sandbox-subpage"
 			]
 		},
 		"treeDiffer": {
 			"scripts": [
-				"lib/ve/lib/treeDiffer/treeDiffer-dist.js"
+				"lib/ve/lib/treeDiffer/treeDiffer-dist.js",
+				"modules/ve-mw/treeDiffer-global.js"
 			]
 		},
 		"diffMatchPatch": {
@@ -2432,7 +2473,7 @@
 				"modules/ve-mw/ui/datatransferhandlers/ve.ui.MWWikitextPlainTextStringTransferHandler.js"
 			],
 			"styles": [
-				"modules/ve-mw/ui/styles/ve.ui.MWWikitextSurface.css"
+				"modules/ve-mw/ui/styles/ve.ui.MWWikitextSurface.less"
 			],
 			"dependencies": [
 				"mediawiki.editfont.styles",
@@ -2632,9 +2673,9 @@
 			"lib/ve/tests/ce/ve.ce.Document.test.js",
 			"modules/ve-mw/tests/ce/ve.ce.Document.test.js",
 			"lib/ve/tests/ce/ve.ce.ClipboardHandler.test.js",
+			"modules/ve-mw/tests/ce/ve.ce.ClipboardHandler.test.js",
 			"lib/ve/tests/ce/ve.ce.DragDropHandler.test.js",
 			"lib/ve/tests/ce/ve.ce.Surface.test.js",
-			"modules/ve-mw/tests/ce/ve.ce.Surface.test.js",
 			"lib/ve/tests/ce/ve.ce.RangeState.test.js",
 			"lib/ve/tests/ce/ve.ce.TextState.test.js",
 			"lib/ve/tests/ce/ve.ce.NodeFactory.test.js",

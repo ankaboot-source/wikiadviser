@@ -17,11 +17,19 @@
  *   FindAndReplaceDialog can highlight matched text, by calling
  *   #drawSelections directly.
  *
+ * @class
+ * @extends OO.ui.Element
+ * @mixes OO.EventEmitter
+ *
+ * @constructor
  * @param {ve.ce.Surface} surface
  */
 ve.ce.SelectionManager = function VeCeSelectionManager( surface ) {
 	// Parent constructor
 	ve.ce.SelectionManager.super.call( this );
+
+	// Mixin constructors
+	OO.EventEmitter.call( this );
 
 	this.surface = surface;
 
@@ -50,6 +58,15 @@ ve.ce.SelectionManager = function VeCeSelectionManager( surface ) {
 
 OO.inheritClass( ve.ce.SelectionManager, OO.ui.Element );
 
+OO.mixinClass( ve.ce.SelectionManager, OO.EventEmitter );
+
+/* Events */
+
+/**
+ * @event ve.ce.SelectionManager#update
+ * @param {boolean} hasSelections The selection manager has some non-collapsed selections
+ */
+
 /* Methods */
 
 /**
@@ -77,9 +94,9 @@ ve.ce.SelectionManager.prototype.getSurface = function () {
  *
  * @param {boolean} [showAsActivated=true] Selection should still show as activated
  */
-ve.ce.SelectionManager.prototype.showDeactivatedSelection = function ( showAsActivated ) {
+ve.ce.SelectionManager.prototype.showDeactivatedSelection = function ( showAsActivated = true ) {
 	this.deactivatedSelectionVisible = true;
-	this.showDeactivatedAsActivated = showAsActivated === undefined || !!showAsActivated;
+	this.showDeactivatedAsActivated = !!showAsActivated;
 
 	this.updateDeactivatedSelection();
 };
@@ -145,9 +162,7 @@ ve.ce.SelectionManager.prototype.updateDeactivatedSelection = function () {
  *  mapped to the same index.
  * @param {string} options.label Label shown above each selection
  */
-ve.ce.SelectionManager.prototype.drawSelections = function ( name, selections, options ) {
-	options = options || {};
-
+ve.ce.SelectionManager.prototype.drawSelections = function ( name, selections, options = {} ) {
 	if ( !Object.prototype.hasOwnProperty.call( this.drawnSelections, name ) ) {
 		this.drawnSelections[ name ] = {};
 	}
@@ -159,10 +174,10 @@ ve.ce.SelectionManager.prototype.drawSelections = function ( name, selections, o
 		// * ve-ce-surface-selections-<name>
 		$( '<div>' ).addClass( 've-ce-surface-selections ve-ce-surface-selections-' + name ).appendTo( this.$element );
 
-	const oldSelections = drawnSelection.selections || [];
+	const oldFragments = drawnSelection.fragments || [];
 	const oldOptions = drawnSelection.options || {};
 
-	drawnSelection.selections = selections;
+	drawnSelection.fragments = selections.map( ( selection ) => this.surface.getModel().getFragment( selection.getModel(), true, true ) );
 	drawnSelection.options = options;
 
 	// Always set the 'class' attribute to ensure previously-set classes are cleared.
@@ -218,15 +233,21 @@ ve.ce.SelectionManager.prototype.drawSelections = function ( name, selections, o
 	} );
 
 	// Remove any selections that were not in the latest list of selections
-	oldSelections.forEach( ( oldSelection ) => {
-		const cacheKey = this.getDrawnSelectionCacheKey( name, oldSelection.getModel(), oldOptions );
+	oldFragments.forEach( ( oldFragment ) => {
+		const cacheKey = this.getDrawnSelectionCacheKey( name, oldFragment.getSelection(), oldOptions );
 		if ( !selectionsJustShown[ cacheKey ] ) {
-			const $oldSelection = this.getDrawnSelection( name, oldSelection.getModel(), oldOptions );
+			const $oldSelection = this.getDrawnSelection( name, oldFragment.getSelection(), oldOptions );
 			if ( $oldSelection ) {
 				$oldSelection.detach();
 			}
 		}
 	} );
+	const hasSelections = Object.keys( this.drawnSelections ).some(
+		( n ) => this.drawnSelections[ n ].fragments.some(
+			( fragment ) => !fragment.getSelection().isCollapsed()
+		)
+	);
+	this.emit( 'update', hasSelections );
 };
 
 /**
@@ -237,8 +258,7 @@ ve.ce.SelectionManager.prototype.drawSelections = function ( name, selections, o
  * @param {Object} [options] Selection options
  * @return {string} Cache key
  */
-ve.ce.SelectionManager.prototype.getDrawnSelectionCacheKey = function ( name, selection, options ) {
-	options = options || {};
+ve.ce.SelectionManager.prototype.getDrawnSelectionCacheKey = function ( name, selection, options = {} ) {
 	return name + '-' + JSON.stringify( selection ) + '-' + ( options.color || '' ) + '-' + ( options.label || '' );
 };
 
@@ -287,7 +307,8 @@ ve.ce.SelectionManager.prototype.redrawSelections = function () {
 	this.drawnSelectionCache = {};
 	Object.keys( this.drawnSelections ).forEach( ( name ) => {
 		const drawnSelection = this.drawnSelections[ name ];
-		this.drawSelections( name, drawnSelection.selections, drawnSelection.options );
+		const selections = drawnSelection.fragments.map( ( fragments ) => this.surface.getSelection( fragments.getSelection() ) );
+		this.drawSelections( name, selections, drawnSelection.options );
 	} );
 };
 

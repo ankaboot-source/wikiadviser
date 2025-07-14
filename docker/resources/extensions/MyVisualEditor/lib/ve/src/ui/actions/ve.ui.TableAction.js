@@ -47,9 +47,7 @@ ve.ui.TableAction.static.methods = [
  * @param {Object} [options.attributes] Attributes to give the table
  * @return {boolean} Action was executed
  */
-ve.ui.TableAction.prototype.create = function ( options ) {
-	options = options || {};
-
+ve.ui.TableAction.prototype.create = function ( options = {} ) {
 	const type = options.type || 'table';
 	const tableElement = { type: type };
 	const surfaceModel = this.surface.getModel();
@@ -714,6 +712,8 @@ ve.ui.TableAction.prototype.insertRowOrCol = function ( tableNode, mode, index, 
 		if ( !dataMatrixLine ) {
 			insertData = ve.dm.TableRowNode.static.createData( {
 				cellCount: inserts.length,
+				clonedRow: matrix.getRowNode( index ),
+				clonedCells: cells.map( ( c ) => c.node ),
 				style: cells.map( ( c ) => c.node.getStyle() )
 			} );
 		} else {

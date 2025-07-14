@@ -21,12 +21,11 @@
  * @param {Object} [config.toolbarConfig]
  * @param {string|null} [config.section] Number of the section target should scroll to
  */
-ve.init.mw.MobileArticleTarget = function VeInitMwMobileArticleTarget( overlay, config ) {
+ve.init.mw.MobileArticleTarget = function VeInitMwMobileArticleTarget( overlay, config = {} ) {
 	this.overlay = overlay;
 	this.$overlay = overlay.$el;
 	this.$overlaySurface = overlay.$el.find( '.surface' );
 
-	config = config || {};
 	config.toolbarConfig = ve.extendObject( {
 		actions: false
 	}, config.toolbarConfig );
@@ -52,12 +51,10 @@ OO.inheritClass( ve.init.mw.MobileArticleTarget, ve.init.mw.ArticleTarget );
 /* Static Properties */
 
 ve.init.mw.MobileArticleTarget.static.toolbarGroups = [
-	// History
 	{
 		name: 'history',
 		include: [ 'undo' ]
 	},
-	// Style
 	{
 		name: 'style',
 		classes: [ 've-test-toolbar-style' ],
@@ -71,16 +68,37 @@ ve.init.mw.MobileArticleTarget.static.toolbarGroups = [
 		promote: [ 'bold', 'italic' ],
 		demote: [ 'strikethrough', 'code', 'underline', 'language', 'clear' ]
 	},
-	// Link
 	{
 		name: 'link',
 		include: [ 'link' ]
-	},
-	// Placeholder for reference tools (e.g. Cite and/or Citoid)
-	{
-		name: 'reference'
 	}
 ];
+
+const mobileInsertMenu = mw.config.get( 'wgVisualEditorConfig' ).mobileInsertMenu;
+if ( mobileInsertMenu ) {
+	const insertGroup = {
+		name: 'insert',
+		label: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		title: OO.ui.deferMsg( 'visualeditor-toolbar-insert' ),
+		narrowConfig: {
+			invisibleLabel: true,
+			icon: 'add'
+		},
+		// This is the default for include=*, but that's not guaranteed:
+		type: 'list'
+	};
+	if ( mobileInsertMenu === true ) {
+		insertGroup.include = '*';
+		insertGroup.forceExpand = [ 'transclusion', 'insertTable' ];
+		insertGroup.promote = [ 'transclusion', 'insertTable' ];
+		insertGroup.exclude = [ { group: 'format' }, { group: 'history' }, { group: 'structure' }, 'gallery', 'media', 'mwSignature' ];
+	} else {
+		insertGroup.include = mobileInsertMenu;
+		// Citoid sets this up, so we need to force it for everything:
+		insertGroup.forceExpand = mobileInsertMenu;
+	}
+	ve.init.mw.MobileArticleTarget.static.toolbarGroups.push( insertGroup );
+}
 
 ve.init.mw.MobileArticleTarget.static.trackingName = 'mobile';
 
@@ -244,7 +262,7 @@ ve.init.mw.MobileArticleTarget.prototype.onSurfaceScroll = function () {
 /**
  * @inheritdoc
  */
-ve.init.mw.MobileArticleTarget.prototype.createSurface = function ( dmDoc, config ) {
+ve.init.mw.MobileArticleTarget.prototype.createSurface = function ( dmDoc, config = {} ) {
 	if ( this.overlay.isNewPage ) {
 		config = ve.extendObject( {
 			placeholder: this.overlay.options.placeholder
@@ -332,13 +350,10 @@ ve.init.mw.MobileArticleTarget.prototype.afterSurfaceReady = function () {
 ve.init.mw.MobileArticleTarget.prototype.adjustContentPadding = function () {
 	const surface = this.getSurface(),
 		surfaceView = surface.getView(),
-		toolbarHeight = this.getToolbar().$element[ 0 ].clientHeight;
+		paddingTop = surface.getPadding().top;
 
-	surface.setPadding( {
-		top: toolbarHeight
-	} );
-	surfaceView.$attachedRootNode.css( 'padding-top', toolbarHeight );
-	surface.$placeholder.css( 'padding-top', toolbarHeight );
+	surfaceView.$attachedRootNode.css( 'padding-top', paddingTop );
+	surface.$placeholder.css( 'padding-top', paddingTop );
 	surfaceView.emit( 'position' );
 	surface.scrollSelectionIntoView();
 };
@@ -484,6 +499,9 @@ ve.init.mw.MobileArticleTarget.prototype.attachToolbar = function () {
 	// Move the toolbar to the overlay header
 	this.overlay.$el.find( '.overlay-header > .toolbar' ).append( this.toolbar.$element );
 	this.toolbar.initialize();
+	// MobileFrontend handles toolbar floating, but mark it as floating so we
+	// calculate a height for surface padding.
+	this.toolbar.float();
 };
 
 /**

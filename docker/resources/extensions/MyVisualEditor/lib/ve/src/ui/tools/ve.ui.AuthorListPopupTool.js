@@ -15,7 +15,7 @@
  * @param {OO.ui.ToolGroup} toolGroup
  * @param {Object} [config]
  */
-ve.ui.AuthorListPopupTool = function VeUiAuthorListPopupTool( toolGroup, config ) {
+ve.ui.AuthorListPopupTool = function VeUiAuthorListPopupTool( toolGroup, config = {} ) {
 	this.$authorList = $( '<div>' );
 
 	// Parent constructor
@@ -170,7 +170,8 @@ ve.ui.AuthorListPopupTool.prototype.onSynchronizerAuthorUpdate = function ( auth
 			}
 		}
 	}
-	this.oldName = this.synchronizer.getAuthorData( authorId ).name;
+	const authorData = this.synchronizer.getAuthorData( authorId );
+	this.oldName = authorData ? authorData.name : '';
 };
 
 /**

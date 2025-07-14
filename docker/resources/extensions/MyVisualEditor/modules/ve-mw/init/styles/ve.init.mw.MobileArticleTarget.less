@@ -57,9 +57,12 @@
 }
 /* stylelint-enable selector-class-pattern */
 
-.ve-init-mw-mobileArticleTarget .ve-ui-overlay-local {
-	// Reset line height set by .content
-	line-height: 1.4;
+.ve-init-mw-mobileArticleTarget {
+	.ve-ui-overlay-local,
+	.ve-ui-sidebarDialogWindowManager {
+		// Reset line height set by .content
+		line-height: 1.4;
+	}
 }
 
 .oo-ui-windowManager-ios-modal-ready .ve-init-mw-mobileArticleTarget {
@@ -86,6 +89,13 @@
 		margin-top: 0;
 		/* Placeholder doesn't need a border as well */
 		border: 0;
+	}
+}
+
+@media all and ( min-width: @min-width-breakpoint-desktop ) {
+	.ve-init-mw-target-surface {
+		// This should be in-sync with .overlay-header rule in MinervaNeue's overlay.less
+		max-width: calc( 993.3px + ( 2 * 1em ) );
 	}
 }
 

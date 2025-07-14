@@ -11,7 +11,7 @@
  * @abstract
  *
  * @constructor
- * @param {Object} element Reference to plain object in linear model
+ * @param {Object} [element] Reference to plain object in linear model
  */
 ve.dm.Model = function VeDmModel( element ) {
 	// Properties
@@ -438,7 +438,7 @@ ve.dm.Model.prototype.getAttributes = function ( prefix ) {
 	if ( prefix ) {
 		const filtered = {};
 		for ( const key in attributes ) {
-			if ( key.indexOf( prefix ) === 0 ) {
+			if ( key.startsWith( prefix ) ) {
 				filtered[ key.slice( prefix.length ) ] = attributes[ key ];
 			}
 		}

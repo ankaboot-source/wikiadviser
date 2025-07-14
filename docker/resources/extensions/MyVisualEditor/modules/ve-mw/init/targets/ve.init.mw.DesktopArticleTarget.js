@@ -181,17 +181,16 @@ ve.init.mw.DesktopArticleTarget.static.platformType = 'desktop';
  * @inheritdoc
  */
 ve.init.mw.DesktopArticleTarget.prototype.addSurface = function ( dmDoc, config ) {
+	const skinPadding = {
+		// Vector-2022 content area less padding, so popups can render too close
+		// to the edge of the text (T258501). The default of 10px is reduced to 3px.
+		// We still need a bit of padding to keep popups from touching the sidebar.
+		'vector-2022': 3,
+		monobook: -10
+	};
+	const skin = mw.config.get( 'skin' );
 	config = ve.extendObject( {
-		$overlayContainer: $(
-			document.querySelector( '[data-mw-ve-target-container]' ) ||
-			document.getElementById( 'content' )
-		),
-		// Vector-2022 content area has no padding itself, so popups render too close
-		// to the edge of the text (T258501). Use a negative value to allow popups to
-		// position slightly outside the content. Padding elsewhere means we are
-		// guaranteed 30px of space between the content and the edge of the viewport.
-		// Other skins pass 'undefined' to use the default padding of +10px.
-		overlayPadding: mw.config.get( 'skin' ) === 'vector-2022' ? -10 : undefined
+		overlayPadding: skin in skinPadding ? skinPadding[ skin ] : undefined
 	}, config );
 	return ve.init.mw.DesktopArticleTarget.super.prototype.addSurface.call( this, dmDoc, config );
 };
@@ -242,7 +241,7 @@ ve.init.mw.DesktopArticleTarget.prototype.setupToolbar = function ( surface ) {
 		}
 		this.toolbarSetupDeferred.resolve();
 
-		this.toolbarSetupDeferred.done( () => {
+		this.toolbarSetupDeferred.then( () => {
 			const newSurface = this.getSurface();
 			// Check the surface wasn't torn down while the toolbar was animating
 			if ( newSurface ) {
@@ -395,13 +394,13 @@ ve.init.mw.DesktopArticleTarget.prototype.activate = function ( dataPromise ) {
 		this.toolbarSetupDeferred = ve.createDeferred();
 
 		$( 'html' ).addClass( 've-activating' );
-		ve.promiseAll( [ this.activatingDeferred, this.toolbarSetupDeferred ] ).done( () => {
+		ve.promiseAll( [ this.activatingDeferred, this.toolbarSetupDeferred ] ).then( () => {
 			if ( !this.suppressNormalStartupDialogs ) {
 				this.maybeShowWelcomeDialog();
 				this.maybeShowMetaDialog();
 			}
 			this.afterActivate();
-		} ).fail( () => {
+		}, () => {
 			$( 'html' ).removeClass( 've-activating' );
 		} );
 
@@ -480,6 +479,9 @@ ve.init.mw.DesktopArticleTarget.prototype.setSurface = function ( surface ) {
  * @param {ve.ui.Surface} surface
  */
 ve.init.mw.DesktopArticleTarget.prototype.setupNewSection = function ( surface ) {
+	if ( surface.getMode() === 'visual' && this.section === 'new' ) {
+		throw new Error( 'Adding new section is not supported in visual mode' );
+	}
 	if ( surface.getMode() === 'source' && this.section === 'new' ) {
 		if ( !this.sectionTitle ) {
 			this.sectionTitle = new OO.ui.TextInputWidget( {
@@ -678,7 +680,7 @@ ve.init.mw.DesktopArticleTarget.prototype.loadFail = function ( code, errorDetai
 			{ action: 'accept', label: OO.ui.msg( 'ooui-dialog-process-retry' ), flags: 'primary' },
 			{ action: 'reject', label: OO.ui.msg( 'ooui-dialog-message-reject' ), flags: 'safe' }
 		]
-	} ).done( ( confirmed ) => {
+	} ).then( ( confirmed ) => {
 		if ( confirmed ) {
 			// Retry load
 			this.load();
@@ -793,7 +795,7 @@ ve.init.mw.DesktopArticleTarget.prototype.onMetaItemRemoved = function ( metaIte
  * @param {ve.dm.MetaItem[]} categoryItems Array of category metaitems to display
  */
 ve.init.mw.DesktopArticleTarget.prototype.rebuildCategories = function ( categoryItems ) {
-	this.renderCategories( categoryItems ).done( ( $categories ) => {
+	this.renderCategories( categoryItems ).then( ( $categories ) => {
 		// Clone the existing catlinks for any specific properties which might
 		// be needed by the rest of the page. Also gives us a not-attached
 		// version, which we can pass to wikipage.categories as it requests.
@@ -866,7 +868,7 @@ ve.init.mw.DesktopArticleTarget.prototype.serialize = function () {
 	// Parent method
 	const promise = ve.init.mw.DesktopArticleTarget.super.prototype.serialize.apply( this, arguments );
 
-	return promise.fail( ( error, response ) => {
+	return promise.then( null, ( error, response ) => {
 		const $errorMessages = this.extractErrorMessages( response );
 		OO.ui.alert( $errorMessages );
 
@@ -1469,7 +1471,7 @@ ve.init.mw.DesktopArticleTarget.prototype.reloadSurface = function () {
 	// Parent method
 	ve.init.mw.DesktopArticleTarget.super.prototype.reloadSurface.apply( this, arguments );
 
-	this.activatingDeferred.done( () => {
+	this.activatingDeferred.then( () => {
 		this.updateHistoryState();
 		this.afterActivate();
 		this.setupTriggerListeners();

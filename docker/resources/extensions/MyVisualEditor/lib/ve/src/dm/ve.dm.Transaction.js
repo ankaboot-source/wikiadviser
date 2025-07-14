@@ -20,10 +20,10 @@
  *
  * @class
  * @constructor
- * @param {Object[]} [operations] Operations preserving tree validity as a whole; default []
- * @param {number|null} [authorId] Positive integer author ID; default null
+ * @param {Object[]} [operations=[]] Operations preserving tree validity as a whole
+ * @param {number|null} [authorId=null] Positive integer author ID; default null
  */
-ve.dm.Transaction = function VeDmTransaction( operations, authorId ) {
+ve.dm.Transaction = function VeDmTransaction( operations = [], authorId = null ) {
 	this.operations = operations || [];
 	// TODO: remove this backwards-incompatibility check
 	this.operations.forEach( ( op ) => {
@@ -32,7 +32,7 @@ ve.dm.Transaction = function VeDmTransaction( operations, authorId ) {
 		}
 	} );
 	this.applied = false;
-	this.authorId = authorId || null;
+	this.authorId = authorId;
 	this.isReversed = false;
 };
 
@@ -512,12 +512,7 @@ ve.dm.Transaction.prototype.getModifiedRange = function ( doc, options ) {
 		oldOffset = 0,
 		offset = 0;
 
-	if ( typeof options === 'boolean' ) {
-		// Backwards compatibility
-		options = { includeInternalList: options };
-	} else {
-		options = options || {};
-	}
+	options = options || {};
 
 	if ( !options.includeInternalList ) {
 		const internalListNode = doc.getInternalList().getListNode();

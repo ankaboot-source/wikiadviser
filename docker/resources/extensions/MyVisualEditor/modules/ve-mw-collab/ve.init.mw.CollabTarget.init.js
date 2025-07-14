@@ -62,7 +62,7 @@
 		progressBar.toggle( true );
 		form.toggle( false );
 
-		modulePromise.done( () => {
+		modulePromise.then( () => {
 			target = ve.init.mw.targetFactory.create( 'collab', title, conf.rebaserUrl, { importTitle: importTitle } );
 			// If the target emits a 'close' event (via the toolbar back button on mobile) then go to the landing page.
 			target.once( 'close', () => {
@@ -174,20 +174,19 @@
 
 						// Look for import metadata in document
 						surfaceModel = target.getSurface().getModel();
-						surfaceModel.getDocument().getMetaList().getItemsInGroup( 'misc' ).some( ( item ) => {
-							const importedDocument = item.getAttribute( 'importedDocument' );
-							if ( importedDocument ) {
-								target.importTitle = mw.Title.newFromText( importedDocument.title );
-								target.etag = importedDocument.etag;
-								target.baseTimeStamp = importedDocument.baseTimeStamp;
-								target.startTimeStamp = importedDocument.startTimeStamp;
-								target.revid = importedDocument.revid;
-								return true;
-							}
-							return false;
-						} );
+						const importedDocumentItem = surfaceModel.getDocument().getMetaList().getItemsInGroup( 'misc' ).find(
+							( item ) => item.getAttribute( 'importedDocument' )
+						);
+						if ( importedDocumentItem ) {
+							const importedDocument = importedDocumentItem.getAttribute( 'importedDocument' );
+							target.importTitle = mw.Title.newFromText( importedDocument.title );
+							target.etag = importedDocument.etag;
+							target.baseTimeStamp = importedDocument.baseTimeStamp;
+							target.startTimeStamp = importedDocument.startTimeStamp;
+							target.revid = importedDocument.revid;
+						}
 					}
-					initPromise.fail( ( err ) => {
+					initPromise.then( null, ( err ) => {
 						setTimeout( () => {
 							throw new Error( err );
 						} );
@@ -198,12 +197,12 @@
 				} );
 			} );
 
+		}, ( err ) => {
+			mw.log.error( err );
+			showForm( true );
 		} ).always( () => {
 			form.toggle( false );
 			progressBar.toggle( false );
-		} ).fail( ( err ) => {
-			mw.log.error( err );
-			showForm( true );
 		} );
 	}
 

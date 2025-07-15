@@ -9,6 +9,7 @@
             icon="img:/icons/logo.svg"
             to="/"
           />
+
           <q-breadcrumbs-el v-if="article?.title" to="." @click="$router.go(0)">
             <div class="ellipsis">
               {{ article.title }}
@@ -27,7 +28,7 @@
           section="profile"
         />
       </q-btn>
-      <NotificationsBell />
+      <NotificationsBell v-if="user" />
       <q-btn
         v-if="user"
         clickable

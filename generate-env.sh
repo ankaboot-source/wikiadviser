@@ -2,7 +2,7 @@
 
 ENV_PATH=("./docker/.env" "./frontend/.env")
 SUPABASE_ENV_PATH="./supabase/functions/.env"
-MW_CREDENTIALS_FILE="./mediawiki-docker/MW_CREDENTIALS.txt"
+MW_CREDENTIALS_FILE="./docker/MW_CREDENTIALS.txt"
 CONTAINER_NAME="mediawiki"
 
 export LANG=C

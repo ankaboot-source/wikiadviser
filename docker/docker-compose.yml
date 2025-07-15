@@ -2,7 +2,7 @@
 services:
   mediawiki:
     container_name: mediawiki
-    image: ankabootops/mediawiki:1.45.0-wmf.8
+    image: ankabootops/mediawiki:1.45.0-wmf.9
     networks:
       - docker_network
     ports:

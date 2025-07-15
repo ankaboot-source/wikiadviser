@@ -130,8 +130,11 @@ ve.test.utils.runSurfacePasteTest = function ( assert, item ) {
 			assert.equalHash( model.getSelection(), expectedSelection, item.msg + ': selection' );
 		}
 		if ( item.expectedHtml ) {
-			const htmlDoc = ve.dm.converter.getDomFromModel( doc );
-			assert.strictEqual( htmlDoc.body.innerHTML, item.expectedHtml, item.msg + ': HTML' );
+			assert.equalDomElement(
+				ve.dm.converter.getDomFromModel( doc ),
+				ve.createDocumentFromHtml( item.expectedHtml, item.ignoreXmlWarnings ),
+				item.msg + ': HTML'
+			);
 		}
 		assert.strictEqual( testEvent.isDefaultPrevented(), !!item.expectedDefaultPrevented, item.msg + ': default action ' + ( item.expectedDefaultPrevented ? '' : 'not ' ) + 'prevented' );
 		view.destroy();
@@ -398,7 +401,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				msg: 'Internal text into annotated content (noClipboardData)'
 			},
 			{
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const boldNode = documentNode.children[ 4 ].$element.find( 'b' )[ 0 ];
 					nativeRange.setStart( boldNode.childNodes[ 0 ], 4 );
 				},
@@ -420,7 +423,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				msg: 'Internal text into annotated content (just inside bold node)'
 			},
 			{
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const paragraphNode = documentNode.children[ 4 ].$element[ 0 ];
 					nativeRange.setStart( paragraphNode, 1 );
 				},
@@ -442,7 +445,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				msg: 'Internal text next to annotated content (just outside bold node)'
 			},
 			{
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const boldNode = documentNode.children[ 4 ].$element.find( 'b' )[ 0 ];
 					nativeRange.setStart( boldNode.childNodes[ 0 ], 4 );
 				},
@@ -464,7 +467,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				msg: 'External text into annotated content (just inside bold node)'
 			},
 			{
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const paragraphNode = documentNode.children[ 4 ].$element[ 0 ];
 					nativeRange.setStart( paragraphNode, 1 );
 				},
@@ -489,7 +492,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				// eslint-disable-next-line no-useless-concat
 				documentHtml: '<p><a href="Foo">Foo' + '</a> Bar</p>',
 				// cursor goes here -----------------^
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const preCloseNail = documentNode.children[ 0 ].$element.find( '.ve-ce-nail-pre-close' )[ 0 ];
 					const textNode = preCloseNail.previousSibling;
 					nativeRange.setStart( textNode, 3 );
@@ -515,7 +518,7 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 				// eslint-disable-next-line no-useless-concat
 				documentHtml: '<p><a href="Foo">Bar</a>' + ' Bar</p>',
 				// cursor goes here ---------------------^
-				setViewSelection: function ( documentNode, nativeRange ) {
+				setViewSelection: ( documentNode, nativeRange ) => {
 					const paragraphNode = documentNode.children[ 0 ].$element[ 0 ];
 					// offset 3 = pre-nail + link + post-nail
 					nativeRange.setStart( paragraphNode, 3 );
@@ -1172,12 +1175,12 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 					[
 						{
 							type: 'replace',
-							insert: ( function () {
+							insert: ( () => {
 								const data = ve.copy( ve.dm.example.blockImage.data );
 								// Removed by ClassAttributeNode's sanitization
 								delete data[ 0 ].attributes.unrecognizedClasses;
 								return data;
-							}() ),
+							} )(),
 							remove: []
 						},
 						{ type: 'retain', length: docLen }
@@ -1947,6 +1950,66 @@ QUnit.test( 'beforePaste/afterPaste', ( assert ) => {
 					]
 				],
 				msg: 'Text into empty paragraph (annotateImportedData)'
+			},
+			{
+				rangeOrSelection: new ve.Range( 3, 6 ),
+				pasteHtml: 'Foo',
+				expectedRangeOrSelection: new ve.Range( 6 ),
+				annotateImportedData: true,
+				expectedOps: [
+					[
+						{ type: 'retain', length: 3 },
+						{
+							type: 'replace',
+							insert: [],
+							remove: [ ...'Foo' ]
+						},
+						{ type: 'retain', length: docLen - 6 }
+					],
+					[
+						{ type: 'retain', length: 3 },
+						{
+							type: 'replace',
+							insert: [
+								...ve.dm.example.annotateText( 'Foo', imported( null ) )
+							],
+							remove: []
+						},
+						{ type: 'retain', length: docLen - 6 }
+					]
+				],
+				msg: 'Text over non-empty paragraph (annotateImportedData)'
+			},
+			{
+				rangeOrSelection: new ve.Range( 23, 27 ),
+				pasteHtml: 'Foo',
+				expectedRangeOrSelection: new ve.Range( 26 ),
+				annotateImportedData: true,
+				expectedOps: [
+					[
+						{ type: 'retain', length: 23 },
+						{
+							type: 'replace',
+							insert: [],
+							remove: [
+								...ve.dm.example.annotateText( 'Quux', bold )
+							]
+						},
+						{ type: 'retain', length: docLen - 27 }
+					],
+					[
+						{ type: 'retain', length: 23 },
+						{
+							type: 'replace',
+							insert: [
+								...ve.dm.example.annotateText( 'Foo', [ bold, imported( null ) ] )
+							],
+							remove: []
+						},
+						{ type: 'retain', length: docLen - 27 }
+					]
+				],
+				msg: 'Text over annotated paragraph (annotateImportedData)'
 			},
 			{
 				rangeOrSelection: new ve.Range( 1 ),

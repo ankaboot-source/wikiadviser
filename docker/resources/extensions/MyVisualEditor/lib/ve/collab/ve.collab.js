@@ -88,7 +88,8 @@ ve.collab.initPeerClient = function ( serverId, isMain, userName ) {
 	ve.init.target.constructor.static.toolbarGroups.unshift( {
 		name: 'authorList',
 		include: [ 'authorList' ],
-		align: 'after'
+		align: 'after',
+		excludeFromTargetWidget: true
 	} );
 
 	peerClient.on( 'open', ( /* id */ ) => {
@@ -131,11 +132,13 @@ ve.collab.initPeerClient = function ( serverId, isMain, userName ) {
 ve.collab.connectModelSynchronizer = function () {
 	const ceSurface = ve.init.target.surface.view;
 	ceSurface.model.synchronizer.connect( ceSurface, {
-		authorSelect: 'onSynchronizerAuthorUpdate',
-		authorChange: 'onSynchronizerAuthorUpdate',
-		authorDisconnect: 'onSynchronizerAuthorDisconnect',
 		wrongDoc: 'onSynchronizerWrongDoc',
 		pause: 'onSynchronizerPause'
+	} );
+	ceSurface.model.synchronizer.connect( ceSurface.getSelectionManager(), {
+		authorSelect: 'onSynchronizerAuthorUpdate',
+		authorChange: 'onSynchronizerAuthorUpdate',
+		authorDisconnect: 'onSynchronizerAuthorDisconnect'
 	} );
 };
 

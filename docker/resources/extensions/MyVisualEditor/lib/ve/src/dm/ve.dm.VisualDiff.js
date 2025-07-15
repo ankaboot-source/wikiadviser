@@ -17,7 +17,7 @@
  * @param {ve.dm.Document|ve.dm.BranchNode} newDocOrNode
  * @param {number} [timeout=1000] Timeout after which to stop performing linear diffs (in ms)
  */
-ve.dm.VisualDiff = function VeDmVisualDiff( oldDocOrNode, newDocOrNode, timeout ) {
+ve.dm.VisualDiff = function VeDmVisualDiff( oldDocOrNode, newDocOrNode, timeout = 1000 ) {
 	const oldDoc = oldDocOrNode instanceof ve.dm.Document ? oldDocOrNode : oldDocOrNode.getDocument(),
 		newDoc = newDocOrNode instanceof ve.dm.Document ? newDocOrNode : newDocOrNode.getDocument();
 
@@ -51,7 +51,7 @@ ve.dm.VisualDiff = function VeDmVisualDiff( oldDocOrNode, newDocOrNode, timeout 
 	// Minimum ratio of content (same : different) allowed between two corresponding nodes
 	this.diffThreshold = 0.5;
 
-	this.endTime = Date.now() + ( timeout || 1000 );
+	this.endTime = Date.now() + timeout;
 	this.timedOut = false;
 
 	// Calling getDocumentNode triggers the DM node tree to be built
@@ -133,15 +133,14 @@ ve.dm.VisualDiff.static.compareNodes = function ( oldNode, newNode ) {
  * @param {ve.dm.Document} doc
  */
 ve.dm.VisualDiff.prototype.freezeInternalListIndices = function ( doc ) {
-	const nodes = doc.getInternalList().nodes,
-		internalListGroups = doc.getInternalList().getNodeGroups();
+	const internalListGroups = doc.getInternalList().getNodeGroups();
 
 	for ( const groupName in internalListGroups ) {
 		const group = internalListGroups[ groupName ];
 		const groupIndexOrder = group.indexOrder;
 		for ( let i = 0, ilen = groupIndexOrder.length; i < ilen; i++ ) {
 			const nodeIndex = groupIndexOrder[ i ];
-			const refNodes = nodes[ groupName ].keyedNodes[ nodes[ groupName ].firstNodes[ nodeIndex ].registeredListKey ];
+			const refNodes = group.keyedNodes[ group.firstNodes[ nodeIndex ].registeredListKey ];
 			for ( let j = 0, jlen = refNodes.length; j < jlen; j++ ) {
 				doc.data.modifyData( refNodes[ j ].getOffset(), ( item ) => {
 					ve.setProp( item, 'internal', 'overrideIndex', i + 1 );

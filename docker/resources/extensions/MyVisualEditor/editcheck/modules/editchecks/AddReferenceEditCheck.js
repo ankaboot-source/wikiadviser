@@ -1,6 +1,6 @@
-mw.editcheck.AddReferenceEditCheck = function MWAddReferenceEditCheck( config ) {
+mw.editcheck.AddReferenceEditCheck = function MWAddReferenceEditCheck() {
 	// Parent constructor
-	mw.editcheck.AddReferenceEditCheck.super.call( this, config );
+	mw.editcheck.AddReferenceEditCheck.super.apply( this, arguments );
 };
 
 OO.inheritClass( mw.editcheck.AddReferenceEditCheck, mw.editcheck.BaseEditCheck );
@@ -81,29 +81,43 @@ mw.editcheck.AddReferenceEditCheck.prototype.act = function ( choice, action, su
 					// use the data form the Citoid closing promise.
 					citoidOrCiteDataDeferred.resolve( citoidData );
 				}
-				return citoidOrCiteDataDeferred.promise().done( ( data ) => {
+				const citoidOrCiteDataPromise = citoidOrCiteDataDeferred.promise();
+				citoidOrCiteDataPromise.then( ( data ) => {
 					if ( data ) {
 						// Edit check inspector is already closed by this point, but
 						// we need to end the workflow.
 						mw.notify( ve.msg( 'editcheck-dialog-addref-success-notify' ), { type: 'success' } );
 					}
 				} );
+				return citoidOrCiteDataPromise;
 			} );
 		case 'reject':
 			ve.track( 'activity.editCheckReferences', { action: 'edit-check-reject' } );
-			return windowAction.open(
-				'editCheckReferencesInspector',
-				{
-					fragment: action.fragments[ 0 ]
-				}
-			// eslint-disable-next-line arrow-body-style
-			).then( ( instance ) => {
-				return instance.closing;
-			} ).done( ( data ) => {
-				if ( data && data.action === 'reject' && data.reason ) {
-					mw.editcheck.rejections.push( data.reason );
-					this.dismiss( action );
-				}
+			return action.widget.showFeedback( {
+				title: ve.msg( 'editcheck-dialog-addref-reject-question' ),
+				description: ve.msg( 'editcheck-dialog-addref-reject-description' ),
+				choices: [
+					{
+						data: 'uncertain',
+						label: ve.msg( 'editcheck-dialog-addref-reject-uncertain' )
+					},
+					{
+						data: 'common-knowledge',
+						label: ve.msg( 'editcheck-dialog-addref-reject-common-knowledge' )
+					},
+					{
+						data: 'irrelevant',
+						label: ve.msg( 'editcheck-dialog-addref-reject-irrelevant' )
+					},
+					{
+						data: 'other',
+						label: ve.msg( 'editcheck-dialog-addref-reject-other' )
+					}
+				]
+			} ).then( ( reason ) => {
+				ve.track( 'activity.editCheckReferences', { action: 'dialog-choose-' + reason } );
+				this.dismiss( action );
+				return ve.createDeferred().resolve( { action: choice, reason: reason } ).promise();
 			} );
 	}
 };
@@ -147,5 +161,7 @@ mw.editcheck.AddReferenceEditCheck.prototype.adjustForPunctuation = function ( i
 	}
 	return insertionPointFragment;
 };
+
+// Register
 
 mw.editcheck.editCheckFactory.register( mw.editcheck.AddReferenceEditCheck );

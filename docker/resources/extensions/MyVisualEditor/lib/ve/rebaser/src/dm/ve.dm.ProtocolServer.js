@@ -119,14 +119,11 @@ ve.dm.ProtocolServer.prototype.onLogEvent = function ( context, event ) {
  * @param {number} [startLength=0] The length of the common history
  * @param {Function} [usernameGenerator] Function which returns a username, with an authorID argument
  */
-ve.dm.ProtocolServer.prototype.welcomeClient = function ( context, startLength, usernameGenerator ) {
+ve.dm.ProtocolServer.prototype.welcomeClient = function ( context, startLength = 0, usernameGenerator = undefined ) {
 	const docName = context.docName,
 		serverId = context.serverId,
 		authorId = context.authorId;
 
-	if ( !startLength ) {
-		startLength = 0;
-	}
 	this.rebaseServer.updateDocState( docName, authorId, null, {
 		name: usernameGenerator ? usernameGenerator( authorId ) : 'User ' + authorId,
 		color: this.constructor.static.palette[
@@ -180,28 +177,19 @@ ve.dm.ProtocolServer.prototype.onSubmitChange = function ( context, data ) {
  * Apply and broadcast an author change
  *
  * @param {Object} context The connection context
- * @param {string} newData The new author data
+ * @param {Object} newData The new author data
  */
 ve.dm.ProtocolServer.prototype.onChangeAuthor = function ( context, newData ) {
-	this.rebaseServer.updateDocState( context.docName, context.authorId, null, {
-		name: newData.name,
-		color: newData.color
-	} );
+	this.rebaseServer.updateDocState( context.docName, context.authorId, null, newData );
 	context.broadcast( 'authorChange', {
 		authorId: context.authorId,
-		authorData: {
-			name: newData.name,
-			color: newData.color
-		}
+		authorData: newData
 	} );
 	this.logger.logServerEvent( {
 		type: 'authorChange',
 		doc: context.docName,
 		authorId: context.authorId,
-		authorData: {
-			name: newData.name,
-			color: newData.color
-		}
+		authorData: newData
 	} );
 };
 

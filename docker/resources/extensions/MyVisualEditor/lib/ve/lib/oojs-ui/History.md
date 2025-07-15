@@ -1,5 +1,103 @@
 # OOUI Release History
 
+## v0.52.0 / 2025-06-11
+
+### Breaking changes
+* [BREAKING CHANGE] Drop support for PHP < 8.1 (James D. Forrester)
+* [BREAKING CHANGE] Remove custom OOUI\Exception class entirely (Volker E.)
+* [BREAKING CHANGE] Remove Dialog.static.escapable (Ed Sanders)
+* [BREAKING CHANGE] SelectFileInputWidget: remove alias for SelectFileWidget (Volker E.)
+
+### Styles
+* DropdownInputWidget: Fix native `<select>` colors in dark mode (Bartosz Dziewoński)
+* Apex theme: Workaround for ButtonWidget inside DecoratedOptionWidget (Bartosz Dziewoński)
+* Use codex token for TabSelectWidget overflow gradient color (SomeRandomDeveloper)
+* WikimediaUI theme: Fix dark mode background for dialog errors (Bartosz Dziewoński)
+
+### Icons
+* icons: Add 'logo-Codex' icon (Volker E.)
+* icons: Add UserTemporaryLocation icon (Thalia Chan)
+* icons: Fix typo "anonynmous" → "anonymous" in "userAnonymous.svg" (Bartosz Dziewoński)
+* icons: remove unnecessary `fill-rule` and `clip-rule` in 'userTemporaryLocation' (lwatson)
+
+### Code
+* DropdownInputWidget: Fix missing accessibility labels on mobile (Bartosz Dziewoński)
+* DropdownInputWidget: Redo dropdown arrow for compat with MediaWiki dark mode (Bartosz Dziewoński)
+* Don't close a PopupToolGroup if the scrollbar is used (David Lynch)
+* Ignore clicks on the scrollbar in all document mouseup/down handlers (David Lynch)
+* phpunit.xml.dist: Let's make this slightly readable (James D. Forrester)
+* Replace $.extend with Object.assign in examples (Bartosz Dziewoński)
+* SelectFileInputWidget: Check droppable item is a file (Ed Sanders)
+* SelectFileWidget: Use shorter transition for hover backgrounds (Ed Sanders)
+* TabSelectWidget: Remove workaround for a gradient color blending bug in Safari<15 (Bartosz Dziewoński)
+* build: Updating @babel/helpers to 7.26.10 ([BOT] libraryupgrader)
+* build: Updating eslint-config-wikimedia to 0.30.0 ([BOT] libraryupgrader)
+* build: Updating mediawiki/mediawiki-codesniffer to 47.0.0 ([BOT] libraryupgrader)
+* build: Updating prismjs to 1.30.0 ([BOT] libraryupgrader)
+* build: Upgrade phpunit from 9.6.21 to 10.5.46 (James D. Forrester)
+* build: Use stylelint-disable-next-line instead of stylelint-disable-line (Bartosz Dziewoński)
+* demo: Restore button's width-setting ellipsis (Ed Sanders)
+* tests: Make PHPUnit data provider static (Umherirrender)
+* Update PHPUnit config for version 10 (Daimona Eaytoy)
+* Use MessageWidget 'warning' for ProcessDialog warnings (Sam Wilson)
+
+## v0.51.7 / 2025-03-10
+
+### Styles
+* styles, FieldsetLayout: fix regression in legend layout (Volker E.)
+
+### Code
+* Tool: Use getTitle (Ed Sanders)
+* build: Upgrade eslint-config-wikimedia from 0.28.2 to 0.29.1 (James D. Forrester)
+* build: Upgrade qunit from 2.20.0 to 2.24.1 (James D. Forrester)
+
+## v0.51.6 / 2025-02-20
+
+### Styles
+* TabSelectWidget: Fix position of overflow fade in the mobile version (Bartosz Dziewoński)
+* styles, FieldsetLayout: Remove IE `<legend>` workaround CSS code (Volker E.)
+* styles: Remove obsolete var (Volker E.)
+* styles: remove horizontal gradient mixin (Volker E.)
+* styles: remove vertical gradient mixin (Volker E.)
+
+### Icons
+* icons: Add more language-specific text icons for Norwegian and Swedish (Volker E.)
+
+### Code
+* Change how we place PopupToolGroups on narrow displays (Zoë)
+* Fix error when calling IndexLayout::addTabPanels with no items (Thiemo Kreuz)
+* build: Fix exclude pattern for PrefixedGlobalFunctions (Umherirrender)
+* build: Updating mediawiki/mediawiki-codesniffer to 46.0.0 ([BOT] libraryupgrader)
+
+## v0.51.5 / 2025-01-24
+
+### Styles
+* Update checkbox and radio hover states to match Codex (Ed Sanders)
+* WikimediaUI theme: Fix tool group borders on dark mode (Taavi Väänänen)
+* styles: Remove obsolete IE & Edge 12-18 proprietary CSS (Volker E.)
+
+### Icons
+* icons: Add localised 'bold' and 'italic' for Azerbaijani (James D. Forrester)
+* icons: Minor SVG optimization in the Wikiquote logo (Thiemo Kreuz)
+* icons: add 'arrowDown' and 'arrowUp' icons (lwatson)
+* icons: update SVG image of 'linkExternal' icon (lwatson)
+
+### Code
+* PopupWidget: When autoflipped and there's no space, open in original direction (Bartosz Dziewoński)
+* SelectFileInputWidget: Simplify filterFiles logic (Ed Sanders)
+* TagMultiselectWidget: Improve `allowReordering: false` (Bartosz Dziewoński)
+* TextInputWidget.validationPatterns: Use cheaper regex pattern for non-empty check (Thiemo Kreuz)
+* Toggle off the menu when the tag limit is reached (Func)
+* Toggle the modal-active-fullscreen class when changing the size (Func)
+* php: Replace isset() with null check in InputWidget::setDisabled (Umherirrender)
+* .nvmrc: Update now that CI is using Node 20 (James D. Forrester)
+* build, .nvmrc: Bump Node version to 20.18.1 (Jon Robson)
+* build: Updating mediawiki/mediawiki-phan-config to 0.15.0 ([BOT] libraryupgrader)
+* build: Updating mediawiki/mediawiki-phan-config to 0.15.1 ([BOT] libraryupgrader)
+* build: Upgrade stylelint-config-wikimedia from 0.17.2 to 0.18.0 (James D. Forrester)
+* demos: Remove the extra frame from the CopyTextLayout demo (Func)
+* license: Bump year to 2025 (Volker E.)
+
 ## v0.51.4 / 2024-12-05
 
 ### Code

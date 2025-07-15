@@ -34,6 +34,9 @@ ve.ui.UrlStringTransferHandler.static.types = [
 	// Support: Firefox
 	// Firefox type, preserves title
 	'text/x-moz-url',
+	// Support: Edge
+	// Format used by Microsoft Edge when copying from the address bar (T341281)
+	'text/link-preview',
 	// Used in GNOME drag-and-drop
 	'text/x-uri',
 	// Identify links in pasted plain text as well
@@ -64,7 +67,7 @@ ve.init.Platform.static.initializedPromise.then( () => {
 
 ve.ui.UrlStringTransferHandler.static.matchFunction = function ( item ) {
 	// Match all specific mime types
-	if ( ve.ui.UrlStringTransferHandler.static.types.indexOf( item.type ) >= 0 &&
+	if ( ve.ui.UrlStringTransferHandler.static.types.includes( item.type ) &&
 		item.type !== 'text/plain' ) {
 		return true;
 	}
@@ -116,6 +119,18 @@ ve.ui.UrlStringTransferHandler.prototype.process = function () {
 			} );
 			break;
 
+		case 'text/link-preview': {
+			// data is a JSON string
+			try {
+				const parsed = JSON.parse( data );
+				if ( parsed.url && parsed.title ) {
+					links = [ { href: parsed.url, title: parsed.title } ];
+				}
+			} catch ( err ) {
+			}
+			break;
+		}
+
 		default:
 			// A single URL
 			links = [ { href: data.trim() } ];
@@ -138,9 +153,7 @@ ve.ui.UrlStringTransferHandler.prototype.process = function () {
 		}
 
 		ve.dm.Document.static.addAnnotationsToData( content, annotationSet );
-		for ( let i = 0; i < content.length; i++ ) {
-			result.push( content[ i ] );
-		}
+		ve.batchPush( result, content );
 	} );
 	this.resolve( result );
 };

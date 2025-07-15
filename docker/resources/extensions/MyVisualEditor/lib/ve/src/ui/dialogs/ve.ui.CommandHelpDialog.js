@@ -13,7 +13,7 @@
  * @constructor
  * @param {Object} [config] Configuration options
  */
-ve.ui.CommandHelpDialog = function VeUiCommandHelpDialog( config ) {
+ve.ui.CommandHelpDialog = function VeUiCommandHelpDialog( config = {} ) {
 	// Parent constructor
 	ve.ui.CommandHelpDialog.super.call( this, config );
 };
@@ -129,7 +129,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 					if ( command.trigger ) {
 						if (
 							!command.ignoreCommand && (
-								availableCommands.indexOf( command.trigger ) === -1 ||
+								!availableCommands.includes( command.trigger ) ||
 								!commandRegistry.lookup( command.trigger )
 							)
 						) {
@@ -142,7 +142,7 @@ ve.ui.CommandHelpDialog.prototype.getSetupProcess = function ( data ) {
 						if ( command.shortcuts ) {
 							if (
 								command.checkCommand && (
-									availableCommands.indexOf( command.checkCommand ) === -1 ||
+									!availableCommands.includes( command.checkCommand ) ||
 									!commandRegistry.lookup( command.checkCommand )
 								)
 							) {

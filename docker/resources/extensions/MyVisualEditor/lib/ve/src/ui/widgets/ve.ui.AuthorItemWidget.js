@@ -20,9 +20,7 @@
  * @param {jQuery} $overlay Overlay in which to attach popups (e.g. color picker)
  * @param {Object} [config] Configuration options
  */
-ve.ui.AuthorItemWidget = function VeUiAuthorItemWidget( synchronizer, $overlay, config ) {
-	config = config || {};
-
+ve.ui.AuthorItemWidget = function VeUiAuthorItemWidget( synchronizer, $overlay, config = {} ) {
 	// Parent constructor
 	ve.ui.AuthorItemWidget.super.call( this, config );
 
@@ -122,6 +120,9 @@ ve.ui.AuthorItemWidget.prototype.setAuthorId = function ( authorId ) {
  */
 ve.ui.AuthorItemWidget.prototype.update = function () {
 	const authorData = this.synchronizer.getAuthorData( this.authorId );
+	if ( !authorData ) {
+		return;
+	}
 	this.name = authorData.name;
 	this.color = authorData.color;
 	this.$color.css( 'background-color', '#' + this.color );

@@ -28,7 +28,10 @@
  * @param {boolean} [sourceMode=false] Document is in source mode
  * @param {Object} [persistentStorage={}] Persistent storage object
  */
-ve.dm.Document = function VeDmDocument( data, htmlDocument, parentDocument, internalList, innerWhitespace, lang, dir, originalDocument, sourceMode, persistentStorage ) {
+ve.dm.Document = function VeDmDocument(
+	data, htmlDocument = ve.createDocumentFromHtml( '' ), parentDocument = null, internalList = null,
+	innerWhitespace = null, lang = 'en', dir = 'ltr', originalDocument = null, sourceMode = false, persistentStorage = {}
+) {
 	// Parent constructor
 	ve.dm.Document.super.call( this, new ve.dm.DocumentNode() );
 
@@ -36,10 +39,10 @@ ve.dm.Document = function VeDmDocument( data, htmlDocument, parentDocument, inte
 	const doc = parentDocument || this;
 	const root = this.documentNode;
 
-	this.lang = lang || 'en';
-	this.dir = dir || 'ltr';
+	this.lang = lang;
+	this.dir = dir;
 
-	this.sourceMode = !!sourceMode;
+	this.sourceMode = sourceMode;
 
 	this.documentNode.setRoot( root );
 	// ve.Document already called setDocument(), but it could be that doc !== this
@@ -50,8 +53,8 @@ ve.dm.Document = function VeDmDocument( data, htmlDocument, parentDocument, inte
 	this.metaList = new ve.dm.MetaList( this );
 
 	// Properties
-	this.parentDocument = parentDocument || null;
-	this.originalDocument = originalDocument || null;
+	this.parentDocument = parentDocument;
+	this.originalDocument = originalDocument;
 	this.nodesByType = {};
 	this.origInternalListLength = null;
 	this.readOnly = false;
@@ -82,8 +85,8 @@ ve.dm.Document = function VeDmDocument( data, htmlDocument, parentDocument, inte
 		} ] ) );
 		this.completeHistory.storeLengthAtTransaction.push( this.store.getLength() );
 	}
-	this.htmlDocument = htmlDocument || ve.createDocumentFromHtml( '' );
-	this.persistentStorage = persistentStorage || {};
+	this.htmlDocument = htmlDocument;
+	this.persistentStorage = persistentStorage;
 };
 
 /* Inheritance */
@@ -173,10 +176,8 @@ ve.dm.Document.static.addAnnotationsToData = function ( data, annotationSet, rep
  * @param {string} [paragraphType='empty'] Paragraph type: 'empty', 'wrapper' or null for a regular paragraph
  * @return {ve.dm.Document}
  */
-ve.dm.Document.static.newBlankDocument = function ( paragraphType ) {
+ve.dm.Document.static.newBlankDocument = function ( paragraphType = 'empty' ) {
 	const paragraph = { type: 'paragraph' };
-
-	paragraphType = paragraphType === undefined ? 'empty' : paragraphType;
 
 	if ( paragraphType ) {
 		ve.setProp( paragraph, 'internal', 'generated', paragraphType );
@@ -801,7 +802,7 @@ ve.dm.Document.prototype.getFullData = function ( range, mode ) {
 				mode === 'noMetadata' ||
 				mode === 'roundTrip' && (
 					// Already inserted
-					insertedMetaItems.indexOf( item.originalDomElementsHash ) !== -1 ||
+					insertedMetaItems.includes( item.originalDomElementsHash ) ||
 					// Removable meta item that was not handled yet, which means that its entire branch node
 					// must have been removed, so it's out of place and should be removed too
 					ve.dm.nodeFactory.isRemovableMetaData( item.type ) && ve.getProp( item, 'internal', 'loadMetaParentOffset' )
@@ -1056,7 +1057,7 @@ ve.dm.Document.prototype.getNearestFocusableNode = function ( offset, direction,
  * @return {number} Nearest offset a cursor can be placed at, or -1 if there are no valid offsets in
  *     data
  */
-ve.dm.Document.prototype.getNearestCursorOffset = function ( offset, direction ) {
+ve.dm.Document.prototype.getNearestCursorOffset = function ( offset, direction = -1 ) {
 	if ( direction === 0 ) {
 		const left = this.getNearestCursorOffset( offset, -1 );
 		const right = this.getNearestCursorOffset( offset, 1 );
@@ -1070,7 +1071,6 @@ ve.dm.Document.prototype.getNearestCursorOffset = function ( offset, direction )
 		return offset - left < right - offset ? left : right;
 	}
 
-	direction = direction > 0 ? 1 : -1;
 	if (
 		this.data.isContentOffset( offset ) ||
 		this.hasSlugAtOffset( offset )
@@ -1469,7 +1469,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			do {
 				const allowedParents = ve.dm.nodeFactory.getParentNodeTypes( childType );
 				parentsOK = allowedParents === null ||
-					allowedParents.indexOf( parentType ) !== -1;
+					allowedParents.includes( parentType );
 				if ( !parentsOK ) {
 					// We can't have this as the parent
 					if ( allowedParents.length === 0 ) {
@@ -1489,7 +1489,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			let suggestedParentsOK;
 			do {
 				suggestedParentsOK = suggestedParents === null ||
-					suggestedParents.indexOf( parentType ) !== -1;
+					suggestedParents.includes( parentType );
 				if ( !suggestedParentsOK ) {
 					closeElement( closings, reopenElements, childType, i );
 				}
@@ -1501,7 +1501,7 @@ ve.dm.Document.prototype.fixupInsertion = function ( data, offset ) {
 			do {
 				const allowedChildren = ve.dm.nodeFactory.getChildNodeTypes( parentType );
 				childrenOK = allowedChildren === null ||
-					allowedChildren.indexOf( childType ) !== -1;
+					allowedChildren.includes( childType );
 				// Also check if we're trying to insert structure into a node that has to contain
 				// content
 				childrenOK = childrenOK && !(
@@ -1642,9 +1642,7 @@ ve.dm.Document.prototype.newFromHtml = function ( html, importRules ) {
  * @param {boolean} [options.wholeWord] Only match whole-word occurrences
  * @return {ve.Range[]} List of ranges where the string was found
  */
-ve.dm.Document.prototype.findText = function ( query, options ) {
-	options = options || {};
-
+ve.dm.Document.prototype.findText = function ( query, options = {} ) {
 	const data = this.data,
 		searchRange = options.searchRange || this.getAttachedRootRange();
 	let ranges = [];
@@ -1795,12 +1793,17 @@ ve.dm.Document.prototype.getDir = function () {
  * Storage is used for static variables related to document state,
  * such as InternalList's nextUniqueNumber.
  *
+ * Values stored here must be JSON-serializable, as they are written/read
+ * with ve.init.SafeStorage#setObject and getObject.
+ *
  * @param {string|Object} [keyOrStorage] Key, or storage object to restore
  * @param {any} [value] Serializable value, if key is set
  * @fires ve.dm.Document#storage
  */
 ve.dm.Document.prototype.setStorage = function ( keyOrStorage, value ) {
 	if ( typeof keyOrStorage === 'string' ) {
+		// Attempt to JSON-serialize the value now so an error can be thrown if necessary.
+		JSON.stringify( { value: value } );
 		this.persistentStorage[ keyOrStorage ] = value;
 		this.emit( 'storage' );
 	} else {

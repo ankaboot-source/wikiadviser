@@ -17,7 +17,7 @@
  * @param {ve.dm.Model} model Model the item is related to
  * @param {Object} [config] Configuration options
  */
-ve.ui.MobileActionsContextItem = function VeUiMobileActionsContextItem( context, model, config ) {
+ve.ui.MobileActionsContextItem = function VeUiMobileActionsContextItem( context, model, config = {} ) {
 	// Parent constructor
 	ve.ui.MobileActionsContextItem.super.call( this, context, model, config );
 
@@ -55,6 +55,8 @@ OO.inheritClass( ve.ui.MobileActionsContextItem, ve.ui.LinearContextItem );
 ve.ui.MobileActionsContextItem.static.name = 'mobileActions';
 
 ve.ui.MobileActionsContextItem.static.editable = false;
+
+ve.ui.MobileActionsContextItem.static.exclusive = false;
 
 // Show this context last
 ve.ui.MobileActionsContextItem.static.sortOrder = 1;

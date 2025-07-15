@@ -51,6 +51,7 @@ ve.init.mw.LinkCache.static.processPage = function ( page ) {
 		missing: page.missing !== undefined,
 		known: page.known !== undefined,
 		redirect: page.redirect !== undefined,
+		linkclasses: page.linkclasses || [],
 		disambiguation: ve.getProp( page, 'pageprops', 'disambiguation' ) !== undefined,
 		hidden: ve.getProp( page, 'pageprops', 'hiddencat' ) !== undefined,
 		imageUrl: ve.getProp( page, 'thumbnail', 'source' ),
@@ -78,7 +79,9 @@ ve.init.mw.LinkCache.prototype.styleElement = function ( title, $element, hasFra
 		promise = this.get( title );
 	}
 
-	promise.done( ( data ) => {
+	promise.then( ( data ) => {
+		// eslint-disable-next-line mediawiki/class-doc
+		$element.addClass( data.linkclasses );
 		if ( data.missing && !data.known ) {
 			$element.addClass( 'new' );
 		} else {
@@ -167,6 +170,7 @@ ve.init.mw.LinkCache.prototype.getRequestPromise = function ( subqueue ) {
 	return this.api.get( {
 		action: 'query',
 		prop: 'info|pageprops|pageimages|description',
+		inprop: 'linkclasses',
 		pithumbsize: 80,
 		pilimit: subqueue.length,
 		ppprop: 'disambiguation|hiddencat',

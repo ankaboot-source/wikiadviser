@@ -281,7 +281,7 @@ ve.dm.TreeModifier.static.applyTreeOperation = function ( isReversed, document, 
 			}
 			if ( item.internal && item.internal.changesSinceLoad !== undefined ) {
 				// Guard against marking the same node twice
-				if ( changedBranchNodes.indexOf( item ) === -1 ) {
+				if ( !changedBranchNodes.includes( item ) ) {
 					const newItem = ve.copy( item );
 					changedBranchNodes.push( newItem );
 					newItem.internal.changesSinceLoad += adj;
@@ -315,7 +315,7 @@ ve.dm.TreeModifier.static.applyTreeOperation = function ( isReversed, document, 
 		}
 	}
 
-	const isTextOp = treeOp.type.slice( -4 ) === 'Text';
+	const isTextOp = treeOp.type.endsWith( 'Text' );
 	const f = treeOp.from && prepareSplice( treeOp.from, treeOp.isContent, isTextOp );
 	const t = treeOp.to && prepareSplice( treeOp.to, treeOp.isContent, isTextOp );
 	// eslint-disable-next-line es-x/no-array-string-prototype-at
@@ -1145,7 +1145,7 @@ ve.dm.TreeModifier.prototype.checkCanInsertNodeType = function ( nodeType ) {
 			throw new Error( 'Cannot add structure node (' + nodeType + ') to a ' + parentType + ' node' );
 		}
 
-		if ( Array.isArray( childNodeTypes ) && childNodeTypes.indexOf( nodeType ) === -1 ) {
+		if ( Array.isArray( childNodeTypes ) && !childNodeTypes.includes( nodeType ) ) {
 			throw new Error( 'Cannot add a ' + nodeType + ' node to ' + parentType + ' node' );
 		}
 	}

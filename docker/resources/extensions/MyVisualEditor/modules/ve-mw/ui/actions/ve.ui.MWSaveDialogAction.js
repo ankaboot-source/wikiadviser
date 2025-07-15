@@ -104,7 +104,8 @@ ve.ui.commandRegistry.register(
 		'showChanges', 'mwSaveDialog', 'review'
 	)
 );
-if ( mw.libs.ve.isWikitextAvailable ) {
+// TODO: mw.libs.ve.isWikitextAvailable is only available on desktop
+if ( mw.libs.ve.isWikitextAvailable && mw.libs.ve.isWikitextAvailable() ) {
 	// Ensure wikitextCommandRegistry has finished loading
 	mw.loader.using( 'ext.visualEditor.mwwikitext' ).then( () => {
 		ve.ui.wikitextCommandRegistry.register(
@@ -129,7 +130,10 @@ ve.ui.commandRegistry.register(
 
 /* Triggers & command help */
 
-( function () {
+// Avoid "Failed to register ctrl+option+(accesskey-save) Error: Incomplete trigger"
+// given that tests run with uselang=qqx.
+// TODO: Use content language?
+if ( !window.QUnit ) {
 	const accessKeyPrefix = $.fn.updateTooltipAccessKeys.getAccessKeyPrefix().replace( /-/g, '+' ),
 		shortcuts = [
 			{
@@ -186,4 +190,4 @@ ve.ui.commandRegistry.register(
 			ve.ui.MWCommandHelpDialog.static.commandGroups.other.demote.push( shortcut.command );
 		}
 	} );
-}() );
+}

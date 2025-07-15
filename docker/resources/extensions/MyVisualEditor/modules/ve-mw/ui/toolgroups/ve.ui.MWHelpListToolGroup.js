@@ -124,7 +124,7 @@ ve.ui.MWUserGuideTool.prototype.onUpdateState = function () {};
 ve.ui.MWUserGuideTool.prototype.onSelect = function () {
 	this.setActive( false );
 	const urlOrTitle = ve.msg( 'visualeditor-help-link' );
-	if ( urlOrTitle.indexOf( '//' ) !== -1 ) {
+	if ( urlOrTitle.includes( '//' ) ) {
 		window.open( urlOrTitle );
 	} else {
 		// This link used to be internal link to mw:, but that doesn't work
@@ -193,7 +193,7 @@ ve.ui.MWFeedbackDialogTool.prototype.onSelect = function () {
 			return new mw.Feedback( feedbackConfig );
 		} );
 	}
-	this.feedbackPromise.done( ( feedback ) => {
+	this.feedbackPromise.then( ( feedback ) => {
 		feedback.launch( {
 			message: ve.msg( 'visualeditor-feedback-defaultmessage', location.toString() )
 		} );

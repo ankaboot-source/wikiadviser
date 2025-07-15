@@ -14,10 +14,9 @@
  * @param {ve.init.Target} target
  * @param {Object} [config] Configuration options
  * @param {boolean} [config.floatable] Toolbar can float when scrolled off the page
+ * @param {boolean} [config.attachToolbarDialogs=true]
  */
-ve.ui.PositionedTargetToolbar = function VeUiPositionedTargetToolbar( target, config ) {
-	config = config || {};
-
+ve.ui.PositionedTargetToolbar = function VeUiPositionedTargetToolbar( target, config = {} ) {
 	// Parent constructor
 	ve.ui.PositionedTargetToolbar.super.apply( this, arguments );
 
@@ -30,6 +29,7 @@ ve.ui.PositionedTargetToolbar = function VeUiPositionedTargetToolbar( target, co
 	// Properties
 	this.floating = false;
 	this.floatable = !!config.floatable;
+	this.attachToolbarDialogs = config.attachToolbarDialogs !== false;
 	this.height = 0;
 	this.elementOffset = null;
 	this.onWindowScrollThrottled = ve.throttle( this.onWindowScroll.bind( this ), 250 );
@@ -51,18 +51,20 @@ ve.ui.PositionedTargetToolbar.prototype.setup = function ( groups, surface ) {
 	// Parent method
 	ve.ui.PositionedTargetToolbar.super.prototype.setup.apply( this, arguments );
 
-	[ 'above', 'below', 'side', 'inline' ].forEach( ( dialogPosition ) => {
-		const toolbarDialogs = surface.getToolbarDialogs( dialogPosition );
-		if ( this.position === 'bottom' ) {
-			this.$bar.prepend( toolbarDialogs.$element );
-		} else {
-			this.$bar.append( toolbarDialogs.$element );
-		}
-		toolbarDialogs.connect( this, {
-			opening: 'onToolbarDialogsOpeningOrClosing',
-			closing: 'onToolbarDialogsOpeningOrClosing'
+	if ( this.attachToolbarDialogs ) {
+		ve.ui.ToolbarDialogWindowManager.static.positions.forEach( ( dialogPosition ) => {
+			const toolbarDialogs = surface.getToolbarDialogs( dialogPosition );
+			if ( this.position === 'bottom' ) {
+				this.$bar.prepend( toolbarDialogs.$element );
+			} else {
+				this.$bar.append( toolbarDialogs.$element );
+			}
+			toolbarDialogs.connect( this, {
+				opening: 'onToolbarDialogsOpeningOrClosing',
+				closing: 'onToolbarDialogsOpeningOrClosing'
+			} );
 		} );
-	} );
+	}
 	if ( this.isFloatable() ) {
 		this.target.$scrollListener[ 0 ].addEventListener( 'scroll', this.onWindowScrollThrottled, { passive: true } );
 	}
@@ -74,7 +76,7 @@ ve.ui.PositionedTargetToolbar.prototype.setup = function ( groups, surface ) {
 ve.ui.PositionedTargetToolbar.prototype.detach = function () {
 	// Events
 	if ( this.getSurface() ) {
-		[ 'above', 'below', 'side', 'inline' ].forEach( ( dialogPosition ) => {
+		ve.ui.ToolbarDialogWindowManager.static.positions.forEach( ( dialogPosition ) => {
 			this.getSurface().getToolbarDialogs( dialogPosition ).disconnect( this );
 			this.getSurface().getToolbarDialogs( dialogPosition ).clearWindows();
 		} );
@@ -93,7 +95,8 @@ ve.ui.PositionedTargetToolbar.prototype.detach = function () {
  * @inheritdoc
  */
 ve.ui.PositionedTargetToolbar.prototype.onWindowResize = function () {
-	ve.ui.Toolbar.super.prototype.onWindowResize.call( this );
+	// Parent method
+	ve.ui.PositionedTargetToolbar.super.prototype.onWindowResize.call( this );
 
 	// Update offsets after resize (see #float)
 	this.calculateOffset();
@@ -269,9 +272,12 @@ ve.ui.PositionedTargetToolbar.prototype.onViewportResize = function () {
 	if ( sideWindow ) {
 		const viewportDimensions = surface.getViewportDimensions();
 		if ( viewportDimensions ) {
-			sideWindow.$frame.css(
-				'height', Math.min( surface.getBoundingClientRect().height, viewportDimensions.height )
-			);
+			// TODO: Add on the gap between the surface and the bottom of the toolbar
+			// (e.g. as used by #siteSub) as the sidebar moves up into this space.
+			// It is only usually about 20px, so not a big issue for now.
+			const surfaceRect = surface.getBoundingClientRect();
+			const sideWindowRect = sideWindow.$frame[ 0 ].getBoundingClientRect();
+			sideWindow.$frame.css( 'height', Math.min( surfaceRect.bottom - sideWindowRect.top, viewportDimensions.height ) );
 		}
 	}
 };
@@ -280,7 +286,5 @@ ve.ui.PositionedTargetToolbar.prototype.onViewportResize = function () {
  * Handle window scroll events
  */
 ve.ui.PositionedTargetToolbar.prototype.onWindowScroll = function () {
-	if ( !this.floating ) {
-		this.onViewportResize();
-	}
+	this.onViewportResize();
 };

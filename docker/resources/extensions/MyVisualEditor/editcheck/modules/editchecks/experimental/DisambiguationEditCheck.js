@@ -1,4 +1,4 @@
-mw.editcheck.DisambiguationEditCheck = function MWDisambiguationEditCheck( /* config */ ) {
+mw.editcheck.DisambiguationEditCheck = function MWDisambiguationEditCheck() {
 	// Parent constructor
 	mw.editcheck.DisambiguationEditCheck.super.apply( this, arguments );
 };
@@ -25,26 +25,19 @@ mw.editcheck.DisambiguationEditCheck.static.choices = [
 ];
 
 mw.editcheck.DisambiguationEditCheck.prototype.onDocumentChange = function ( surfaceModel ) {
-	return surfaceModel.documentModel.documentNode.getAnnotationRanges().map( ( annRange ) => {
-		const annotation = annRange.annotation;
-		if ( !( annotation instanceof ve.dm.MWInternalLinkAnnotation ) ) {
-			return null;
-		}
-
+	const isDisambig = ( annotation ) => {
 		const linkData = ve.init.platform.linkCache.getCached( annotation.getAttribute( 'lookupTitle' ) );
-		if ( !linkData || !linkData.disambiguation ) {
-			return null;
-		}
-
-		if ( this.isDismissedRange( annRange.range ) ) {
-			return null;
-		}
-		const fragment = surfaceModel.getLinearFragment( annRange.range );
-		return new mw.editcheck.EditCheckAction( {
-			fragments: [ fragment ],
-			check: this
-		} );
-	} ).filter( ( action ) => action );
+		return linkData && linkData.disambiguation;
+	};
+	return surfaceModel.documentModel.documentNode.getAnnotationRanges().filter(
+		( annRange ) => annRange.annotation instanceof ve.dm.MWInternalLinkAnnotation &&
+			isDisambig( annRange.annotation ) &&
+			this.isRangeInValidSection( annRange.range, surfaceModel.documentModel ) &&
+			!this.isDismissedRange( annRange.range )
+	).map( ( annRange ) => new mw.editcheck.EditCheckAction( {
+		fragments: [ surfaceModel.getLinearFragment( annRange.range ) ],
+		check: this
+	} ) );
 };
 
 mw.editcheck.DisambiguationEditCheck.prototype.act = function ( choice, action, surface ) {
@@ -54,9 +47,9 @@ mw.editcheck.DisambiguationEditCheck.prototype.act = function ( choice, action, 
 			break;
 		case 'edit':
 			setTimeout( () => {
-				action.selection.select();
+				action.fragments[ 0 ].select();
 				surface.execute( 'window', 'open', 'link' );
-			}, 500 );
+			} );
 			break;
 	}
 };

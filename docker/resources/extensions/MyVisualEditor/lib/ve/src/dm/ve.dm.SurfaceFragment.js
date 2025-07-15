@@ -183,7 +183,7 @@ ve.dm.SurfaceFragment.prototype.willAutoSelect = function () {
 /**
  * Change whether to automatically update the surface selection when making changes.
  *
- * @param {boolean} [autoSelect=true] Automatically update surface selection
+ * @param {boolean} autoSelect Automatically update surface selection
  * @return {ve.dm.SurfaceFragment}
  * @chainable
  */
@@ -319,7 +319,7 @@ ve.dm.SurfaceFragment.prototype.trimLinearSelection = function () {
  * @param {ve.dm.Annotation|ve.dm.Node} [type] Parameter to use with scope method if needed
  * @return {ve.dm.SurfaceFragment} Expanded fragment
  */
-ve.dm.SurfaceFragment.prototype.expandLinearSelection = function ( scope, type ) {
+ve.dm.SurfaceFragment.prototype.expandLinearSelection = function ( scope = 'parent', type = null ) {
 	if ( !( this.selection instanceof ve.dm.LinearSelection ) ) {
 		return this.clone();
 	}
@@ -328,7 +328,7 @@ ve.dm.SurfaceFragment.prototype.expandLinearSelection = function ( scope, type )
 	let newRange;
 	let nodes, node, parent;
 
-	switch ( scope || 'parent' ) {
+	switch ( scope ) {
 		case 'word':
 			if ( !oldRange.isCollapsed() ) {
 				newRange = ve.Range.static.newCoveringRange( [
@@ -341,7 +341,7 @@ ve.dm.SurfaceFragment.prototype.expandLinearSelection = function ( scope, type )
 			}
 			break;
 		case 'annotation':
-			newRange = this.document.data.getAnnotatedRangeFromSelection( oldRange, type );
+			newRange = this.document.data.getAnnotatedRangeFromRange( oldRange, type );
 			// Adjust selection if it does not contain the annotated range
 			if ( oldRange.start > newRange.start || oldRange.end < newRange.end ) {
 				// Maintain range direction
@@ -785,7 +785,9 @@ ve.dm.SurfaceFragment.prototype.annotateContent = function ( method, nameOrAnnot
  * in a paragraph.
  *
  * @param {string|Array} content Content to insert, can be either a string or array of data
- * @param {boolean|ve.dm.AnnotationSet} [annotateOrSet] Content should be automatically annotated to match surrounding content,
+ * @param {boolean|ve.dm.AnnotationSet} [annotateOrSet] Content should be automatically annotated
+ *  with annotations covering the selection / annotations at the current offset, or a set of
+ *  annotations to annotate the content with.
  *  or an AnnotationSet from the current offset (calculated from the view)
  * @return {ve.dm.SurfaceFragment}
  * @chainable
@@ -807,7 +809,7 @@ ve.dm.SurfaceFragment.prototype.insertContent = function ( content, annotateOrSe
 	}
 
 	if ( !range.isCollapsed() ) {
-		if ( annotate ) {
+		if ( annotate && !annotations ) {
 			// If we're replacing content, use the annotations selected
 			// instead of continuing from the left
 			annotations = this.getAnnotations();
@@ -887,7 +889,9 @@ ve.dm.SurfaceFragment.prototype.insertHtml = function ( html, importRules ) {
  *
  * @param {ve.dm.Document} newDoc Document to insert
  * @param {ve.Range} [newDocRange] Range from the new document to insert (defaults to entire document)
- * @param {boolean|ve.dm.AnnotationSet} [annotateOrSet] Content should be automatically annotated to match surrounding content,
+ * @param {boolean|ve.dm.AnnotationSet} [annotateOrSet] Content should be automatically annotated
+ *  with annotations covering the selection / annotations at the current offset, or a set of
+ *  annotations to annotate the content with.
  *  or an AnnotationSet from the current offset (calculated from the view)
  * @return {ve.dm.SurfaceFragment}
  * @chainable
@@ -909,7 +913,7 @@ ve.dm.SurfaceFragment.prototype.insertDocument = function ( newDoc, newDocRange,
 	}
 
 	if ( !range.isCollapsed() ) {
-		if ( annotate ) {
+		if ( annotate && !annotations ) {
 			// If we're replacing content, use the annotations selected
 			// instead of continuing from the left
 			annotations = this.getAnnotations();
@@ -971,7 +975,7 @@ ve.dm.SurfaceFragment.prototype.removeContent = function () {
  * @return {ve.dm.SurfaceFragment}
  * @chainable
  */
-ve.dm.SurfaceFragment.prototype.delete = function ( directionAfterDelete ) {
+ve.dm.SurfaceFragment.prototype.delete = function ( directionAfterDelete = -1 ) {
 	const rangeToRemove = this.getSelection().getCoveringRange();
 
 	if ( !rangeToRemove || rangeToRemove.isCollapsed() ) {
@@ -1059,7 +1063,7 @@ ve.dm.SurfaceFragment.prototype.delete = function ( directionAfterDelete ) {
 	const nearestOffset = this.document.data.getNearestContentOffset(
 		rangeAfterRemove.start,
 		// If undefined (e.g. cut), default to backwards movement
-		directionAfterDelete || -1
+		directionAfterDelete
 	);
 	if ( nearestOffset > -1 ) {
 		rangeAfterRemove = new ve.Range( nearestOffset );
@@ -1379,7 +1383,7 @@ ve.dm.SurfaceFragment.prototype.isolateAndUnwrap = function ( isolateForType ) {
 	let startSplitNode = nodes[ 0 ].node;
 	startOffset = startSplitNode.getOuterRange().start;
 	if ( allowedParents !== null ) {
-		while ( allowedParents.indexOf( startSplitNode.getParent().type ) === -1 ) {
+		while ( !allowedParents.includes( startSplitNode.getParent().type ) ) {
 			if ( startSplitNode.getParent().indexOf( startSplitNode ) > 0 ) {
 				startSplitRequired = true;
 			}
@@ -1397,7 +1401,7 @@ ve.dm.SurfaceFragment.prototype.isolateAndUnwrap = function ( isolateForType ) {
 	let endSplitNode = nodes[ nodes.length - 1 ].node;
 	endOffset = endSplitNode.getOuterRange().end;
 	if ( allowedParents !== null ) {
-		while ( allowedParents.indexOf( endSplitNode.getParent().type ) === -1 ) {
+		while ( !allowedParents.includes( endSplitNode.getParent().type ) ) {
 			if ( endSplitNode.getParent().indexOf( endSplitNode ) < endSplitNode.getParent().getChildren().length - 1 ) {
 				endSplitRequired = true;
 			}

@@ -18,15 +18,13 @@
  * @param {Object} [config] Configuration options
  * @param {boolean} [config.sourceMode=false] Source editing mode
  */
-ve.dm.Surface = function VeDmSurface( doc, attachedRoot, config ) {
+ve.dm.Surface = function VeDmSurface( doc, attachedRoot, config = {} ) {
 	// Support old (doc, config) argument order
 	// TODO: Remove this once all callers are updated
-	if ( !config && ve.isPlainObject( attachedRoot ) ) {
+	if ( ve.isPlainObject( attachedRoot ) ) {
 		config = attachedRoot;
 		attachedRoot = undefined;
 	}
-
-	config = config || {};
 
 	attachedRoot = attachedRoot || doc.getDocumentNode();
 	if ( !( attachedRoot instanceof ve.dm.BranchNode ) ) {
@@ -227,7 +225,7 @@ ve.dm.Surface.prototype.isMultiUser = function () {
  * @param {string} documentId Document ID
  * @param {Object} [config] Configuration options
  */
-ve.dm.Surface.prototype.createSynchronizer = function ( documentId, config ) {
+ve.dm.Surface.prototype.createSynchronizer = function ( documentId, config = {} ) {
 	if ( this.synchronizer ) {
 		throw new Error( 'Synchronizer already set' );
 	}
@@ -1170,6 +1168,9 @@ ve.dm.Surface.prototype.getSelectedNode = function () {
 /**
  * Get the selected node covering a specific selection, or null
  *
+ * Will return a node if it is wrapped (e.g. not a TextNode or DocumentNode)
+ * and fully selected.
+ *
  * @param {ve.dm.Selection} [selection] Selection, defaults to the current selection
  * @return {ve.dm.Node|null} Selected node
  */
@@ -1184,7 +1185,7 @@ ve.dm.Surface.prototype.getSelectedNodeFromSelection = function ( selection ) {
 	const range = selection.getRange();
 	if ( !range.isCollapsed() ) {
 		const startNode = this.getDocument().documentNode.getNodeFromOffset( range.start + 1 );
-		if ( startNode && startNode.getOuterRange().equalsSelection( range ) ) {
+		if ( startNode && startNode.isWrapped() && startNode.getOuterRange().equalsSelection( range ) ) {
 			selectedNode = startNode;
 		}
 	}
@@ -1213,11 +1214,9 @@ ve.dm.Surface.prototype.onDocumentPreCommit = function ( tx ) {
  * @param {boolean} [options.excludeAttributes] Exclude attribute changes
  * @return {ve.Range[]} Modified ranges
  */
-ve.dm.Surface.prototype.getModifiedRanges = function ( options ) {
+ve.dm.Surface.prototype.getModifiedRanges = function ( options = {} ) {
 	const doc = this.getDocument();
 	const ranges = [];
-
-	options = options || {};
 
 	this.getHistory().forEach( ( stackItem ) => {
 		stackItem.transactions.forEach( ( tx ) => {
@@ -1544,15 +1543,14 @@ ve.dm.Surface.prototype.updateDocState = function ( state ) {
 /**
  * Update the expiry value of keys in use
  *
- * @param {string[]} [skipKeys] Keys to skip (because they have just been updated)
+ * @param {string[]} [skipKeys=[]] Keys to skip (because they have just been updated)
  */
-ve.dm.Surface.prototype.updateExpiry = function ( skipKeys ) {
+ve.dm.Surface.prototype.updateExpiry = function ( skipKeys = [] ) {
 	if ( !this.storageExpiry ) {
 		return;
 	}
-	skipKeys = skipKeys || [];
 	[ 've-docstate', 've-dochtml', 've-selection', 've-changes' ].forEach( ( key ) => {
-		if ( skipKeys.indexOf( key ) === -1 ) {
+		if ( !skipKeys.includes( key ) ) {
 			this.storage.setExpires( this.autosavePrefix + key, this.storageExpiry );
 		}
 	} );

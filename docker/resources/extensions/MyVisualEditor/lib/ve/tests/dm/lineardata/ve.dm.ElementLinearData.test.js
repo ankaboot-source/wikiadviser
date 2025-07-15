@@ -13,23 +13,22 @@ QUnit.test( 'getAnnotationsFromOffset', ( assert ) => {
 		{
 			msg: [ 'bold #1', 'bold #2' ],
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/bold' } ] ]
+				...ve.dm.example.annotateText( 'ab', ve.dm.example.bold )
 			],
 			expected: [
-				[ { type: 'textStyle/bold' } ],
-				[ { type: 'textStyle/bold' } ]
+				[ ve.dm.example.bold ],
+				[ ve.dm.example.bold ]
 			]
 		},
 		{
 			msg: [ 'bold #3', 'italic #1' ],
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/italic' } ] ]
+				[ 'a', [ ve.dm.example.bold ] ],
+				[ 'b', [ ve.dm.example.italic ] ]
 			],
 			expected: [
-				[ { type: 'textStyle/bold' } ],
-				[ { type: 'textStyle/italic' } ]
+				[ ve.dm.example.bold ],
+				[ ve.dm.example.italic ]
 			]
 		},
 		{
@@ -38,17 +37,17 @@ QUnit.test( 'getAnnotationsFromOffset', ( assert ) => {
 				[
 					'a',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' },
-						{ type: 'textStyle/underline' }
+						ve.dm.example.bold,
+						ve.dm.example.italic,
+						ve.dm.example.underline
 					]
 				]
 			],
 			expected: [
 				[
-					{ type: 'textStyle/bold' },
-					{ type: 'textStyle/italic' },
-					{ type: 'textStyle/underline' }
+					ve.dm.example.bold,
+					ve.dm.example.italic,
+					ve.dm.example.underline
 				]
 			]
 		},
@@ -56,17 +55,17 @@ QUnit.test( 'getAnnotationsFromOffset', ( assert ) => {
 			msg: [ 'unannotated element', 'annotated element', 'annotated close element', 'unannotated element' ],
 			data: [
 				{ type: 'paragraph' },
-				{ type: 'break', annotations: [ { type: 'textStyle/bold' } ] },
+				{ type: 'break', annotations: [ ve.dm.example.bold ] },
 				{ type: '/break' },
 				{ type: '/paragraph' }
 			],
 			expected: [
 				[],
 				[
-					{ type: 'textStyle/bold' }
+					ve.dm.example.bold
 				],
 				[
-					{ type: 'textStyle/bold' }
+					ve.dm.example.bold
 				],
 				[]
 			]
@@ -76,14 +75,14 @@ QUnit.test( 'getAnnotationsFromOffset', ( assert ) => {
 			ignoreClose: true,
 			data: [
 				{ type: 'paragraph' },
-				{ type: 'break', annotations: [ { type: 'textStyle/bold' } ] },
+				{ type: 'break', annotations: [ ve.dm.example.bold ] },
 				{ type: '/break' },
 				{ type: '/paragraph' }
 			],
 			expected: [
 				[],
 				[
-					{ type: 'textStyle/bold' }
+					ve.dm.example.bold
 				],
 				[],
 				[]
@@ -117,42 +116,27 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 		{
 			msg: 'single annotations',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/bold' } ] ]
+				...ve.dm.example.annotateText( 'ab', ve.dm.example.bold )
 			],
-			expected: [ { type: 'textStyle/bold' } ]
+			expected: [ ve.dm.example.bold ]
 		},
 		{
 			msg: 'single annotation with non-content data',
 			data: [
 				{ type: 'paragraph' },
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/bold' } ] ],
+				...ve.dm.example.annotateText( 'ab', ve.dm.example.bold ),
 				{ type: '/paragraph' }
 			],
-			expected: [ { type: 'textStyle/bold' } ]
+			expected: [ ve.dm.example.bold ]
 		},
 		{
 			msg: 'multiple annotations',
 			data: [
-				[
-					'a',
-					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
-					]
-				],
-				[
-					'b',
-					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
-					]
-				]
+				...ve.dm.example.annotateText( 'abc', [ ve.dm.example.bold, ve.dm.example.italic ] )
 			],
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
@@ -161,22 +145,22 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 				[
 					'a',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
+						ve.dm.example.bold,
+						ve.dm.example.italic
 					]
 				],
 				[
 					'b',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' },
-						{ type: 'textStyle/underline' }
+						ve.dm.example.bold,
+						ve.dm.example.italic,
+						ve.dm.example.underline
 					]
 				]
 			],
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
@@ -186,16 +170,16 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 				[
 					'b',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' },
-						{ type: 'textStyle/underline' }
+						ve.dm.example.bold,
+						ve.dm.example.italic,
+						ve.dm.example.underline
 					]
 				],
 				[
 					'c',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
+						ve.dm.example.bold,
+						ve.dm.example.italic
 					]
 				]
 			],
@@ -207,17 +191,17 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 				[
 					'a',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' },
-						{ type: 'textStyle/underline' }
+						ve.dm.example.bold,
+						ve.dm.example.italic,
+						ve.dm.example.underline
 					]
 				],
 				[ 'b' ],
 				[
 					'c',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
+						ve.dm.example.bold,
+						ve.dm.example.italic
 					]
 				]
 			],
@@ -229,16 +213,16 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 				[
 					'a',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' }
+						ve.dm.example.bold,
+						ve.dm.example.italic
 					]
 				],
 				[
 					'b',
 					[
-						{ type: 'textStyle/bold' },
-						{ type: 'textStyle/italic' },
-						{ type: 'textStyle/underline' }
+						ve.dm.example.bold,
+						ve.dm.example.italic,
+						ve.dm.example.underline
 					]
 				],
 				[ 'c' ]
@@ -248,15 +232,15 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 		{
 			msg: 'no common coverage due to mismatched annotations',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/italic' } ] ]
+				[ 'a', [ ve.dm.example.bold ] ],
+				[ 'b', [ ve.dm.example.italic ] ]
 			],
 			expected: []
 		},
 		{
 			msg: 'no common coverage due to un-annotated content node',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
+				[ 'a', [ ve.dm.example.bold ] ],
 				{ type: 'inlineImage' },
 				{ type: '/inlineImage' }
 			],
@@ -265,61 +249,61 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 		{
 			msg: 'branch node is ignored',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
+				[ 'a', [ ve.dm.example.bold ] ],
 				{ type: 'paragraph' },
 				{ type: '/paragraph' }
 			],
-			expected: [ { type: 'textStyle/bold' } ]
+			expected: [ ve.dm.example.bold ]
 		},
 		{
 			msg: 'annotations are collected using all with mismatched annotations',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/italic' } ] ]
+				[ 'a', [ ve.dm.example.bold ] ],
+				[ 'b', [ ve.dm.example.italic ] ]
 			],
 			all: true,
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
 			msg: 'annotations are collected using all, even with a plain character at the start',
 			data: [
 				'a',
-				[ 'b', [ { type: 'textStyle/bold' } ] ],
-				[ 'c', [ { type: 'textStyle/italic' } ] ]
+				[ 'b', [ ve.dm.example.bold ] ],
+				[ 'c', [ ve.dm.example.italic ] ]
 			],
 			all: true,
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
 			msg: 'annotations are collected using all, even with a plain character in the middle',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
+				[ 'a', [ ve.dm.example.bold ] ],
 				'b',
-				[ 'c', [ { type: 'textStyle/italic' } ] ]
+				[ 'c', [ ve.dm.example.italic ] ]
 			],
 			all: true,
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
 			msg: 'annotations are collected using all, even with a plain character at the end',
 			data: [
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/italic' } ] ],
+				[ 'a', [ ve.dm.example.bold ] ],
+				[ 'b', [ ve.dm.example.italic ] ],
 				'c'
 			],
 			all: true,
 			expected: [
-				{ type: 'textStyle/bold' },
-				{ type: 'textStyle/italic' }
+				ve.dm.example.bold,
+				ve.dm.example.italic
 			]
 		},
 		{
@@ -337,8 +321,7 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 			msg: 'contents of ignoreChildren nodes are skipped',
 			data: [
 				{ type: 'exampleIgnoreChildren' },
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/bold' } ] ],
+				...ve.dm.example.annotateText( 'ab', ve.dm.example.bold ),
 				{ type: '/exampleIgnoreChildren' }
 			],
 			expected: []
@@ -347,8 +330,8 @@ QUnit.test( 'getAnnotationsFromRange', ( assert ) => {
 			msg: 'contents of ignoreChildren nodes are skipped in all mode too',
 			data: [
 				{ type: 'exampleIgnoreChildren' },
-				[ 'a', [ { type: 'textStyle/bold' } ] ],
-				[ 'b', [ { type: 'textStyle/italic' } ] ],
+				[ 'a', [ ve.dm.example.bold ] ],
+				[ 'b', [ ve.dm.example.italic ] ],
 				{ type: '/exampleIgnoreChildren' }
 			],
 			all: true,
@@ -411,20 +394,34 @@ QUnit.test( 'getInsertionAnnotationsFromRange', ( assert ) => {
 	} );
 } );
 
-QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
+QUnit.test( 'getAnnotatedRangeFromOffset/getAnnotatedRangeFromRange', ( assert ) => {
 	const cases = [
 		{
-			msg: 'a bold word',
+			msg: 'a bold word (offset)',
 			data: [
 				// 0
 				'a',
 				// 1-4
-				...ve.dm.example.annotateText( 'bold', { type: 'textStyle/bold' } ),
+				...ve.dm.example.annotateText( 'bold', ve.dm.example.bold ),
 				// 5-8
 				...'word'
 			],
-			annotation: { type: 'textStyle/bold' },
+			annotation: ve.dm.example.bold,
 			offset: 3,
+			expected: new ve.Range( 1, 5 )
+		},
+		{
+			msg: 'a bold word (range)',
+			data: [
+				// 0
+				'a',
+				// 1-4
+				...ve.dm.example.annotateText( 'bold', ve.dm.example.bold ),
+				// 5-8
+				...'word'
+			],
+			annotation: ve.dm.example.bold,
+			range: new ve.Range( 2, 4 ),
 			expected: new ve.Range( 1, 5 )
 		},
 		{
@@ -447,21 +444,21 @@ QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
 				// 0
 				'h',
 				// 1-2
-				...ve.dm.example.annotateText( 'bo', { type: 'textStyle/bold' } ),
+				...ve.dm.example.annotateText( 'bo', ve.dm.example.bold ),
 				// 3
 				{
 					type: 'inlineImage',
 					attributes: { src: ve.dm.example.imgSrc },
-					annotations: [ { type: 'textStyle/bold' } ]
+					annotations: [ ve.dm.example.bold ]
 				},
 				// 4
 				{ type: '/inlineImage' },
 				// 5-6
-				...ve.dm.example.annotateText( 'ld', { type: 'textStyle/bold' } ),
+				...ve.dm.example.annotateText( 'ld', ve.dm.example.bold ),
 				// 7
 				'i'
 			],
-			annotation: { type: 'textStyle/bold' },
+			annotation: ve.dm.example.bold,
 			offset: 3,
 			expected: new ve.Range( 1, 7 )
 		}
@@ -470,9 +467,14 @@ QUnit.test( 'getAnnotatedRangeFromOffset', ( assert ) => {
 	cases.forEach( ( caseItem ) => {
 		const data = ve.dm.example.preprocessAnnotations( caseItem.data );
 		const doc = new ve.dm.Document( data );
+		let range;
+		if ( caseItem.range ) {
+			range = doc.data.getAnnotatedRangeFromRange( caseItem.range, ve.dm.example.createAnnotation( caseItem.annotation ) );
+		} else {
+			range = doc.data.getAnnotatedRangeFromOffset( caseItem.offset, ve.dm.example.createAnnotation( caseItem.annotation ) );
+		}
 		assert.equalRange(
-			doc.data.getAnnotatedRangeFromOffset( caseItem.offset,
-				ve.dm.example.createAnnotation( caseItem.annotation ) ),
+			range,
 			caseItem.expected,
 			caseItem.msg
 		);
@@ -728,13 +730,13 @@ QUnit.test( 'getCharacterData', ( assert ) => {
 QUnit.test( 'isPlainText', ( assert ) => {
 	const doc = ve.dm.example.createExampleDocument();
 
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 1, 2 ), false ), true, 'Plain text' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 1, 3 ), true ), false, 'Annotated text' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 2, 3 ), true, undefined, true ), true, 'Annotated text, ignoring covering annotations' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 9, 11 ), false ), false, 'Paragraph and text (no content nodes)' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 9, 11 ), true ), true, 'Paragraph and text (content nodes allowed)' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 12, 26 ), false ), false, 'List (no content nodes)' );
-	assert.strictEqual( doc.data.isPlainText( new ve.Range( 12, 26 ), true ), true, 'List (content nodes allowed)' );
+	assert.true( doc.data.isPlainText( new ve.Range( 1, 2 ), false ), 'Plain text' );
+	assert.false( doc.data.isPlainText( new ve.Range( 1, 3 ), true ), 'Annotated text' );
+	assert.true( doc.data.isPlainText( new ve.Range( 2, 3 ), true, undefined, true ), 'Annotated text, ignoring covering annotations' );
+	assert.false( doc.data.isPlainText( new ve.Range( 9, 11 ), false ), 'Paragraph and text (no content nodes)' );
+	assert.true( doc.data.isPlainText( new ve.Range( 9, 11 ), true ), 'Paragraph and text (content nodes allowed)' );
+	assert.false( doc.data.isPlainText( new ve.Range( 12, 26 ), false ), 'List (no content nodes)' );
+	assert.true( doc.data.isPlainText( new ve.Range( 12, 26 ), true ), 'List (content nodes allowed)' );
 } );
 
 QUnit.test( 'getText', ( assert ) => {
@@ -829,9 +831,7 @@ QUnit.test( 'getRelativeOffset', ( assert ) => {
 			offset: 0,
 			distance: 1,
 			data: [],
-			callback: function () {
-				return false;
-			},
+			callback: () => false,
 			expected: -1
 		},
 		{
@@ -839,9 +839,7 @@ QUnit.test( 'getRelativeOffset', ( assert ) => {
 			offset: 0,
 			distance: 2,
 			data: [ ...'ab' ],
-			callback: function () {
-				return true;
-			},
+			callback: () => true,
 			expected: 2
 		},
 		{
@@ -1347,6 +1345,12 @@ QUnit.test( 'getWordRange', ( assert ) => {
 				expected: 'aided'
 			},
 			{
+				phrase: 'Double  space',
+				msg: 'middle of double space',
+				offset: 7,
+				expected: ''
+			},
+			{
 				phrase: 'Water (l\'eau) is',
 				msg: 'apostrophe and parentheses (Latin)',
 				offset: 8,
@@ -1414,15 +1418,33 @@ QUnit.test( 'getWordRange', ( assert ) => {
 			},
 			{
 				phrase: '维基百科',
-				msg: 'Hanzi characters (cursor in middle)',
+				msg: 'Hanzi characters (cursor in middle, so can\'t choose)',
 				offset: 2,
-				expected: '基'
+				expected: ''
 			},
 			{
 				phrase: '维基百科',
 				msg: 'Hanzi characters (cursor at end)',
 				offset: 4,
 				expected: '科'
+			},
+			{
+				phrase: '维基百科',
+				msg: 'Hanzi characters (cursor at start)',
+				offset: 0,
+				expected: '维'
+			},
+			{
+				phrase: '维 基 百科',
+				msg: 'Hanzi character isolated (cursor at start)',
+				offset: 2,
+				expected: '基'
+			},
+			{
+				phrase: '维 基 百科',
+				msg: 'Hanzi character isolated (cursor at end)',
+				offset: 3,
+				expected: '基'
 			},
 			{
 				phrase: 'a b',
@@ -1437,9 +1459,9 @@ QUnit.test( 'getWordRange', ( assert ) => {
 				expected: 'b'
 			},
 			{
-				phrase: '佢地嘅𨋢壞咗',
+				phrase: '"𨋢"=lip1',
 				msg: 'Surrogate-pair word character before cursor',
-				offset: 5,
+				offset: 2,
 				expected: '𨋢'
 			},
 			{
@@ -1500,12 +1522,12 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p style="text-shadow: 0 0 1px #000;">F<b style="color:blue;">o</b>o</p>',
 				data: [
 					{ type: 'paragraph' },
-					'F', [ 'o', [ 'h49981eab0f8056ff' ] ], 'o',
+					'F', [ 'o', [ ve.dm.example.boldHash ] ], 'o',
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
 				],
-				store: { h49981eab0f8056ff: bold },
+				store: { [ ve.dm.example.boldHash ]: bold },
 				rules: { removeOriginalDomElements: true },
 				msg: 'Original DOM elements removed'
 			},
@@ -1542,13 +1564,13 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<span rel="ve:Alien">b</span>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					[ 'a', [ 'h49981eab0f8056ff' ] ],
+					[ 'a', [ ve.dm.example.boldHash ] ],
 					{
 						type: 'alienInline',
-						annotations: [ 'h49981eab0f8056ff' ]
+						annotations: [ ve.dm.example.boldHash ]
 					},
 					{ type: '/alienInline' },
-					[ 'c', [ 'h49981eab0f8056ff' ] ],
+					[ 'c', [ ve.dm.example.boldHash ] ],
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -1563,7 +1585,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<i></i>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( 'ac', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( 'ac', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{
 						type: 'removableAlienMeta',
@@ -1587,7 +1609,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>a<i></i>c</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( 'ac', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( 'ac', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -1723,7 +1745,7 @@ QUnit.test( 'sanitize', ( assert ) => {
 				html: '<p><b>1<b>2</b>3</b></p>',
 				data: [
 					{ type: 'paragraph' },
-					...ve.dm.example.annotateText( '123', 'h49981eab0f8056ff' ),
+					...ve.dm.example.annotateText( '123', ve.dm.example.boldHash ),
 					{ type: '/paragraph' },
 					{ type: 'internalList' },
 					{ type: '/internalList' }
@@ -2006,9 +2028,7 @@ QUnit.test( 'hasContent', ( assert ) => {
 } );
 
 QUnit.test( 'getAnnotationHashesFromOffset', ( assert ) => {
-	const boldHash = 'h49981eab0f8056ff',
-		italicHash = 'hefd27ef3bf2041dd',
-		linearData = ve.dm.example.preprocessAnnotations( ve.copy( ve.dm.example.data ) ),
+	const linearData = ve.dm.example.preprocessAnnotations( ve.copy( ve.dm.example.data ) ),
 		elementData = new ve.dm.ElementLinearData( linearData.getStore(), linearData.getData() ),
 		cases = [
 			{
@@ -2021,13 +2041,13 @@ QUnit.test( 'getAnnotationHashesFromOffset', ( assert ) => {
 				msg: '2 has a BoldAnnotation',
 				offset: 2,
 				ignoreClose: true,
-				expected: [ boldHash ]
+				expected: [ ve.dm.example.boldHash ]
 			},
 			{
 				msg: '3 contains an ItalicAnnotation',
 				offset: 3,
 				ignoreClose: true,
-				expected: [ italicHash ]
+				expected: [ ve.dm.example.italicHash ]
 			}
 		],
 		errorCases = [
@@ -2072,30 +2092,30 @@ QUnit.test( 'getUsedStoreValues', ( assert ) => {
 			{
 				msg: 'no range (whole document) contains everything',
 				expected: {
-					h49981eab0f8056ff: bold,
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.boldHash ]: bold,
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
 				msg: '2-4 contains bold and italic',
 				range: new ve.Range( 2, 4 ),
 				expected: {
-					h49981eab0f8056ff: bold,
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.boldHash ]: bold,
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
 				msg: '2-3 contains bold',
 				range: new ve.Range( 2, 3 ),
 				expected: {
-					h49981eab0f8056ff: bold
+					[ ve.dm.example.boldHash ]: bold
 				}
 			},
 			{
 				msg: '3-4 contains italic',
 				range: new ve.Range( 3, 4 ),
 				expected: {
-					hefd27ef3bf2041dd: italic
+					[ ve.dm.example.italicHash ]: italic
 				}
 			},
 			{
@@ -2279,10 +2299,25 @@ QUnit.test( 'compareElements and compareElementsUnannotated', ( assert ) => {
 	} );
 } );
 
-// TODO: ve.dm.ElementLinearData#setAnnotationsAtOffset
-// TODO: ve.dm.ElementLinearData#getCharacterData
-// TODO: ve.dm.ElementLinearData#getAnnotatedRangeFromSelection
-// TODO: ve.dm.ElementLinearData#getNearestContentOffset
+QUnit.test( 'setAnnotationsAtOffset', ( assert ) => {
+	const store = new ve.dm.HashValueStore();
+	const elementData = new ve.dm.ElementLinearData( store, [ { type: 'paragraph' }, ...'abc', { type: '/paragraph' } ] );
+
+	elementData.setAnnotationsAtOffset( 2, ve.dm.example.createAnnotationSet( store, [ ve.dm.example.bold ] ) );
+	elementData.setAnnotationsAtOffset( 3, ve.dm.example.createAnnotationSet( store, [ ve.dm.example.italic ] ) );
+
+	assert.deepEqual(
+		elementData.getAnnotationHashesFromOffset( 2, true ),
+		[ ve.dm.example.boldHash ],
+		'Offset 2 is bold'
+	);
+	assert.deepEqual(
+		elementData.getAnnotationHashesFromOffset( 3, true ),
+		[ ve.dm.example.italicHash ],
+		'Offset 3 is italic'
+	);
+} );
+
 // TODO: ve.dm.ElementLinearData#remapInternalListIndexes
 // TODO: ve.dm.ElementLinearData#remapInternalListKeys
 // TODO: ve.dm.ElementLinearData#cloneElements

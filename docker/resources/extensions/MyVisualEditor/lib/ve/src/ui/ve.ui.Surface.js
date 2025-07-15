@@ -35,9 +35,7 @@
  * @param {boolean} [config.inTargetWidget=false] The surface is in a target widget
  * @param {boolean} [config.allowTabFocusChange=false] Allow changing focus from target surfaces with tab/shift+tab
  */
-ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
-	config = config || {};
-
+ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config = {} ) {
 	// Parent constructor
 	ve.ui.Surface.super.call( this, config );
 
@@ -55,6 +53,8 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	// * ve-ui-overlay-global-desktop
 	this.globalOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-global', 've-ui-overlay-global-' + ( OO.ui.isMobile() ? 'mobile' : 'desktop' ) ] } );
 	this.localOverlay = new ve.ui.Overlay( { classes: [ 've-ui-overlay-local' ] } );
+	// Selection highlights should appear under text, so need their own overlay for CSS
+	this.localOverlaySelections = new ve.ui.Overlay( { classes: [ 've-ui-overlay-local ve-ui-overlay-local-selections' ] } );
 	this.$selections = $( '<div>' ).addClass( 've-ui-surface-selections' );
 	this.$blockers = $( '<div>' );
 	this.$controls = $( '<div>' );
@@ -85,6 +85,7 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	}
 	this.view = this.createView( this.model );
 	this.dialogs = this.createDialogWindowManager();
+	this.sidebarDialogs = this.createSidebarWindowManager();
 	this.importRules = config.importRules || {};
 	this.multiline = config.multiline !== false;
 	this.context = this.createContext( {
@@ -102,8 +103,6 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 	this.nullSelectionOnBlur = config.nullSelectionOnBlur !== false;
 	this.completion = new ve.ui.CompletionWidget( this );
 
-	// Deprecated, use this.padding.top
-	this.toolbarHeight = 0;
 	this.padding = {
 		top: 0,
 		right: 0,
@@ -125,6 +124,9 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 		activation: 'onViewActivation'
 	} );
 	this.getContext().connect( this, { resize: ve.debounce( this.onContextResize.bind( this ) ) } );
+	this.getView().getSelectionManager().on( 'update', ( hasSelections ) => {
+		this.localOverlaySelections.$element.toggleClass( 've-ui-overlay-local-selections-hasSelections', hasSelections );
+	} );
 
 	// Initialization
 	if ( OO.ui.isMobile() ) {
@@ -139,14 +141,15 @@ ve.ui.Surface = function VeUiSurface( target, dataOrDocOrSurface, config ) {
 		// * ve-ui-surface-visual
 		// * ve-ui-surface-source
 		.addClass( 've-ui-surface ve-ui-surface-' + this.mode )
-		.append( this.view.$element );
+		.append( this.view.$element, this.sidebarDialogs.$element );
 	if ( this.mode === 'source' ) {
 		// Separate class to make it easier to override
 		this.getView().$element.add( this.$placeholder )
 			.addClass( 've-ui-surface-source-font' );
 	}
-	this.view.$element.after( this.localOverlay.$element );
-	this.localOverlay.$element.append( this.$selections, this.$blockers, this.$controls, this.$menus );
+	this.view.$element.after( this.localOverlaySelections.$element, this.localOverlay.$element );
+	this.localOverlay.$element.append( this.$blockers, this.$controls, this.$menus );
+	this.localOverlaySelections.$element.append( this.$selections );
 	this.globalOverlay.$element.append( this.dialogs.$element );
 };
 
@@ -299,7 +302,7 @@ ve.ui.Surface.prototype.getMode = function () {
  * @param {Object} config Configuration options
  * @return {ve.ui.LinearContext}
  */
-ve.ui.Surface.prototype.createContext = function ( config ) {
+ve.ui.Surface.prototype.createContext = function ( config = {} ) {
 	return OO.ui.isMobile() ? new ve.ui.MobileContext( this, config ) : new ve.ui.DesktopContext( this, config );
 };
 
@@ -315,6 +318,15 @@ ve.ui.Surface.prototype.createDialogWindowManager = function () {
 			overlay: this.globalOverlay
 		} ) :
 		new ve.ui.SurfaceWindowManager( this, { factory: ve.ui.windowFactory } );
+};
+
+/**
+ * Create a sidebar window manager.
+ *
+ * @return {ve.ui.WindowManager} Sidebar window manager
+ */
+ve.ui.Surface.prototype.createSidebarWindowManager = function () {
+	return new ve.ui.SidebarDialogWindowManager( this, { factory: ve.ui.windowFactory } );
 };
 
 /**
@@ -359,9 +371,9 @@ ve.ui.Surface.prototype.getBoundingClientRect = function () {
 };
 
 /**
- * Get vertical measurements of the visible area of the surface viewport
+ * Get measurements of the visible area of the surface viewport
  *
- * @return {Object|null} Object with top, left, bottom, and height properties. Null if the surface is not attached.
+ * @return {Object|null} Object with top, bottom, left, right, width and height properties. Null if the surface is not attached.
  */
 ve.ui.Surface.prototype.getViewportDimensions = function () {
 	const rect = this.getBoundingClientRect();
@@ -370,14 +382,21 @@ ve.ui.Surface.prototype.getViewportDimensions = function () {
 		return null;
 	}
 
-	const top = Math.max( this.getPadding().top - rect.top, 0 );
-	const bottom = $( this.getElementWindow() ).height() - rect.top;
+	const padding = this.getPadding();
+	const $window = $( this.getElementWindow() );
+
+	const top = Math.max( ( padding.top || 0 ) - rect.top, 0 );
+	const bottom = $window.height() - rect.top;
+	const left = Math.max( ( padding.left || 0 ) - rect.left, 0 );
+	const right = $window.width() - rect.left;
 
 	return {
-		top: top,
-		left: rect.left,
-		bottom: bottom,
-		height: bottom - top
+		top,
+		bottom,
+		left,
+		right,
+		height: bottom - top,
+		width: right - left
 	};
 };
 
@@ -423,14 +442,19 @@ ve.ui.Surface.prototype.getDialogs = function () {
  * @param {string} [position='side'] Get the toolbar dialogs window set for a specific position
  * @return {ve.ui.WindowManager} Toolbar dialogs window set
  */
-ve.ui.Surface.prototype.getToolbarDialogs = function ( position ) {
-	position = position || 'side';
+ve.ui.Surface.prototype.getToolbarDialogs = function ( position = 'side' ) {
 	this.toolbarDialogs[ position ] = this.toolbarDialogs[ position ] ||
-		new ve.ui.ToolbarDialogWindowManager( this, {
-			factory: ve.ui.windowFactory,
-			modal: false
-		} );
+		new ve.ui.ToolbarDialogWindowManager( this, { factory: ve.ui.windowFactory } );
 	return this.toolbarDialogs[ position ];
+};
+
+/**
+ * Get sidebar dialogs window set.
+ *
+ * @return {ve.ui.WindowManager} Sdiebar dialogs window set
+ */
+ve.ui.Surface.prototype.getSidebarDialogs = function () {
+	return this.sidebarDialogs;
 };
 
 /**
@@ -670,21 +694,13 @@ ve.ui.Surface.prototype.updatePlaceholder = function () {
 /**
  * Handle position events from the view
  *
- * @param {boolean} [wasSynchronizing=false]
+ * @param {boolean} [passive=false]
  */
-ve.ui.Surface.prototype.onViewPosition = function ( wasSynchronizing ) {
-	const padding = {};
-	for ( const side in this.toolbarDialogs ) {
-		ve.extendObject( padding, this.toolbarDialogs[ side ].getSurfacePadding() );
-	}
-	if ( Object.keys( padding ).length ) {
-		this.setPadding( padding );
-		this.adjustVisiblePadding();
-		// Don't scroll to this user's cursor due to another user's changes being applied
-		if ( !wasSynchronizing ) {
-			this.scrollSelectionIntoView();
-		}
-	}
+ve.ui.Surface.prototype.onViewPosition = function ( passive ) {
+	this.recalculatePadding(
+		// Don't scroll to this user's cursor if event is marked as passive
+		!passive
+	);
 	if ( this.placeholderVisible ) {
 		this.getView().$element.css( 'min-height', this.$placeholder.outerHeight() );
 	}
@@ -755,11 +771,6 @@ ve.ui.Surface.prototype.executeCommand = function ( commandName ) {
 	return false;
 };
 
-// Deprecated, use #setPadding
-ve.ui.Surface.prototype.setToolbarHeight = function ( toolbarHeight ) {
-	this.setPadding( { top: toolbarHeight } );
-};
-
 /**
  * @typedef {Object} Padding
  * @memberof ve.ui.Surface
@@ -777,11 +788,10 @@ ve.ui.Surface.prototype.setToolbarHeight = function ( toolbarHeight ) {
  * scroll-into-view calculations can be adjusted.
  *
  * @param {ve.ui.Surface.Padding} padding Padding object. Omit properties to leave unchanged.
+ * @deprecated The surface should calculate its own padding in recalculatePadding
  */
 ve.ui.Surface.prototype.setPadding = function ( padding ) {
 	ve.extendObject( this.padding, padding );
-	// Deprecated, use this.padding.top
-	this.toolbarHeight = this.padding.top;
 };
 
 /**
@@ -801,16 +811,34 @@ ve.ui.Surface.prototype.getPadding = function () {
 	return this.padding;
 };
 
+ve.ui.Surface.prototype.recalculatePadding = function ( scrollSelection ) {
+	const oldPadding = this.padding;
+	this.padding = ve.extendObject(
+		{
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 0
+		},
+		this.getTarget().getToolbarSurfacePadding(),
+		this.context.getSurfacePadding()
+	);
+	for ( const side in this.toolbarDialogs ) {
+		ve.extendObject( this.padding, this.toolbarDialogs[ side ].getSurfacePadding() );
+	}
+	// Scroll selection into view if padding changed
+	if ( scrollSelection && !OO.compare( oldPadding, this.padding ) ) {
+		this.scrollSelectionIntoView();
+	}
+	this.adjustVisiblePadding();
+};
+
 /**
  * Handle resize events from the context
  */
 ve.ui.Surface.prototype.onContextResize = function () {
-	const padding = this.context.getSurfacePadding();
-	if ( padding ) {
-		this.setPadding( padding );
-		this.adjustVisiblePadding();
-		this.scrollSelectionIntoView();
-	}
+	this.recalculatePadding();
+	this.scrollSelectionIntoView();
 };
 
 /**

@@ -48,7 +48,14 @@ git clone https://github.com/ankaboot-source/wikiadviser.git
 cd wikiadviser/
 ./start.sh
 ```
+
 </details>
+
+> [!WARNING]
+> **Do not close the terminal or press `Ctrl+C`.**  
+> Edge functions runs in the foreground and will stop if interrupted.  
+> Keep the terminal open to ensure the service continues running.
+
 
 <details>
 <summary><h4>Install services separately</h4></summary>
@@ -75,6 +82,17 @@ pushd docker && docker compose up -d && popd
 npx supabase functions serve
 ```
 </details>
+
+#### Services Endpoints
+- Make sure the Following ports are free before starting the services.
+```sh
+Wikiadviser:     http://localhost:9000
+Mediawiki:       http://localhost:8080/wiki/en/index.php/
+Supabase Studio: http://localhost:54323 (You can create your auth user from here)
+```
+
+> [!NOTE]
+> For the necessary post-setup configuration of MediaWiki, please refer to this [README](https://github.com/ankaboot-source/wikiadviser/blob/main/docker/MEDIAWIKI_SETUP.md).
 
 ## 🤝 Contributing
 

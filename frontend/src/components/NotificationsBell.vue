@@ -1,32 +1,42 @@
 <template>
-  <q-btn 
-    flat 
-    round 
-    dense 
+  <q-btn
+    flat
+    round
+    dense
     class="notification-btn q-mr-sm"
-    :class="{ 'has-notifications': unreadCount > 0, 'empty-notifications': unreadCount === 0 }"
+    :class="{
+      'has-notifications': unreadCount > 0,
+      'empty-notifications': unreadCount === 0,
+    }"
   >
-    <q-icon 
-      name="notifications" 
+    <q-icon
+      name="notifications"
       size="20px"
-      :class="{ 'text-primary': unreadCount > 0, 'text-grey-5': unreadCount === 0 }"
+      :class="{
+        'text-primary': unreadCount > 0,
+        'text-grey-5': unreadCount === 0,
+      }"
     />
-    
-    <q-badge 
-      v-if="unreadCount" 
-      color="red" 
+
+    <q-badge
+      v-if="unreadCount"
+      color="red"
       floating
       rounded
       class="notification-badge"
     >
       {{ unreadCount > 99 ? '99+' : unreadCount }}
     </q-badge>
-    
+
     <q-tooltip class="bg-grey-8">
-      {{ unreadCount ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}` : 'No new notifications' }}
+      {{
+        unreadCount
+          ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}`
+          : 'No new notifications'
+      }}
     </q-tooltip>
 
-    <q-menu 
+    <q-menu
       class="notification-menu"
       transition-show="scale"
       transition-hide="scale"
@@ -35,17 +45,24 @@
       :offset="[0, 8]"
     >
       <q-card class="notification-card">
-        <q-card-section class="notification-header" :class="{ 'empty-header': unreadCount === 0 }">
+        <q-card-section
+          class="notification-header"
+          :class="{ 'empty-header': unreadCount === 0 }"
+        >
           <div class="row items-center justify-between">
-            <div class="text-h6" :class="unreadCount > 0 ? 'text-grey-8' : 'text-grey-5'">Notifications</div>
-            
+            <div
+              class="text-h6"
+              :class="unreadCount > 0 ? 'text-grey-8' : 'text-grey-5'"
+            >
+              Notifications
+            </div>
           </div>
         </q-card-section>
 
         <q-separator />
 
-        <q-scroll-area 
-          style="height: 320px; max-height: 320px;"
+        <q-scroll-area
+          style="height: 320px; max-height: 320px"
           class="notification-scroll"
         >
           <q-list class="notification-list">
@@ -58,9 +75,9 @@
                 @click="markRead(notification.id)"
               >
                 <q-item-section avatar>
-                  <q-avatar 
-                    color="primary" 
-                    text-color="white" 
+                  <q-avatar
+                    color="primary"
+                    text-color="white"
                     size="32px"
                     class="notification-avatar"
                   >
@@ -78,17 +95,17 @@
                 </q-item-section>
 
                 <q-item-section side>
-                  <q-icon 
-                    name="circle" 
-                    color="primary" 
+                  <q-icon
+                    name="circle"
+                    color="primary"
                     size="8px"
                     class="unread-indicator"
                   />
                 </q-item-section>
 
-                <q-separator 
-                  v-if="index < unread.length - 1" 
-                  spaced 
+                <q-separator
+                  v-if="index < unread.length - 1"
+                  spaced
                   inset="item"
                 />
               </q-item>
@@ -97,9 +114,9 @@
             <template v-else>
               <q-item class="empty-state">
                 <q-item-section class="text-center">
-                  <q-icon 
-                    name="notifications_off" 
-                    size="48px" 
+                  <q-icon
+                    name="notifications_off"
+                    size="48px"
                     color="grey-4"
                     class="q-mb-sm"
                   />
@@ -115,17 +132,20 @@
 
         <q-separator />
 
-        <q-card-actions class="notification-footer" :class="{ 'empty-footer': unreadCount === 0 }">
-          <q-btn 
-              v-if="unreadCount > 0"
-              flat
-              dense
-              size="sm"
-              label="Mark all read"
-              color="primary"
-              class="full-width"
-              @click="markAllRead"
-            />
+        <q-card-actions
+          class="notification-footer"
+          :class="{ 'empty-footer': unreadCount === 0 }"
+        >
+          <q-btn
+            v-if="unreadCount > 0"
+            flat
+            dense
+            size="sm"
+            label="Mark all read"
+            color="primary"
+            class="full-width"
+            @click="markAllRead"
+          />
         </q-card-actions>
       </q-card>
     </q-menu>
@@ -148,13 +168,13 @@ async function markRead(id: string) {
     console.log('Marking notification as read:', id);
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
     unread.value = unread.value.filter((n) => n.id !== id);
-    
+
     Notify.create({
       message: 'Notification marked as read',
       color: 'positive',
       position: 'bottom',
       timeout: 2000,
-      actions: [{ icon: 'close', color: 'white' }]
+      actions: [{ icon: 'close', color: 'white' }],
     });
   } catch (error) {
     console.error('Error marking notification as read:', error);
@@ -169,35 +189,39 @@ async function markRead(id: string) {
 
 async function markAllRead() {
   try {
-    const ids = unread.value.map(n => n.id);
-    await supabase.from('notifications').update({ is_read: true }).in('id', ids);
+    const ids = unread.value.map((n) => n.id);
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .in('id', ids);
     unread.value = [];
-    
+
     Notify.create({
       message: 'All notifications marked as read',
       color: 'positive',
       position: 'bottom',
       timeout: 2000,
-      actions: [{ icon: 'close', color: 'white' }]
+      actions: [{ icon: 'close', color: 'white' }],
     });
   } catch (error) {
     console.error('Error marking all notifications as read:', error);
   }
 }
 
-
 function formatTime(timestamp: string | null): string {
   if (!timestamp) return 'Unknown time';
-  
+
   const date = new Date(timestamp);
   const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-  
+  const diffInMinutes = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60),
+  );
+
   if (diffInMinutes < 1) return 'Just now';
   if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
   if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
-  
+
   return date.toLocaleDateString();
 }
 
@@ -206,7 +230,7 @@ onMounted(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    
+
     console.log('User ID:', user?.id);
     if (!user) {
       console.error('No user authenticated');
@@ -249,13 +273,13 @@ onMounted(async () => {
               position: 'top-right',
               timeout: 5000,
               actions: [
-                { 
-                  label: 'Mark as read', 
-                  color: 'white', 
-                  handler: () => markRead(n.id) 
+                {
+                  label: 'Mark as read',
+                  color: 'white',
+                  handler: () => markRead(n.id),
                 },
-                { icon: 'close', color: 'white' }
-              ]
+                { icon: 'close', color: 'white' },
+              ],
             });
           }
         },
@@ -367,18 +391,34 @@ onMounted(async () => {
 }
 
 @keyframes subtle-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 @keyframes badge-bounce {
-  0% { transform: scale(0.8); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.8);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes indicator-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

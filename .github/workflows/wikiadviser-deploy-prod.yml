@@ -101,8 +101,8 @@ jobs:
           script: |
             wikiadviser_path="/home/wiki-user/wikiadviser"
             visual_editor_folder_name="MyVisualEditor"
-            extensions_path="/home/wiki-user/wikiadviser/mediawiki-docker/resources/extensions"
-            assets_path="/home/wiki-user/wikiadviser/mediawiki-docker/resources/assets/*"
+            extensions_path="/home/wiki-user/wikiadviser/docker/resources/extensions"
+            assets_path="/home/wiki-user/wikiadviser/docker/resources/assets/*"
             extensions_base_path="/var/www/wiki-${{ matrix.env }}"
 
             # Check if the folder exists

@@ -317,7 +317,7 @@ cd wikiadviser/
 
       </details>
 
-- Import into your MediaWiki instance: http://localhost:8080/wiki/(language)/index.php/MediaWiki:Common.css and Common.js (Need to login with the admin user, check MW_CREDENTIALS.txt file )
+- Import into your MediaWiki instance: http://localhost:8080/wiki/(language)/index.php/MediaWiki:Common.css and Common.js ( Need to login with the admin user, check [MW_CREDENTIALS.txt](./docker/MW_CREDENTIALS.txt) file )
 
 ### Job Queue (Not required)
 - For better performance, run the job queue separately, using cron job (user `www-data`), [more informations](https://www.mediawiki.org/wiki/Manual:Job_queue#:~:text=touch%20uploaded%20files.-,Cron,-You%20could%20use)

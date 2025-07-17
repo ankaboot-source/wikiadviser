@@ -40,7 +40,10 @@ We will then take care of the issue as soon as possible.
 
 1. Install
 
-   - [Setup MediaWiki locally](/mediawiki-setup/MEDIAWIKI_SETUP.md)
+   - Setup MediaWiki locally
+     ```sh
+     pushd docker && docker compose up -d mediawiki mediawiki_db && popd
+     ```
 
    - Install dependencies (This project uses `pnpm`)
      ```sh
@@ -50,8 +53,10 @@ We will then take care of the issue as soon as possible.
 
 2. Run WikiAdviser
    ```sh
+   npm run dev:supabase > supabase.log # Start Supabase
+   ./generate-env.sh --supabase-creds supabase.log # Update Supabase env variables
+   ./generate-env.sh --bot-creds # Update bot password env variables
    npm run dev:frontend # Start the frontend
-   npm run dev:supabase # Start Supabase
    npm run dev:supabase-functions # Start Supabase functions
    ```
 

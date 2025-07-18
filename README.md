@@ -43,8 +43,9 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ##
 > [!WARNING]
-> 1. Make sure port 8080 and 9000 are free before installing Wikiadviser
-> 2. Edge functions runs in the foreground, Keep the terminal open to ensure the service continues running.
+> 1. UFW could cause some issues if enabled, make sure to add a rule to allow port 8080.
+> 2. Make sure port 8080 and 9000 are free before installing Wikiadviser.
+> 3. Edge functions runs in the foreground, Keep the terminal open to ensure the service continues running.
 
 ```sh
 git clone https://github.com/ankaboot-source/wikiadviser.git

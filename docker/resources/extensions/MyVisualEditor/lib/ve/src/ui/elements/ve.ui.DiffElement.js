@@ -227,15 +227,15 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 	queue.forEach( ( item, i ) => {
 		const prevItem = queue[ i - 1 ];
 		const nextItem = queue[ i + 1 ];
-		if (
-			/* Custom WikiAdviser */
-			// Skip hiding unchanged data			
-			true ||
-			/* End WikiAdviser */
+		/* Custom WikiAdviser */
+		// remove the code responsible for hiding unchanged data
+		// COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
+		/*if (
 			!isUnchanged( prevItem ) ||
 			!isUnchanged( item ) ||
 			!isUnchanged( nextItem )
-		) {
+		) { */
+		/* End WikiAdviser */
 			hasChanges = true;
 			if ( headingContext ) {
 				// Don't render headingContext if current or next node is a heading
@@ -261,7 +261,10 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 				// Heading was rendered, no need to show it as context
 				headingContext = null;
 			}
-		} else {
+		/* Custom WikiAdviser */
+		// remove the code responsible for hiding unchanged data
+		// COMMENTED SO IT DOES NOT SKIP UNCHANGED DATA
+		/*} else {
 			// Heading skipped, maybe show as context later
 			if ( isHeading( item ) ) {
 				headingContext = isUnchanged( item ) ? item : null;
@@ -270,7 +273,8 @@ ve.ui.DiffElement.prototype.processQueue = function processQueue( queue ) {
 			} else {
 				needsSpacer = true;
 			}
-		}
+		}*/
+		/* End WikiAdviser */
 	} );
 
 	// Trailing spacer

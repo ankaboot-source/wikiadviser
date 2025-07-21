@@ -12,6 +12,7 @@ HC_FLAG_FILE="/wikiadviser/mediawiki-setup/.setup_complete"
 MW_ADMIN_USER="Admin"
 MW_ADMIN_PASSWORD="admin#2025"
 MW_BOT_USER="wikiadviser-bot"
+WORKDIR="/wikiadviser/mediawiki-setup"
 
 mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
 mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
@@ -92,6 +93,12 @@ if [ ! -f "$FLAG_FILE" ]; then
 
   echo "Mediawiki admin user: $MW_ADMIN_USER" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
   echo "Mediawiki admin password: $MW_ADMIN_PASSWORD" >> /wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
+
+  for ln in "${LANG_ARRAY[@]}"; do
+      echo "Importing Common-$ln.js & Common-$ln.css..."
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.js" < $WORKDIR/Common-$ln.js
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.css" < $WORKDIR/Common-$ln.css
+  done
 
   touch "$FLAG_FILE"
   touch "$HC_FLAG_FILE"

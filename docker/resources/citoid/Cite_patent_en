@@ -1,0 +1,31 @@
+<includeonly>{{cite patent/core
+ |Surname1 = {{#if:{{{inventor|}}}|{{{inventor}}}|{{{inventor-surname|{{{inventor1-surname|{{{inventor-last|{{{inventor1-last|{{{inventor-last1|{{{invent-1|{{{invent1|}}}}}}}}}}}}}}}}}}}}} }}
+ |Surname2={{{inventor2-surname|{{{inventor2-last|{{{inventor-last2|{{{inventor2|{{{invent2|}}}}}}}}}}}}}}}
+ |Surname3={{{inventor3-surname|{{{inventor3-last|{{{inventor-last3|{{{inventor3|{{{invent3|}}}}}}}}}}}}}}}
+ |Surname4={{{inventor4-surname|{{{inventor4-last|{{{inventor-last4|{{{inventor4|{{{invent4|}}}}}}}}}}}}}}}
+ |Given1 = {{{inventor-given|{{{inventor1-given|{{{inventor-first|{{{inventor1-first|{{{inventor-first1|}}}}}}}}}}}}}}}
+ |Given2={{{inventor2-given|{{{inventor2-first|{{{inventor-first2|}}}}}}}}}
+ |Given3={{{inventor3-given|{{{inventor3-first|{{{inventor-first3|}}}}}}}}}
+ |Given4={{{inventor4-given|{{{inventor4-first|{{{inventor-first4|}}}}}}}}}
+ |Inventorlink1={{{inventor1-link|{{{inventor-link1|{{{inventorlink1|{{{inventor-link|{{{inventorlink|}}}}}}}}}}}}}}}
+ |Inventorlink2={{{inventor2-link|{{{inventor-link2|{{{inventorlink2|}}}}}}}}}
+ |Inventorlink3={{{inventor3-link|{{{inventor-link3|{{{inventorlink3|}}}}}}}}}
+ |Inventorlink4={{{inventor4-link|{{{inventor-link4|{{{inventorlink4|}}}}}}}}}
+ |Title={{{title|}}}
+ |CountryCode={{{country-code|{{{country|{{{1|}}}}}}}}}
+ |PublicationNumber={{{publication-number|{{{patent-number|{{{number|{{{2|}}}}}}}}}}}}
+ |Description={{{description|{{{status|{{{3|}}}}}}}}}
+ |PublicationDate={{{publication-date|{{{pubdate|}}}}}}
+ |IssueDate={{{issue-date|{{{gdate|}}}}}}
+ |Year={{{year}}} 
+ |FilingDate={{{fdate|}}}
+ |PriorityDate={{{pridate|}}}
+ |Assignee1={{{assign1|{{{assignee|{{{assign|}}}}}}}}}
+ |Assignee2={{{assign2|}}}
+  |Ref={{#ifeq:{{{ref|}}}|harv||{{{ref|}}}}}
+  |RefDate={{{issue-date|{{{gdate|{{{publication-date|{{{pubdate|}}}}}}}}}}}}
+  |Sep = {{#ifeq:{{{separator|{{{seperator}}}}}}|;|&#059;|{{{separator|{{{seperator|,}}}}}}}}
+  |PS = {{#if:{{{quote|}}}||{{{postscript|}}}|.}}
+  |AuthorSep = {{#ifeq:{{{author-separator|}}}|;|&#059;|{{{author-separator|&#059;}}}}}&#32;
+ |URL{{#if:{{{URL|{{{url|}}}}}}||NULL}}={{{URL|{{{url|}}}}}}
+}}</includeonly>{{#invoke:Check for unknown parameters|check|unknown={{main other|[[Category:Pages using cite patent with unknown parameters|_VALUE_{{PAGENAME}}]]}}|preview=Page using [[Template:Cite patent]] with unknown parameter "_VALUE_"|ignoreblank=y| 1 | 2 | 3 | assign | assign1 | assign2 | assignee | author-separator | country | country-code | description | fdate | gdate | invent-1 | invent1 | invent2 | invent3 | invent4 | inventor | inventor-first | inventor-first1 | inventor-first2 | inventor-first3 | inventor-first4 | inventor-given | inventor-last | inventor-last1 | inventor-last2 | inventor-last3 | inventor-last4 | inventor-link | inventor-link1 | inventor-link2 | inventor-link3 | inventor-link4 | inventor-surname | inventor1-first | inventor1-given | inventor1-last | inventor1-link | inventor1-surname | inventor2 | inventor2-first | inventor2-given | inventor2-last | inventor2-link | inventor2-surname | inventor3 | inventor3-first | inventor3-given | inventor3-last | inventor3-link | inventor3-surname | inventor4 | inventor4-first | inventor4-given | inventor4-last | inventor4-link | inventor4-surname | inventorlink | inventorlink1 | inventorlink2 | inventorlink3 | inventorlink4 | issue-date | number | patent-number | postscript | pridate | pubdate | publication-date | publication-number | quote | ref | separator | seperator | status | title | url | URL | year }}<noinclude>{{documentation}}</noinclude>

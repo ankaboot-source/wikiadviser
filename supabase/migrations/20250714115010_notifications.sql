@@ -28,7 +28,7 @@ FOREIGN KEY (change_id) REFERENCES public.changes (id)
 ON DELETE CASCADE;
 
 -- Enable real-time for notifications
-alter publication supabase_realtime add table <table_name>;  
+ALTER TABLE public.notifications REPLICA IDENTITY FULL;
 
 CREATE OR REPLACE FUNCTION public.handle_notification_change()
 RETURNS TRIGGER AS $$

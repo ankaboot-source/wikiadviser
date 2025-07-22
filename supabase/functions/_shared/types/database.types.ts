@@ -112,26 +112,26 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "changes_article_id_fkey";
-            columns: ["article_id"];
+            foreignKeyName: 'changes_article_id_fkey';
+            columns: ['article_id'];
             isOneToOne: false;
-            referencedRelation: "articles";
-            referencedColumns: ["id"];
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "changes_contributor_id_fkey";
-            columns: ["contributor_id"];
+            foreignKeyName: 'changes_contributor_id_fkey';
+            columns: ['contributor_id'];
             isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "changes_revision_id_fkey";
-            columns: ["revision_id"];
+            foreignKeyName: 'changes_revision_id_fkey';
+            columns: ['revision_id'];
             isOneToOne: false;
-            referencedRelation: "revisions";
-            referencedColumns: ["id"];
-          },
+            referencedRelation: 'revisions';
+            referencedColumns: ['id'];
+          }
         ];
       };
       comments: {
@@ -161,65 +161,89 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "comments_change_id_fkey";
-            columns: ["change_id"];
+            foreignKeyName: 'comments_change_id_fkey';
+            columns: ['change_id'];
             isOneToOne: false;
-            referencedRelation: "changes";
-            referencedColumns: ["id"];
+            referencedRelation: 'changes';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "comments_commenter_id_fkey";
-            columns: ["commenter_id"];
+            foreignKeyName: 'comments_commenter_id_fkey';
+            columns: ['commenter_id'];
             isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "fk_comments_article_id";
-            columns: ["article_id"];
+            foreignKeyName: 'fk_comments_article_id';
+            columns: ['article_id'];
             isOneToOne: false;
-            referencedRelation: "articles";
-            referencedColumns: ["id"];
-          },
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
+          }
         ];
+      };
+      notifications: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          is_read: boolean | null;
+          message: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          is_read?: boolean | null;
+          message: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          is_read?: boolean | null;
+          message?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       permissions: {
         Row: {
           article_id: string | null;
           created_at: string | null;
           id: string;
-          role: Database["public"]["Enums"]["role"] | null;
+          role: Database['public']['Enums']['role'] | null;
           user_id: string | null;
         };
         Insert: {
           article_id?: string | null;
           created_at?: string | null;
           id?: string;
-          role?: Database["public"]["Enums"]["role"] | null;
+          role?: Database['public']['Enums']['role'] | null;
           user_id?: string | null;
         };
         Update: {
           article_id?: string | null;
           created_at?: string | null;
           id?: string;
-          role?: Database["public"]["Enums"]["role"] | null;
+          role?: Database['public']['Enums']['role'] | null;
           user_id?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: "permissions_article_id_fkey";
-            columns: ["article_id"];
+            foreignKeyName: 'permissions_article_id_fkey';
+            columns: ['article_id'];
             isOneToOne: false;
-            referencedRelation: "articles";
-            referencedColumns: ["id"];
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "permissions_user_id_fkey";
-            columns: ["user_id"];
+            foreignKeyName: 'permissions_user_id_fkey';
+            columns: ['user_id'];
             isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          }
         ];
       };
       profiles: {
@@ -270,12 +294,12 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "revisions_article_id_fkey";
-            columns: ["article_id"];
+            foreignKeyName: 'revisions_article_id_fkey';
+            columns: ['article_id'];
             isOneToOne: false;
-            referencedRelation: "articles";
-            referencedColumns: ["id"];
-          },
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
+          }
         ];
       };
       share_links: {
@@ -283,28 +307,28 @@ export type Database = {
           article_id: string;
           expired_at: string | null;
           id: string;
-          role: Database["public"]["Enums"]["role"];
+          role: Database['public']['Enums']['role'];
         };
         Insert: {
           article_id: string;
           expired_at?: string | null;
           id?: string;
-          role?: Database["public"]["Enums"]["role"];
+          role?: Database['public']['Enums']['role'];
         };
         Update: {
           article_id?: string;
           expired_at?: string | null;
           id?: string;
-          role?: Database["public"]["Enums"]["role"];
+          role?: Database['public']['Enums']['role'];
         };
         Relationships: [
           {
-            foreignKeyName: "share_links_article_id_fkey";
-            columns: ["article_id"];
+            foreignKeyName: 'share_links_article_id_fkey';
+            columns: ['article_id'];
             isOneToOne: false;
-            referencedRelation: "articles";
-            referencedColumns: ["id"];
-          },
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
+          }
         ];
       };
     };
@@ -312,563 +336,237 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      bytea_to_text: {
+        Args: { data: string };
+        Returns: string;
+      };
       delete_user_and_anonymize_data: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
-      is_article_exists: {
-        Args: {
-          article_id: string;
-        };
-        Returns: string;
+      get_article_stakeholders: {
+        Args: { p_article_id: string };
+        Returns: {
+          user_id: string;
+          role: string;
+        }[];
       };
-    };
-    Enums: {
-      role: "owner" | "editor" | "reviewer" | "viewer";
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
-  };
-  storage: {
-    Tables: {
-      buckets: {
-        Row: {
-          allowed_mime_types: string[] | null;
-          avif_autodetection: boolean | null;
-          created_at: string | null;
-          file_size_limit: number | null;
-          id: string;
-          name: string;
-          owner: string | null;
-          owner_id: string | null;
-          public: boolean | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          allowed_mime_types?: string[] | null;
-          avif_autodetection?: boolean | null;
-          created_at?: string | null;
-          file_size_limit?: number | null;
-          id: string;
-          name: string;
-          owner?: string | null;
-          owner_id?: string | null;
-          public?: boolean | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          allowed_mime_types?: string[] | null;
-          avif_autodetection?: boolean | null;
-          created_at?: string | null;
-          file_size_limit?: number | null;
-          id?: string;
-          name?: string;
-          owner?: string | null;
-          owner_id?: string | null;
-          public?: boolean | null;
-          updated_at?: string | null;
-        };
-        Relationships: [];
+      http: {
+        Args: { request: Database['public']['CompositeTypes']['http_request'] };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      migrations: {
-        Row: {
-          executed_at: string | null;
-          hash: string;
-          id: number;
-          name: string;
-        };
-        Insert: {
-          executed_at?: string | null;
-          hash: string;
-          id: number;
-          name: string;
-        };
-        Update: {
-          executed_at?: string | null;
-          hash?: string;
-          id?: number;
-          name?: string;
-        };
-        Relationships: [];
+      http_delete: {
+        Args:
+          | { uri: string }
+          | { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      objects: {
-        Row: {
-          bucket_id: string | null;
-          created_at: string | null;
-          id: string;
-          last_accessed_at: string | null;
-          level: number | null;
-          metadata: Json | null;
-          name: string | null;
-          owner: string | null;
-          owner_id: string | null;
-          path_tokens: string[] | null;
-          updated_at: string | null;
-          user_metadata: Json | null;
-          version: string | null;
-        };
-        Insert: {
-          bucket_id?: string | null;
-          created_at?: string | null;
-          id?: string;
-          last_accessed_at?: string | null;
-          level?: number | null;
-          metadata?: Json | null;
-          name?: string | null;
-          owner?: string | null;
-          owner_id?: string | null;
-          path_tokens?: string[] | null;
-          updated_at?: string | null;
-          user_metadata?: Json | null;
-          version?: string | null;
-        };
-        Update: {
-          bucket_id?: string | null;
-          created_at?: string | null;
-          id?: string;
-          last_accessed_at?: string | null;
-          level?: number | null;
-          metadata?: Json | null;
-          name?: string | null;
-          owner?: string | null;
-          owner_id?: string | null;
-          path_tokens?: string[] | null;
-          updated_at?: string | null;
-          user_metadata?: Json | null;
-          version?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "objects_bucketId_fkey";
-            columns: ["bucket_id"];
-            isOneToOne: false;
-            referencedRelation: "buckets";
-            referencedColumns: ["id"];
-          },
-        ];
+      http_get: {
+        Args: { uri: string } | { uri: string; data: Json };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      prefixes: {
-        Row: {
-          bucket_id: string;
-          created_at: string | null;
-          level: number;
-          name: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          bucket_id: string;
-          created_at?: string | null;
-          level?: number;
-          name: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          bucket_id?: string;
-          created_at?: string | null;
-          level?: number;
-          name?: string;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "prefixes_bucketId_fkey";
-            columns: ["bucket_id"];
-            isOneToOne: false;
-            referencedRelation: "buckets";
-            referencedColumns: ["id"];
-          },
-        ];
+      http_head: {
+        Args: { uri: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      s3_multipart_uploads: {
-        Row: {
-          bucket_id: string;
-          created_at: string;
-          id: string;
-          in_progress_size: number;
-          key: string;
-          owner_id: string | null;
-          upload_signature: string;
-          user_metadata: Json | null;
-          version: string;
-        };
-        Insert: {
-          bucket_id: string;
-          created_at?: string;
-          id: string;
-          in_progress_size?: number;
-          key: string;
-          owner_id?: string | null;
-          upload_signature: string;
-          user_metadata?: Json | null;
-          version: string;
-        };
-        Update: {
-          bucket_id?: string;
-          created_at?: string;
-          id?: string;
-          in_progress_size?: number;
-          key?: string;
-          owner_id?: string | null;
-          upload_signature?: string;
-          user_metadata?: Json | null;
-          version?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey";
-            columns: ["bucket_id"];
-            isOneToOne: false;
-            referencedRelation: "buckets";
-            referencedColumns: ["id"];
-          },
-        ];
+      http_header: {
+        Args: { field: string; value: string };
+        Returns: Database['public']['CompositeTypes']['http_header'];
       };
-      s3_multipart_uploads_parts: {
-        Row: {
-          bucket_id: string;
-          created_at: string;
-          etag: string;
-          id: string;
-          key: string;
-          owner_id: string | null;
-          part_number: number;
-          size: number;
-          upload_id: string;
-          version: string;
-        };
-        Insert: {
-          bucket_id: string;
-          created_at?: string;
-          etag: string;
-          id?: string;
-          key: string;
-          owner_id?: string | null;
-          part_number: number;
-          size?: number;
-          upload_id: string;
-          version: string;
-        };
-        Update: {
-          bucket_id?: string;
-          created_at?: string;
-          etag?: string;
-          id?: string;
-          key?: string;
-          owner_id?: string | null;
-          part_number?: number;
-          size?: number;
-          upload_id?: string;
-          version?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey";
-            columns: ["bucket_id"];
-            isOneToOne: false;
-            referencedRelation: "buckets";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey";
-            columns: ["upload_id"];
-            isOneToOne: false;
-            referencedRelation: "s3_multipart_uploads";
-            referencedColumns: ["id"];
-          },
-        ];
+      http_list_curlopt: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          curlopt: string;
+          value: string;
+        }[];
       };
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      add_prefixes: {
-        Args: {
-          _bucket_id: string;
-          _name: string;
-        };
-        Returns: undefined;
+      http_patch: {
+        Args: { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      can_insert_object: {
-        Args: {
-          bucketid: string;
-          name: string;
-          owner: string;
-          metadata: Json;
-        };
-        Returns: undefined;
+      http_post: {
+        Args:
+          | { uri: string; content: string; content_type: string }
+          | { uri: string; data: Json };
+        Returns: Database['public']['CompositeTypes']['http_response'];
       };
-      delete_prefix: {
-        Args: {
-          _bucket_id: string;
-          _name: string;
-        };
+      http_put: {
+        Args: { uri: string; content: string; content_type: string };
+        Returns: Database['public']['CompositeTypes']['http_response'];
+      };
+      http_reset_curlopt: {
+        Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
-      extension: {
-        Args: {
-          name: string;
-        };
+      http_set_curlopt: {
+        Args: { curlopt: string; value: string };
+        Returns: boolean;
+      };
+      is_article_exists: {
+        Args: { article_id: string };
         Returns: string;
       };
-      filename: {
-        Args: {
-          name: string;
-        };
+      text_to_bytea: {
+        Args: { data: string };
         Returns: string;
       };
-      foldername: {
-        Args: {
-          name: string;
-        };
-        Returns: string[];
-      };
-      get_level: {
-        Args: {
-          name: string;
-        };
-        Returns: number;
-      };
-      get_prefix: {
-        Args: {
-          name: string;
-        };
+      urlencode: {
+        Args: { data: Json } | { string: string } | { string: string };
         Returns: string;
-      };
-      get_prefixes: {
-        Args: {
-          name: string;
-        };
-        Returns: string[];
-      };
-      get_size_by_bucket: {
-        Args: Record<PropertyKey, never>;
-        Returns: {
-          size: number;
-          bucket_id: string;
-        }[];
-      };
-      list_multipart_uploads_with_delimiter: {
-        Args: {
-          bucket_id: string;
-          prefix_param: string;
-          delimiter_param: string;
-          max_keys?: number;
-          next_key_token?: string;
-          next_upload_token?: string;
-        };
-        Returns: {
-          key: string;
-          id: string;
-          created_at: string;
-        }[];
-      };
-      list_objects_with_delimiter: {
-        Args: {
-          bucket_id: string;
-          prefix_param: string;
-          delimiter_param: string;
-          max_keys?: number;
-          start_after?: string;
-          next_token?: string;
-        };
-        Returns: {
-          name: string;
-          id: string;
-          metadata: Json;
-          updated_at: string;
-        }[];
-      };
-      operation: {
-        Args: Record<PropertyKey, never>;
-        Returns: string;
-      };
-      search: {
-        Args: {
-          prefix: string;
-          bucketname: string;
-          limits?: number;
-          levels?: number;
-          offsets?: number;
-          search?: string;
-          sortcolumn?: string;
-          sortorder?: string;
-        };
-        Returns: {
-          name: string;
-          id: string;
-          updated_at: string;
-          created_at: string;
-          last_accessed_at: string;
-          metadata: Json;
-        }[];
-      };
-      search_legacy_v1: {
-        Args: {
-          prefix: string;
-          bucketname: string;
-          limits?: number;
-          levels?: number;
-          offsets?: number;
-          search?: string;
-          sortcolumn?: string;
-          sortorder?: string;
-        };
-        Returns: {
-          name: string;
-          id: string;
-          updated_at: string;
-          created_at: string;
-          last_accessed_at: string;
-          metadata: Json;
-        }[];
-      };
-      search_v1_optimised: {
-        Args: {
-          prefix: string;
-          bucketname: string;
-          limits?: number;
-          levels?: number;
-          offsets?: number;
-          search?: string;
-          sortcolumn?: string;
-          sortorder?: string;
-        };
-        Returns: {
-          name: string;
-          id: string;
-          updated_at: string;
-          created_at: string;
-          last_accessed_at: string;
-          metadata: Json;
-        }[];
-      };
-      search_v2: {
-        Args: {
-          prefix: string;
-          bucket_name: string;
-          limits?: number;
-          levels?: number;
-          start_after?: string;
-        };
-        Returns: {
-          key: string;
-          name: string;
-          id: string;
-          updated_at: string;
-          created_at: string;
-          metadata: Json;
-        }[];
       };
     };
     Enums: {
-      [_ in never]: never;
+      role: 'owner' | 'editor' | 'reviewer' | 'viewer';
     };
     CompositeTypes: {
-      [_ in never]: never;
+      http_header: {
+        field: string | null;
+        value: string | null;
+      };
+      http_request: {
+        method: unknown | null;
+        uri: string | null;
+        headers: Database['public']['CompositeTypes']['http_header'][] | null;
+        content_type: string | null;
+        content: string | null;
+      };
+      http_response: {
+        status: number | null;
+        content_type: string | null;
+        headers: Database['public']['CompositeTypes']['http_header'][] | null;
+        content: string | null;
+      };
     };
   };
 };
 
-type PublicSchema = Database[Extract<keyof Database, "public">];
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<
+  keyof Database,
+  'public'
+>];
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (
-      & Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      & Database[PublicTableNameOrOptions["schema"]]["Views"]
-    )
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database } ? (
-    & Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    & Database[PublicTableNameOrOptions["schema"]]["Views"]
-  )[TableName] extends {
-    Row: infer R;
-  } ? R
-  : never
-  : PublicTableNameOrOptions extends keyof (
-    & PublicSchema["Tables"]
-    & PublicSchema["Views"]
-  ) ? (
-      & PublicSchema["Tables"]
-      & PublicSchema["Views"]
-    )[PublicTableNameOrOptions] extends {
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
-    } ? R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+      DefaultSchema['Views'])
+  ? (DefaultSchema['Tables'] &
+      DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R;
+    }
+    ? R
     : never
   : never;
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I;
-  } ? I
-  : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema['Tables']
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I;
-    } ? I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+  ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+      Insert: infer I;
+    }
+    ? I
     : never
   : never;
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U;
-  } ? U
-  : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema['Tables']
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never = never
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U;
-    } ? U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+  ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
+      Update: infer U;
+    }
+    ? U
     : never
   : never;
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema['Enums']
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    : never = never
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+  ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
   : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | keyof DefaultSchema['CompositeTypes']
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database;
+    schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]][
-      "CompositeTypes"
-    ]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][
-    CompositeTypeName
-  ]
-  : PublicCompositeTypeNameOrOptions extends
-    keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never = never
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+  ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
   : never;
+
+export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
+  public: {
+    Enums: {
+      role: ['owner', 'editor', 'reviewer', 'viewer'],
+    },
+  },
+} as const;

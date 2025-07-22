@@ -9,6 +9,7 @@
             icon="img:/icons/logo.svg"
             to="/"
           />
+
           <q-breadcrumbs-el v-if="article?.title" to="." @click="$router.go(0)">
             <div class="ellipsis">
               {{ article.title }}
@@ -27,6 +28,7 @@
           section="profile"
         />
       </q-btn>
+      <NotificationsBell v-if="user" />
       <q-btn
         v-if="user"
         clickable
@@ -48,6 +50,7 @@ import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserComponent from './UserComponent.vue';
+import NotificationsBell from './NotificationsBell.vue';
 
 const router = useRouter();
 const $q = useQuasar();

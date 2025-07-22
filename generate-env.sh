@@ -16,12 +16,12 @@ fi
 if [[ "$1" == "--bot-creds" ]]; then
   # Function to check container health
   wait_for_container_healthy() {
-      echo "⌛ Waiting for container '$CONTAINER_NAME' to become healthy..."
+      echo "⌛ Waiting for '$CONTAINER_NAME' service to initialize, Hang Tight!..."
       while true; do
           # Get container health status
           health_status=$(docker inspect --format='{{.State.Health.Status}}' "$CONTAINER_NAME" 2>/dev/null)
           if [ "$health_status" = "healthy" ]; then
-              echo "✅ Container is healthy"
+              echo "✅ Initialized '$CONTAINER_NAME'."
               return 0
           fi
           sleep 2

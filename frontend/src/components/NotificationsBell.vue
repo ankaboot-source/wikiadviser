@@ -56,6 +56,15 @@
             >
               Notifications
             </div>
+            <q-btn
+              v-if="unreadCount > 0"
+              flat
+              dense
+              size="sm"
+              label="Mark all read"
+              color="primary"
+              @click="markAllRead"
+            />
           </div>
         </q-card-section>
 
@@ -94,7 +103,7 @@
                   </q-item-label>
                 </q-item-section>
 
-                <q-item-section side>
+                <q-item-section side top>
                   <q-icon
                     name="circle"
                     color="primary"
@@ -131,22 +140,6 @@
         </q-scroll-area>
 
         <q-separator />
-
-        <q-card-actions
-          class="notification-footer"
-          :class="{ 'empty-footer': unreadCount === 0 }"
-        >
-          <q-btn
-            v-if="unreadCount > 0"
-            flat
-            dense
-            size="sm"
-            label="Mark all read"
-            color="primary"
-            class="full-width"
-            @click="markAllRead"
-          />
-        </q-card-actions>
       </q-card>
     </q-menu>
   </q-btn>
@@ -165,19 +158,9 @@ const unreadCount = computed(() => unread.value.length);
 
 async function markRead(id: string) {
   try {
-    console.log('Marking notification as read:', id);
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
     unread.value = unread.value.filter((n) => n.id !== id);
-
-    Notify.create({
-      message: 'Notification marked as read',
-      color: 'positive',
-      position: 'bottom',
-      timeout: 2000,
-      actions: [{ icon: 'close', color: 'white' }],
-    });
   } catch (error) {
-    console.error('Error marking notification as read:', error);
     Notify.create({
       message: 'Failed to mark notification as read',
       color: 'negative',
@@ -231,9 +214,7 @@ onMounted(async () => {
       data: { user },
     } = await supabase.auth.getUser();
 
-    console.log('User ID:', user?.id);
     if (!user) {
-      console.error('No user authenticated');
       return;
     }
 
@@ -244,49 +225,42 @@ onMounted(async () => {
       .eq('is_read', false)
       .order('created_at', { ascending: false });
 
-    console.log('Initial fetch data:', data, 'Error:', error);
     if (error) {
-      console.error('Error loading notifications:', error);
       return;
     }
 
     unread.value = (data as NotificationRow[]) ?? [];
 
-    supabase
-      .channel('notifs')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('New notification:', payload);
-          const n = payload.new as NotificationRow;
-          if (!n.is_read) {
-            unread.value.unshift(n);
-            Notify.create({
-              message: n.message,
-              color: 'primary',
-              position: 'top-right',
-              timeout: 5000,
-              actions: [
-                {
-                  label: 'Mark as read',
-                  color: 'white',
-                  handler: () => markRead(n.id),
-                },
-                { icon: 'close', color: 'white' },
-              ],
-            });
-          }
-        },
-      )
-      .subscribe((status) => {
-        console.log('Channel subscription status:', status);
-      });
+    supabase.channel('notifs').on(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${user.id}`,
+      },
+      (payload) => {
+        console.log('New notification:', payload);
+        const n = payload.new as NotificationRow;
+        if (!n.is_read) {
+          unread.value.unshift(n);
+          Notify.create({
+            message: n.message,
+            color: 'primary',
+            position: 'top-right',
+            timeout: 5000,
+            actions: [
+              {
+                label: 'Mark as read',
+                color: 'white',
+                handler: () => markRead(n.id),
+              },
+              { icon: 'close', color: 'white' },
+            ],
+          });
+        }
+      },
+    );
   } catch (error) {
     console.error('Error setting up notifications:', error);
   }
@@ -349,6 +323,7 @@ onMounted(async () => {
   padding: 12px 20px;
   transition: background-color 0.2s ease;
   border-left: 3px solid transparent;
+  position: relative; /* Add this */
 }
 
 .notification-item:hover {
@@ -359,7 +334,10 @@ onMounted(async () => {
 .notification-avatar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
-
+.notification-item .q-item__section--side {
+  align-items: flex-start;
+  padding-top: 12px;
+}
 .notification-message {
   font-size: 14px;
   line-height: 1.4;
@@ -374,20 +352,14 @@ onMounted(async () => {
 
 .unread-indicator {
   animation: indicator-pulse 1.5s infinite;
+  position: absolute; /* Add this */
+  right: 20px; /* Add this */
+  top: 16px; /* Add this */
 }
 
 .empty-state {
   padding: 40px 20px;
   text-align: center;
-}
-
-.notification-footer {
-  padding: 8px 12px;
-  background-color: #fafbfc;
-}
-
-.notification-footer.empty-footer {
-  background-color: #f8f9fa;
 }
 
 @keyframes subtle-pulse {

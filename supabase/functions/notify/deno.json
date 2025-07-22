@@ -1,6 +1,0 @@
-{
-  "imports": {
-    "hono": "npm:hono@4.7.4",
-    "zod": "npm:zod@3.24.2"
-  }
-}

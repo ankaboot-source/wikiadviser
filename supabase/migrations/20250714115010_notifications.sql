@@ -28,56 +28,112 @@ FOREIGN KEY (change_id) REFERENCES public.changes (id)
 ON DELETE CASCADE;
 
 -- Enable real-time for notifications
-ALTER TABLE public.notifications REPLICA IDENTITY FULL;
+alter publication supabase_realtime add table <table_name>;  
 
--- Trigger definitions (for reference, assuming already set via Supabase webhooks)
-CREATE EXTENSION IF NOT EXISTS http;
--- Comments trigger
-CREATE TRIGGER trg_comments
-AFTER INSERT ON public.comments
-FOR EACH ROW
-EXECUTE FUNCTION supabase_functions.http_request(
-  'http://host.docker.internal:54321/functions/v1/notify',
-  'POST',
-  '{"Content-Type":"application/json","Authorization":"Bearer your-supabase-anon-key"}',
-  '{}',
-  '1000'
-);
+CREATE OR REPLACE FUNCTION public.handle_notification_change()
+RETURNS TRIGGER AS $$
+DECLARE
+  article_record RECORD;
+  user_profile RECORD;
+  change_record RECORD;
+BEGIN
 
--- Revisions trigger
-CREATE TRIGGER trg_revisions
-AFTER INSERT ON public.revisions
-FOR EACH ROW
-EXECUTE FUNCTION supabase_functions.http_request(
-  'http://host.docker.internal:54321/functions/v1/notify',
-  'POST',
-  '{"Content-Type":"application/json","Authorization":"Bearer your-supabase-anon-key"}',
-  '{}',
-  '1000'
-);
+  -- New revision (change) inserted - notify only owners/editors, NOT the contributor
+  IF TG_TABLE_NAME = 'changes' AND TG_OP = 'INSERT' THEN
+    SELECT title INTO article_record FROM public.articles WHERE id = NEW.article_id;
+    IF article_record.title IS NOT NULL THEN
+      INSERT INTO public.notifications (user_id, message)
+      SELECT p.user_id,
+             'A new revision to "' || article_record.title || '" has been made.'
+      FROM public.permissions p
+      WHERE p.article_id = NEW.article_id
+        AND p.role IN ('owner', 'editor')
+        AND p.user_id != NEW.contributor_id; -- Exclude the person who made the revision
+    END IF;
 
--- Permissions trigger (for INSERT and UPDATE)
-CREATE TRIGGER trg_permissions
-AFTER INSERT OR UPDATE ON public.permissions
-FOR EACH ROW
-WHEN (OLD.role IS DISTINCT FROM NEW.role OR OLD IS NULL)
-EXECUTE FUNCTION supabase_functions.http_request(
-  'http://host.docker.internal:54321/functions/v1/notify',
-  'POST',
-  '{"Content-Type":"application/json","Authorization":"Bearer your-supabase-anon-key"}',
-  '{}',
-  '1000'
-);
+  -- Permissions inserted or updated
+  ELSIF TG_TABLE_NAME = 'permissions' AND (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+    SELECT title INTO article_record FROM public.articles WHERE id = NEW.article_id;
+    SELECT email INTO user_profile FROM public.profiles WHERE id = NEW.user_id;
 
--- Create trigger for UPDATE on notifications table
-CREATE TRIGGER trg_notifications_update
-AFTER UPDATE ON public.notifications
-FOR EACH ROW
-WHEN (OLD.is_read IS DISTINCT FROM NEW.is_read)
-EXECUTE FUNCTION supabase_functions.http_request(
-  'http://host.docker.internal:54321/functions/v1/notify',
-  'POST',
-  '{"Content-Type":"application/json","Authorization":"Bearer your-supabase-anon-key"}',
-  '{}',
-  '1000'
-);
+    IF article_record.title IS NOT NULL THEN
+      -- Notify the user who received the permission (only for Editor or Reviewer roles)
+      IF NEW.role IN ('editor', 'reviewer') THEN
+        INSERT INTO public.notifications (user_id, message)
+        VALUES (
+          NEW.user_id,
+          CASE
+            WHEN TG_OP = 'INSERT' THEN
+              'You have been granted ' || NEW.role || ' permission to "' || article_record.title || '".'
+            ELSE
+              'Your permission for "' || article_record.title || '" has been changed to ' || NEW.role || '.'
+          END
+        );
+      END IF;
+
+      -- Notify owners and editors about the permission change (but not the user who received it)
+      -- Only for Owner and Editor roles
+      IF NEW.role IN ('owner', 'editor') THEN
+        INSERT INTO public.notifications (user_id, message)
+        SELECT p.user_id,
+               CASE
+                 WHEN TG_OP = 'INSERT' THEN
+                   COALESCE(user_profile.email, 'Unknown User') || ' has been granted access to "' || article_record.title || '".'
+                 ELSE
+                   COALESCE(user_profile.email, 'Unknown User') || '''s permission for "' || article_record.title || '" has been changed to ' || NEW.role || '.'
+               END
+        FROM public.permissions p
+        WHERE p.article_id = NEW.article_id
+          AND p.role IN ('owner', 'editor')
+          AND p.user_id != NEW.user_id; -- Exclude the user who received the permission
+      END IF;
+    END IF;
+
+  -- New comment inserted - notify change owner and other commenters, NOT the commenter
+  ELSIF TG_TABLE_NAME = 'comments' AND TG_OP = 'INSERT' THEN
+    SELECT c.article_id, c.contributor_id, a.title
+    INTO change_record
+    FROM public.changes c
+    JOIN public.articles a ON a.id = c.article_id
+    WHERE c.id = NEW.change_id;
+
+    IF change_record.title IS NOT NULL THEN
+      INSERT INTO public.notifications (user_id, message)
+      SELECT DISTINCT participant_id,
+        'A new comment has been made to a change on "' || change_record.title || '".'
+      FROM (
+        SELECT change_record.contributor_id AS participant_id
+        UNION
+        SELECT commenter_id AS participant_id FROM public.comments WHERE change_id = NEW.change_id
+      ) participants
+      WHERE participant_id != NEW.commenter_id; -- Exclude the person who made the comment
+    END IF;
+
+  END IF;
+
+  RETURN NEW;
+
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'Error in handle_notification_change: %', SQLERRM;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Update triggers to use changes table instead of revisions
+DROP TRIGGER IF EXISTS trg_changes_notify ON public.changes;
+CREATE TRIGGER trg_changes_notify
+  AFTER INSERT ON public.changes
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_notification_change();
+
+DROP TRIGGER IF EXISTS trg_permissions_notify ON public.permissions;
+CREATE TRIGGER trg_permissions_notify
+  AFTER INSERT OR UPDATE ON public.permissions
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_notification_change();
+
+DROP TRIGGER IF EXISTS trg_comments_notify ON public.comments;
+CREATE TRIGGER trg_comments_notify
+  AFTER INSERT ON public.comments
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_notification_change();

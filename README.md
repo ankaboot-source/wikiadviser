@@ -3,7 +3,7 @@
 
 <div>
   <div align="center">
-    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/main/docs/assets/icons/logo%20with%20background.svg" alt="WikiAdviser Logo">
+    <img width="90" height="90" src="https://github.com/ankaboot-source/wikiadviser/raw/main/docker/resources/assets/icons/logo%20with%20background.svg" alt="WikiAdviser Logo">
   </div>
   <h1 align="center">WikiAdviser</h1>
   <div align="center">

@@ -1,0 +1,53 @@
+{
+    "citationNeeded": [
+        {
+            "title": [
+                "Citation needed",
+                "Cn",
+                "Fact",
+                "CN",
+                "Citation Needed",
+                "Citationneeded",
+                "Cite needed",
+                "Citation-needed"
+            ],
+            "params": {
+                "reason": "reason",
+                "date": "date"
+            }
+        },
+        {
+            "title": [
+                "Citation needed span",
+                "Reference necessary",
+                "Refnec",
+                "Fact-span",
+                "Cfact",
+                "CFact",
+                "Reference required",
+                "Cn-span",
+                "Citation span",
+                "Citation needed-span",
+                "Fact span",
+                "Cn span",
+                "Cns",
+                "Cnspan",
+                "Ctn span",
+                "Ctn-span",
+                "Cit-span",
+                "Cit span",
+                "Cspan",
+                "Citations needed span",
+                "Cite needed span"
+            ],
+            "params": {
+                "encapsulate": [
+                    "text",
+                    "1"
+                ],
+                "reason": "reason",
+                "date": "date"
+            }
+        }
+    ]
+}

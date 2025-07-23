@@ -72,7 +72,6 @@ WORKDIR /wikiadviser
 
 RUN mkdir mediawiki-setup assets MyVisualEditor
 COPY ./mediawiki-setup.sh ./mediawiki-setup
-COPY ./docker-entrypoint.sh ./mediawiki-setup
 COPY ./.env ./mediawiki-setup
 COPY ./conf ./mediawiki-setup
 COPY ./resources/assets ./assets
@@ -81,6 +80,5 @@ COPY ./resources/extensions/MyVisualEditor ./MyVisualEditor
 WORKDIR /wikiadviser/mediawiki-setup
 
 RUN chmod +x ./mediawiki-setup.sh && ./mediawiki-setup.sh
-RUN chmod +x ./docker-entrypoint.sh
 
 CMD ["apache2-foreground"]

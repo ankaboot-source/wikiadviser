@@ -1,0 +1,528 @@
+{{Documentation subpage}}
+{{High-use}}
+<!-- Please place categories where indicated at the bottom of this page and interwikis at Wikidata (see [[Wikipedia:Wikidata]]) -->
+
+This template identifies a patent or patent application and links to the patents entry in the ''[[espacenet]]'' database, and also provides some additional information about the cited patent. Suggested uses are within a pair of <nowiki><ref></ref></nowiki> tags or as part of a (patent) bibliography at the end of the article. This template should not be used in the body of an article; for more details, see [[Wikipedia:External_links#Important_points_to_remember|the external links guideline]].
+
+General patent template for citing patents or patent applications from any country is drawn from the [http://worldwide.espacenet.com espacenet] database. This database is more useful than the USPTO database, since it highlights related patents/applications in other countries, provides current status information, and offers a multi-language interface (English/French/German).
+
+== Usage ==
+Copy the text below into an article to reference a patent
+{{csdoc|usage vertical common}}
+<syntaxhighlight lang="wikitext" copy="1">
+{{cite patent
+| country	= 
+| number	= 
+| inventor	= 
+| invent1	= 
+| invent2	= 
+| status	= 
+| title		= 
+| pubdate	= 
+| gdate		= 
+| fdate		= 
+| pridate	= 
+| assign1	= 
+| assign2	= 
+| url		= 
+}}
+</syntaxhighlight>
+{{end}}
+{{csdoc|usage full}}
+:<syntaxhighlight lang="wikitext" copy="1">{{cite patent |country= |number= |inventor= |invent1= |invent2= |status= |title= |pubdate= |gdate= |fdate= |pridate= |assign1= |assign2= |url=}}</syntaxhighlight>
+{{end}}
+
+{{csdoc|usage vertical}}
+<syntaxhighlight lang="wikitext">
+{{cite patent
+| country = 
+| number = 
+| inventor = 
+| invent1 = 
+| invent2 = 
+| status = 
+| title =
+| pubdate = 
+| gdate	= 
+| fdate	= 
+| pridate = 
+| assign1 = 
+| assign2 = 
+| url = 
+}}
+</syntaxhighlight>
+{{csdoc|usage vertical mid}}
+<syntaxhighlight lang="wikitext">
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+REQUIRED
+if "status=application"
+unless "status=application"
+ 
+ 
+ 
+ 
+ 
+ 
+</syntaxhighlight>
+{{csdoc|usage vertical mid}}
+<syntaxhighlight lang="wikitext">
+ 
+two-letter country code 
+patent or patent application publication number
+list of inventors (free format)
+first inventor name 
+second inventor name 
+application/patent
+title
+publication date (YYYY-MM-DD)
+granted date (YYYY-MM-DD)
+filing date (YYYY-MM-DD) 
+(earliest) priority date (YYYY-MM-DD)
+first assignee name 
+second assignee name  
+explicit URL (if not present on espacenet)
+</syntaxhighlight>
+{{csdoc|usage vertical end}}
+
+== Parameters	==
+
+The fields should be filled in with the following information
+<syntaxhighlight lang="wikitext">
+{{cite patent
+| country	= <!-- two letter country code -->
+| number	= <!-- patent or patent application publication number -->
+| inventor	= <!-- list of inventors (free format) -->
+| invent1	= <!-- first inventor name -->
+| invent2	= <!-- second inventor name -->
+| status	= <!-- application/patent -->
+| title		= <!-- title -->
+| pubdate	= <!-- YYYY-MM-DD -->
+| gdate		= <!-- YYYY-MM-DD -->
+| fdate		= <!-- YYYY-MM-DD -->
+| pridate	= <!-- YYYY-MM-DD -->
+| assign1	= <!-- first assignee name -->
+| assign2	= <!-- second assignee name -->
+| url		= <!-- Explicit URL -->
+}}
+</syntaxhighlight>
+
+Explanation of fields:
+# The country must be the two-letter country code, e.g. "US" or "WO" (for international patent applications); see [https://worldwide.espacenet.com/patent/help/countrycodes here] for the full list of country codes.
+# Do not put commas in patent number
+# Applications must be identified by publication number
+# Add {{para|title|<var>title</var>}} to display the title. '''Required'''
+# Add {{para|status|application}} if the citation is a pending application. Preferably include {{para|status|patent}} if a granted patent.
+# Add {{para|assign1|<var>assignee</var>}} to display the assignee. Increase the numeral for subsequent assignees. Template currently handles two assignees.
+# Add {{para|inventor|<var>inventor list</var>}} to provide the inventor names. Displayed by the template but not used to generate [[#COinS|COinS]] meta data. If {{para|inventor}} is present but blank, no inventor names will be displayed, even if {{para|invent1}} contains a name.
+# Add {{para|invent1|<var>inventor last name</var>, <var>inventor first name</var>}} to provide the inventor name. Displayed by the template and also used to generate [[#COinS|COinS]] meta data. Increase the numeral for subsequent inventors. Template currently handles four inventors.
+# Add {{para|pubdate|<var>YYYY-MM-DD</var>}} to provide the publication date of an application. This is only displayed if "status=application" is included. For granted patents, use gdate. '''Required if {{para|status|application}}'''.
+# Add {{para|gdate|<var>YYYY-MM-DD</var>}} to provide the date of grant of a patent. Is displayed unless "status=application" is included. Preferentially include "status=patent" to confirm that the patent is granted, but this is not required. '''Required unless {{para|status|application}}'''.
+# Add {{para|pridate|<var>YYYY-MM-DD</var>}} to provide the (earliest) priority date. Not displayed, but could be useful to include for future reference. Including multiple priorities unnecessarily complicated.
+# Add {{para|fdate|<var>YYYY-MM-DD</var>}} to provide the filing date. Not displayed, but used to generate [[#COinS|COinS]] meta data and may prove useful in future.
+# Add {{para|url|<var>url</var>}} to provide an explicit URL to the patent information. This is only necessary for patents that aren't present on espacenet.com; typically very old patents.
+
+== Details ==
+The "country" parameter must be a two letter country code without periods (e.g. US or EP, ''not'' U.S., USA, or E.P.)
+
+The number parameter must be the patent number or patent application publication number without any intervening commas or other punctuation (e.g. 2135432, not 2,135,432; likewise, 2005108455, not 2005/108455). You may need to experiment with the precise form for published US patent applications or PCT applications, which are slightly unusual. Help for getting the correct number format can be found [http://worldwide.espacenet.com/numberSearch?locale=en_EP here].
+
+Add {{para|status|application}} if you are citing a patent application rather than a patent. Patent applications must be referred to by publication number, not application number.
+
+One (or both) of the publication date or the grant date must be included, as must the title.
+
+== Examples ==
+To cite [[World Intellectual Property Organization|WIPO]] (aka PCT) patent application WO 2005/083605 A1, use:
+<syntaxhighlight lang="wikitext">
+{{cite patent
+| country = WO
+| number = 2005083605
+| status = application
+| title = Insurance fee calculation device, insurance fee calculation program,
+insurance fee calculation method, and insurance fee calculation system
+| pubdate = 2005-09-09
+| fdate = 2005-02-24
+| pridate = 2004-02-26
+| invent1 = Kozakai Toshihiko
+| assign1 = Aioi Insurance Co Ltd
+}}
+</syntaxhighlight>
+Results in:
+{{cite patent
+| country = WO
+| number = 2005083605
+| status = application
+| title = Insurance fee calculation device, insurance fee calculation program, insurance fee calculation method, and insurance fee calculation system
+| pubdate = 2005-09-09
+| fdate = 2005-02-24
+| pridate = 2004-02-26
+| invent1 = Kozakai Toshihiko
+| assign1 = Aioi Insurance Co Ltd
+}}
+
+To cite US patent 7,143,445, use:
+:<code><nowiki>{{cite patent
+ |country=US
+ |number=7143445
+ |status=patent}}</nowiki></code>
+Results in: {{cite patent
+ |country=US
+ |number=7143445
+ |status=patent}}
+
+To cite US patent 7,143,445, published 2006-11-28, use:
+:<code><nowiki>{{cite patent
+ |country=US
+ |number=7143445
+ |gdate=2006-11-28}}</nowiki></code>
+Results in: {{cite patent
+ |country=US
+ |number=7143445
+ |gdate=2006-11-28}}
+
+To cite US patent application 2006265789 use:
+:<code><nowiki>{{cite patent
+ |country=US
+ |number=2006265789
+ |status=application}}</nowiki></code>
+Results in: {{cite patent
+ |country=US
+ |number=2006265789
+ |status=application}}
+
+To cite European patent application 1727416, use:
+:<code><nowiki>{{cite patent
+ |country=EP
+ |number=1727416
+ |status=application}}</nowiki></code>
+Results in: {{cite patent
+ |country=EP
+ |number=1727416
+ |status=application}}
+
+==Maintenance categories==
+* {{clc|Pages using cite patent with unknown parameters}}
+
+== COinS ==
+{{UF-COinS}}
+
+== TemplateData ==
+{{TemplateData header}}
+<templatedata>
+{
+	"params": {
+		"country": {
+			"aliases": [
+				"country-code",
+				"country"
+			],
+			"label": "Country code",
+			"description": "two-letter country code (ISO 3166-1 alpha-2); the top 10 countries by patent application in 2011 were: JP=Japan, CN=China, US=United States, KR=South Korea, DE=Germany, FR=France, GB=United Kingdom, CH=Switzerland, NL=Netherlands, RU=Russia",
+			"example": "JP",
+			"type": "line",
+			"suggested": true,
+			"suggestedvalues": [
+				"JP",
+				"CN",
+				"US",
+				"KR",
+				"DE",
+				"FR",
+				"GB",
+				"CH",
+				"NL",
+				"RU"
+			]
+		},
+		"number": {
+			"aliases": [
+				"publication-number",
+				"patent-number"
+			],
+			"label": "Publication number",
+			"description": "patent or patent application publication number; do not include commas (e.g. 1,700,545 should be 1700545)",
+			"type": "line",
+			"suggested": true
+		},
+		"title": {
+			"label": "Title",
+			"description": "patent title",
+			"type": "string",
+			"required": true
+		},
+		"status": {
+			"aliases": [
+				"description",
+				"status"
+			],
+			"label": "Status",
+			"description": "application or patent – if pending, use application; if granted, use patent",
+			"example": "patent",
+			"type": "line",
+			"default": "patent",
+			"suggested": true
+		},
+		"pubdate": {
+			"aliases": [
+				"publication-date"
+			],
+			"label": "Date of publication ",
+			"description": "the publication date of an application, required if status/description=application; use format YYYY-MM-DD",
+			"example": "2017-01-01",
+			"type": "date",
+			"suggested": true
+		},
+		"fdate": {
+			"label": "Filing date",
+			"description": "the filing date; this is not displayed, but is used to generate COinS meta data and may have future utility. Use YYYY-MM-DD",
+			"example": "2017-01-01",
+			"type": "date"
+		},
+		"pridate": {
+			"label": "Priority date",
+			"description": "the (earliest) priority date; this is not displayed, but could be useful to include for future reference. Including multiple priorities is unnecessarily complicated. Use YYYY-MM-DD",
+			"example": "2017-02-01"
+		},
+		"gdate": {
+			"aliases": [
+				"issue-date"
+			],
+			"label": "Date of issue",
+			"description": "the date of grant (issuance) of a patent; required if status/description is not \"application\"",
+			"example": "2017-02-01",
+			"suggested": true,
+			"type": "date"
+		},
+		"invent1": {
+			"aliases": [
+				"inventor-surname",
+				"inventor1-surname",
+				"inventor-last",
+				"inventor1-last",
+				"inventor",
+				"invent-1"
+			],
+			"label": "Inventor 1 surname",
+			"description": "surname – 1st inventor",
+			"example": "Smith",
+			"type": "line",
+			"suggested": true
+		},
+		"invent2": {
+			"aliases": [
+				"inventor2-surname",
+				"inventor2-last",
+				"inventor2"
+			],
+			"label": "Inventor 2 surname",
+			"description": "surname – 2nd inventor",
+			"type": "line"
+		},
+		"invent3": {
+			"aliases": [
+				"inventor3-surname",
+				"inventor3-last",
+				"inventor3"
+			],
+			"label": "Inventor 3 surname",
+			"description": "surname – 3rd inventor",
+			"type": "line"
+		},
+		"invent4": {
+			"aliases": [
+				"inventor4-surname",
+				"inventor4-last",
+				"inventor4"
+			],
+			"label": "Inventor 4 surname",
+			"description": "surname – 4th inventor",
+			"type": "line"
+		},
+		"inventor1-first": {
+			"aliases": [
+				"inventor-given",
+				"inventor1-given",
+				"inventor-first"
+			],
+			"label": "Inventor 1 given name",
+			"description": "given name – 1st inventor",
+			"type": "line",
+			"suggested": true
+		},
+		"inventor2-first": {
+			"aliases": [
+				"inventor2-given"
+			],
+			"label": "Inventor 2 given name",
+			"description": "given name – 2nd inventor",
+			"type": "line"
+		},
+		"inventor3-first": {
+			"aliases": [
+				"inventor3-given"
+			],
+			"label": "Inventor 3 given name",
+			"description": "given name – 3rd inventor",
+			"type": "line"
+		},
+		"inventor4-first": {
+			"aliases": [
+				"inventor4-given"
+			],
+			"label": "Inventor 4 given name",
+			"description": "given name – 4th inventor",
+			"type": "line"
+		},
+		"inventorlink": {
+			"aliases": [
+				"inventorlink1"
+			],
+			"label": "Inventor 1: Wikipedia article",
+			"description": "Wikilink biographical article name, no square brackets",
+			"type": "wiki-page-name"
+		},
+		"inventorlink2": {
+			"label": "Inventor 2: Wikipedia article",
+			"description": "add biographical article name, no square brackets",
+			"type": "wiki-page-name"
+		},
+		"inventorlink3": {
+			"label": "Inventor 3: Wikipedia article",
+			"description": "add biographical article name, no square brackets",
+			"type": "wiki-page-name"
+		},
+		"inventorlink4": {
+			"label": "Inventor 4: Wikipedia article",
+			"description": "add biographical article name, no square brackets",
+			"type": "wiki-page-name"
+		},
+		"assign2": {
+			"label": "Assignee, second",
+			"description": "second assignee's name",
+			"type": "line"
+		},
+		"url": {
+			"label": "URL",
+			"description": "Explicit URL to patent information",
+			"type": "url",
+			"default": "http://worldwide.espacenet.com/textdoc?DB=EPODOC&IDX={{{CountryCode}}}{{{PublicationNumber}}}"
+		},
+		"assign1": {
+			"label": "Assignee, first",
+			"description": "first assignee's name",
+			"type": "line"
+		}
+	},
+	"description": "General patent template for citing patents or patent applications from any country is drawn from the espacenet database.",
+	"sets": [
+		{
+			"params": [
+				"fdate",
+				"pridate"
+			],
+			"label": "not displayed, for possible future use"
+		},
+		{
+			"params": [
+				"gdate",
+				"pubdate"
+			],
+			"label": "status-dependent fields"
+		},
+		{
+			"params": [
+				"invent1",
+				"invent2",
+				"invent3",
+				"invent4",
+				"inventor1-first",
+				"inventor2-first",
+				"inventor3-first",
+				"inventor4-first",
+				"inventorlink",
+				"inventorlink2",
+				"inventorlink3",
+				"inventorlink4"
+			],
+			"label": "people information"
+		}
+	],
+	"maps": {
+		"citoid": {
+			"title": "title",
+			"url": "url",
+			"issueDate": "gdate",
+			"location": "country",
+			"patentNumber": "number",
+			"inventor": [
+				[
+					"inventor1-first",
+					"invent1"
+				],
+				[
+					"inventor2-first",
+					"invent2"
+				],
+				[
+					"inventor3-first",
+					"invent3"
+				],
+				[
+					"inventor4-first",
+					"invent4"
+				]
+			]
+		}
+	},
+	"paramOrder": [
+		"country",
+		"number",
+		"title",
+		"status",
+		"pubdate",
+		"fdate",
+		"pridate",
+		"gdate",
+		"invent1",
+		"invent2",
+		"invent3",
+		"invent4",
+		"inventor1-first",
+		"inventor2-first",
+		"inventor3-first",
+		"inventor4-first",
+		"inventorlink",
+		"inventorlink2",
+		"inventorlink3",
+		"inventorlink4",
+		"assign1",
+		"assign2",
+		"url"
+	],
+	"format": "inline"
+}
+</templatedata>
+
+== See also ==
+* {{tl|Citation}}
+* {{tl|EPO Register}}, to include a link to the European Patent Register entry of a European patent or patent application
+* {{tl|Patent}}, a generic template for general use referring to world's patent offices
+* {{tl|US patent}}, to include a link to a US patent
+* {{tl|US patent application}}, to cite a US patent application as a reference in "references" section
+* {{tl|US patent reference}}, to cite a US patent as a reference in "references" section
+* {{tl|USPTO Application}}
+* {{tl|USPTO Patent}}
+
+<div style="display: none"><references /></div>
+
+<includeonly>{{basepage subpage|
+<!-- Categories go here, and interwikis go in Wikidata -->
+[[Category:Law external link templates|World]]
+[[Category:Law citation templates|World]]
+[[Category:Patent law templates|World]]
+}}</includeonly>

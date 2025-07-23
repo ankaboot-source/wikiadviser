@@ -33,14 +33,18 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 ### Pre-requisites
 
 - Clone the repository
-- [Install Docker](https://docs.docker.com/engine/install) <details><summary><b>💡 Tip: </b>We recommend to run Docker as user, so don't forget to add your user to docker group these commands: </summary>
-   sudo usermod -aG docker $USER && newgrp docker
-</details>
-
 - [Install NodeJS](https://nodejs.org)
+- [Install Docker](https://docs.docker.com/engine/install)
+
+> [!TIP]
+> To run the app without sudo, we recommend adding your user to the Docker group. Use the following commands:
+>    ```sh
+>    sudo usermod -aG docker $USER && newgrp docker
+>    ```
 
 ### Installation
 
+The whole process may take some time (up to 30 minutes). Please be patient.
 
 ```sh
 git clone https://github.com/ankaboot-source/wikiadviser.git

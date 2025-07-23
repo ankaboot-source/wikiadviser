@@ -11,9 +11,9 @@ services:
       - ./MW_CREDENTIALS.txt:/wikiadviser/mediawiki-setup/MW_CREDENTIALS.txt
       - ./conf/php-custom.ini:/usr/local/etc/php/conf.d/php-custom.ini
       - ./resources/extensions/MyVisualEditor:/var/www/mediawiki/wiki/en/extensions/MyVisualEditor
-      - ./resources/common-files/Common-en.js:/wikiadviser/mediawiki-setup/Common-en.js
-      - ./resources/common-files/Common-en.css:/wikiadviser/mediawiki-setup/Common-en.css
       - ./docker-entrypoint.sh:/wikiadviser/mediawiki-setup/docker-entrypoint.sh
+      - ./resources/citoid/:/citoid
+      - ./resources/common-files/:/common-files
       - init-data:/data
     depends_on:
       - mediawiki_db

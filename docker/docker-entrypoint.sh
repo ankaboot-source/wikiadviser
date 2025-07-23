@@ -12,7 +12,8 @@ HC_FLAG_FILE="/wikiadviser/mediawiki-setup/.setup_complete"
 MW_ADMIN_USER="Admin"
 MW_ADMIN_PASSWORD="admin#2025"
 MW_BOT_USER="wikiadviser-bot"
-WORKDIR="/wikiadviser/mediawiki-setup"
+COMMON_FILES_PATH="/common-files"
+CITOID_PATH="/citoid"
 
 mw_init_dump_fr="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-fr.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZnIuc3FsIiwiaWF0IjoxNzQwNzM0MjA2LCJleHAiOjQ4NjI3OTgyMDZ9.Q5bEpxsrWFP0KF-rVJXmt4zK3ypU-1qmpIAislLx9bs"
 mw_init_dump_en="https://rcsxuyoogygnyjbwbrbb.supabase.co/storage/v1/object/sign/mediawiki-init/init-dump-en.sql?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1cmwiOiJtZWRpYXdpa2ktaW5pdC9pbml0LWR1bXAtZW4uc3FsIiwiaWF0IjoxNzQwNzM0MTgzLCJleHAiOjQ4NjI3OTgxODN9.2Fw1v-5jTrPSDSxpavIUS3E45jZL8UjNoGlMbLOwHOg"
@@ -96,8 +97,39 @@ if [ ! -f "$FLAG_FILE" ]; then
 
   for ln in "${LANG_ARRAY[@]}"; do
       echo "Importing Common-$ln.js & Common-$ln.css..."
-      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.js" < $WORKDIR/Common-$ln.js
-      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.css" < $WORKDIR/Common-$ln.css
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.js" < $COMMON_FILES_PATH/Common-$ln.js
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.css" < $COMMON_FILES_PATH/Common-$ln.css
+
+      echo "Importing Citoid Modules and templates..."
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Citation/doc" < $CITOID_PATH/Citation_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Citation" < $CITOID_PATH/Citation_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_AV_media/doc" < $CITOID_PATH/Cite_AV_media_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_AV_media" < $CITOID_PATH/Cite_AV_media_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_book/doc" < $CITOID_PATH/Cite_book_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_book" < $CITOID_PATH/Cite_book_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_book/TemplateData" < $CITOID_PATH/Cite_book_TemplateData_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_journal/doc" < $CITOID_PATH/Cite_journal_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_journal" < $CITOID_PATH/Cite_journal_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_news/doc" < $CITOID_PATH/Cite_news_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_news" < $CITOID_PATH/Cite_news_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_patent/doc" < $CITOID_PATH/Cite_patent_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_patent" < $CITOID_PATH/Cite_patent_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_thesis/doc" < $CITOID_PATH/Cite_thesis_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_thesis" < $CITOID_PATH/Cite_thesis_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_web/doc" < $CITOID_PATH/Cite_web_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Cite_web" < $CITOID_PATH/Cite_web_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Template:Documentation" < $CITOID_PATH/Template_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Module:Documentation" < $CITOID_PATH/Module_doc_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Module:Documentation/config" < $CITOID_PATH/Module_doc_conf_$ln
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "Module:Arguments" < $CITOID_PATH/Module_arguments_$ln
+
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Cite-tool-definition.json" < $CITOID_PATH/Cite-tool-definition_$ln.json
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Citoid-template-type-map.json" < $CITOID_PATH/Citoid-template-type-map_$ln.json
+      php /var/www/mediawiki/wiki/$ln/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Visualeditor-template-tools-definition.json" < $CITOID_PATH/Visualeditor-template-tools-definition_$ln.json
+
+      php /var/www/mediawiki/wiki/$ln/maintenance/run.php /var/www/mediawiki/wiki/$ln/maintenance/runJobs.php
+
+
   done
 
   touch "$FLAG_FILE"

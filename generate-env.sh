@@ -7,12 +7,6 @@ CONTAINER_NAME="mediawiki"
 
 export LANG=C
 
-# Must run within ./wikiadviser/ check
-if [[ "$(basename "$PWD")" != "wikiadviser" ]]; then
-  echo "❌ Error: Please navigate to ./wikiadviser before running the script."
-  exit 1
-fi
-
 if [[ "$1" == "--bot-creds" ]]; then
   # Function to check container health
   wait_for_container_healthy() {

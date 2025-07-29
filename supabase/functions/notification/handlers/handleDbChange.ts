@@ -27,6 +27,12 @@ export async function handleDbChange(payload: Payload) {
           payload.old_record?.is_read !== payload.record.is_read:
         console.log(`Notification marked as read for user ${payload.record.user_id}`);
         break;
+      
+      default:
+        console.log(
+          `Unhandled event: table=${payload.table}, type=${payload.type}`
+        );
+        break;
     }
 
     if (notifications.length > 0) {

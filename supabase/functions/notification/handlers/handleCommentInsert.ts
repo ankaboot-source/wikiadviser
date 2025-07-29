@@ -2,6 +2,10 @@ import { safeSingle } from '../utils/safeSingle.ts';
 import  createSupabaseAdmin  from '../../_shared/supabaseAdmin.ts';
 import { Notification, Payload } from '../schema.ts';
 
+interface CommentParticipant {
+  commenter_id: string;
+}
+
 export async function handleCommentInsert(
   payload: Payload
 ): Promise<Notification[]> {
@@ -20,13 +24,11 @@ export async function handleCommentInsert(
   );
   if (!article) return [];
 
-  // Get commenter's name
   const commenterProfile = await safeSingle<{ email: string }>(
     supabase.from('profiles').select('email').eq('id', commenter_id)
   );
   const commenterName = commenterProfile?.email || 'A user';
 
-  // Get all participants (change owner + commenters)
   const { data: participants, error } = await supabase
     .from('comments')
     .select('commenter_id')
@@ -34,12 +36,15 @@ export async function handleCommentInsert(
 
   if (error) return [];
 
+  // Type the participants array
+  const participantList = participants as CommentParticipant[] | null;
+  
   const ids = new Set<string>([
     change.contributor_id,
-    ...(participants?.map((p: any) => p.commenter_id) || []),
+    ...(participantList?.map(p => p.commenter_id) || []),
   ]);
 
-  ids.forEach((uid: string) => {
+  ids.forEach(uid => {
     if (uid !== commenter_id) {
       const message = uid === change.contributor_id
         ? `${commenterName} has replied to your change on article ${article.title}.`

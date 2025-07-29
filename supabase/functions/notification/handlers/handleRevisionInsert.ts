@@ -23,7 +23,7 @@ export async function handleRevisionInsert(
 
   if (error) return [];
 
-  recipients?.forEach(({ user_id, role }: RecipientRow & { role: string }) => {
+  recipients?.forEach(({ user_id }: RecipientRow ) => {
     // Only notify if user didn't create the revision
     if (user_id !== contributor_id) {
       notifications.push({

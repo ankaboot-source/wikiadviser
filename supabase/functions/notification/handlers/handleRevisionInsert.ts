@@ -17,9 +17,8 @@ export async function handleRevisionInsert(
   // Fetch all users with permissions for this article (owners, editors, reviewers)
   const { data: recipients, error } = await supabase
     .from('permissions')
-    .select('user_id, role')
-    .eq('article_id', article_id)
-    .in('role', ['owner', 'editor', 'reviewer']);
+    .select('user_id')
+    .eq('article_id', article_id);
 
   if (error) return [];
 

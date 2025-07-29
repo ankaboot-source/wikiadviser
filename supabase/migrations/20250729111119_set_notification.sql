@@ -3,7 +3,7 @@ DROP TRIGGER IF EXISTS trg_permissions_notify ON public.permissions;
 DROP TRIGGER IF EXISTS trg_changes_notify ON public.changes;
 DROP FUNCTION IF EXISTS public.handle_notification_change() CASCADE;
 
-CREATE OR REPLACE FUNCTION execute_edge_function()
+CREATE OR REPLACE FUNCTION execute_notification_edge_function()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -48,30 +48,30 @@ $$;
 CREATE TRIGGER trg_changes
 AFTER INSERT ON public.changes
 FOR EACH ROW
-EXECUTE FUNCTION execute_edge_function();
+EXECUTE FUNCTION execute_notification_edge_function();
 
 -- Trigger for INSERT on comments
 CREATE TRIGGER trg_comments
 AFTER INSERT ON public.comments
 FOR EACH ROW
-EXECUTE FUNCTION execute_edge_function();
+EXECUTE FUNCTION execute_notification_edge_function();
 
 -- Trigger for UPDATE on notifications
 CREATE TRIGGER trg_notifications_update
 AFTER UPDATE ON public.notifications
 FOR EACH ROW
-EXECUTE FUNCTION execute_edge_function();
+EXECUTE FUNCTION execute_notification_edge_function();
 
 -- Trigger for INSERT on permissions
 CREATE TRIGGER trg_permissions_insert
 AFTER INSERT ON public.permissions
 FOR EACH ROW
-EXECUTE FUNCTION execute_edge_function();
+EXECUTE FUNCTION execute_notification_edge_function();
 
 -- Trigger for UPDATE on permissions
 CREATE TRIGGER trg_permissions_update
 AFTER UPDATE ON public.permissions
 FOR EACH ROW
-EXECUTE FUNCTION execute_edge_function();
+EXECUTE FUNCTION execute_notification_edge_function();
 
 

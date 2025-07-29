@@ -48,3 +48,6 @@ jobs:
 
       - name: deploy article
         run: supabase functions deploy article --no-verify-jwt --debug
+
+      - name: deploy notification
+        run: supabase functions deploy notification --no-verify-jwt --debug

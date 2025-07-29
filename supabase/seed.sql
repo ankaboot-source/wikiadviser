@@ -12,3 +12,4 @@ SELECT
 WHERE NOT EXISTS (
   SELECT 1 FROM auth.users WHERE email = 'deleted-user@wikiadviser.io'
 );
+

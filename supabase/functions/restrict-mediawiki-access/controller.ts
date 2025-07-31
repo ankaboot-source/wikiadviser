@@ -61,6 +61,9 @@ export default async function restrictMediawikiAccess(context: Context) {
       const articleId = isRequestFromVisualEditor
         ? (context.req.query("page") as string)
         : articleIdForwardedUri;
+
+      console.log({ forwardedUri, articleIdForwardedUri, articleId });
+
       if (!articleId) {
         return new Response(
           "This user is not authorized to access this content, missing article",

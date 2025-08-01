@@ -1,21 +1,52 @@
 <template>
-  <q-btn flat round dense class="notification-btn" :class="{ 'has-notifications': unreadCount > 0 }">
-    <q-icon name="notifications" size="24px" :color="unreadCount > 0 ? 'primary' : 'grey-6'" />
+  <q-btn
+    flat
+    round
+    dense
+    class="notification-btn"
+    :class="{ 'has-notifications': unreadCount > 0 }"
+  >
+    <q-icon
+      name="notifications"
+      size="24px"
+      :color="unreadCount > 0 ? 'primary' : 'grey-6'"
+    />
 
-    <q-badge v-if="unreadCount" color="red" floating rounded class="notification-badge">
+    <q-badge
+      v-if="unreadCount"
+      color="red"
+      floating
+      rounded
+      class="notification-badge"
+    >
       {{ unreadCount > 99 ? '99+' : unreadCount }}
     </q-badge>
 
     <q-tooltip class="bg-grey-9 text-white">
-      {{ unreadCount ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}` : 'No notifications' }}
+      {{
+        unreadCount
+          ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}`
+          : 'No notifications'
+      }}
     </q-tooltip>
 
-    <q-menu class="notification-menu" anchor="bottom middle" self="top middle" :offset="[0, 8]">
+    <q-menu
+      class="notification-menu"
+      anchor="bottom middle"
+      self="top middle"
+      :offset="[0, 8]"
+    >
       <q-card class="notification-card">
         <q-scroll-area style="height: 300px">
           <q-list>
             <template v-if="unread.length">
-              <q-item v-for="(notification, index) in unread" :key="notification.id" clickable class="notification-item" @click="markRead(notification.id)">
+              <q-item
+                v-for="(notification, index) in unread"
+                :key="notification.id"
+                clickable
+                class="notification-item"
+                @click="markRead(notification.id)"
+              >
                 <q-item-section avatar>
                   <q-avatar color="grey-2" text-color="grey-8" size="32px">
                     <q-icon name="notifications" size="16px" />
@@ -23,8 +54,12 @@
                 </q-item-section>
 
                 <q-item-section>
-                  <q-item-label class="text-body2">{{ notification.message }}</q-item-label>
-                  <q-item-label caption>{{ formatTime(notification.created_at) }}</q-item-label>
+                  <q-item-label class="text-body2">{{
+                    notification.message
+                  }}</q-item-label>
+                  <q-item-label caption>{{
+                    formatTime(notification.created_at)
+                  }}</q-item-label>
                 </q-item-section>
 
                 <q-item-section side top>
@@ -39,7 +74,9 @@
               <q-item class="empty-state">
                 <q-item-section class="text-center">
                   <q-icon name="notifications_off" size="40px" color="grey-5" />
-                  <div class="text-body2 text-grey-7 q-mt-sm">No notifications</div>
+                  <div class="text-body2 text-grey-7 q-mt-sm">
+                    No notifications
+                  </div>
                 </q-item-section>
               </q-item>
             </template>
@@ -49,7 +86,14 @@
         <template v-if="unreadCount > 0">
           <q-separator />
           <q-card-actions align="center" class="q-pa-sm">
-            <q-btn flat dense size="sm" label="Mark all as read" color="primary" @click="markAllRead" />
+            <q-btn
+              flat
+              dense
+              size="sm"
+              label="Mark all as read"
+              color="primary"
+              @click="markAllRead"
+            />
           </q-card-actions>
         </template>
       </q-card>
@@ -82,7 +126,10 @@ async function markRead(id) {
 async function markAllRead() {
   try {
     const ids = unread.value.map((n) => n.id);
-    await supabase.from('notifications').update({ is_read: true }).in('id', ids);
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .in('id', ids);
     unread.value = [];
     Notify.create({
       message: 'All notifications marked as read',
@@ -99,7 +146,9 @@ function formatTime(timestamp) {
   if (!timestamp) return 'Unknown';
   const date = new Date(timestamp);
   const now = new Date();
-  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+  const diffInMinutes = Math.floor(
+    (now.getTime() - date.getTime()) / (1000 * 60),
+  );
 
   if (diffInMinutes < 1) return 'Now';
   if (diffInMinutes < 60) return `${diffInMinutes}m`;
@@ -109,7 +158,9 @@ function formatTime(timestamp) {
 
 onMounted(async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { data, error } = await supabase
@@ -148,7 +199,7 @@ onMounted(async () => {
             ],
           });
         }
-      }
+      },
     );
   } catch (error) {
     console.error('Error setting up notifications:', error);

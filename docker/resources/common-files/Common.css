@@ -1,0 +1,78 @@
+/* Hide "Notice" popup */
+.oo-ui-widget.oo-ui-widget-enabled.oo-ui-labelElement.oo-ui-floatableElement-floatable.oo-ui-popupWidget-anchored.oo-ui-popupWidget.oo-ui-popupTool-popup.oo-ui-popupWidget-anchored-top {
+  display: none !important;
+}
+/* Hide "Notice" button in toolbar */
+.ve-ui-toolbar-group-notices {
+  display: none !important;
+}
+/* Hide "Warning to log in" in edit source */
+.mw-message-box-warning.mw-anon-edit-warning.mw-message-box {
+  display: none !important;
+}
+/* Hide "Search bar" in edit source */
+.vector-search-box-vue.vector-search-box-collapses.vector-search-box-show-thumbnail.vector-search-box-auto-expand-width.vector-search-box {
+  display: none !important;
+}
+/* Hide footer-places */
+#footer-places {
+  display: none !important;
+}
+/* Hide header */
+.mw-header {
+  display: none !important;
+}
+/* Keep sticky header's title & TOC */
+.vector-sticky-header-end,
+.vector-sticky-header-start > :not(.vector-sticky-header-context-bar) {
+  display: none !important;
+}
+.vector-sticky-header-context-bar {
+  border-left: none !important;
+}
+/* Hide Menu */
+.vector-main-menu-landmark {
+  display: none !important;
+}
+/* Hide right bar (Tools) */
+.vector-column-end {
+  display: none !important;
+}
+/* Hide "Add Languages" button */
+#p-lang-btn {
+  display: none !important;
+}
+/* Hide fullscreen button */
+#p-dock-bottom {
+  display: none !important;
+}
+/* Hide save dialog's licence */
+.ve-ui-mwSaveDialog-foot {
+  display: none !important;
+}
+/* Keep "Comment" Label */
+.oo-ui-tool-name-comment > a {
+  padding-top: 11px !important;
+}
+.oo-ui-tool-name-comment > a > .oo-ui-tool-title {
+  display: block !important;
+  padding-bottom: 11px !important;
+  padding-right: 11px !important;
+}
+/* Hide user guide & feedback in "?" */
+.oo-ui-tool-name-mwFeedbackDialog.oo-ui-tool-name-mwUserGuide {
+  display: none !important;
+}
+/* Hide some of "Help" elements */
+.oo-ui-tool-name-mwUserGuide,
+.oo-ui-tool-name-mwFeedbackDialog {
+  display: none !important;
+}
+/* Hide Edit section that is next to each paragraph title */
+.mw-editsection {
+  display: none !important;
+}
+/* Hide toolbar */
+.vector-page-toolbar {
+  display: none !important;
+}

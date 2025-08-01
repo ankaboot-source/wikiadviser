@@ -1,7 +1,7 @@
 version = 1
 
 exclude_patterns = [
-  "mediawiki/**",
+  "docker/resources/**",
   "**/MyVisualEditor/**",
   "frontend/public/**",
   "node_modules/"

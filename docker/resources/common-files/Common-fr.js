@@ -852,6 +852,45 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
           }
       };
 
+      mw.hook('ve.activationStart').add(function () {
+        try {
+          // Make inner page full width and hide left bar (TOC)
+          var elements = document.querySelectorAll('.mw-page-container-inner, .mw-body');
+          for (var i = 0; i < elements.length; i++) {
+            elements[i].removeAttribute('class');
+          }
+        } catch (error) {
+          console.error('An error occurred while trying to hide non-editor distractions', error.message);
+        }
+      });
+
+      // On "Save Changes", go to diffUrl
+      mw.hook('ve.activationComplete').add(function () {
+        const originalSaveComplete =
+          ve.init.mw.ArticleTarget.prototype.saveComplete;
+        ve.init.mw.ArticleTarget.prototype.saveComplete = function (data) {
+          originalSaveComplete.apply(this, arguments);
+
+          const articleId = this.getPageName();
+          window.parent.postMessage(
+            {
+              type: 'saved-changes',
+              articleId: articleId,
+            },
+            '*'
+          );
+          mw.wikiadviser
+            .getDiffUrl(articleId)
+            .then(function (diffUrl) {
+              console.log('Redirecting to diff:', diffUrl);
+              window.location.replace(diffUrl);
+            })
+            .catch(function (error) {
+              console.error('Failed to redirect to diff:', error);
+            });
+        };
+      });
+
 })(); // Fermeture de la IIFE globale
 
 // </nowiki> /!\ Ne pas retirer cette balise

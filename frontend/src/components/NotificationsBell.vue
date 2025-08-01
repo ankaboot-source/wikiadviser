@@ -153,6 +153,7 @@ function formatTime(timestamp) {
   if (diffInMinutes < 1) return 'Now';
   if (diffInMinutes < 60) return `${diffInMinutes}m`;
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
+  if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
   return date.toLocaleDateString();
 }
 

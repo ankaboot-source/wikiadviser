@@ -36,8 +36,8 @@
       self="top middle"
       :offset="[0, 8]"
     >
-      <q-card style="min-width: 320px" class="rounded-lg bg-white">
-        <q-scroll-area style="height: 300px">
+      <q-card class="min-w-[320px] rounded-lg bg-white">
+        <q-scroll-area class="h-[300px]">
           <q-list>
             <template v-if="unread.length">
               <q-item

@@ -207,25 +207,3 @@ onMounted(async () => {
   }
 });
 </script>
-
-<style scoped>
-.notification-btn {
-  padding: 8px;
-}
-.notification-btn.has-notifications .notification-badge {
-  font-size: 10px;
-  min-width: 16px;
-  height: 16px;
-}
-.notification-card {
-  width: 320px;
-  border-radius: 8px;
-  background: white;
-}
-.notification-item {
-  padding: 12px 16px;
-}
-.empty-state {
-  padding: 32px 16px;
-}
-</style>

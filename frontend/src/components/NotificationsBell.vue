@@ -3,7 +3,7 @@
     flat
     round
     dense
-    class="notification-btn"
+    class="px-2"
     :class="{ 'has-notifications': unreadCount > 0 }"
   >
     <q-icon
@@ -17,7 +17,7 @@
       color="red"
       floating
       rounded
-      class="notification-badge"
+      class="text-[10px] min-w-[16px] h-[16px]"
     >
       {{ unreadCount > 99 ? '99+' : unreadCount }}
     </q-badge>
@@ -36,7 +36,7 @@
       self="top middle"
       :offset="[0, 8]"
     >
-      <q-card class="notification-card">
+      <q-card style="min-width: 320px;" class="rounded-lg bg-white">
         <q-scroll-area style="height: 300px">
           <q-list>
             <template v-if="unread.length">
@@ -44,7 +44,7 @@
                 v-for="(notification, index) in unread"
                 :key="notification.id"
                 clickable
-                class="notification-item"
+                class="px-4 py-3"
                 @click="markRead(notification.id)"
               >
                 <q-item-section avatar>
@@ -71,7 +71,7 @@
             </template>
 
             <template v-else>
-              <q-item class="empty-state">
+              <q-item class="px-4 py-8">
                 <q-item-section class="text-center">
                   <q-icon name="notifications_off" size="40px" color="grey-5" />
                   <div class="text-body2 text-grey-7 q-mt-sm">

@@ -3,19 +3,13 @@
     flat
     round
     dense
-    class="notification-btn q-mr-sm"
-    :class="{
-      'has-notifications': unreadCount > 0,
-      'empty-notifications': unreadCount === 0,
-    }"
+    class="px-2"
+    :class="{ 'has-notifications': unreadCount > 0 }"
   >
     <q-icon
       name="notifications"
-      size="20px"
-      :class="{
-        'text-primary': unreadCount > 0,
-        'text-grey-5': unreadCount === 0,
-      }"
+      size="24px"
+      :color="unreadCount > 0 ? 'primary' : 'grey-6'"
     />
 
     <q-badge
@@ -23,115 +17,65 @@
       color="red"
       floating
       rounded
-      class="notification-badge"
+      class="text-[10px] min-w-[16px] h-[16px]"
     >
       {{ unreadCount > 99 ? '99+' : unreadCount }}
     </q-badge>
 
-    <q-tooltip class="bg-grey-8">
+    <q-tooltip class="bg-grey-9 text-white">
       {{
         unreadCount
           ? `${unreadCount} new notification${unreadCount > 1 ? 's' : ''}`
-          : 'No new notifications'
+          : 'No notifications'
       }}
     </q-tooltip>
 
     <q-menu
       class="notification-menu"
-      transition-show="scale"
-      transition-hide="scale"
-      anchor="bottom right"
-      self="top right"
+      anchor="bottom middle"
+      self="top middle"
       :offset="[0, 8]"
     >
-      <q-card class="notification-card">
-        <q-card-section
-          class="notification-header"
-          :class="{ 'empty-header': unreadCount === 0 }"
-        >
-          <div class="row items-center justify-between">
-            <div
-              class="text-h6"
-              :class="unreadCount > 0 ? 'text-grey-8' : 'text-grey-5'"
-            >
-              Notifications
-            </div>
-            <q-btn
-              v-if="unreadCount > 0"
-              flat
-              dense
-              size="sm"
-              label="Mark all read"
-              color="primary"
-              @click="markAllRead"
-            />
-          </div>
-        </q-card-section>
-
-        <q-separator />
-
-        <q-scroll-area
-          style="height: 320px; max-height: 320px"
-          class="notification-scroll"
-        >
-          <q-list class="notification-list">
+      <q-card style="min-width: 320px" class="rounded-lg bg-white">
+        <q-scroll-area style="height: 300px">
+          <q-list>
             <template v-if="unread.length">
               <q-item
                 v-for="(notification, index) in unread"
                 :key="notification.id"
                 clickable
-                class="notification-item"
+                class="px-4 py-3"
                 @click="markRead(notification.id)"
               >
                 <q-item-section avatar>
-                  <q-avatar
-                    color="primary"
-                    text-color="white"
-                    size="32px"
-                    class="notification-avatar"
-                  >
+                  <q-avatar color="grey-2" text-color="grey-8" size="32px">
                     <q-icon name="notifications" size="16px" />
                   </q-avatar>
                 </q-item-section>
 
                 <q-item-section>
-                  <q-item-label class="notification-message">
-                    {{ notification.message }}
+                  <q-item-label class="text-body2">
+                    {{ getNotificationMessage(notification) }}
                   </q-item-label>
-                  <q-item-label caption class="notification-time">
+                  <q-item-label caption>
                     {{ formatTime(notification.created_at) }}
                   </q-item-label>
                 </q-item-section>
 
                 <q-item-section side top>
-                  <q-icon
-                    name="circle"
-                    color="primary"
-                    size="8px"
-                    class="unread-indicator"
-                  />
+                  <q-icon name="circle" color="primary" size="8px" />
                 </q-item-section>
 
-                <q-separator
-                  v-if="index < unread.length - 1"
-                  spaced
-                  inset="item"
-                />
+                <q-separator v-if="index < unread.length - 1" />
               </q-item>
             </template>
 
             <template v-else>
-              <q-item class="empty-state">
+              <q-item class="px-4 py-8">
                 <q-item-section class="text-center">
-                  <q-icon
-                    name="notifications_off"
-                    size="48px"
-                    color="grey-4"
-                    class="q-mb-sm"
-                  />
-                  <div class="text-grey-5">No new notifications</div>
-                  <div class="text-grey-4 text-caption">
-                    You're all caught up!
+                  <q-icon name="notifications_off" size="40px" color="grey-5" />
+                  <div class="text-body2 text-grey-7 q-mt-sm">
+                    No notifications
                   </div>
                 </q-item-section>
               </q-item>
@@ -139,30 +83,81 @@
           </q-list>
         </q-scroll-area>
 
-        <q-separator />
+        <template v-if="unreadCount > 0">
+          <q-separator />
+          <q-card-actions align="center" class="q-pa-sm">
+            <q-btn
+              flat
+              dense
+              size="sm"
+              label="Mark all as read"
+              color="primary"
+              @click="markAllRead"
+            />
+          </q-card-actions>
+        </template>
       </q-card>
     </q-menu>
   </q-btn>
 </template>
 
 <script setup lang="ts">
-import supabase from 'src/api/supabase';
 import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
+import supabase from 'src/api/supabase';
 import type { Tables } from 'src/types/database.types';
 
-type NotificationRow = Tables<'notifications'>;
+interface NotificationParams {
+  articleTitle?: string;
+  commenterName?: string;
+  role?: string;
+  userName?: string;
+  [key: string]: string | number | undefined;
+}
+
+type NotificationRow = Tables<'notifications'> & {
+  type: string;
+  action: string;
+  params?: NotificationParams;
+};
 
 const unread = ref<NotificationRow[]>([]);
 const unreadCount = computed(() => unread.value.length);
+
+function getNotificationMessage(notification: NotificationRow): string {
+  const { type, action, params = {} } = notification;
+
+  switch (`${type}.${action}`) {
+    case 'revision.create':
+      return `A new revision to ${params.articleTitle} has been made.`;
+
+    case 'comment.create':
+      return `${params.commenterName} has replied to your change on article ${params.articleTitle}.`;
+
+    case 'role.create':
+      return `You have been granted ${params.role} permission to ${params.articleTitle}.`;
+
+    case 'role.update':
+      return `Your permission for ${params.articleTitle} has been changed to ${params.role}.`;
+
+    case 'role.create_others':
+      return `${params.userName} has been granted access to ${params.articleTitle}.`;
+
+    case 'role.update_others':
+      return `${params.userName}'s permission for ${params.articleTitle} has been changed to ${params.role}.`;
+
+    default:
+      return 'You have a new notification.';
+  }
+}
 
 async function markRead(id: string) {
   try {
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
     unread.value = unread.value.filter((n) => n.id !== id);
-  } catch (error) {
+  } catch {
     Notify.create({
-      message: 'Failed to mark notification as read',
+      message: 'Failed to clear notification',
       color: 'negative',
       position: 'bottom',
       timeout: 3000,
@@ -173,38 +168,40 @@ async function markRead(id: string) {
 async function markAllRead() {
   try {
     const ids = unread.value.map((n) => n.id);
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', ids);
+    if (ids.length > 0) {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .in('id', ids);
+    }
     unread.value = [];
-
     Notify.create({
       message: 'All notifications marked as read',
       color: 'positive',
       position: 'bottom',
       timeout: 2000,
-      actions: [{ icon: 'close', color: 'white' }],
     });
   } catch (error) {
-    console.error('Error marking all notifications as read:', error);
+    console.error('Error marking notifications as read:', error);
   }
 }
 
 function formatTime(timestamp: string | null): string {
-  if (!timestamp) return 'Unknown time';
-
+  if (!timestamp) return 'Unknown';
   const date = new Date(timestamp);
   const now = new Date();
   const diffInMinutes = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60),
   );
 
-  if (diffInMinutes < 1) return 'Just now';
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-  if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
-
+  if (diffInMinutes < 1) return 'Now';
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  }
+  if (diffInMinutes < 1440) {
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  }
   return date.toLocaleDateString();
 }
 
@@ -213,184 +210,62 @@ onMounted(async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
-    if (!user) {
-      return;
-    }
+    if (!user) return;
 
     const { data, error } = await supabase
       .from('notifications')
-      .select('id, message, is_read, created_at')
+      .select('id, type, action, params, is_read, created_at')
       .eq('user_id', user.id)
       .eq('is_read', false)
       .order('created_at', { ascending: false });
 
     if (error) {
+      console.error('Error fetching notifications:', error);
       return;
     }
 
-    unread.value = (data as NotificationRow[]) ?? [];
+    unread.value = (data as NotificationRow[]).map((n) => ({
+      ...n,
+      params: (n.params as NotificationParams) ?? {},
+    }));
 
-    supabase.channel('notifs').on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      },
-      (payload) => {
-        console.log('New notification:', payload);
-        const n = payload.new as NotificationRow;
-        if (!n.is_read) {
-          unread.value.unshift(n);
-          Notify.create({
-            message: n.message,
-            color: 'primary',
-            position: 'top-right',
-            timeout: 5000,
-            actions: [
-              {
-                label: 'Mark as read',
-                color: 'white',
-                handler: () => markRead(n.id),
-              },
-              { icon: 'close', color: 'white' },
-            ],
-          });
-        }
-      },
-    );
+    supabase
+      .channel('notifs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const n = payload.new as NotificationRow;
+          if (!n.is_read) {
+            unread.value.unshift({
+              ...n,
+              params: (n.params as NotificationParams) ?? {},
+            });
+
+            Notify.create({
+              message: getNotificationMessage(n),
+              color: 'primary',
+              position: 'top-right',
+              timeout: 5000,
+              actions: [
+                {
+                  label: 'Clear',
+                  color: 'white',
+                  handler: () => markRead(n.id),
+                },
+              ],
+            });
+          }
+        },
+      )
+      .subscribe();
   } catch (error) {
     console.error('Error setting up notifications:', error);
   }
 });
 </script>
-
-<style scoped>
-.notification-btn {
-  transition: all 0.2s ease;
-}
-
-.notification-btn:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.notification-btn.has-notifications {
-  animation: subtle-pulse 2s infinite;
-}
-
-.notification-btn.empty-notifications {
-  opacity: 0.7;
-}
-
-.notification-btn.empty-notifications:hover {
-  opacity: 1;
-}
-
-.notification-badge {
-  font-size: 10px;
-  min-width: 18px;
-  height: 18px;
-  animation: badge-bounce 0.6s ease;
-}
-
-.notification-card {
-  width: 380px;
-  max-width: 90vw;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  border-radius: 12px;
-}
-
-.notification-header {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  padding: 16px 20px;
-}
-
-.notification-header.empty-header {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.notification-scroll {
-  background: white;
-}
-
-.notification-list {
-  padding: 0;
-}
-
-.notification-item {
-  padding: 12px 20px;
-  transition: background-color 0.2s ease;
-  border-left: 3px solid transparent;
-  position: relative; /* Add this */
-}
-
-.notification-item:hover {
-  background-color: rgba(25, 118, 210, 0.04);
-  border-left-color: #1976d2;
-}
-
-.notification-avatar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.notification-item .q-item__section--side {
-  align-items: flex-start;
-  padding-top: 12px;
-}
-.notification-message {
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 4px;
-  color: #2d3748;
-}
-
-.notification-time {
-  font-size: 12px;
-  color: #718096;
-}
-
-.unread-indicator {
-  animation: indicator-pulse 1.5s infinite;
-  position: absolute; /* Add this */
-  right: 20px; /* Add this */
-  top: 16px; /* Add this */
-}
-
-.empty-state {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-@keyframes subtle-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes badge-bounce {
-  0% {
-    transform: scale(0.8);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes indicator-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-</style>

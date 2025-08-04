@@ -1,0 +1,25 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:hono@4.7.4": "4.7.4",
+    "npm:nodemailer@*": "7.0.5",
+    "npm:zod@3.24.2": "3.24.2"
+  },
+  "npm": {
+    "hono@4.7.4": {
+      "integrity": "sha512-Pst8FuGqz3L7tFF+u9Pu70eI0xa5S3LPUmrNd5Jm8nTHze9FxLTK9Kaj5g/k4UcwuJSXTP65SyHOPLrffpcAJg=="
+    },
+    "nodemailer@7.0.5": {
+      "integrity": "sha512-nsrh2lO3j4GkLLXoeEksAMgAOqxOv6QumNRVQTJwKH4nuiww6iC2y7GyANs9kRAxCexg3+lTWM3PZ91iLlVjfg=="
+    },
+    "zod@3.24.2": {
+      "integrity": "sha512-lY7CDW43ECgW9u1TcT3IoXHflywfVqDYze4waEz812jR/bZ8FHDsl7pFQoSZTz5N+2NqRXs8GBwnAwo3ZNxqhQ=="
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "npm:hono@4.7.4",
+      "npm:zod@3.24.2"
+    ]
+  }
+}

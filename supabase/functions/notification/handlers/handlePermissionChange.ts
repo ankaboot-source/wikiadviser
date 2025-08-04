@@ -1,47 +1,88 @@
-import { safeSingle } from '../utils/safeSingle.ts';
-import  createSupabaseAdmin  from '../../_shared/supabaseAdmin.ts';
-import { Notification, Payload, RecipientRow } from '../schema.ts';
+import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
+import { Notification, NotificationPayload } from '../schema.ts';
+import { getArticleTitle, getUserEmail } from '../utils/helpers.ts';
 
 export async function handlePermissionChange(
-  payload: Payload
+  payload: NotificationPayload
 ): Promise<Notification[]> {
-  const supabase = createSupabaseAdmin();
-  const { article_id, user_id, role } = payload.record;
+  const { type, record, old_record } = payload;
+  const { user_id, article_id, role, granted_by } = record;
   const notifications: Notification[] = [];
+  const articleTitle = await getArticleTitle(article_id);
+  const userEmail = await getUserEmail(user_id);
+  const supabase = createSupabaseAdmin();
 
-  const article = await safeSingle<{ title: string }>(
-    supabase.from('articles').select('title').eq('id', article_id)
-  );
-  if (!article) return [];
-
-  const userProfile = await safeSingle<{ email: string }>(
-    supabase.from('profiles').select('email').eq('id', user_id)
-  );
-  const userName = userProfile?.email || 'a user';
-
-  // Notification for the affected user
-  if (['owner', 'editor', 'reviewer'].includes(role)) {
+  if (type === 'INSERT') {
     notifications.push({
       user_id,
-      message: `You have been granted ${role} permission to ${article.title}.`,
+      article_id,
+      type: 'role',
+      action: 'create',
+      triggered_by: granted_by ?? user_id,
+      params: { role, articleTitle },
+      is_read: false,
     });
+
+    
+    const { data: existingUsers, error } = await supabase
+      .from('permissions')
+      .select('user_id')
+      .eq('article_id', article_id)
+      .in('role', ['owner', 'editor'])
+      .neq('user_id', user_id);
+
+    if (!error && existingUsers) {
+      const usersToNotify = existingUsers.filter(u => u.user_id !== granted_by);
+
+      for (const { user_id: existing_user_id } of usersToNotify) {
+        notifications.push({
+          user_id: existing_user_id,
+          article_id,
+          type: 'role',
+          action: 'create_others',
+          triggered_by: granted_by ?? user_id,
+          params: { userName: userEmail, role, articleTitle },
+          is_read: false,
+        });
+      }
+    }
   }
 
-  // Notifications for other editors/owners
-  const { data: others, error } = await supabase
-    .from('permissions')
-    .select('user_id')
-    .eq('article_id', article_id)
-    .in('role', ['owner', 'editor'])
-    .neq('user_id', user_id);
-
-  if (!error && others) {
-    others.forEach(({ user_id: uid }: RecipientRow) => {
-      notifications.push({
-        user_id: uid,
-        message: `${userName} has been granted ${role} access to ${article.title}.`,
-      });
+  if (type === 'UPDATE' && old_record?.role && old_record.role !== role) {
+    // 1. Notify the user whose role was updated
+    notifications.push({
+      user_id,
+      article_id,
+      type: 'role',
+      action: 'update',
+      triggered_by: granted_by ?? user_id,
+      params: { role, articleTitle },
+      is_read: false,
     });
+
+    
+    const { data: existingUsers, error } = await supabase
+      .from('permissions')
+      .select('user_id')
+      .eq('article_id', article_id)
+      .in('role', ['owner', 'editor'])
+      .neq('user_id', user_id); 
+
+    if (!error && existingUsers) {
+      const usersToNotify = existingUsers.filter(u => u.user_id !== granted_by);
+
+      for (const { user_id: existing_user_id } of usersToNotify) {
+        notifications.push({
+          user_id: existing_user_id,
+          article_id,
+          type: 'role',
+          action: 'update_others',
+          triggered_by: granted_by ?? user_id,
+          params: { userName: userEmail, role, articleTitle },
+          is_read: false,
+        });
+      }
+    }
   }
 
   return notifications;

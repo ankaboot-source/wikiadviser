@@ -1,45 +1,35 @@
-import { Notification, Payload } from '../schema.ts';
-import { insertNotifications } from '../utils/insertNotifications.ts';
+import { Notification, NotificationPayload } from '../schema.ts';
 import { handleRevisionInsert } from './handleRevisionInsert.ts';
-import { handlePermissionChange } from './handlePermissionChange.ts';
 import { handleCommentInsert } from './handleCommentInsert.ts';
+import { handlePermissionChange } from './handlePermissionChange.ts';
+import { insertNotifications } from '../utils/insertNotifications.ts';
 
-export async function handleDbChange(payload: Payload) {
-  try {
-    let notifications: Notification[] = [];
+export async function handleDbChange(
+  payload: NotificationPayload
+): Promise<void> {
+  let notifications: Notification[] = [];
 
-    switch (true) {
-      case payload.table === 'changes' && payload.type === 'INSERT':
+  switch (payload.table) {
+    case 'changes':
+      if (payload.type === 'INSERT') {
         notifications = await handleRevisionInsert(payload);
-        break;
-      
-      case payload.table === 'permissions' && 
-          (payload.type === 'INSERT' || payload.type === 'UPDATE'):
-        notifications = await handlePermissionChange(payload);
-        break;
-      
-      case payload.table === 'comments' && payload.type === 'INSERT':
+      }
+      break;
+    case 'comments':
+      if (payload.type === 'INSERT') {
         notifications = await handleCommentInsert(payload);
-        break;
-      
-      case payload.table === 'notifications' && 
-          payload.type === 'UPDATE' && 
-          payload.old_record?.is_read !== payload.record.is_read:
-        console.log(`Notification marked as read for user ${payload.record.user_id}`);
-        break;
-      
-      default:
-        console.log(
-          `Unhandled event: table=${payload.table}, type=${payload.type}`
-        );
-        break;
-    }
+      }
+      break;
+    case 'permissions':
+      if (payload.type === 'INSERT' || payload.type === 'UPDATE') {
+        notifications = await handlePermissionChange(payload);
+      }
+      break;
+  }
 
-    if (notifications.length > 0) {
-      await insertNotifications(notifications);
-    }
-  } catch (error) {
-    console.error('Error in handleDbChange:', error);
-    throw error;
+  if (notifications.length) {
+    await insertNotifications(notifications);
+  } else {
+    console.log('No notifications to insert.');
   }
 }

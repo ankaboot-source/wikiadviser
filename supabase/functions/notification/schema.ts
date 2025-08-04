@@ -1,18 +1,21 @@
 import { z } from 'zod';
 
-export const NotificationSchema = z.object({
+export const NotificationPayloadSchema = z.object({
   type: z.enum(['INSERT', 'UPDATE', 'DELETE']),
   table: z.string(),
-  record: z.any(),
-  old_record: z.any().optional(),
+  schema: z.string(),
+  record: z.record(z.any()),
+  old_record: z.any().nullable().optional(),
 });
-export type Payload = z.infer<typeof NotificationSchema>;
 
-export interface RecipientRow {
-  user_id: string;
-}
+export type NotificationPayload = z.infer<typeof NotificationPayloadSchema>;
 
-export interface Notification {
+export type Notification = {
   user_id: string;
-  message: string;
-}
+  article_id: string;
+  type: 'revision' | 'comment' | 'role';
+  action: string;
+  triggered_by: string;
+  params: Record<string, unknown>;
+  is_read: boolean;
+};

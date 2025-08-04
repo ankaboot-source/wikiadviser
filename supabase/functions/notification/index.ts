@@ -1,28 +1,25 @@
 import { Hono } from 'hono';
-import { corsMiddleware } from '../_shared/middleware/cors.ts';
-import { NotificationSchema } from './schema.ts';
+import { NotificationPayloadSchema } from './schema.ts';
 import { handleDbChange } from './handlers/handleDbChange.ts';
 
-const app = new Hono().basePath('/notification');
-app.use('*', corsMiddleware);
+const app = new Hono();
 
-app.post('/', async (c) => {
+app.post('/notification', async (c) => {
   try {
     const body = await c.req.json();
-    console.log('Received payload:', JSON.stringify(body, null, 2));
-
-    const parse = NotificationSchema.safeParse(body);
-    if (!parse.success) {
-      console.error('Invalid payload:', JSON.stringify(parse.error, null, 2));
-      return c.text('Bad payload', 400);
+    const parsed = NotificationPayloadSchema.safeParse(body);
+    
+    if (!parsed.success) {
+      console.error('Validation error', parsed.error);
+      return c.text('Invalid payload', 400);
     }
 
-    await handleDbChange(parse.data);
-    return c.text('ok', 200);
-  } catch (err) {
-    console.error('Notify error:', JSON.stringify(err, null, 2));
-    return c.text('Internal error', 500);
+    await handleDbChange(parsed.data);
+    return c.text('OK');
+  } catch (e) {
+    console.error('Error handling notification:', e);
+    return c.text('Internal Server Error', 500);
   }
 });
 
-Deno.serve(app.fetch);
+export default app;

@@ -331,7 +331,7 @@ const statusDictionary: Map<Status, StatusInfo> = new Map([
 ]);
 
 const comments = computed(() => props.item.comments);
-const email = computed(() => (userStore.user as Profile).email);
+const email = computed(() => userStore.user?.email || '');
 const userId = computed(() => (userStore.user as Profile).id);
 
 const previewDescription = computed(() => {

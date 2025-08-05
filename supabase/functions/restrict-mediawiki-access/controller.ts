@@ -27,7 +27,8 @@ export default async function restrictMediawikiAccess(context: Context) {
       });
     }
 
-    const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3];
+    const articleIdForwardedUri = forwardedUri.match(articleIdRegEx)?.[3] ||
+      context.req.query("titles") as string; // Extract articleId from diff urls too
 
     const forwardUriAllowedPrefixes = ENV.WIKIADVISER_LANGUAGES.map(
       (lang: string) => `/wiki/${lang}/api.php`,

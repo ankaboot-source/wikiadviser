@@ -33,7 +33,7 @@ For development purposes, read [CONTRIBUTING.md](CONTRIBUTING.md).
 ### Pre-requisites
 
 - Clone the repository
-- [Install NodeJS](https://nodejs.org)
+- [Install NodeJS](https://nodejs.org/en/download)
 - [Install Docker](https://docs.docker.com/engine/install)
 
 > [!TIP]

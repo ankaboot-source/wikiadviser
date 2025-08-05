@@ -21,6 +21,7 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
+      <NotificationsBell v-if="user" />
       <q-btn v-if="user" no-caps unelevated @click="account">
         <user-component
           :avatar-url="avatarURL"
@@ -28,7 +29,6 @@
           section="profile"
         />
       </q-btn>
-      <NotificationsBell v-if="user" />
       <q-btn
         v-if="user"
         clickable

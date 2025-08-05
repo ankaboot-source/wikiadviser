@@ -25,6 +25,9 @@ export async function handleDbChange(
         notifications = await handlePermissionChange(payload);
       }
       break;
+    default:
+    console.warn(`Unhandled table: ${payload.table}`);
+    break;
   }
 
   if (notifications.length) {

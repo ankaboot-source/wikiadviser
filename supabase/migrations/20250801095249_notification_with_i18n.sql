@@ -5,7 +5,7 @@ CREATE TABLE public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
     type TEXT NOT NULL CHECK (type IN ('comment', 'revision', 'role')),
-    action TEXT NOT NULL CHECK (action IN ('create', 'update', 'delete')),
+    action TEXT NOT NULL, 
     article_id UUID NOT NULL REFERENCES public.articles(id),
     triggered_by UUID NOT NULL REFERENCES public.profiles(id),
     is_read BOOLEAN NOT NULL DEFAULT false,
@@ -13,7 +13,9 @@ CREATE TABLE public.notifications (
     params jsonb NOT NULL DEFAULT '{}'::jsonb
 );
 
+
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
 
 CREATE POLICY "Allow authenticated users to read own notifications"
 ON public.notifications

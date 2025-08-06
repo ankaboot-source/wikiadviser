@@ -3,6 +3,7 @@ import { handleRevisionInsert } from './handleRevisionInsert.ts';
 import { handleCommentInsert } from './handleCommentInsert.ts';
 import { handlePermissionChange } from './handlePermissionChange.ts';
 import { insertNotifications } from '../utils/insertNotifications.ts';
+import { sendEmailNotification } from './handleEmailNotification.ts';
 
 export async function handleDbChange(
   payload: NotificationPayload
@@ -32,6 +33,14 @@ export async function handleDbChange(
 
   if (notifications.length) {
     await insertNotifications(notifications);
+    // Send email for each notification
+    for (const notification of notifications) {
+      try {
+        await sendEmailNotification(notification);
+      } catch (e) {
+        console.error('Failed to send email:', e);
+      }
+    }
   } else {
     console.log('No notifications to insert.');
   }

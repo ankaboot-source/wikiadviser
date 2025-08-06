@@ -132,7 +132,11 @@ function getNotificationMessage(notification: NotificationRow): string {
       return `A new revision to ${params.articleTitle} has been made.`;
 
     case 'comment.create':
-      return `${params.commenterName} has replied to your change on article ${params.articleTitle}.`;
+      if (params.isChangeOwner) {
+        return `${params.commenterName} has replied to your change on article ${params.articleTitle}.`;
+      } else {
+        return `A new comment has been made to a change on ${params.articleTitle}.`;
+      }
 
     case 'role.create':
       return `You have been granted ${params.role} permission to ${params.articleTitle}.`;
@@ -142,9 +146,6 @@ function getNotificationMessage(notification: NotificationRow): string {
 
     case 'role.create_others':
       return `${params.userName} has been granted access to ${params.articleTitle}.`;
-
-    case 'role.update_others':
-      return `${params.userName}'s permission for ${params.articleTitle} has been changed to ${params.role}.`;
 
     default:
       return 'You have a new notification.';

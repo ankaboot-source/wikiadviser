@@ -26,8 +26,8 @@ export async function handleDbChange(
       }
       break;
     default:
-    console.warn(`Unhandled table: ${payload.table}`);
-    break;
+      console.warn(`Unhandled table: ${payload.table}`);
+      break;
   }
 
   if (notifications.length) {

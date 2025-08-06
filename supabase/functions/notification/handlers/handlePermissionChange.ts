@@ -10,38 +10,44 @@ export async function handlePermissionChange(
   const notifications: Notification[] = [];
   const articleTitle = await getArticleTitle(article_id);
   const userEmail = await getUserEmail(user_id);
-  const supabase = createSupabaseAdmin();
 
   if (type === 'INSERT') {
     notifications.push({
       user_id,
       article_id,
       type: 'role',
-      action: 'create',
+      action: 'create', 
       triggered_by: granted_by ?? user_id,
-      params: { role, articleTitle },
+      params: {
+        role,
+        articleTitle,
+        isForSelf: true,
+      },
       is_read: false,
     });
 
-    
-    const { data: existingUsers, error } = await supabase
+    const supabase = createSupabaseAdmin();
+    const { data: others, error } = await supabase
       .from('permissions')
       .select('user_id')
       .eq('article_id', article_id)
       .in('role', ['owner', 'editor'])
       .neq('user_id', user_id);
 
-    if (!error && existingUsers) {
-      const usersToNotify = existingUsers.filter(u => u.user_id !== granted_by);
-
-      for (const { user_id: existing_user_id } of usersToNotify) {
+    if (!error && others) {
+      for (const { user_id: other_id } of others) {
         notifications.push({
-          user_id: existing_user_id,
+          user_id: other_id,
           article_id,
           type: 'role',
-          action: 'create_others',
+          action: 'create',
           triggered_by: granted_by ?? user_id,
-          params: { userName: userEmail, role, articleTitle },
+          params: {
+            userName: userEmail,
+            role,
+            articleTitle,
+            isForSelf: false,
+          },
           is_read: false,
         });
       }
@@ -49,40 +55,19 @@ export async function handlePermissionChange(
   }
 
   if (type === 'UPDATE' && old_record?.role && old_record.role !== role) {
-    // 1. Notify the user whose role was updated
     notifications.push({
       user_id,
       article_id,
       type: 'role',
       action: 'update',
       triggered_by: granted_by ?? user_id,
-      params: { role, articleTitle },
+      params: {
+        role,
+        articleTitle,
+        isForSelf: true,
+      },
       is_read: false,
     });
-
-    
-    const { data: existingUsers, error } = await supabase
-      .from('permissions')
-      .select('user_id')
-      .eq('article_id', article_id)
-      .in('role', ['owner', 'editor'])
-      .neq('user_id', user_id); 
-
-    if (!error && existingUsers) {
-      const usersToNotify = existingUsers.filter(u => u.user_id !== granted_by);
-
-      for (const { user_id: existing_user_id } of usersToNotify) {
-        notifications.push({
-          user_id: existing_user_id,
-          article_id,
-          type: 'role',
-          action: 'update_others',
-          triggered_by: granted_by ?? user_id,
-          params: { userName: userEmail, role, articleTitle },
-          is_read: false,
-        });
-      }
-    }
   }
 
   return notifications;

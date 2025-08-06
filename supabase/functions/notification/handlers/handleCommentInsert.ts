@@ -1,13 +1,10 @@
+import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
+import { Notification, NotificationPayload } from '../schema.ts';
+import { getArticleTitle, getUserEmail } from '../utils/helpers.ts';
 import { safeSingle } from '../utils/safeSingle.ts';
-import  createSupabaseAdmin  from '../../_shared/supabaseAdmin.ts';
-import { Notification, Payload } from '../schema.ts';
-
-interface CommentParticipant {
-  commenter_id: string;
-}
 
 export async function handleCommentInsert(
-  payload: Payload
+  payload: NotificationPayload
 ): Promise<Notification[]> {
   const supabase = createSupabaseAdmin();
   const { change_id, commenter_id } = payload.record;
@@ -16,46 +13,95 @@ export async function handleCommentInsert(
   const change = await safeSingle<{
     article_id: string;
     contributor_id: string;
-  }>(supabase.from('changes').select('article_id, contributor_id').eq('id', change_id));
-  if (!change) return [];
-
-  const article = await safeSingle<{ title: string }>(
-    supabase.from('articles').select('title').eq('id', change.article_id)
+  }>(
+    supabase
+      .from('changes')
+      .select('article_id, contributor_id')
+      .eq('id', change_id)
   );
-  if (!article) return [];
+  if (!change) return notifications;
 
-  const commenterProfile = await safeSingle<{ email: string }>(
-    supabase.from('profiles').select('email').eq('id', commenter_id)
-  );
-  const commenterName = commenterProfile?.email || 'A user';
+  const articleTitle = await getArticleTitle(change.article_id);
+  const commenterEmail = await getUserEmail(commenter_id);
 
-  const { data: participants, error } = await supabase
+  if (change.contributor_id !== commenter_id) {
+    notifications.push({
+      user_id: change.contributor_id,
+      article_id: change.article_id,
+      type: 'comment',
+      action: 'create',
+      triggered_by: commenter_id,
+      params: {
+        articleTitle,
+        commenterName: commenterEmail,
+        isChangeOwner: true,
+      },
+      is_read: false,
+    });
+  }
+
+  const { data: otherCommenters, error: commentError } = await supabase
     .from('comments')
     .select('commenter_id')
-    .eq('change_id', change_id);
+    .eq('change_id', change_id)
+    .neq('commenter_id', commenter_id);
 
-  if (error) return [];
+  if (!commentError && otherCommenters) {
+    const uniqueCommenters = [
+      ...new Set(
+        otherCommenters
+          .map((c) => c.commenter_id)
+          .filter((id) => id !== change.contributor_id)
+      ),
+    ];
 
-  // Type the participants array
-  const participantList = participants as CommentParticipant[] | null;
-  
-  const ids = new Set<string>([
-    change.contributor_id,
-    ...(participantList?.map(p => p.commenter_id) || []),
-  ]);
-
-  ids.forEach(uid => {
-    if (uid !== commenter_id) {
-      const message = uid === change.contributor_id
-        ? `${commenterName} has replied to your change on article ${article.title}.`
-        : `A new comment has been made to a change on ${article.title}.`;
-      
+    for (const commenterId of uniqueCommenters) {
       notifications.push({
-        user_id: uid,
-        message,
+        user_id: commenterId,
+        article_id: change.article_id,
+        type: 'comment',
+        action: 'create',
+        triggered_by: commenter_id,
+        params: {
+          articleTitle,
+          commenterName: commenterEmail,
+          isChangeOwner: false,
+        },
+        is_read: false,
       });
     }
-  });
+  }
+
+  const { data: editors, error: editorError } = await supabase
+    .from('permissions')
+    .select('user_id')
+    .eq('article_id', change.article_id);
+
+  if (!editorError && editors) {
+    const alreadyNotified = new Set([
+      commenter_id,
+      change.contributor_id,
+      ...(otherCommenters?.map((c) => c.commenter_id) || []),
+    ]);
+
+    for (const { user_id } of editors) {
+      if (!alreadyNotified.has(user_id)) {
+        notifications.push({
+          user_id,
+          article_id: change.article_id,
+          type: 'comment',
+          action: 'create',
+          triggered_by: commenter_id,
+          params: {
+            articleTitle,
+            commenterName: commenterEmail,
+            isChangeOwner: false,
+          },
+          is_read: false,
+        });
+      }
+    }
+  }
 
   return notifications;
 }

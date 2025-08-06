@@ -36,8 +36,8 @@
       self="top middle"
       :offset="[0, 8]"
     >
-      <q-card class="min-w-[320px] rounded-lg bg-white">
-        <q-scroll-area class="h-[300px]">
+      <q-card style="min-width: 320px" class="rounded-lg bg-white">
+        <q-scroll-area style="height: 300px">
           <q-list>
             <template v-if="unread.length">
               <q-item
@@ -54,12 +54,12 @@
                 </q-item-section>
 
                 <q-item-section>
-                  <q-item-label class="text-body2">{{
-                    notification.message
-                  }}</q-item-label>
-                  <q-item-label caption>{{
-                    formatTime(notification.created_at)
-                  }}</q-item-label>
+                  <q-item-label class="text-body2">
+                    {{ getNotificationMessage(notification) }}
+                  </q-item-label>
+                  <q-item-label caption>
+                    {{ formatTime(notification.created_at) }}
+                  </q-item-label>
                 </q-item-section>
 
                 <q-item-section side top>
@@ -101,19 +101,62 @@
   </q-btn>
 </template>
 
-<script setup>
-import supabase from 'src/api/supabase';
+<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
+import supabase from 'src/api/supabase';
+import type { Tables } from 'src/types/database.types';
 
-const unread = ref([]);
+interface NotificationParams {
+  articleTitle?: string;
+  commenterName?: string;
+  role?: string;
+  userName?: string;
+  [key: string]: string | number | undefined;
+}
+
+type NotificationRow = Tables<'notifications'> & {
+  type: string;
+  action: string;
+  params?: NotificationParams;
+};
+
+const unread = ref<NotificationRow[]>([]);
 const unreadCount = computed(() => unread.value.length);
 
-async function markRead(id) {
+function getNotificationMessage(notification: NotificationRow): string {
+  const { type, action, params = {} } = notification;
+
+  switch (`${type}.${action}`) {
+    case 'revision.create':
+      return `A new revision to ${params.articleTitle} has been made.`;
+
+    case 'comment.create':
+      if (params.isChangeOwner) {
+        return `${params.commenterName} has replied to your change on article ${params.articleTitle}.`;
+      } else {
+        return `A new comment has been made to a change on ${params.articleTitle}.`;
+      }
+
+    case 'role.create':
+      return `You have been granted ${params.role} permission to ${params.articleTitle}.`;
+
+    case 'role.update':
+      return `Your permission for ${params.articleTitle} has been changed to ${params.role}.`;
+
+    case 'role.create_others':
+      return `${params.userName} has been granted access to ${params.articleTitle}.`;
+
+    default:
+      return 'You have a new notification.';
+  }
+}
+
+async function markRead(id: string) {
   try {
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
     unread.value = unread.value.filter((n) => n.id !== id);
-  } catch (error) {
+  } catch {
     Notify.create({
       message: 'Failed to clear notification',
       color: 'negative',
@@ -126,10 +169,12 @@ async function markRead(id) {
 async function markAllRead() {
   try {
     const ids = unread.value.map((n) => n.id);
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .in('id', ids);
+    if (ids.length > 0) {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .in('id', ids);
+    }
     unread.value = [];
     Notify.create({
       message: 'All notifications marked as read',
@@ -142,7 +187,7 @@ async function markAllRead() {
   }
 }
 
-function formatTime(timestamp) {
+function formatTime(timestamp: string | null): string {
   if (!timestamp) return 'Unknown';
   const date = new Date(timestamp);
   const now = new Date();
@@ -151,9 +196,13 @@ function formatTime(timestamp) {
   );
 
   if (diffInMinutes < 1) return 'Now';
-  if (diffInMinutes < 60) return `${diffInMinutes}m`;
-  if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h`;
-  if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  }
+  if (diffInMinutes < 1440) {
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  }
   return date.toLocaleDateString();
 }
 
@@ -166,42 +215,56 @@ onMounted(async () => {
 
     const { data, error } = await supabase
       .from('notifications')
-      .select('id, message, is_read, created_at')
+      .select('id, type, action, params, is_read, created_at')
       .eq('user_id', user.id)
       .eq('is_read', false)
       .order('created_at', { ascending: false });
 
-    if (error) return;
-    unread.value = data ?? [];
+    if (error) {
+      console.error('Error fetching notifications:', error);
+      return;
+    }
 
-    supabase.channel('notifs').on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${user.id}`,
-      },
-      (payload) => {
-        const n = payload.new;
-        if (!n.is_read) {
-          unread.value.unshift(n);
-          Notify.create({
-            message: n.message,
-            color: 'primary',
-            position: 'top-right',
-            timeout: 5000,
-            actions: [
-              {
-                label: 'Clear',
-                color: 'white',
-                handler: () => markRead(n.id),
-              },
-            ],
-          });
-        }
-      },
-    );
+    unread.value = (data as NotificationRow[]).map((n) => ({
+      ...n,
+      params: (n.params as NotificationParams) ?? {},
+    }));
+
+    supabase
+      .channel('notifs')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const n = payload.new as NotificationRow;
+          if (!n.is_read) {
+            unread.value.unshift({
+              ...n,
+              params: (n.params as NotificationParams) ?? {},
+            });
+
+            Notify.create({
+              message: getNotificationMessage(n),
+              color: 'primary',
+              position: 'top-right',
+              timeout: 5000,
+              actions: [
+                {
+                  label: 'Clear',
+                  color: 'white',
+                  handler: () => markRead(n.id),
+                },
+              ],
+            });
+          }
+        },
+      )
+      .subscribe();
   } catch (error) {
     console.error('Error setting up notifications:', error);
   }

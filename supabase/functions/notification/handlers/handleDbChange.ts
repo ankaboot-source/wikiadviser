@@ -33,12 +33,20 @@ export async function handleDbChange(
 
   if (notifications.length) {
     await insertNotifications(notifications);
+    
     // Send email for each notification
     for (const notification of notifications) {
       try {
         await sendEmailNotification(notification);
       } catch (e) {
-        console.error('Failed to send email:', e);
+        const error = e as Error & { code?: string };
+        
+        // More specific error handling
+        if (error.code === 'ESOCKET' || error.code === 'ECONNREFUSED') {
+          console.warn('Email service unavailable, notification saved to database only');
+        } else {
+          console.error('Failed to send email:', error);
+        }
       }
     }
   } else {

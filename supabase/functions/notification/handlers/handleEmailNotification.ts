@@ -1,7 +1,6 @@
 import { transporter } from '../utils/email.ts';
 import { Notification } from '../schema.ts';
 import { getUserEmail } from '../utils/helpers.ts';
-
 export async function sendEmailNotification(notification: Notification) {
   const toEmail = await getUserEmail(notification.user_id);
   const triggeredByEmail = await getUserEmail(notification.triggered_by);
@@ -13,36 +12,34 @@ export async function sendEmailNotification(notification: Notification) {
 
   const { articleTitle, role, commenterName, userName, isChangeOwner, isForSelf } = notification.params || {};
 
-  switch (`${notification.type}:${notification.action}`) {
-    case 'revision:create':
+  switch (`${notification.type}.${notification.action}`) {
+    case 'revision.create':
       subject = `New revision on "${articleTitle}"`;
-      text = `A new revision has been made to the article "${articleTitle}" by ${triggeredByEmail}.`;
+      text = `A new revision to ${articleTitle} has been made.`;
       break;
 
-    case 'comment:create':
+    case 'comment.create':
       subject = `New comment on "${articleTitle}"`;
-      // Different text based on recipient type
       if (isChangeOwner) {
-        text = `${commenterName || triggeredByEmail} has replied to your change on article "${articleTitle}".`;
+        text = `${commenterName || triggeredByEmail} has replied to your change on article ${articleTitle}.`;
       } else {
-        text = `A new comment has been made to a change on "${articleTitle}".`;
+        text = `A new comment has been made to a change on ${articleTitle}.`;
       }
       break;
 
-    case 'role:create':
+    case 'role.create':
       subject = `Access granted to "${articleTitle}"`;
-      // Different text based on recipient type
       if (isForSelf) {
-        text = `You've been granted ${role} access to the article "${articleTitle}".`;
+        text = `You have been granted ${role} permission to ${articleTitle}.`;
       } else {
-        text = `${userName} has been granted ${role} access to the article "${articleTitle}".`;
+        text = `${userName} has been granted access to ${articleTitle}.`;
       }
       break;
 
-    case 'role:update':
+    case 'role.update':
       subject = `Your role updated on "${articleTitle}"`;
       if (isForSelf) {
-        text = `Your role was updated to ${role} on the article "${articleTitle}".`;
+        text = `Your permission for ${articleTitle} has been changed to ${role}.`;
       } else {
         text = `${userName}'s role was updated to ${role} on the article "${articleTitle}".`;
       }

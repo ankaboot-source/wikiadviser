@@ -13,3 +13,8 @@ WHERE NOT EXISTS (
   SELECT 1 FROM auth.users WHERE email = 'deleted-user@wikiadviser.io'
 );
 
+select vault.create_secret(
+  'http://host.docker.internal:54321',
+  'supabase_project_url',
+  'URL to be used for calling edge functions. This is set here to support development with database-triggered webhooks across environments.'
+);

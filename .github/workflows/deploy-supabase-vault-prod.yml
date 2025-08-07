@@ -1,12 +1,12 @@
-name: Deploy Supabase Vault QA
+name: Deploy Supabase Vault Prod
 on:
   workflow_dispatch:
 jobs:
   deploy-vault-secrets:
     runs-on: ubuntu-latest
     env:
-      DB_URL: ${{ secrets.DB_URL_QA }}
-      supabase_project_url: ${{ vars.SAAS_SUPABASE_ENDPOINT_QA }}
+      DB_URL: ${{ secrets.DB_URL_PROD }}
+      supabase_project_url: ${{ vars.SAAS_SUPABASE_ENDPOINT_PROD }}
     steps:
       - name: Install PSQL
         run: |

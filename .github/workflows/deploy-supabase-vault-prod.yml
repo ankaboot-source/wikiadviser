@@ -1,0 +1,29 @@
+name: Deploy Supabase Vault Prod
+on:
+  workflow_dispatch:
+jobs:
+  deploy-vault-secrets:
+    runs-on: ubuntu-latest
+    env:
+      DB_URL: ${{ secrets.DB_URL_PROD }}
+      supabase_project_url: ${{ vars.SAAS_SUPABASE_ENDPOINT_PROD }}
+    steps:
+      - name: Install PSQL
+        run: |
+          apt-get update
+          apt-get install -y postgresql-client
+
+      - name: Create/update Supabase Vault secrets
+        run: |
+          psql "$DB_URL" -c "DO \$$
+          BEGIN
+            IF EXISTS (SELECT 1 FROM vault.secrets WHERE name = 'supabase_project_url') THEN
+              DELETE FROM vault.secrets WHERE name = 'supabase_project_url';
+              RAISE NOTICE 'Deleted existing secret: supabase_project_url';
+            END IF;
+
+            -- Create Vault secret (Secret, Name, Description)
+            PERFORM vault.create_secret('$supabase_project_url', 'supabase_project_url', 'Supabase Project URL');
+            RAISE NOTICE 'Created/updated secret: supabase_project_url';
+          END
+          \$$;"

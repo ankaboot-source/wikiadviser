@@ -144,6 +144,9 @@ function getNotificationMessage(notification: NotificationRow): string {
     case 'role.update':
       return `Your permission for ${params.articleTitle} has been changed to ${params.role}.`;
 
+    case 'role.update_others':
+      return `${params.userName}'s permission for ${params.articleTitle} has been changed to ${params.role}.`;
+
     case 'role.create_others':
       return `${params.userName} has been granted access to ${params.articleTitle}.`;
 

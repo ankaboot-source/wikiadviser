@@ -10,7 +10,14 @@ export async function sendEmailNotification(notification: Notification) {
   let subject = '';
   let text = '';
 
-  const { articleTitle, role, commenterName, userName, isChangeOwner, isForSelf } = notification.params || {};
+  const {
+    articleTitle,
+    role,
+    commenterName,
+    userName,
+    isChangeOwner,
+    isForSelf,
+  } = notification.params || {};
 
   switch (`${notification.type}.${notification.action}`) {
     case 'revision.create':
@@ -21,7 +28,9 @@ export async function sendEmailNotification(notification: Notification) {
     case 'comment.create':
       subject = `New comment on "${articleTitle}"`;
       if (isChangeOwner) {
-        text = `${commenterName || triggeredByEmail} has replied to your change on article ${articleTitle}.`;
+        text = `${
+          commenterName || triggeredByEmail
+        } has replied to your change on article ${articleTitle}.`;
       } else {
         text = `A new comment has been made to a change on ${articleTitle}.`;
       }
@@ -43,6 +52,16 @@ export async function sendEmailNotification(notification: Notification) {
       } else {
         text = `${userName}'s role was updated to ${role} on the article "${articleTitle}".`;
       }
+      break;
+
+    case 'role.update_others':
+      subject = `Role updated on "${articleTitle}"`;
+      text = `${userName}'s permission for ${articleTitle} has been changed to ${role}.`;
+      break;
+
+    case 'role.create_others':
+      subject = `New member added to "${articleTitle}"`;
+      text = `${userName} has been granted access to ${articleTitle}.`;
       break;
 
     default:

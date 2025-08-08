@@ -99,7 +99,7 @@ export async function handlePermissionChange(
   if (user_id === triggeredBy) return []; 
 
   if (type === "INSERT") {
-    if (role === "editor" || role === "reviewer") {
+    if (role !== "owner") {
       notifications.push(
         createNotif(user_id, article_id, "create", triggeredBy, {
           role,

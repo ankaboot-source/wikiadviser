@@ -1,14 +1,12 @@
-import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
-import { Notification } from '../schema.ts';
+import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
+import { Notification } from "../schema.ts";
 
-export async function insertNotifications(notifications: Notification[]) {
-  if (!notifications.length) return;
-
+export async function insertNotification(notification: Notification) {
   const supabase = createSupabaseAdmin();
   const { error } = await supabase
-    .from('notifications')
-    .insert(notifications);
+    .from("notifications")
+    .insert(notification);
 
   if (error) throw error;
-  console.log(`Inserted ${notifications.length} notification(s).`);
+  console.log('Inserted notification.');
 }

@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { NotificationPayloadSchema } from './schema.ts';
+import { TriggerPayloadSchema } from './schema.ts';
 import { handleDbChange } from './handlers/handleDbChange.ts';
 
 const app = new Hono();
@@ -7,7 +7,7 @@ const app = new Hono();
 app.post('/notification', async (c) => {
   try {
     const body = await c.req.json();
-    const parsed = NotificationPayloadSchema.safeParse(body);
+    const parsed = TriggerPayloadSchema.safeParse(body);
     
     if (!parsed.success) {
       console.error('Validation error', parsed.error);

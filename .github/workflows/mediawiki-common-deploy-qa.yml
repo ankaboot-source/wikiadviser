@@ -1,0 +1,41 @@
+name: Deploy Dev & QA commons
+on:
+  push:
+    path:
+      - "docker/resources/common-files/**"
+    paths-ignore:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+jobs:
+  deploy-commons:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        lang: [fr, en]
+        env: [dev, demo]
+    steps:
+      - name: Deploy commons
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+          script: |
+            wikiadviser_path="/home/wiki-user/wikiadviser"
+            COMMON_FILES_PATH="/home/wiki-user/wikiadviser/docker/resources/common-files"
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+            # Importing Common.js & Common.css
+            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.js" < $COMMON_FILES_PATH/Common-$ln.js
+            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Admin "MediaWiki:Common.css" < $COMMON_FILES_PATH/Common-$ln.css
+
+            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/run.php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/update.php
+

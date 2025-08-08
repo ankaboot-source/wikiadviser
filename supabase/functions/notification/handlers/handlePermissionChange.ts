@@ -111,7 +111,7 @@ export async function handlePermissionChange(
       );
     }
 
-    if (role === "owner" || role === "editor") {
+    if (role === "editor") {
       const others = await notifyOthers(
         article_id,
         user_id,

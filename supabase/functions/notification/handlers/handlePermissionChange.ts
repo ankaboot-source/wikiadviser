@@ -91,16 +91,14 @@ export async function handlePermissionChange(
   const { type, record, old_record } = payload;
   const { user_id, article_id, role } = record;
   const notifications: Notification[] = [];
-  
   const articleTitle = await getArticleTitle(article_id);
   const userEmail = await getUserEmail(user_id);
   const triggeredBy = await getOwner(article_id);
 
   if (!triggeredBy) return [];
+  if (user_id === triggeredBy) return []; 
 
   if (type === "INSERT") {
-    if (user_id === triggeredBy) return [];
-
     if (role === "editor" || role === "reviewer") {
       notifications.push(
         createNotif(user_id, article_id, "create", triggeredBy, {
@@ -129,8 +127,6 @@ export async function handlePermissionChange(
   }
 
   if (type === "UPDATE" && old_record?.role && old_record.role !== role) {
-    if (user_id === triggeredBy) return notifications;
-
     if (await shouldNotify(article_id, user_id)) {
       notifications.push(
         createNotif(user_id, article_id, "update", triggeredBy, {

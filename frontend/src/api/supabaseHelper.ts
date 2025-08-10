@@ -91,7 +91,8 @@ export async function getArticles(userId: string): Promise<Article[]> {
       articles(title,description,created_at,language,web_publication,imported)
       `,
     )
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
 
   if (articleError) {
     throw new Error(articleError.message);

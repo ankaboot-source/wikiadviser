@@ -19,7 +19,12 @@
         label="View article"
         class="q-mr-xs"
         no-caps
-        @click="viewArticleInNewTab()"
+        @click="
+          articlesStore.viewArticleInNewTab(
+            article.language,
+            article.article_id,
+          )
+        "
       />
       <q-btn
         v-if="role != 'viewer'"
@@ -72,12 +77,14 @@ import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import ShareCard from 'src/components/Share/ShareCard.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
-import ENV from 'src/schema/env.schema';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, Enums, User } from 'src/types';
 import { computed, nextTick, ref, watch } from 'vue';
 
-const store = useSelectedChangeStore();
+const selectedChangeStore = useSelectedChangeStore();
+const articlesStore = useArticlesStore();
+
 const props = defineProps<{
   changesContent: string | null;
   article: Article;
@@ -106,12 +113,16 @@ function setTabindexForElements(selector: string, tabindexValue: string) {
     if (tabindexValue === '0') {
       // If change, select it
       element.addEventListener('click', () => {
-        store.selectedChangeId = element.getAttribute('data-id') as string;
+        selectedChangeStore.selectedChangeId = element.getAttribute(
+          'data-id',
+        ) as string;
       });
       element.addEventListener('keydown', (event) => {
         const keyboardEvent = event as KeyboardEvent;
         if (keyboardEvent.key === 'Enter') {
-          store.selectedChangeId = element.getAttribute('data-id') as string;
+          selectedChangeStore.selectedChangeId = element.getAttribute(
+            'data-id',
+          ) as string;
         }
       });
     }
@@ -133,7 +144,7 @@ watch(
 );
 
 watch(
-  () => store.hoveredChangeId,
+  () => selectedChangeStore.hoveredChangeId,
   (hoveredChangeId: string) => {
     if (hoveredChangeId) {
       const element = document.querySelector(
@@ -203,18 +214,6 @@ watch(
 const onSwitchTabEmitChange = (tab: string) => {
   buttonToggle.value = tab;
 };
-
-// To avoid mediawiki title possible redirection (related to case sensitivity)
-function capitalizeFirstLetter(string: string): string {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
-
-function viewArticleInNewTab() {
-  window.open(
-    `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}/index.php?title=${capitalizeFirstLetter(props.article.article_id)}`,
-    '_blank',
-  );
-}
 
 function toggleEditTab() {
   buttonToggle.value = 'edit';

@@ -52,6 +52,19 @@
             </div>
           </div>
         </div>
+        <q-btn
+          round
+          flat
+          dense
+          icon="open_in_new"
+          @click.stop="
+            articlesStore.viewArticleInNewTab(
+              article.language,
+              article.article_id,
+            )
+          "
+        />
+
         <div v-if="article.role === 'owner'" class="col-auto">
           <q-btn
             round
@@ -117,14 +130,14 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
+import { deleteArticle } from 'src/api/supabaseHelper';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useUserStore } from 'src/stores/userStore';
+import { Article, Profile } from 'src/types';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
-import { Article, Profile } from 'src/types';
-import { deleteArticle } from 'src/api/supabaseHelper';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
-import { useUserStore } from 'src/stores/userStore';
 
 const props = defineProps<{
   article: Article;
@@ -153,6 +166,7 @@ function gotoArticle(articleId: string) {
     },
   });
 }
+
 async function removeArticle(articleId: string) {
   deletingArticle.value = true;
   try {

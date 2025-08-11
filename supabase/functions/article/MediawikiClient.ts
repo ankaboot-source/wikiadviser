@@ -1,15 +1,15 @@
 import { AxiosInstance, AxiosResponse } from "axios";
-import ENV from "../_shared/schema/env.schema.ts";
-import { Account } from "../_shared/types/index.ts";
-import { WikipediaApi } from "../_shared/wikipedia/WikipediaApi.ts";
-import mediawikiApiInstances from "../_shared/mediawikiAPI/mediawikiApiInstances.ts";
 import FormData from "form-data";
+import { refineArticleChanges } from "../_shared/helpers/parsingHelper.ts";
 import {
   insertRevision,
   updateCurrentHtmlContent,
   upsertChanges,
 } from "../_shared/helpers/supabaseHelper.ts";
-import { refineArticleChanges } from "../_shared/helpers/parsingHelper.ts";
+import mediawikiApiInstances from "../_shared/mediawikiAPI/mediawikiApiInstances.ts";
+import ENV from "../_shared/schema/env.schema.ts";
+import { Account } from "../_shared/types/index.ts";
+import { WikipediaApi } from "../_shared/wikipedia/WikipediaApi.ts";
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -325,15 +325,27 @@ export default class MediawikiClient {
         },
       );
       if (importResponse.data.error) {
-        console.error(
-          `Failed to import article ${articleId} ${title}: ${importResponse.data}`,
-        );
+        const errorText =
+          `Error while importing article ${articleId} ${title}: ${
+            JSON.stringify(importResponse.data.error)
+          }`;
+
+        if (
+          importResponse.data.error.info.includes(
+            "XML error", // Blocking error
+          )
+        ) {
+          this.logout(csrftoken);
+          throw Error(errorText);
+        }
+
+        console.error(errorText);
       }
 
       this.logout(csrftoken);
       console.info(`Successfully imported file ${title}`);
     } catch (error) {
-      console.error(error, `Error importing article ${title}`);
+      console.error(`Failed to import article ${title}`);
       throw error;
     }
   }

@@ -5,11 +5,11 @@ const envSchema = z.object({
     .string({
       required_error: "😱 You forgot to add a WikiAdviser languages!",
     })
-    .transform((str) => {
+    .transform((str: string) => {
       const regex = /^[a-z]{2,3}(,[a-z]{2,3})*$/g;
       if (!regex.test(str)) {
         throw new Error(
-          "😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)"
+          "😱 WikiAdviser languages format is wrong! (E.g.:= en,fr,ar)",
         );
       }
       return str.split(",");
@@ -18,11 +18,11 @@ const envSchema = z.object({
     .string({
       required_error: "😱 You forgot to add WikiAdviser background colors!",
     })
-    .transform((str) => {
+    .transform((str: string) => {
       const regex = /^[0-9a-f]{6}(,[0-9a-f]{6})*$/gi;
       if (!regex.test(str)) {
         throw new Error(
-          "😱 WikiAdviser background colors format is wrong! (E.g.:= f6f8fa,ffffff)"
+          "😱 WikiAdviser background colors format is wrong! (E.g.:= f6f8fa,ffffff)",
         );
       }
       return str.split(",");
@@ -31,7 +31,7 @@ const envSchema = z.object({
     .string({
       required_error: "😱 You forgot to add a Wikipedia proxy URL!",
     })
-    .url(),
+    .url().optional(),
   MEDIAWIKI_ENDPOINT: z
     .string({
       required_error: "😱 You forgot to add a MediaWiki endpoint!",

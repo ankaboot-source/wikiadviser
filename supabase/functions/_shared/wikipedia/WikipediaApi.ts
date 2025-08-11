@@ -1,39 +1,54 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { processExportedArticle } from "../helpers/parsingHelper.ts";
+import ENV from "../schema/env.schema.ts";
 import { WikipediaSearchResult } from "../types/index.ts";
 import WikipediaInteractor from "./WikipediaInteractor.ts";
-import ENV from "../schema/env.schema.ts";
 
 export class WikipediaApi implements WikipediaInteractor {
-  private wpProxy: string;
-
-  private api: AxiosInstance;
+  private wpProxy = ENV.WIKIPEDIA_PROXY;
 
   constructor() {
-    this.wpProxy = ENV.WIKIPEDIA_PROXY;
-    this.api = axios.create({ baseURL: `${this.wpProxy}/w/api.php` });
+    axios.interceptors.request.use((config: AxiosRequestConfig) => {
+      console.info(
+        "Request URL:",
+        `${config.baseURL || ""}${config.url}?${
+          new URLSearchParams(config.params).toString()
+        }`,
+      );
+      return config;
+    });
   }
 
   private static searchResultsLimit = 10;
 
+  getDomain(language: string): string {
+    return this.wpProxy
+      ? `${this.wpProxy}`
+      : `https://${language}.wikipedia.org`;
+  }
+
   async getWikipediaArticles(term: string, language: string) {
-    const response = await this.api.get("", {
-      params: {
-        action: "query",
-        format: "json",
-        generator: "prefixsearch",
-        prop: "pageimages|description",
-        ppprop: "displaytitle",
-        piprop: "thumbnail",
-        pithumbsize: 60,
-        pilimit: WikipediaApi.searchResultsLimit,
-        gpssearch: term,
-        gpsnamespace: 0,
-        gpslimit: WikipediaApi.searchResultsLimit,
-        origin: "*",
-        lang: language,
+    const domain = this.getDomain(language);
+    const response = await axios.get(
+      `${domain}/w/api.php`,
+      {
+        params: {
+          action: "query",
+          format: "json",
+          generator: "prefixsearch",
+          prop: "pageimages|description",
+          ppprop: "displaytitle",
+          piprop: "thumbnail",
+          pithumbsize: 60,
+          pilimit: WikipediaApi.searchResultsLimit,
+          gpssearch: term,
+          gpsnamespace: 0,
+          gpslimit: WikipediaApi.searchResultsLimit,
+          origin: "*",
+          ...(this.wpProxy && { lang: language }),
+        },
       },
-    });
+    );
 
     const wpSearchedArticles = response.data?.query?.pages;
     const results: WikipediaSearchResult[] = [];
@@ -54,7 +69,8 @@ export class WikipediaApi implements WikipediaInteractor {
 
           let thumbnailSource = source;
           if (thumbnailSource.startsWith("/media")) {
-            thumbnailSource = `${this.wpProxy}${thumbnailSource}`;
+            const domain = this.getDomain(language);
+            thumbnailSource = `${domain}${thumbnailSource}`;
           }
 
           results.push({
@@ -69,14 +85,19 @@ export class WikipediaApi implements WikipediaInteractor {
   }
 
   async getWikipediaHTML(title: string, language: string) {
-    const response = await this.api.get("", {
-      params: {
-        action: "parse",
-        format: "json",
-        page: title,
-        lang: language,
+    const domain = this.getDomain(language);
+
+    const response = await axios.get(
+      `${domain}/w/api.php`,
+      {
+        params: {
+          action: "parse",
+          format: "json",
+          page: title,
+          ...(this.wpProxy && { lang: language }),
+        },
       },
-    });
+    );
     const htmlString = response.data.parse.text["*"];
     if (!htmlString) {
       throw Error("Could not get article HTML");
@@ -89,16 +110,21 @@ export class WikipediaApi implements WikipediaInteractor {
     articleId: string,
     language: string,
   ): Promise<string> {
-    const exportResponse = await axios.get(`${this.wpProxy}/w/index.php`, {
-      params: {
-        title: "Special:Export",
-        pages: title,
-        templates: true,
-        lang: language,
-        curonly: true,
+    const domain = this.getDomain(language);
+
+    const exportResponse = await axios.get(
+      `${domain}/w/index.php`,
+      {
+        params: {
+          title: "Special:Export",
+          pages: title,
+          templates: true,
+          curonly: true,
+          ...(this.wpProxy && { lang: language }),
+        },
+        responseType: "stream",
       },
-      responseType: "stream",
-    });
+    );
 
     return new Promise<string>((resolve, reject) => {
       let exportData = "";

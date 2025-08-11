@@ -1,10 +1,10 @@
-import { defineStore } from "pinia";
-import { getArticles } from "src/api/supabaseHelper";
-import ENV from "src/schema/env.schema";
-import { Article } from "src/types";
-import { computed, ref } from "vue";
+import { defineStore } from 'pinia';
+import { getArticles } from 'src/api/supabaseHelper';
+import ENV from 'src/schema/env.schema';
+import { Article } from 'src/types';
+import { computed, ref } from 'vue';
 
-export const useArticlesStore = defineStore("articles", () => {
+export const useArticlesStore = defineStore('articles', () => {
   // States
   const articles = ref<Article[]>([]);
 
@@ -25,10 +25,10 @@ export const useArticlesStore = defineStore("articles", () => {
 
   function viewArticleInNewTab(language: string, article_id: string) {
     window.open(
-      `${ENV.MEDIAWIKI_ENDPOINT}/${language}/index.php?title=${
-        capitalizeFirstLetter(article_id)
-      }`,
-      "_blank",
+      `${ENV.MEDIAWIKI_ENDPOINT}/${language}/index.php?title=${capitalizeFirstLetter(
+        article_id,
+      )}`,
+      '_blank',
     );
   }
 

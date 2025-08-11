@@ -28,10 +28,9 @@ const envSchema = z.object({
       return str.split(",");
     }),
   WIKIPEDIA_PROXY: z
-    .string({
-      required_error: "😱 You forgot to add a Wikipedia proxy URL!",
-    })
-    .url().optional(),
+    .string()
+    .url({ message: "😱 Invalid Wikipedia proxy URL!" })
+    .optional(),
   MEDIAWIKI_ENDPOINT: z
     .string({
       required_error: "😱 You forgot to add a MediaWiki endpoint!",
@@ -58,7 +57,7 @@ const envSchema = z.object({
 const envServer = envSchema.safeParse({
   WIKIADVISER_LANGUAGES: Deno.env.get("WIKIADVISER_LANGUAGES"),
   WIKIADVISER_BACKGROUND_COLORS: Deno.env.get("WIKIADVISER_BACKGROUND_COLORS"),
-  WIKIPEDIA_PROXY: Deno.env.get("WIKIPEDIA_PROXY"),
+  WIKIPEDIA_PROXY: Deno.env.get("WIKIPEDIA_PROXY") || undefined,
   MEDIAWIKI_ENDPOINT: Deno.env.get("MEDIAWIKI_ENDPOINT"),
   MW_BOT_USERNAME: Deno.env.get("MW_BOT_USERNAME"),
   MW_BOT_PASSWORD: Deno.env.get("MW_BOT_PASSWORD"),

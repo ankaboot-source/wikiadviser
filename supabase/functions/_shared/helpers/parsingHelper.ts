@@ -101,7 +101,7 @@ export async function refineArticleChanges(
       // Create the wrap element with the wanted metadata wrapElement
       const $wrapElement = $CheerioAPI("<span>");
 
-      const isComment = !!$element.find(".ve-ce-commentNode").length;
+      const isComment = Boolean($element.find(".ve-ce-commentNode").length);
       if (isComment) {
         typeOfEdit = handleComment(
           $wrapElement as Cheerio<Element>,

@@ -57,15 +57,15 @@
           round
           dense
           flat
-          @click.stop
           dropdown-icon="more_vert"
           no-icon-animation
           content-class="no-shadow"
+          @click.stop
         >
           <q-list bordered separator>
             <q-item
-              clickable
               v-close-popup
+              clickable
               @click="gotoArticle(article.article_id)"
             >
               <q-item-section>
@@ -77,8 +77,8 @@
             </q-item>
 
             <q-item
-              clickable
               v-close-popup
+              clickable
               @click="
                 articlesStore.viewArticleInNewTab(
                   article.language,
@@ -95,9 +95,9 @@
             </q-item>
 
             <q-item
+              v-if="article.role === 'owner'"
               v-close-popup
               clickable
-              v-if="article.role === 'owner'"
               @click="deleteArticleDialog = true"
             >
               <q-item-section>

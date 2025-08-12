@@ -45,8 +45,8 @@
       v-if="article.title && article.permission_id && editorPermission"
       :button-toggle="buttonToggle"
       :article="article"
-      @switch-tab-emit="onSwitchTabEmitChange"
       :toggle-edit-tab="toggleEditTab"
+      @switch-tab-emit="onSwitchTabEmitChange"
     />
 
     <template v-if="buttonToggle === 'view'">

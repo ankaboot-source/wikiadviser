@@ -63,7 +63,29 @@
           content-class="no-shadow"
         >
           <q-list bordered separator>
-            <q-item clickable v-close-popup>
+            <q-item
+              clickable
+              v-close-popup
+              @click="gotoArticle(article.article_id)"
+            >
+              <q-item-section>
+                <q-item-label class="flex items-center">
+                  <q-icon name="edit" class="q-mr-xs" size="xs" />
+                  <span>Open Article</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item
+              clickable
+              v-close-popup
+              @click="
+                articlesStore.viewArticleInNewTab(
+                  article.language,
+                  article.article_id,
+                )
+              "
+            >
               <q-item-section>
                 <q-item-label class="flex items-center">
                   <q-icon name="open_in_new" class="q-mr-xs" size="xs" />
@@ -73,8 +95,8 @@
             </q-item>
 
             <q-item
-              clickable
               v-close-popup
+              clickable
               v-if="article.role === 'owner'"
               @click="deleteArticleDialog = true"
             >

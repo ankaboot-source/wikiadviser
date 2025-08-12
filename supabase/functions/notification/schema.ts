@@ -11,6 +11,7 @@ export const TriggerPayloadSchema = z.object({
 export type TriggerPayload = z.infer<typeof TriggerPayloadSchema>;
 
 export type Notification = {
+  user_id: string; 
   article_id: string;
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';

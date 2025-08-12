@@ -107,88 +107,17 @@ import { Notify } from 'quasar';
 import supabase from 'src/api/supabase';
 import type { Tables } from 'src/types/database.types';
 
-interface NotificationParams {
-  articleTitle?: string;
-  commenterName?: string;
-  role?: string;
-  userName?: string;
-  [key: string]: string | number | undefined;
-}
-
-type NotificationRow = Tables<'notifications'> & {
-  type: string;
-  action: string;
-  params?: NotificationParams;
+type NotificationData = Tables<'notifications'> & {
+  article?: { title?: string };
+  triggered_by_profile?: { email?: string };
+  triggered_on_profile?: { email?: string };
+  triggered_on_role?: string | null;
 };
 
-const unread = ref<NotificationRow[]>([]);
+const unread = ref<NotificationData[]>([]);
 const unreadCount = computed(() => unread.value.length);
 
-function getNotificationMessage(notification: NotificationRow): string {
-  const { type, action, params = {} } = notification;
-
-  switch (`${type}.${action}`) {
-    case 'revision.create':
-      return `A new revision to ${params.articleTitle} has been made.`;
-
-    case 'comment.create':
-      if (params.isChangeOwner) {
-        return `${params.commenterName} has replied to your change on article ${params.articleTitle}.`;
-      } else {
-        return `A new comment has been made to a change on ${params.articleTitle}.`;
-      }
-
-    case 'role.create':
-      return `You have been granted ${params.role} permission to ${params.articleTitle}.`;
-
-    case 'role.update':
-      return `Your permission for ${params.articleTitle} has been changed to ${params.role}.`;
-
-    case 'role.update_others':
-      return `${params.userName}'s permission for ${params.articleTitle} has been changed to ${params.role}.`;
-
-    case 'role.create_others':
-      return `${params.userName} has been granted access to ${params.articleTitle}.`;
-
-    default:
-      return 'You have a new notification.';
-  }
-}
-
-async function markRead(id: string) {
-  try {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    unread.value = unread.value.filter((n) => n.id !== id);
-  } catch {
-    Notify.create({
-      message: 'Failed to clear notification',
-      color: 'negative',
-      position: 'bottom',
-      timeout: 3000,
-    });
-  }
-}
-
-async function markAllRead() {
-  try {
-    const ids = unread.value.map((n) => n.id);
-    if (ids.length > 0) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .in('id', ids);
-    }
-    unread.value = [];
-    Notify.create({
-      message: 'All notifications marked as read',
-      color: 'positive',
-      position: 'bottom',
-      timeout: 2000,
-    });
-  } catch (error) {
-    console.error('Error marking notifications as read:', error);
-  }
-}
+const currentUser = ref<{ id?: string; email?: string }>({});
 
 function formatTime(timestamp: string | null): string {
   if (!timestamp) return 'Unknown';
@@ -199,9 +128,8 @@ function formatTime(timestamp: string | null): string {
   );
 
   if (diffInMinutes < 1) return 'Now';
-  if (diffInMinutes < 60) {
+  if (diffInMinutes < 60)
     return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-  }
   if (diffInMinutes < 1440) {
     const hours = Math.floor(diffInMinutes / 60);
     return `${hours} hour${hours > 1 ? 's' : ''} ago`;
@@ -209,29 +137,205 @@ function formatTime(timestamp: string | null): string {
   return date.toLocaleDateString();
 }
 
-onMounted(async () => {
-  try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+function getNotificationMessage(notification: NotificationData): string {
+  const type = notification.type;
+  const action = notification.action;
+  const articleTitle = notification.article?.title ?? 'an article';
 
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('id, type, action, params, is_read, created_at')
-      .eq('user_id', user.id)
-      .eq('is_read', false)
-      .order('created_at', { ascending: false });
+  const subject = notification.triggered_on_profile?.email ?? 'Someone';
+  const role = notification.triggered_on_role ?? '';
 
-    if (error) {
-      console.error('Error fetching notifications:', error);
-      return;
+  const key = `${type}.${action}`;
+
+  switch (key) {
+    case 'revision.insert':
+      return `A new revision to ${articleTitle} has been made.`;
+
+    case 'comment.insert': {
+      const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
+      const changeOwnerId = notification.triggered_on;
+      const currentUserId = currentUser.value.id;
+
+      if (currentUserId === changeOwnerId) {
+        return `${actorEmail} has replied to your change on article ${articleTitle}.`;
+      }
+
+      return `A new comment has been made to a change on ${articleTitle}.`;
     }
 
-    unread.value = (data as NotificationRow[]).map((n) => ({
-      ...n,
-      params: (n.params as NotificationParams) ?? {},
-    }));
+    case 'role.insert':
+      if (notification.user_id === currentUser.value.id) {
+        return `You have been granted ${role} permission to ${articleTitle}.`;
+      }
+      return `${subject} has been granted access to ${articleTitle}.`;
+
+    case 'role.update':
+      if (notification.user_id === currentUser.value.id) {
+        return `Your permission for ${articleTitle} has been changed to ${role}.`;
+      }
+      return `${subject}'s permission for ${articleTitle} has been changed to ${role}.`;
+
+    default:
+      return 'You have a new notification.';
+  }
+}
+
+async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
+  if (!articleIds.length || !userIds.length) return new Map<string, string>();
+
+  const { data: perms, error } = await supabase
+    .from('permissions')
+    .select('article_id, user_id, role')
+    .in('article_id', articleIds)
+    .in('user_id', userIds);
+
+  if (error) {
+    console.error('Error fetching permissions:', error);
+    return new Map();
+  }
+
+  const map = new Map<string, string>();
+  (perms || []).forEach((p) => {
+    map.set(`${p.article_id}:${p.user_id}`, p.role);
+  });
+  return map;
+}
+
+async function loadNotificationsForUser(userId: string) {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select(
+      `
+      id,
+      user_id,
+      type,
+      action,
+      article_id,
+      triggered_by,
+      triggered_on,
+      is_read,
+      created_at,
+      article:articles ( title ),
+      triggered_by_profile:profiles!notifications_triggered_by_fkey ( email ),
+      triggered_on_profile:profiles!notifications_triggered_on_fkey ( email )
+    `,
+    )
+    .eq('user_id', userId)
+    .eq('is_read', false)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching notifications:', error);
+    return;
+  }
+
+  const rows = (data || []) as NotificationData[];
+
+  const articleIds = Array.from(
+    new Set(rows.map((r) => r.article_id).filter(Boolean)),
+  );
+  const userIds = Array.from(
+    new Set(rows.map((r) => r.triggered_on).filter(Boolean)),
+  );
+
+  const permsMap = await fetchPermissionsMap(articleIds, userIds);
+
+  rows.forEach((r) => {
+    const key = `${r.article_id}:${r.triggered_on}`;
+    r.triggered_on_role = permsMap.get(key) ?? null;
+  });
+
+  unread.value = rows;
+}
+
+async function fetchNotificationById(id: string) {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select(
+      `
+      id,
+      user_id,
+      type,
+      action,
+      article_id,
+      triggered_by,
+      triggered_on,
+      is_read,
+      created_at,
+      article:articles ( title ),
+      triggered_by_profile:profiles!notifications_triggered_by_fkey ( email ),
+      triggered_on_profile:profiles!notifications_triggered_on_fkey ( email )
+    `,
+    )
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching single notification:', error);
+    return null;
+  }
+
+  const row = data as NotificationData | null;
+  if (!row) return null;
+
+  const { data: perms, error: pErr } = await supabase
+    .from('permissions')
+    .select('role')
+    .eq('article_id', row.article_id)
+    .eq('user_id', row.triggered_on)
+    .single();
+
+  if (!pErr && perms) {
+    row.triggered_on_role = perms.role;
+  } else {
+    row.triggered_on_role = null;
+  }
+
+  return row;
+}
+
+async function markRead(id: string) {
+  try {
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    unread.value = unread.value.filter((n) => n.id !== id);
+  } catch (err) {
+    console.error('Failed markRead', err);
+    Notify.create({
+      message: 'Failed to clear notification',
+      color: 'negative',
+    });
+  }
+}
+
+async function markAllRead() {
+  try {
+    const ids = unread.value.map((n) => n.id).filter(Boolean);
+    if (ids.length) {
+      await supabase
+        .from('notifications')
+        .update({ is_read: true })
+        .in('id', ids);
+    }
+    unread.value = [];
+    Notify.create({
+      message: 'All notifications marked as read',
+      color: 'positive',
+    });
+  } catch (err) {
+    console.error('Failed markAllRead', err);
+  }
+}
+
+onMounted(async () => {
+  try {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) return;
+
+    currentUser.value.id = user.id;
+    currentUser.value.email = (user.email as string) ?? '';
+
+    await loadNotificationsForUser(user.id);
 
     supabase
       .channel('notifs')
@@ -243,16 +347,15 @@ onMounted(async () => {
           table: 'notifications',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
-          const n = payload.new as NotificationRow;
-          if (!n.is_read) {
-            unread.value.unshift({
-              ...n,
-              params: (n.params as NotificationParams) ?? {},
-            });
-
+        async (payload) => {
+          const raw = payload.new as { id: string };
+          if (!raw?.id) return;
+          const full = await fetchNotificationById(raw.id);
+          if (!full) return;
+          if (!full.is_read) {
+            unread.value.unshift(full);
             Notify.create({
-              message: getNotificationMessage(n),
+              message: getNotificationMessage(full),
               color: 'primary',
               position: 'top-right',
               timeout: 5000,
@@ -260,7 +363,7 @@ onMounted(async () => {
                 {
                   label: 'Clear',
                   color: 'white',
-                  handler: () => markRead(n.id),
+                  handler: () => markRead(full.id),
                 },
               ],
             });
@@ -268,8 +371,8 @@ onMounted(async () => {
         },
       )
       .subscribe();
-  } catch (error) {
-    console.error('Error setting up notifications:', error);
+  } catch (err) {
+    console.error('Error initializing notifications', err);
   }
 });
 </script>

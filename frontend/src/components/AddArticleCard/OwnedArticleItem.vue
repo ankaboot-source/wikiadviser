@@ -36,7 +36,27 @@
               <q-icon name="translate" class="q-mr-xs" />
               {{ language }}
             </q-badge>
-            <div v-if="article.created_at" class="text-weight-light on-right">
+            <div
+              v-if="article.latest_change.created_at"
+              class="text-weight-light on-right"
+            >
+              Last edited by
+              <span>
+                {{ article.latest_change.user }}
+              </span>
+              on
+              {{
+                article.latest_change.created_at.toLocaleString(userLocale, {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: user12H,
+                })
+              }}
+            </div>
+            <div v-else class="text-weight-light on-right">
               <span v-if="article.imported">Imported on</span>
               <span v-else>Created the</span>
               {{
@@ -117,14 +137,14 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
+import { deleteArticle } from 'src/api/supabaseHelper';
+import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
+import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useUserStore } from 'src/stores/userStore';
+import { Article, Profile } from 'src/types';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
-import { Article, Profile } from 'src/types';
-import { deleteArticle } from 'src/api/supabaseHelper';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
-import { useUserStore } from 'src/stores/userStore';
 
 const props = defineProps<{
   article: Article;

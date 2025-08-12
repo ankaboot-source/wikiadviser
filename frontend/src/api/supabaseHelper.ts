@@ -85,14 +85,32 @@ export async function getArticles(userId: string): Promise<Article[]> {
     .from('permissions')
     .select(
       `
-      id,
-      article_id,
-      role,
-      articles(title,description,created_at,language,web_publication,imported)
-      `,
+    id,
+    article_id,
+    role,
+    articles(
+      title,
+      description,
+      created_at,
+      language,
+      web_publication,
+      imported,
+      changes!changes_article_id_fkey(
+        created_at,
+        profiles:contributor_id(email)
+      )
+    )
+  `,
     )
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    // Sort articles by created_at
+    .order('articles(created_at)', {
+      ascending: false,
+    })
+    // Keep only the first change in that sorted list
+    .limit(1, { foreignTable: 'articles.changes' });
+
+  console.log('Fetched articles:', articleData);
 
   if (articleError) {
     throw new Error(articleError.message);
@@ -115,8 +133,31 @@ export async function getArticles(userId: string): Promise<Article[]> {
           created_at: new Date(article.articles?.created_at as string),
           web_publication: article.articles?.web_publication,
           imported: article.articles?.imported,
+          latest_change: {
+            created_at: article.articles?.changes[0]?.created_at
+              ? new Date(article.articles?.changes[0]?.created_at as string)
+              : undefined,
+            user: article.articles?.changes[0]?.profiles?.email,
+          },
         }) as Article,
-    );
+    )
+    .sort((a, b) => {
+      // Sort the articles by latest_change.created_at
+      if (a.latest_change?.created_at && b.latest_change?.created_at) {
+        return (
+          b.latest_change.created_at.getTime() -
+          a.latest_change.created_at.getTime()
+        );
+      } else if (a.latest_change?.created_at) {
+        return -1; // a has a change date, b doesn't - a comes first
+      } else if (b.latest_change?.created_at) {
+        return 1; // b has a change date, a doesn't - b comes first
+      }
+
+      return 0;
+    });
+
+  console.log('Parsed articles:', articles);
 
   return articles;
 }

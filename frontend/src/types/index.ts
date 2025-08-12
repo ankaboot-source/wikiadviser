@@ -33,6 +33,10 @@ export type Article = {
   language: string;
   web_publication: boolean;
   imported: boolean;
+  latest_change: {
+    created_at: Date;
+    user: string;
+  };
 };
 
 export type Comment = {

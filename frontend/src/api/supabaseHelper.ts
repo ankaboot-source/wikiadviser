@@ -1,14 +1,14 @@
-import supabaseClient from "src/api/supabase";
-import { wikiadviserLanguage } from "src/data/wikiadviserLanguages";
-import { Article, ChangeItem, Enums, Permission, User } from "src/types";
-import { SHARE_LINK_DAY_LIMIT } from "src/utils/consts";
-import { parseChangeHtml } from "src/utils/parsing";
-import supabase from "./supabase";
+import supabaseClient from 'src/api/supabase';
+import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
+import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
+import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
+import { parseChangeHtml } from 'src/utils/parsing';
+import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data: permissionsData, error: permissionsError } = await supabase
     // Fetch permissions of users of a specific article id
-    .from("permissions")
+    .from('permissions')
     .select(
       `
       id,
@@ -17,8 +17,8 @@ export async function getUsers(articleId: string): Promise<User[]> {
       user: profiles(id, email, avatar_url, default_avatar, allowed_articles)
       `,
     )
-    .order("created_at")
-    .eq("article_id", articleId);
+    .order('created_at')
+    .eq('article_id', articleId);
 
   if (permissionsError) {
     throw new Error(permissionsError.message);
@@ -44,8 +44,8 @@ export async function createArticle(
   language: wikiadviserLanguage,
   description?: string,
 ) {
-  const { data, error } = await supabaseClient.functions.invoke("article", {
-    method: "POST",
+  const { data, error } = await supabaseClient.functions.invoke('article', {
+    method: 'POST',
     body: {
       title,
       userId,
@@ -64,9 +64,9 @@ export async function importArticle(
   description?: string,
 ) {
   const { data, error } = await supabaseClient.functions.invoke(
-    "article/import",
+    'article/import',
     {
-      method: "POST",
+      method: 'POST',
       body: {
         title,
         userId,
@@ -82,8 +82,9 @@ export async function importArticle(
 export async function getArticles(userId: string): Promise<Article[]> {
   // check if user has permission on that Article
   const { data: articleData, error: articleError } = await supabase
-    .from("permissions")
-    .select(`
+    .from('permissions')
+    .select(
+      `
     id,
     article_id,
     role,
@@ -99,16 +100,17 @@ export async function getArticles(userId: string): Promise<Article[]> {
         profiles:contributor_id(email)
       )
     )
-  `)
-    .eq("user_id", userId)
+  `,
+    )
+    .eq('user_id', userId)
     // Sort articles by created_at
-    .order("articles(created_at)", {
+    .order('articles(created_at)', {
       ascending: false,
     })
     // Keep only the first change in that sorted list
-    .limit(1, { foreignTable: "articles.changes" });
+    .limit(1, { foreignTable: 'articles.changes' });
 
-  console.log("Fetched articles:", articleData);
+  console.log('Fetched articles:', articleData);
 
   if (articleError) {
     throw new Error(articleError.message);
@@ -133,18 +135,19 @@ export async function getArticles(userId: string): Promise<Article[]> {
           imported: article.articles?.imported,
           latest_change: {
             created_at: article.articles?.changes[0]?.created_at
-              ? new Date(
-                article.articles?.changes[0]?.created_at as string,
-              )
+              ? new Date(article.articles?.changes[0]?.created_at as string)
               : undefined,
             user: article.articles?.changes[0]?.profiles?.email,
           },
         }) as Article,
-    ).sort((a, b) => {
+    )
+    .sort((a, b) => {
       // Sort the articles by latest_change.created_at
       if (a.latest_change?.created_at && b.latest_change?.created_at) {
-        return b.latest_change.created_at.getTime() -
-          a.latest_change.created_at.getTime();
+        return (
+          b.latest_change.created_at.getTime() -
+          a.latest_change.created_at.getTime()
+        );
       } else if (a.latest_change?.created_at) {
         return -1; // a has a change date, b doesn't - a comes first
       } else if (b.latest_change?.created_at) {
@@ -154,14 +157,14 @@ export async function getArticles(userId: string): Promise<Article[]> {
       return 0;
     });
 
-  console.log("Parsed articles:", articles);
+  console.log('Parsed articles:', articles);
 
   return articles;
 }
 
 export async function isArticleExists(articleId: string): Promise<boolean> {
   const { data: articleData, error: articleError } = await supabase.rpc(
-    "is_article_exists",
+    'is_article_exists',
     {
       article_id: articleId,
     },
@@ -181,7 +184,7 @@ export async function updatePermission(
     async ({ permissionId, role }) => {
       // Update permissions where id matches permissionId
       const { error } = await supabase
-        .from("permissions")
+        .from('permissions')
         .update({ role })
         .match({ id: permissionId });
 
@@ -206,7 +209,7 @@ export async function getParsedChanges(
   single = false,
 ): Promise<ChangeItem[]> {
   const { data, error } = await supabase
-    .from("changes")
+    .from('changes')
     .select(
       `
         id,
@@ -226,11 +229,11 @@ export async function getParsedChanges(
         revision: revisions(summary, revid)
         `,
     )
-    .order("index")
-    .eq(single ? "id" : "article_id", id);
+    .order('index')
+    .eq(single ? 'id' : 'article_id', id);
 
   if (!data || error) {
-    throw new Error(error?.message ?? "Could not get parsed changes");
+    throw new Error(error?.message ?? 'Could not get parsed changes');
   }
   return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
 }
@@ -242,7 +245,7 @@ export async function updateChange(
   archived?: boolean,
 ) {
   const { error: changeError } = await supabase
-    .from("changes")
+    .from('changes')
     .update({ status, description, archived })
     .match({ id: changeId });
 
@@ -257,7 +260,7 @@ export async function insertComment(
   articleId: string,
   content: string,
 ) {
-  const { error: changeError } = await supabase.from("comments").insert({
+  const { error: changeError } = await supabase.from('comments').insert({
     change_id: changeId,
     commenter_id: commenterId,
     article_id: articleId,
@@ -271,9 +274,9 @@ export async function insertComment(
 
 export async function deletePermission(permissionId: string) {
   const { error: changeError } = await supabase
-    .from("permissions")
+    .from('permissions')
     .delete()
-    .eq("id", permissionId);
+    .eq('id', permissionId);
 
   if (changeError) {
     throw new Error(changeError.message);
@@ -283,7 +286,7 @@ export async function deleteArticle(articleId: string) {
   const { data, error } = await supabaseClient.functions.invoke(
     `article/${articleId}`,
     {
-      method: "DELETE",
+      method: 'DELETE',
     },
   );
   if (error) throw error;
@@ -294,21 +297,21 @@ export async function updateChanges(articleId: string) {
   const { data, error } = await supabaseClient.functions.invoke(
     `article/${articleId}/changes`,
     {
-      method: "PUT",
+      method: 'PUT',
     },
   );
 
-  if (error) throw new Error("Failed to update changes");
+  if (error) throw new Error('Failed to update changes');
   return data;
 }
 
-export async function createLink(articleId: string, role: Enums<"role">) {
+export async function createLink(articleId: string, role: Enums<'role'>) {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + SHARE_LINK_DAY_LIMIT);
 
-  const { data: shareLink, error: tokenCreationError } = await supabase
-    .functions.invoke("share-link", {
-      method: "POST",
+  const { data: shareLink, error: tokenCreationError } =
+    await supabase.functions.invoke('share-link', {
+      method: 'POST',
       body: {
         article_id: articleId,
         expires_at: expiresAt.toISOString(),
@@ -326,9 +329,9 @@ export async function updateArticleWebPublication(
   articleId: string,
 ) {
   const { error } = await supabase
-    .from("articles")
+    .from('articles')
     .update({ web_publication })
-    .eq("id", articleId);
+    .eq('id', articleId);
 
   if (error) {
     throw new Error(error.message);
@@ -337,7 +340,7 @@ export async function updateArticleWebPublication(
 
 export async function deleteUser() {
   const { error: deleteUserError } = await supabase.rpc(
-    "delete_user_and_anonymize_data",
+    'delete_user_and_anonymize_data',
   );
 
   if (deleteUserError) throw new Error(deleteUserError.message);
@@ -345,9 +348,9 @@ export async function deleteUser() {
 
 export async function hideChanges(changeId: string) {
   const { data: change, error } = await supabase
-    .from("changes")
-    .select("*")
-    .eq("id", changeId)
+    .from('changes')
+    .select('*')
+    .eq('id', changeId)
     .single();
 
   if (error) {
@@ -359,13 +362,13 @@ export async function hideChanges(changeId: string) {
   }
 
   if (change.index !== null) {
-    throw new Error("Cannot hide this change");
+    throw new Error('Cannot hide this change');
   }
 
   const { error: hideError } = await supabase
-    .from("changes")
+    .from('changes')
     .update({ hidden: true })
-    .eq("id", change.id);
+    .eq('id', change.id);
 
   if (hideError) {
     throw new Error(hideError.message);

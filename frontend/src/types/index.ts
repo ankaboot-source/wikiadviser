@@ -1,6 +1,6 @@
-import { Enums, Tables } from './database.types';
+import { Enums, Tables } from "./database.types";
 
-export interface ChangeItem extends Tables<'changes'> {
+export interface ChangeItem extends Tables<"changes"> {
   user: Profile;
   comments: Comment[];
   revision: {
@@ -19,7 +19,7 @@ export type User = {
   id?: string;
   picture: string;
   email: string;
-  role: Enums<'role'>;
+  role: Enums<"role">;
   permissionId: string;
 };
 
@@ -28,11 +28,15 @@ export type Article = {
   title: string;
   description: string;
   permission_id: string;
-  role: Enums<'role'>;
+  role: Enums<"role">;
   created_at: Date;
   language: string;
   web_publication: boolean;
   imported: boolean;
+  latest_change: {
+    created_at: Date;
+    user: string;
+  };
 };
 
 export type Comment = {
@@ -46,7 +50,7 @@ export type Comment = {
 
 export type Permission = {
   permissionId: string;
-  role: Enums<'role'>;
+  role: Enums<"role">;
 };
 
 export enum Status {
@@ -77,4 +81,4 @@ export type {
   Tables,
   TablesInsert,
   TablesUpdate,
-} from './database.types';
+} from "./database.types";

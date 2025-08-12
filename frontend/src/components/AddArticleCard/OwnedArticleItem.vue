@@ -72,65 +72,104 @@
             </div>
           </div>
         </div>
-        <div v-if="article.role === 'owner'" class="col-auto">
-          <q-btn
-            round
-            flat
-            color="negative"
-            dense
-            icon="delete"
-            @click.stop="deleteArticleDialog = true"
-          >
-            <q-tooltip>Delete article</q-tooltip>
-            <q-dialog v-model="deleteArticleDialog">
-              <q-card>
-                <q-toolbar class="borders">
-                  <q-toolbar-title class="merriweather">
-                    Delete Article “{{ article.title }}”
-                  </q-toolbar-title>
-                  <q-btn
-                    v-close-popup
-                    flat
-                    round
-                    dense
-                    icon="close"
-                    size="sm"
-                  />
-                </q-toolbar>
-                <q-card-section>
-                  Are you sure you want to delete this article and permanently
-                  lose all of your changes?
-                </q-card-section>
-                <q-card-actions class="borders">
-                  <q-space />
-                  <q-btn
-                    v-if="!deletingArticle"
-                    v-close-popup
-                    no-caps
-                    outline
-                    color="primary"
-                    label="Cancel"
-                  />
-                  <q-btn
-                    :v-close-popup="!deletingArticle"
-                    unelevated
-                    color="negative"
-                    icon="delete"
-                    no-caps
-                    label="Delete"
-                    :loading="deletingArticle"
-                    @click="removeArticle(article.article_id)"
-                  >
-                    <template #loading>
-                      <q-spinner class="on-left" />
-                      Delete
-                    </template>
-                  </q-btn>
-                </q-card-actions>
-              </q-card>
-            </q-dialog>
-          </q-btn>
-        </div>
+
+        <q-btn-dropdown
+          round
+          dense
+          flat
+          dropdown-icon="more_vert"
+          no-icon-animation
+          content-class="no-shadow"
+          @click.stop
+        >
+          <q-list bordered separator>
+            <q-item
+              v-close-popup
+              clickable
+              @click="gotoArticle(article.article_id)"
+            >
+              <q-item-section>
+                <q-item-label class="flex items-center">
+                  <q-icon name="edit" class="q-mr-xs" size="xs" />
+                  <span>Open Article</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item
+              v-close-popup
+              clickable
+              @click="
+                articlesStore.viewArticleInNewTab(
+                  article.language,
+                  article.article_id,
+                )
+              "
+            >
+              <q-item-section>
+                <q-item-label class="flex items-center">
+                  <q-icon name="open_in_new" class="q-mr-xs" size="xs" />
+                  <span>View Article</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item
+              v-if="article.role === 'owner'"
+              v-close-popup
+              clickable
+              @click="deleteArticleDialog = true"
+            >
+              <q-item-section>
+                <q-item-label class="flex items-center">
+                  <q-icon name="delete" class="q-mr-xs" size="xs" />
+                  <span>Delete Article</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-btn-dropdown>
+
+        <q-dialog v-model="deleteArticleDialog">
+          <q-card>
+            <q-toolbar class="borders">
+              <q-toolbar-title class="merriweather">
+                Delete Article “{{ article.title }}”
+              </q-toolbar-title>
+              <q-btn v-close-popup flat round dense icon="close" size="sm" />
+            </q-toolbar>
+            <q-card-section>
+              Are you sure you want to delete this article and permanently lose
+              all of your changes?
+            </q-card-section>
+            <q-card-actions class="borders">
+              <q-space />
+              <q-btn
+                v-if="!deletingArticle"
+                v-close-popup
+                no-caps
+                outline
+                color="primary"
+                label="Cancel"
+              />
+              <q-btn
+                :v-close-popup="!deletingArticle"
+                unelevated
+                color="negative"
+                icon="delete"
+                no-caps
+                label="Delete"
+                :loading="deletingArticle"
+                @click="removeArticle(article.article_id)"
+              >
+                <template #loading>
+                  <q-spinner class="on-left" />
+                  Delete
+                </template>
+              </q-btn>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
       </div>
     </q-item-section>
   </q-item>
@@ -173,6 +212,7 @@ function gotoArticle(articleId: string) {
     },
   });
 }
+
 async function removeArticle(articleId: string) {
   deletingArticle.value = true;
   try {

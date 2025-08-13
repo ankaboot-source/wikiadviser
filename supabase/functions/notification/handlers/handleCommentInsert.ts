@@ -1,14 +1,11 @@
-import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
-import { Notification, NotificationPayload } from '../schema.ts';
-import { getArticleTitle, getUserEmail } from '../utils/helpers.ts';
+import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
+import { supabase } from '../utils/db.ts';
 import { safeSingle } from '../utils/safeSingle.ts';
 
 export async function handleCommentInsert(
-  payload: NotificationPayload
+  payload: TriggerPayload
 ): Promise<Notification[]> {
-  const supabase = createSupabaseAdmin();
   const { change_id, commenter_id } = payload.record;
-  const notifications: Notification[] = [];
 
   const change = await safeSingle<{
     article_id: string;
@@ -19,86 +16,42 @@ export async function handleCommentInsert(
       .select('article_id, contributor_id')
       .eq('id', change_id)
   );
-  if (!change) return notifications;
+  if (!change) return [];
 
-  const articleTitle = await getArticleTitle(change.article_id);
-  const commenterEmail = await getUserEmail(commenter_id);
+  const notifications: Notification[] = [];
+  const alreadyNotified = new Set([commenter_id]);
 
   if (change.contributor_id !== commenter_id) {
     notifications.push({
       user_id: change.contributor_id,
       article_id: change.article_id,
-      type: 'comment',
-      action: 'create',
+      type: NotificationType.Comment,
+      action: NotificationAction.Insert,
       triggered_by: commenter_id,
-      params: {
-        articleTitle,
-        commenterName: commenterEmail,
-        isChangeOwner: true,
-      },
+      triggered_on: change.contributor_id,
       is_read: false,
     });
+    alreadyNotified.add(change.contributor_id);
   }
 
-  const { data: otherCommenters, error: commentError } = await supabase
+  const { data: others } = await supabase
     .from('comments')
     .select('commenter_id')
     .eq('change_id', change_id)
     .neq('commenter_id', commenter_id);
-
-  if (!commentError && otherCommenters) {
-    const uniqueCommenters = [
-      ...new Set(
-        otherCommenters
-          .map((c) => c.commenter_id)
-          .filter((id) => id !== change.contributor_id)
-      ),
-    ];
-
-    for (const commenterId of uniqueCommenters) {
-      notifications.push({
-        user_id: commenterId,
-        article_id: change.article_id,
-        type: 'comment',
-        action: 'create',
-        triggered_by: commenter_id,
-        params: {
-          articleTitle,
-          commenterName: commenterEmail,
-          isChangeOwner: false,
-        },
-        is_read: false,
-      });
-    }
-  }
-
-  const { data: editors, error: editorError } = await supabase
-    .from('permissions')
-    .select('user_id')
-    .eq('article_id', change.article_id);
-
-  if (!editorError && editors) {
-    const alreadyNotified = new Set([
-      commenter_id,
-      change.contributor_id,
-      ...(otherCommenters?.map((c) => c.commenter_id) || []),
-    ]);
-
-    for (const { user_id } of editors) {
-      if (!alreadyNotified.has(user_id)) {
+  if (others) {
+    for (const { commenter_id: cid } of others) {
+      if (!alreadyNotified.has(cid)) {
         notifications.push({
-          user_id,
+          user_id: cid,
           article_id: change.article_id,
-          type: 'comment',
-          action: 'create',
+          type: NotificationType.Comment,
+          action: NotificationAction.Insert,
           triggered_by: commenter_id,
-          params: {
-            articleTitle,
-            commenterName: commenterEmail,
-            isChangeOwner: false,
-          },
+          triggered_on: change.contributor_id,
           is_read: false,
         });
+        alreadyNotified.add(cid);
       }
     }
   }

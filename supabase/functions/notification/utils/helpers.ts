@@ -16,3 +16,14 @@ export async function getUserEmail(userId: string): Promise<string> {
   );
   return user?.email ?? 'Unknown User';
 }
+
+export async function getUserRole(articleId: string, userId: string): Promise<string> {
+  const supabase = createSupabaseAdmin();
+  const permission = await safeSingle<{ role: string }>(
+    supabase.from("permissions").select("role").eq("article_id", articleId).eq(
+      "user_id",
+      userId,
+    ),
+  );
+  return permission?.role ?? "member";
+}

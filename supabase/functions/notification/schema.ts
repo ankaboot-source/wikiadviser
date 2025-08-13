@@ -16,6 +16,6 @@ export type Notification = {
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';
   triggered_by: string; // the one who caused the action
-  triggered_on?: string; // the one who was affected by the action 
+  triggered_on?: string | null; // the one who was affected by the action 
   is_read?: boolean;
 };

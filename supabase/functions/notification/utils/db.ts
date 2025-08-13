@@ -10,12 +10,28 @@ export async function getOwner(articleId: string) {
     .single();
   return error ? null : data.user_id;
 }
+export async function getEditors(articleId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('permissions')
+    .select('user_id')
+    .eq('article_id', articleId)
+    .eq('role', 'editor');
 
-export async function getArticleParticipants(articleId: string) {
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(row => row.user_id);
+}
+export async function getArticleParticipants(articleId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('permissions')
     .select('user_id')
     .eq('article_id', articleId);
-  if (error) throw error;
-  return data.map((p) => p.user_id);
+
+  if (error || !data) {
+    return [];
+  }
+
+  return data.map(row => row.user_id);
 }

@@ -164,7 +164,10 @@ function getNotificationMessage(notification: NotificationData): string {
     }
 
     case 'role.insert':
-      if (notification.user_id === currentUser.value.id) {
+      if (
+        notification.user_id === currentUser.value.id &&
+        notification.triggered_on === currentUser.value.id
+      ) {
         return `You have been granted "${role}" permission to "${articleTitle}".`;
       }
       return `"${subject}" has been granted access to "${articleTitle}".`;

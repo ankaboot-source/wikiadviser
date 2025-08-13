@@ -36,3 +36,12 @@ WITH CHECK (true);
 ALTER TABLE public.notifications REPLICA IDENTITY FULL;
 
 ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+
+ALTER TABLE notifications
+DROP CONSTRAINT notifications_article_id_fkey;
+
+ALTER TABLE notifications
+ADD CONSTRAINT notifications_article_id_fkey
+FOREIGN KEY (article_id)
+REFERENCES articles(id)
+ON DELETE CASCADE;

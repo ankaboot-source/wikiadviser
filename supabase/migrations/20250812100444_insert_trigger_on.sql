@@ -6,7 +6,7 @@ CREATE TABLE public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE, -- recipient
     type TEXT NOT NULL CHECK (type IN ('comment', 'revision', 'role')),
-    action TEXT NOT NULL, 
+    action TEXT NOT NULL CHECK (action IN ('insert', 'update', 'delete')),
     article_id UUID NOT NULL REFERENCES public.articles(id),
     triggered_by UUID NOT NULL REFERENCES public.profiles(id), -- actor
     triggered_on UUID NOT NULL REFERENCES public.profiles(id), -- affected user

@@ -1,4 +1,4 @@
-import { Notification, TriggerPayload } from '../schema.ts';
+import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
 import { getOwner, getEditors } from '../utils/db.ts';
 
 export async function handlePermissionChange(
@@ -13,8 +13,8 @@ export async function handlePermissionChange(
     notifications.push({
       user_id: affectedUserId,
       article_id,
-      type: 'role',
-      action: 'insert',
+      type: NotificationType.Role,
+      action: NotificationAction.Insert,
       triggered_by: await getOwner(article_id),
       triggered_on: affectedUserId,
       is_read: false,
@@ -29,8 +29,8 @@ export async function handlePermissionChange(
       notifications.push({
         user_id: recipientId,
         article_id,
-        type: 'role',
-        action: 'insert',
+        type: NotificationType.Role,
+        action: NotificationAction.Insert,
         triggered_by: ownerId,
         triggered_on: affectedUserId,
         is_read: false,
@@ -42,8 +42,8 @@ export async function handlePermissionChange(
     notifications.push({
       user_id: affectedUserId,
       article_id,
-      type: 'role',
-      action: 'update',
+      type: NotificationType.Role,
+      action: NotificationAction.Update,
       triggered_by: await getOwner(article_id),
       triggered_on: affectedUserId,
       is_read: false,

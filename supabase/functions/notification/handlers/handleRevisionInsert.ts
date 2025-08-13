@@ -1,4 +1,4 @@
-import { Notification, TriggerPayload } from '../schema.ts';
+import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
 import { getArticleParticipants } from '../utils/db.ts';
 
 export async function handleRevisionInsert(
@@ -12,8 +12,8 @@ export async function handleRevisionInsert(
     .map((uid) => ({
       user_id: uid,
       article_id,
-      type: 'revision',
-      action: 'insert',
+      type: NotificationType.Revision,
+      action: NotificationAction.Insert,
       triggered_by: contributor_id,
       triggered_on: uid,
       is_read: false,

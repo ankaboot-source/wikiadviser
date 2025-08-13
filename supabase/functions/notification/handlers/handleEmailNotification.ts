@@ -1,5 +1,5 @@
 import { transporter } from '../utils/email.ts';
-import { Notification } from '../schema.ts';
+import { Notification, NotificationAction, NotificationType } from '../schema.ts';
 import {
   getUserEmail,
   getArticleTitle,
@@ -22,7 +22,7 @@ export async function sendEmailNotification(notification: Notification) {
     const articleTitle = await getArticleTitle(notification.article_id);
 
     let role: string | null = null;
-    if (notification.type === 'role' && notification.triggered_on) {
+    if (notification.type === NotificationType.Role && notification.triggered_on) {
       role = await getUserRole(
         notification.article_id,
         notification.triggered_on
@@ -34,55 +34,48 @@ export async function sendEmailNotification(notification: Notification) {
       notification.user_id === notification.triggered_on;
 
     const recipientIsChangeOwner =
-      notification.type === 'comment' &&
+      notification.type === NotificationType.Comment &&
       notification.triggered_on &&
       notification.user_id === notification.triggered_on;
 
     let subject = '';
     let text = '';
 
-    switch (`${notification.type}.${notification.action}`) {
-      case 'revision.insert':
+    switch (notification.type) {
+    case NotificationType.Revision:
+      if (notification.action === NotificationAction.Insert) {
         subject = `New revision on "${articleTitle}"`;
         text = `A new revision to ${articleTitle} has been made.`;
-        break;
+      }
+      break;
 
-      case 'comment.insert':
+    case NotificationType.Comment:
+      if (notification.action === NotificationAction.Insert) {
         subject = `New comment on "${articleTitle}"`;
-        if (recipientIsChangeOwner) {
-          text = `${
-            triggeredByEmail || 'Someone'
-          } has replied to your change on article ${articleTitle}.`;
-        } else {
-          text = `A new comment has been made to a change on ${articleTitle}.`;
-        }
-        break;
+        text = recipientIsChangeOwner
+          ? `${triggeredByEmail || 'Someone'} has replied to your change on article ${articleTitle}.`
+          : `A new comment has been made to a change on ${articleTitle}.`;
+      }
+      break;
 
-      case 'role.insert':
+    case NotificationType.Role:
+      if (notification.action === NotificationAction.Insert) {
         subject = `Access granted to "${articleTitle}"`;
+        text = recipientIsTarget
+          ? `You have been granted ${role ?? 'a role'} permission to ${articleTitle}.`
+          : `${triggeredOnEmail || 'Someone'} has been granted access to ${articleTitle}.`;
+      } else if (notification.action === NotificationAction.Update) {
         if (recipientIsTarget) {
-          text = `You have been granted ${
-            role ?? 'a role'
-          } permission to ${articleTitle}.`;
-        } else {
-          text = `${
-            triggeredOnEmail || 'Someone'
-          } has been granted access to ${articleTitle}.`;
+          subject = `Your role updated on "${articleTitle}"`;
+          text = `Your permission for ${articleTitle} has been changed to ${role ?? 'a role'}.`;
         }
-        break;
+      }
+      break;
 
-      case 'role.update':
-        subject = `Your role updated on "${articleTitle}"`;
-        if (recipientIsTarget) {
-          text = `Your permission for ${articleTitle} has been changed to ${
-            role ?? 'a role'
-          }.`;
-        }
-        break;
-      default:
-        console.warn('Unhandled email type:', notification);
-        return;
-    }
+    default:
+      console.warn('Unhandled email type or action:', notification);
+      return;
+  }
     await transporter.sendMail({
       from: Deno.env.get('SMTP_USER'),
       to: toEmail,

@@ -1,4 +1,4 @@
-import { Notification, TriggerPayload } from '../schema.ts';
+import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
 import { supabase } from '../utils/db.ts';
 import { safeSingle } from '../utils/safeSingle.ts';
 
@@ -25,8 +25,8 @@ export async function handleCommentInsert(
     notifications.push({
       user_id: change.contributor_id,
       article_id: change.article_id,
-      type: 'comment',
-      action: 'insert',
+      type: NotificationType.Comment,
+      action: NotificationAction.Insert,
       triggered_by: commenter_id,
       triggered_on: change.contributor_id,
       is_read: false,
@@ -45,8 +45,8 @@ export async function handleCommentInsert(
         notifications.push({
           user_id: cid,
           article_id: change.article_id,
-          type: 'comment',
-          action: 'insert',
+          type: NotificationType.Comment,
+          action: NotificationAction.Insert,
           triggered_by: commenter_id,
           triggered_on: change.contributor_id,
           is_read: false,

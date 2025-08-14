@@ -34,8 +34,8 @@ jobs:
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
             # Importing Common.js & Common.css
-            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Wikiadviser-admin "MediaWiki:Common.js" < $COMMON_FILES_PATH/Common-$ln.js
-            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Wikiadviser-admin "MediaWiki:Common.css" < $COMMON_FILES_PATH/Common-$ln.css
+            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Wikiadviser-admin "MediaWiki:Common.js" < $COMMON_FILES_PATH/Common-${{ matrix.lang }}.js
+            php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/edit.php --summary "Automated update" --user Wikiadviser-admin "MediaWiki:Common.css" < $COMMON_FILES_PATH/Common-${{ matrix.lang }}.css
 
             php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/run.php /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/update.php
 

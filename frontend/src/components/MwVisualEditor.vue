@@ -67,7 +67,6 @@ async function handleDiffChange(data: {
   diffHtml: string;
   articleId: string;
 }) {
-  console.log(data);
   const functionName = `/article/${data.articleId}/changes`;
 
   await supabaseClient.functions.invoke(functionName, {
@@ -99,7 +98,6 @@ function gotoDiffLink() {
 
 async function EventHandler(event: MessageEvent): Promise<void> {
   const { data } = event;
-  console.log(data);
 
   if (data.type === 'diff-change') {
     await handleDiffChange(data);
@@ -122,7 +120,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 }
 
 async function onIframeLoad() {
-  console.log('Iframe loaded');
   loading.value.value = false;
 }
 

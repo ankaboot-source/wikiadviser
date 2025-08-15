@@ -110,8 +110,6 @@ export async function getArticles(userId: string): Promise<Article[]> {
     // Keep only the first change in that sorted list
     .limit(1, { foreignTable: 'articles.changes' });
 
-  console.log('Fetched articles:', articleData);
-
   if (articleError) {
     throw new Error(articleError.message);
   }
@@ -156,8 +154,6 @@ export async function getArticles(userId: string): Promise<Article[]> {
 
       return 0;
     });
-
-  console.log('Parsed articles:', articles);
 
   return articles;
 }

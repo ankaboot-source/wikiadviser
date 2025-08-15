@@ -1,4 +1,5 @@
-const siteUrl = Deno.env.get('SITE_URL')
+import ENV from "../../_shared/schema/env.schema.ts";
+const siteUrl = ENV.SITE_URL
 export function buildHtmlEmail(subject: string, content: string): string {
   return `
   <!DOCTYPE html>

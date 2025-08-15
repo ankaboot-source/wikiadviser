@@ -1,11 +1,11 @@
 export function addSourceExternalLinks(
   pageContent: string,
-  sourceLanguage: string
+  sourceLanguage: string,
 ) {
   return pageContent.replace(
     /\[\[(?!(?:File|Fichier))([^|\]]+)(?:\|([^|\]]*))?\]\]/g,
     (_, page, preview) =>
-      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`
+      `[[wikipedia:${sourceLanguage}:${page}|${preview || page}]]`,
   );
 }
 /**
@@ -19,12 +19,14 @@ export function addSourceExternalLinks(
  */
 export function convertSourceTemplateToLink(
   pageContent: string,
-  sourceLanguage: string
+  sourceLanguage: string,
 ) {
-  return pageContent.replace(/{{Lnobr\|([\s\S]*?)}}/gi, (_, group) =>
-    group.includes("|")
-      ? `[[wikipedia:${sourceLanguage}:${group}]]`
-      : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`
+  return pageContent.replace(
+    /{{Lnobr\|([\s\S]*?)}}/gi,
+    (_, group) =>
+      group.includes("|")
+        ? `[[wikipedia:${sourceLanguage}:${group}]]`
+        : `[[wikipedia:${sourceLanguage}:${group}|${group}]]`,
   );
 }
 /**
@@ -39,7 +41,8 @@ export function convertSourceTemplateToLink(
  * @returns The updated page content with modified templates.
  */
 export function addSourceTemplate(pageContent: string, sourceLanguage: string) {
-  const pattern = /{{(Main|See also|Article (?:détaillé|général))\|([^}]+?)}}/g;
+  const pattern =
+    /{{(Main|See TESTalso|Article (?:détaillé|général))\|([^}]+?)}}/g;
 
   return pageContent.replace(pattern, (_, templateType, articles) => {
     const parsedArticles = articles

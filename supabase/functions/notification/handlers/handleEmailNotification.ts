@@ -1,5 +1,5 @@
 import { transporter } from '../utils/email.ts';
-import { buildHtmlEmail } from '../utils/buildHtmplEmail.ts';
+import { buildHtmlEmail } from '../utils/buildHtmlEmail.ts';
 import {
   Notification,
   NotificationAction,

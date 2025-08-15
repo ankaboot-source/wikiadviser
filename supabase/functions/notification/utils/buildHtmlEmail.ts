@@ -1,3 +1,4 @@
+const siteUrl = Deno.env.get('SITE_URL')
 export function buildHtmlEmail(subject: string, content: string): string {
   return `
   <!DOCTYPE html>
@@ -140,12 +141,12 @@ export function buildHtmlEmail(subject: string, content: string): string {
             <tr>
               <td align="center" valign="top" style="padding: 36px 24px">
                 <a
-                  href="{{ .siteURL }}"
+                  href="${siteUrl}"
                   target="_blank"
                   style="display: inline-block"
                 >
                   <img
-                    src="{{ .siteURL }}/icons/logo.png"
+                    src="${siteUrl}/icons/logo.png"
                     alt="Logo"
                     title="Logo"
                     border="0"

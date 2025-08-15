@@ -140,12 +140,12 @@ export function buildHtmlEmail(subject: string, content: string): string {
             <tr>
               <td align="center" valign="top" style="padding: 36px 24px">
                 <a
-                  href="{{.siteURL}}"
+                  href="{{ .siteURL }}"
                   target="_blank"
                   style="display: inline-block"
                 >
                   <img
-                    src="{{.siteURL}}/icons/logo.svg"
+                    src="{{ .siteURL }}/icons/logo.png"
                     alt="Logo"
                     title="Logo"
                     border="0"

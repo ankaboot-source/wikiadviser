@@ -16,9 +16,11 @@ jobs:
           deno-version: latest
       - name: Run unit tests
         run: deno test supabase/functions --allow-all --coverage
+      - name: Generate code coverage report
+        run: deno coverage --lcov --output=cov.lcov
       - name: Report code coverage to Deepsource
         run: |
           curl https://deepsource.io/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./coverage/*
+          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./cov.lcov
         env:
           DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}

@@ -30,4 +30,3 @@ environment = [
 
 [[analyzers]]
 name = "test-coverage"
-enabled = true

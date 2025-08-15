@@ -14,4 +14,11 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: latest
-      - run: deno test supabase/functions --allow-all
+      - name: Run unit tests
+        run: deno test supabase/functions --allow-all --coverage
+      - name: Report code coverage to Deepsource
+        run: |
+          curl https://deepsource.io/cli | sh
+          ./bin/deepsource report --analyzer test-coverage --key javascript --value-file ./coverage/*
+        env:
+          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}

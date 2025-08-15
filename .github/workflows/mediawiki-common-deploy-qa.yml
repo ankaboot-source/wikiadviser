@@ -1,7 +1,7 @@
 name: Deploy Dev & QA commons
 on:
   push:
-    path:
+    paths:
       - "docker/resources/common-files/**"
     paths-ignore:
       - ".github/workflows/**"

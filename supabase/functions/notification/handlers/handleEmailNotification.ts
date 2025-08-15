@@ -102,7 +102,7 @@ export async function sendEmailNotification(notification: Notification) {
       html,
     });
 
-    console.log(`Email sent to ${toEmail} for ${text}`);
+    console.log(`Email sent to ${toEmail}`);
   } catch (err) {
     console.error('Failed to send email:', err);
   }

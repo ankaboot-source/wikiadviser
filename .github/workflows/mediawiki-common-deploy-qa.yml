@@ -3,8 +3,6 @@ on:
   push:
     paths:
       - "docker/resources/common-files/**"
-    paths-ignore:
-      - ".github/workflows/**"
   workflow_dispatch:
 
 jobs:

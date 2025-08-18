@@ -98,6 +98,7 @@ export async function getOwnedArticles(userId: string) {
   return (articlesData ?? []).map((article) => ({
     article_id: article.article_id,
     role: article.role,
+    // deno-lint-ignore no-explicit-any
     language: (article as any).articles.language,
   }));
 }

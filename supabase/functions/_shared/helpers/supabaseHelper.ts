@@ -78,6 +78,30 @@ export async function getArticle(articleId: string) {
   return articleData;
 }
 
+export async function getArticles(userId: string) {
+  const { data: articlesData, error: articlesError } = await supabase
+    .from("permissions")
+    .select(
+      `
+    article_id,
+    role,
+    articles(language)
+    `,
+    )
+    .eq("user_id", userId)
+    .eq("role", "owner");
+
+  if (articlesError) {
+    throw new Error(articlesError.message);
+  }
+
+  return (articlesData ?? []).map((article) => ({
+    article_id: article.article_id,
+    role: article.role,
+    language: (article as any).articles.language,
+  }));
+}
+
 export async function getChanges(articleId: string) {
   const { data: changesData, error: changesError } = await supabase
     .from("changes")

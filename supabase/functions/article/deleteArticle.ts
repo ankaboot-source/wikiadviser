@@ -14,7 +14,7 @@ export async function deleteArticle(context: Context) {
   const { id: articleId } = context.req.param();
 
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization")
+    context.req.header("Authorization"),
   );
 
   const {
@@ -28,16 +28,33 @@ export async function deleteArticle(context: Context) {
   }
 
   try {
-    const { language } = await getArticle(articleId);
-    const mediawiki = new MediawikiClient(language, wikipediaApi);
-    await mediawiki.deleteArticleMW(articleId);
-    await deleteArticleDB(articleId);
+    await deleteArticleByArticleId(articleId);
     return context.json({ message: `Article ${articleId} deleted` }, 200);
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
       return context.json({ error: error.message }, 500);
     }
-    return context.json({ error: "An unexpected error occurred" }, 500);
+    return context.json({
+      error: "An unexpected error occurred while deleting the article",
+    }, 500);
+  }
+}
+
+export async function deleteArticleByArticleId(
+  articleId: string,
+  language?: string,
+) {
+  if (!language) ({ language } = await getArticle(articleId));
+
+  const mediawiki = new MediawikiClient(language as string, wikipediaApi);
+
+  try {
+    await mediawiki.deleteArticleMW(articleId);
+    await deleteArticleDB(articleId);
+    console.log(`Article ${articleId} deleted`);
+  } catch (error) {
+    console.error(`Failed to delete article ${articleId}:`, error);
+    throw error;
   }
 }

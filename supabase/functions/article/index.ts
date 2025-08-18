@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { corsMiddleware } from "../_shared/middleware/cors.ts";
 import { createArticle } from "./createArticle.ts";
+import { deleteAllArticles } from "./deleteAllArticles.ts";
 import { deleteArticle } from "./deleteArticle.ts";
 import { deleteArticleRevision } from "./deleteArticleRevision.ts";
 import { hasPermissions } from "./hasPermission.ts";
@@ -15,15 +16,16 @@ app.use("*", corsMiddleware);
 app.post("/", createArticle);
 app.post("/import", importArticle);
 app.delete("/:id", hasPermissions(["owner"]), deleteArticle);
+app.delete("/", deleteAllArticles);
 app.put(
   "/:id/changes",
   hasPermissions(["owner", "editor"]),
-  updateArticleChanges
+  updateArticleChanges,
 );
 app.delete(
   "/:id/revisions/:revId",
   hasPermissions(["owner"]),
-  deleteArticleRevision
+  deleteArticleRevision,
 );
 
 Deno.serve((req) => {

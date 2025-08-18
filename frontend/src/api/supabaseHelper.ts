@@ -289,8 +289,8 @@ export async function deleteArticle(articleId: string) {
   return data;
 }
 
-export async function deleteAllArticles() {
-  const { data, error } = await supabaseClient.functions.invoke(`article`, {
+async function deleteAllArticles() {
+  const { data, error } = await supabaseClient.functions.invoke('article', {
     method: 'DELETE',
   });
   if (error) throw error;

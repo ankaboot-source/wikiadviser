@@ -41,7 +41,7 @@ export async function deleteAllArticles(context: Context) {
         );
       }
     }
-    return context.json({ message: `All articles deleted` }, 200);
+    return context.json({ message: "All articles deleted" }, 200);
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {

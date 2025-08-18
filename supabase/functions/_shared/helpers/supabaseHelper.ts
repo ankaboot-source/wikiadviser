@@ -99,7 +99,7 @@ export async function getOwnedArticles(userId: string) {
     article_id: article.article_id,
     role: article.role,
     // deno-lint-ignore no-explicit-any
-    language: (article as any).articles.language,
+    language: (article as any).articles.language, // skipcq JS-0323
   }));
 }
 

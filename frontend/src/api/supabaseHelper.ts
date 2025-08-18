@@ -289,6 +289,14 @@ export async function deleteArticle(articleId: string) {
   return data;
 }
 
+async function deleteAllArticles() {
+  const { data, error } = await supabaseClient.functions.invoke('article', {
+    method: 'DELETE',
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function updateChanges(articleId: string) {
   const { data, error } = await supabaseClient.functions.invoke(
     `article/${articleId}/changes`,
@@ -335,6 +343,8 @@ export async function updateArticleWebPublication(
 }
 
 export async function deleteUser() {
+  await deleteAllArticles();
+
   const { error: deleteUserError } = await supabase.rpc(
     'delete_user_and_anonymize_data',
   );

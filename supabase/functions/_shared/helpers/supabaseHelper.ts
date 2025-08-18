@@ -78,7 +78,7 @@ export async function getArticle(articleId: string) {
   return articleData;
 }
 
-export async function getArticles(userId: string) {
+export async function getOwnedArticles(userId: string) {
   const { data: articlesData, error: articlesError } = await supabase
     .from("permissions")
     .select(

@@ -30,7 +30,7 @@ const envSchema = z.object({
       required_error: '😱 You forgot to add a MediaWiki endpoint!',
     })
     .url(),
-  SHARE_LINK_DAY_LIMIT: z.coerce.number().default(2),
+  SHARE_LINK_DAY_LIMIT: z.coerce.number().min(1).default(2),
   SENTRY_DSN_FRONTEND: z.string().optional(),
   SENTRY_ENV_FRONTEND: z.string().optional(),
   POSTHOG_API_KEY: z.string().optional(),

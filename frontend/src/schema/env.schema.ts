@@ -30,7 +30,7 @@ const envSchema = z.object({
       required_error: '😱 You forgot to add a MediaWiki endpoint!',
     })
     .url(),
-  SHARE_LINK_DAY_LIMIT: z.coerce.number().default(2),
+  SHARE_LINK_DAY_LIMIT: z.coerce.number().min(1).default(2),
   SENTRY_DSN_FRONTEND: z.string().optional(),
   SENTRY_ENV_FRONTEND: z.string().optional(),
   POSTHOG_API_KEY: z.string().optional(),
@@ -42,7 +42,7 @@ const envServer = envSchema.safeParse({
   SUPABASE_SECRET_PROJECT_TOKEN: process.env.SUPABASE_SECRET_PROJECT_TOKEN,
   WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
   MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
-  SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT,
+  SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT || undefined,
   SENTRY_DSN_FRONTEND: process.env.SENTRY_DSN_FRONTEND,
   SENTRY_ENV_FRONTEND: process.env.SENTRY_ENV_FRONTEND,
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,

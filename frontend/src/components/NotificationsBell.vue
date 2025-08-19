@@ -107,7 +107,7 @@
             border-radius: 0 0 8px 8px;
           "
           color="grey-8"
-          label="Mark all read"
+          label="Mark all as read"
           @click="markAllRead"
         />
       </q-card>

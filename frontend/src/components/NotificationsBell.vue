@@ -31,71 +31,85 @@
     </q-tooltip>
 
     <q-menu
-      class="notification-menu"
+      ref="notificationMenu"
+      class="no-shadow notification-menu"
       anchor="bottom middle"
       self="top middle"
       :offset="[0, 8]"
     >
-      <q-card style="min-width: 320px" class="rounded-lg bg-white">
-        <q-scroll-area style="height: 300px">
-          <q-list>
-            <template v-if="unread.length">
-              <q-item
-                v-for="(notification, index) in unread"
-                :key="notification.id"
-                clickable
-                class="px-4 py-3"
-                @click="markRead(notification.id)"
-              >
-                <q-item-section avatar>
-                  <q-avatar color="grey-2" text-color="grey-8" size="32px">
-                    <q-icon name="notifications" size="16px" />
-                  </q-avatar>
-                </q-item-section>
+      <q-card
+        style="min-width: 320px; border: 1px solid #aaa4a4ff"
+        class="rounded-lg bg-white"
+      >
+        <q-card-section class="q-pa-0">
+          <div v-if="unread.length">
+            <q-scroll-area style="height: 300px">
+              <q-list>
+                <q-item
+                  v-for="(notification, index) in unread"
+                  :key="notification.id"
+                  clickable
+                  class="px-4 py-3"
+                  @click="markRead(notification.id)"
+                >
+                  <q-item-section avatar>
+                    <q-avatar color="grey-2" text-color="grey-8" size="32px">
+                      <q-icon
+                        :name="getNotificationIcon(notification)"
+                        size="24px"
+                      />
+                    </q-avatar>
+                  </q-item-section>
 
-                <q-item-section>
-                  <q-item-label class="text-body2">
-                    {{ getNotificationMessage(notification) }}
-                  </q-item-label>
-                  <q-item-label caption>
-                    {{ formatTime(notification.created_at) }}
-                  </q-item-label>
-                </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-body2 text-grey-9">
+                      {{ getNotificationMessage(notification) }}
+                    </q-item-label>
+                    <q-item-label caption>
+                      {{ formatTime(notification.created_at) }}
+                    </q-item-label>
+                  </q-item-section>
 
-                <q-item-section side top>
-                  <q-icon name="circle" color="primary" size="8px" />
-                </q-item-section>
+                  <q-item-section side top>
+                    <q-icon name="circle" color="primary" size="8px" />
+                  </q-item-section>
 
-                <q-separator v-if="index < unread.length - 1" />
-              </q-item>
-            </template>
+                  <q-separator v-if="index < unread.length - 1" />
+                </q-item>
+              </q-list>
+            </q-scroll-area>
+          </div>
 
-            <template v-else>
-              <q-item class="px-4 py-8">
-                <q-item-section class="text-center">
-                  <q-icon name="notifications_off" size="40px" color="grey-5" />
-                  <div class="text-body2 text-grey-7 q-mt-sm">
-                    No notifications
-                  </div>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-list>
-        </q-scroll-area>
+          <div
+            v-else
+            class="text-center"
+            style="
+              min-height: 300px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            <q-icon name="notifications_off" size="80px" color="grey-7" />
+            <div class="text-body1 text-grey-7 q-mt-sm">No notifications</div>
+          </div>
+        </q-card-section>
 
-        <template v-if="unreadCount > 0">
-          <q-separator />
-          <q-card-actions align="center" class="q-pa-sm">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              label="Mark all as read"
-              color="primary"
-              @click="markAllRead"
-            />
-          </q-card-actions>
-        </template>
+        <q-btn
+          v-if="unreadCount > 0"
+          flat
+          no-caps
+          class="full-width text-weight-medium"
+          style="
+            border-top: 1px solid #aaa4a4ff;
+            height: 44px;
+            border-radius: 0 0 8px 8px;
+          "
+          color="grey-8"
+          label="Mark all read"
+          @click="markAllRead"
+        />
       </q-card>
     </q-menu>
   </q-btn>
@@ -136,6 +150,27 @@ function formatTime(timestamp: string | null): string {
   }
   return date.toLocaleDateString();
 }
+function getNotificationIcon(notification: NotificationData): string {
+  const key = `${notification.type}.${notification.action}`;
+  const isReply = notification.triggered_on === currentUser.value.id;
+
+  switch (key) {
+    case 'revision.insert':
+      return 'difference';
+
+    case 'comment.insert':
+      return isReply ? 'forum' : 'chat';
+
+    case 'role.insert':
+      return 'person_add';
+
+    case 'role.update':
+      return 'manage_accounts';
+
+    default:
+      return 'notifications_active';
+  }
+}
 
 function getNotificationMessage(notification: NotificationData): string {
   const type = notification.type;
@@ -149,18 +184,16 @@ function getNotificationMessage(notification: NotificationData): string {
 
   switch (key) {
     case 'revision.insert':
-      return `A new revision to "${articleTitle}" has been made.`;
+      return `A new revision to « ${articleTitle} » has been made.`;
 
     case 'comment.insert': {
       const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
       const changeOwnerId = notification.triggered_on;
       const currentUserId = currentUser.value.id;
-
       if (currentUserId === changeOwnerId) {
-        return `"${actorEmail}" has replied to your change on article "${articleTitle}".`;
+        return `${actorEmail} has replied to your change on article « ${articleTitle} ».`;
       }
-
-      return `A new comment has been made to a change on "${articleTitle}".`;
+      return `A new comment has been made to a change on « ${articleTitle} ».`;
     }
 
     case 'role.insert':
@@ -168,15 +201,15 @@ function getNotificationMessage(notification: NotificationData): string {
         notification.user_id === currentUser.value.id &&
         notification.triggered_on === currentUser.value.id
       ) {
-        return `You have been granted "${role}" permission to "${articleTitle}".`;
+        return `You have been granted « ${role} » permission to « ${articleTitle} ».`;
       }
-      return `"${subject}" has been granted access to "${articleTitle}".`;
+      return `« ${subject} » has been granted access to « ${articleTitle} ».`;
 
     case 'role.update':
       if (notification.user_id === currentUser.value.id) {
-        return `Your permission for "${articleTitle}" has been changed to ${role}.`;
+        return `Your permission for « ${articleTitle} » has been changed to ${role}.`;
       }
-      return `${subject}'s permission for "${articleTitle}" has been changed to ${role}.`;
+      return `« ${subject} »'s permission for « ${articleTitle} » has been changed to ${role}.`;
 
     default:
       return 'You have a new notification.';

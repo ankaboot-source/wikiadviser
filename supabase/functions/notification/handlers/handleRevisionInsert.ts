@@ -14,7 +14,6 @@ export async function handleRevisionInsert(
   const contributor_id = await getRevisionContributor(revision_id);
 
   if (!contributor_id) {
-    console.error('Could not find contributor for revision:', revision_id);
     return [];
   }
 

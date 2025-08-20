@@ -127,6 +127,11 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import type { Tables } from 'src/types/database.types';
 
 type NotificationData = Tables<'notifications'> & {
+  type: 'revision' | 'comment' | 'role';
+  action: 'insert' | 'update' | 'delete';
+  article_id: string | null;
+  triggered_by: string | null;
+  triggered_on: string | null;
   article?: { title?: string };
   triggered_by_profile?: { email?: string };
   triggered_on_profile?: { email?: string };
@@ -197,7 +202,7 @@ function getNotificationMessage(notification: NotificationData): string {
     case 'revision.insert':
       return `A new revision to « ${articleTitle} » has been made.`;
 
-    case 'comment.insert': {
+    case 'comment.insert':
       const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
       const changeOwnerId = notification.triggered_on;
       const currentUserId = currentUser.value.id;
@@ -205,7 +210,6 @@ function getNotificationMessage(notification: NotificationData): string {
         return `${actorEmail} has replied to your change on article « ${articleTitle} ».`;
       }
       return `A new comment has been made to a change on « ${articleTitle} ».`;
-    }
 
     case 'role.insert':
       if (
@@ -241,7 +245,7 @@ async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
     return new Map();
   }
 
-  const map = new Map<string, string>();
+  const map = new Map<string, string | null>();
   (perms || []).forEach((p) => {
     map.set(`${p.article_id}:${p.user_id}`, p.role);
   });
@@ -276,13 +280,17 @@ async function loadNotificationsForUser(userId: string) {
     return;
   }
 
-  const rows = (data || []) as NotificationData[];
+  const rows = (data ?? []) as unknown as NotificationData[];
 
   const articleIds = Array.from(
-    new Set(rows.map((r) => r.article_id).filter(Boolean)),
+    new Set(
+      rows.map((r) => r.article_id).filter((id): id is string => id !== null),
+    ),
   );
   const userIds = Array.from(
-    new Set(rows.map((r) => r.triggered_on).filter(Boolean)),
+    new Set(
+      rows.map((r) => r.triggered_on).filter((id): id is string => id !== null),
+    ),
   );
 
   const permsMap = await fetchPermissionsMap(articleIds, userIds);
@@ -322,22 +330,19 @@ async function fetchNotificationById(id: string) {
     return null;
   }
 
-  const row = data as NotificationData | null;
+  const row = data as unknown as NotificationData;
   if (!row) return null;
 
-  const { data: perms, error: pErr } = await supabase
-    .from('permissions')
-    .select('role')
-    .eq('article_id', row.article_id)
-    .eq('user_id', row.triggered_on)
-    .single();
+  if (row.article_id && row.triggered_on) {
+    const { data: perms, error: pErr } = await supabase
+      .from('permissions')
+      .select('role')
+      .eq('article_id', row.article_id)
+      .eq('user_id', row.triggered_on)
+      .single();
 
-  if (!pErr && perms) {
-    row.triggered_on_role = perms.role;
-  } else {
-    row.triggered_on_role = null;
+    row.triggered_on_role = !pErr && perms ? perms.role : null;
   }
-
   return row;
 }
 
@@ -346,7 +351,7 @@ async function getChangeIdFromComment(notification: NotificationData) {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('id', notification.triggered_by)
+      .eq('id', notification.triggered_by!)
       .single();
 
     if (error) {
@@ -391,13 +396,14 @@ async function navigateToNotificationTarget(notification: NotificationData) {
   const targetPath = `/articles/${articleId}`;
 
   try {
-    const currentArticleId = router.currentRoute.value.params.id;
+    const isCurrentRouteArticle = router.currentRoute.value.name === 'article';
 
-    if (currentArticleId !== articleId) {
+    if (isCurrentRouteArticle) {
       window.location.href = targetPath;
-      await nextTick();
+    } else {
+      await router.replace(targetPath);
     }
-
+    await nextTick();
     setTimeout(async () => {
       let changeId: string | null = null;
 
@@ -420,7 +426,6 @@ async function navigateToNotificationTarget(notification: NotificationData) {
 
       if (changeId) {
         selectedChangeStore.selectedChangeId = changeId;
-
         selectedChangeStore.hoveredChangeId = changeId;
 
         setTimeout(() => {

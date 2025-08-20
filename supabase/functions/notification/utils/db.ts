@@ -21,9 +21,11 @@ export async function getEditors(articleId: string): Promise<string[]> {
     return [];
   }
 
-  return data.map(row => row.user_id);
+  return data.map((row) => row.user_id);
 }
-export async function getArticleParticipants(articleId: string): Promise<string[]> {
+export async function getArticleParticipants(
+  articleId: string
+): Promise<string[]> {
   const { data, error } = await supabase
     .from('permissions')
     .select('user_id')
@@ -33,5 +35,19 @@ export async function getArticleParticipants(articleId: string): Promise<string[
     return [];
   }
 
-  return data.map(row => row.user_id);
+  return data.map((row) => row.user_id);
+}
+export async function getRevisionContributor(
+  revisionId: string
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('changes')
+    .select('contributor_id')
+    .eq('revision_id', revisionId);
+
+  if (error || !data || data.length === 0) {
+    return null;
+  }
+
+  return data[0].contributor_id;
 }

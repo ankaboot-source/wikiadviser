@@ -1,10 +1,22 @@
-import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
-import { getArticleParticipants } from '../utils/db.ts';
+import {
+  Notification,
+  NotificationAction,
+  NotificationType,
+  TriggerPayload,
+} from '../schema.ts';
+import { getArticleParticipants, getRevisionContributor } from '../utils/db.ts';
 
 export async function handleRevisionInsert(
   payload: TriggerPayload
 ): Promise<Notification[]> {
-  const { article_id, contributor_id } = payload.record;
+  const { article_id, id: revision_id } = payload.record;
+
+  const contributor_id = await getRevisionContributor(revision_id);
+
+  if (!contributor_id) {
+    return [];
+  }
+
   const participants = await getArticleParticipants(article_id);
 
   return participants

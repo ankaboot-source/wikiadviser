@@ -8,7 +8,7 @@ export async function handleDbChange(payload: TriggerPayload) {
   let notifications: Notification[] = [];
 
   switch (payload.table) {
-    case 'changes':
+    case 'revisions':
       notifications = await handleRevisionInsert(payload);
       break;
     case 'comments':

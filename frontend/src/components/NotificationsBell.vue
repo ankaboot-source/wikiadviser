@@ -413,6 +413,9 @@ async function navigateToNotificationTarget(notification: NotificationData) {
         case 'role.insert':
         case 'role.update':
           break;
+        default:
+          console.warn('Unhandled notification type:', key);
+          return;
       }
 
       if (changeId) {
@@ -427,7 +430,6 @@ async function navigateToNotificationTarget(notification: NotificationData) {
     }, 100);
   } catch (err) {
     Notify.create({
-      message: `Could not navigate to article.`,
       color: 'negative',
     });
   }

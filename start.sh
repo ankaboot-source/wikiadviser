@@ -27,14 +27,14 @@ check_screen() {
 # Function to run waiting game in tmux or screen
 start_game() {
   if check_tmux; then
-    tmux new-session -d -s waiting_game "./shtris"
+    tmux new-session -d -s waiting_game "./tetris/shtris"
     sleep 2
     echo "tmux" > "$GAME_SESSION_TYPE_FILE"
     tmux attach -t waiting_game || true
   elif check_screen; then
     sleep 2
     echo "screen" > "$GAME_SESSION_TYPE_FILE"
-    screen -S waiting_game ./shtris 
+    screen -S waiting_game ./tetris/shtris 
   fi
 }
 

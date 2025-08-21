@@ -182,21 +182,21 @@ function getNotificationMessage(notification: NotificationData): string {
   const articleTitle = notification.article?.title ?? 'an article';
   const subject = notification.triggered_on_profile?.email ?? 'Someone';
   const role = notification.triggered_on_role ?? '';
+  const revisionAuthor = notification.triggered_by_profile?.email ?? 'Someone';
+  const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
+  const changeOwnerId = notification.triggered_on;
+  const currentUserId = currentUser.value.id;
   const key = `${type}.${action}`;
-
   switch (key) {
     case 'revision.insert':
-      return `A new revision to « ${articleTitle} » has been made.`;
-
+      return `A new revision to « ${articleTitle} » has been made by ${revisionAuthor}.`;
+     
     case 'comment.insert':
-      const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
-      const changeOwnerId = notification.triggered_on;
-      const currentUserId = currentUser.value.id;
       if (currentUserId === changeOwnerId) {
         return `${actorEmail} has replied to your change on article « ${articleTitle} ».`;
       }
       return `A new comment has been made to a change on « ${articleTitle} ».`;
-
+     
     case 'role.insert':
       if (
         notification.user_id === currentUser.value.id &&
@@ -204,14 +204,14 @@ function getNotificationMessage(notification: NotificationData): string {
       ) {
         return `You have been granted « ${role} » permission to « ${articleTitle} ».`;
       }
-      return `${subject} has been granted access to « ${articleTitle} ».`;
-
+      return `${subject} has been granted « ${role} » permission to « ${articleTitle} ».`;
+     
     case 'role.update':
       if (notification.user_id === currentUser.value.id) {
         return `Your permission for « ${articleTitle} » has been changed to ${role}.`;
       }
-      return `${subject}'s permission for « ${articleTitle} » has been changed to ${role}.`;
-
+      return `${subject}'s permission for « ${articleTitle} » has been changed to « ${role} ».`;
+     
     default:
       return 'You have a new notification.';
   }

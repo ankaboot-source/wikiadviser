@@ -5,7 +5,6 @@ set -e
 PORTS=("8080" "9000")
 GAME_SESSION_TYPE_FILE="/tmp/game_session_type.$$"
 
-
 # Function to check if tmux is available
 check_tmux() {
     if command -v tmux &> /dev/null; then
@@ -47,7 +46,6 @@ start_game() {
   fi
 }
 
-
 stop_game() {
   if [ -f "$GAME_SESSION_TYPE_FILE" ]; then
     GAME_SESSION_TYPE=$(cat "$GAME_SESSION_TYPE_FILE")
@@ -65,11 +63,6 @@ stop_game() {
   fi
 }
 
-# Function to check if game session exists
-game_exists() {
-  tmux has-session -t waiting_game 2>/dev/null
-}
-
 # Function to show setup status
 show_status() {
   echo ""
@@ -81,6 +74,7 @@ show_status() {
   echo ""
 }
 
+# Loading animation on waiting room
 show_loading() {
   local frames=("⣾" "⣽" "⣻" "⢿" "⡿" "⣟" "⣯" "⣷")
   local colors=("31" "32" "33" "34" "35" "36") 
@@ -105,7 +99,6 @@ show_loading() {
 # Cleanup function
 cleanup() {
   echo ""
-  #echo "Cleaning up services..."
   printf "\n\r\033[K\033[1;35mCleaning up services...\033[0m\n"
   echo "Stopping Wikiadviser & Mediawiki..."
   pushd docker && docker compose down && popd
@@ -122,7 +115,6 @@ trap cleanup SIGINT SIGTERM EXIT
 
 # Check for ports availability
 printf "\033[K\033[1;35mChecking for ports Availability...\033[0m\n\n"
-
 sleep 1
 for port in "${PORTS[@]}"; do
   if (ss -tuln; netstat -tuln 2>/dev/null) | grep -q ":$port "; then
@@ -132,6 +124,7 @@ for port in "${PORTS[@]}"; do
       printf "\033[K\033[1;32m✅ Port $port\033[0m\n"
   fi
 done
+
 echo ""
 echo "========================================================================"
 echo "  🚀  Starting Services..."
@@ -144,7 +137,6 @@ echo "  ⏳ Estimated First Startup: ~30 minutes"
 echo "  ☕ Grab a coffee or some tea while you wait..."
 echo "  🎮 Or just play some Tetris!"
 echo "========================================================================"
-
 echo ""
 
 # Setup Supabase, Wikiadviser & MW in background
@@ -157,7 +149,6 @@ echo ""
       echo "package-lock.json not found, running 'npm install'"
       npm i # To install Supabase dependencies
     fi
-    ######## TO BE REMOVED
     echo "Stopping local Supabase..."
     echo ""
     npx supabase stop 2>/dev/null

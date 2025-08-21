@@ -3,29 +3,66 @@
 set -e
 
 PORTS=("8080" "9000")
+GAME_SESSION_TYPE_FILE="/tmp/game_session_type.$$"
 
-# Function to run waiting game in tmux
+
+# Function to check if tmux is available
+check_tmux() {
+    if command -v tmux &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to check if screen is available
+check_screen() {
+    if command -v screen &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to download game
+#game_download() {
+#    if [ ! -f shtris ]; then
+#      wget -q https://raw.githubusercontent.com/ContentsViewer/shtris/v3.0.0/shtris
+#      chmod +x shtris
+#    fi
+#}
+
+# Function to run waiting game in tmux or screen
 start_game() {
-  # Download the game if not already present
-  if [ ! -f shtris ]; then
-    wget -q https://raw.githubusercontent.com/ContentsViewer/shtris/v3.0.0/shtris
-    chmod +x shtris
-  fi
-  
-  # Check if session already exists, if not create it
-  if ! tmux has-session -t waiting_game 2>/dev/null; then
-    # Create a detached tmux session and run the game
+#  game_download
+  if check_tmux; then
     tmux new-session -d -s waiting_game "./shtris"
-    sleep 2  # Give tmux time to create the session
-  else
-    echo "Game session already exists"
+    sleep 2
+    echo "tmux" > "$GAME_SESSION_TYPE_FILE"
+    tmux attach -t waiting_game || true
+  elif check_screen; then
+    sleep 2
+    echo "screen" > "$GAME_SESSION_TYPE_FILE"
+    screen -S waiting_game ./shtris 
   fi
 }
 
-# Function to stop game
+
 stop_game() {
-  echo "Stopping waiting game..."
-  tmux kill-session -t waiting_game 2>/dev/null || true
+  if [ -f "$GAME_SESSION_TYPE_FILE" ]; then
+    GAME_SESSION_TYPE=$(cat "$GAME_SESSION_TYPE_FILE")
+    case "$GAME_SESSION_TYPE" in
+      tmux)
+        echo "[tmux] Stopping waiting game..."
+        tmux kill-session -t waiting_game 2>/dev/null || true
+        ;;
+      screen)
+        echo "[screen] Stopping waiting game..."
+        screen -S waiting_game -X quit 2>/dev/null || true
+        ;;
+    esac
+    rm -f "$GAME_SESSION_TYPE_FILE"
+  fi
 }
 
 # Function to check if game session exists
@@ -80,7 +117,6 @@ cleanup() {
   stop_game
   exit 0
 }
-
 # Trap signals
 trap cleanup SIGINT SIGTERM EXIT
 
@@ -104,8 +140,8 @@ echo "      • Supabase"
 echo "      • Wikiadviser"
 echo "      • MediaWiki"
 echo ""
-echo "  ⏳ Estimated First Startup: ~30 minutes (Less time on 2nd Startup)"
-echo "  ☕ Grab a coffee while you wait..."
+echo "  ⏳ Estimated First Startup: ~30 minutes"
+echo "  ☕ Grab a coffee or some tea while you wait..."
 echo "  🎮 Or just play some Tetris!"
 echo "========================================================================"
 
@@ -141,68 +177,53 @@ echo ""
     echo ""
     bash ./generate-env.sh --bot-creds
     echo ""
-
-    # When setup completes, stop the game
     stop_game
     echo "✅ All services started successfully"
 ) &
 SETUP_PID=$!
 
-echo -n "Press any KEY to play the game or ESC to stay in waiting room. Auto start in "
+if check_tmux || check_screen; then
+    echo -n "Press any KEY to play the game or ESC to stay in waiting room. Auto start in "
 
-for i in {30..1}; do
+    for i in {30..1}; do
+        printf "%2d" $i    
+        set +e
+        read -rs -n1 -t 1 key
+        read_exit_code=$?
+        set -e
+        if [[ $read_exit_code -eq 0 ]]; then
+            echo -ne "\r\033[K"
+            break
+        fi
+        if [[ $i -gt 1 ]]; then
+            echo -ne "\b\b  \b\b"
+        fi
+    done
 
-    printf "%2d" $i    
-    # Read every 1 second, but don't exit on error
-    set +e
-    read -rs -n1 -t 1 key
-    read_exit_code=$?
-    set -e
-    # If a key was pressed, break out of the loop
-    if [[ $read_exit_code -eq 0 ]]; then
-        echo -ne "\r\033[K"  # Clear the entire line
-        break
+    echo -ne "\r\033[K"
+
+    if [[ $read_exit_code -gt 0 ]]; then
+        printf "\033[K\033[1;35mStarting game automatically...\033[0m\n"
+        game_choice="play"
+    elif [[ $(printf "%d" "'$key") -eq 27 ]]; then
+        printf "\033[K\033[1;35mESC pressed. Staying in waiting room.\033[0m\n\n"
+        game_choice="skip"
+    elif [[ "$key" == "" ]]; then
+        printf "\033[K\033[1;35mStarting game...\033[0m\n"
+        game_choice="play"
+    else
+        printf "\033[K\033[1;35mStarting game...\033[0m\n"
+        game_choice="play"
     fi
-    # Backspace to erase the previous number
-    if [[ $i -gt 1 ]]; then
-        echo -ne "\b\b  \b\b"  # Erase two characters
+
+    if [[ "$game_choice" == "play" ]]; then
+        printf "\033[K\033[1;35mAttaching to game...\033[0m  (Press \033[1;35mCtrl+C\033[0m to detach and return to setup)\n"
+        sleep 2
+        start_game
+        show_status
     fi
-done
-
-echo -ne "\r\033[K"  # Clear the entire line no key typed
-
-if [[ $read_exit_code -gt 0 ]]; then
-    # Timeout reached - start game automatically
-    printf "\033[K\033[1;35mStarting game automatically...\033[0m\n"
-    start_game
-    game_choice="play"
-elif [[ $(printf "%d" "'$key") -eq 27 ]]; then
-    # ESC pressed - skip game
-    printf "\033[K\033[1;35mESC pressed. Staying in waiting room.\033[0m\n\n"
-
-    game_choice="skip"
-elif [[ "$key" == "" ]]; then
-    # Enter pressed - start game
-    printf "\033[K\033[1;35mStarting game...\033[0m\n"
-
-    start_game
-    game_choice="play"
 else
-    # Other key pressed - treat as timeout and start game
-    printf "\033[K\033[1;35mStarting game...\033[0m\n"
-
-    start_game
-    game_choice="play"
-fi
-
-# If user chose to play, attach to game
-if [[ "$game_choice" == "play" ]]; then
-    printf "\033[K\033[1;35mAttaching to game...\033[0m  (Press \033[1;35mCtrl+C\033[0m to detach and return to setup)\n"
-    sleep 5
-    tmux attach -t waiting_game || true
-    
-    # After game ends, show status and wait for setup to complete
-    show_status
+    printf "\033[K\033[1;31m❌ tmux/screen are not available. Staying in waiting room.\033[0m\n\n"
 fi
 
 # Show loading animation while waiting for setup to complete

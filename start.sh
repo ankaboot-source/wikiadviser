@@ -106,7 +106,6 @@ cleanup() {
   npx supabase stop 2>/dev/null
   echo "All services stopped."
   rm -f setup.log 2>/dev/null || true
-  rm -f shtris 2>/dev/null || true
   stop_game
   exit 0
 }

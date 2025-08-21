@@ -31,71 +31,85 @@
     </q-tooltip>
 
     <q-menu
-      class="notification-menu"
+      ref="notificationMenu"
+      class="no-shadow notification-menu"
       anchor="bottom middle"
       self="top middle"
       :offset="[0, 8]"
     >
-      <q-card style="min-width: 320px" class="rounded-lg bg-white">
-        <q-scroll-area style="height: 300px">
-          <q-list>
-            <template v-if="unread.length">
-              <q-item
-                v-for="(notification, index) in unread"
-                :key="notification.id"
-                clickable
-                class="px-4 py-3"
-                @click="markRead(notification.id)"
-              >
-                <q-item-section avatar>
-                  <q-avatar color="grey-2" text-color="grey-8" size="32px">
-                    <q-icon name="notifications" size="16px" />
-                  </q-avatar>
-                </q-item-section>
+      <q-card
+        style="min-width: 320px; border: 1px solid #aaa4a4ff"
+        class="rounded-lg bg-white"
+      >
+        <q-card-section class="q-pa-0">
+          <div v-if="unread.length">
+            <q-scroll-area style="height: 300px">
+              <q-list>
+                <q-item
+                  v-for="(notification, index) in unread"
+                  :key="notification.id"
+                  clickable
+                  class="px-4 py-3"
+                  @click="markRead(notification.id)"
+                >
+                  <q-item-section avatar>
+                    <q-avatar color="grey-2" text-color="grey-8" size="32px">
+                      <q-icon
+                        :name="getNotificationIcon(notification)"
+                        size="24px"
+                      />
+                    </q-avatar>
+                  </q-item-section>
 
-                <q-item-section>
-                  <q-item-label class="text-body2">
-                    {{ getNotificationMessage(notification) }}
-                  </q-item-label>
-                  <q-item-label caption>
-                    {{ formatTime(notification.created_at) }}
-                  </q-item-label>
-                </q-item-section>
+                  <q-item-section>
+                    <q-item-label class="text-body2 text-grey-9">
+                      {{ getNotificationMessage(notification) }}
+                    </q-item-label>
+                    <q-item-label caption>
+                      {{ formatTime(notification.created_at) }}
+                    </q-item-label>
+                  </q-item-section>
 
-                <q-item-section side top>
-                  <q-icon name="circle" color="primary" size="8px" />
-                </q-item-section>
+                  <q-item-section side top>
+                    <q-icon name="circle" color="primary" size="8px" />
+                  </q-item-section>
 
-                <q-separator v-if="index < unread.length - 1" />
-              </q-item>
-            </template>
+                  <q-separator v-if="index < unread.length - 1" />
+                </q-item>
+              </q-list>
+            </q-scroll-area>
+          </div>
 
-            <template v-else>
-              <q-item class="px-4 py-8">
-                <q-item-section class="text-center">
-                  <q-icon name="notifications_off" size="40px" color="grey-5" />
-                  <div class="text-body2 text-grey-7 q-mt-sm">
-                    No notifications
-                  </div>
-                </q-item-section>
-              </q-item>
-            </template>
-          </q-list>
-        </q-scroll-area>
+          <div
+            v-else
+            class="text-center"
+            style="
+              min-height: 300px;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+              align-items: center;
+            "
+          >
+            <q-icon name="notifications_off" size="80px" color="grey-7" />
+            <div class="text-body1 text-grey-7 q-mt-sm">No notifications</div>
+          </div>
+        </q-card-section>
 
-        <template v-if="unreadCount > 0">
-          <q-separator />
-          <q-card-actions align="center" class="q-pa-sm">
-            <q-btn
-              flat
-              dense
-              size="sm"
-              label="Mark all as read"
-              color="primary"
-              @click="markAllRead"
-            />
-          </q-card-actions>
-        </template>
+        <q-btn
+          v-if="unreadCount > 0"
+          flat
+          no-caps
+          class="full-width text-weight-medium"
+          style="
+            border-top: 1px solid #aaa4a4ff;
+            height: 44px;
+            border-radius: 0 0 8px 8px;
+          "
+          color="grey-8"
+          label="Mark all as read"
+          @click="markAllRead"
+        />
       </q-card>
     </q-menu>
   </q-btn>
@@ -108,6 +122,11 @@ import supabase from 'src/api/supabase';
 import type { Tables } from 'src/types/database.types';
 
 type NotificationData = Tables<'notifications'> & {
+  type: 'revision' | 'comment' | 'role';
+  action: 'insert' | 'update' | 'delete';
+  article_id: string | null;
+  triggered_by: string | null;
+  triggered_on: string | null;
   article?: { title?: string };
   triggered_by_profile?: { email?: string };
   triggered_on_profile?: { email?: string };
@@ -116,7 +135,6 @@ type NotificationData = Tables<'notifications'> & {
 
 const unread = ref<NotificationData[]>([]);
 const unreadCount = computed(() => unread.value.length);
-
 const currentUser = ref<{ id?: string; email?: string }>({});
 
 function formatTime(timestamp: string | null): string {
@@ -136,47 +154,63 @@ function formatTime(timestamp: string | null): string {
   }
   return date.toLocaleDateString();
 }
+function getNotificationIcon(notification: NotificationData): string {
+  const key = `${notification.type}.${notification.action}`;
+  const isReply = notification.triggered_on === currentUser.value.id;
+
+  switch (key) {
+    case 'revision.insert':
+      return 'difference';
+
+    case 'comment.insert':
+      return isReply ? 'forum' : 'chat';
+
+    case 'role.insert':
+      return 'person_add';
+
+    case 'role.update':
+      return 'manage_accounts';
+
+    default:
+      return 'notifications_active';
+  }
+}
 
 function getNotificationMessage(notification: NotificationData): string {
   const type = notification.type;
   const action = notification.action;
   const articleTitle = notification.article?.title ?? 'an article';
-
   const subject = notification.triggered_on_profile?.email ?? 'Someone';
   const role = notification.triggered_on_role ?? '';
-
+  const revisionAuthor = notification.triggered_by_profile?.email ?? 'Someone';
+  const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
+  const changeOwnerId = notification.triggered_on;
+  const currentUserId = currentUser.value.id;
   const key = `${type}.${action}`;
-
   switch (key) {
     case 'revision.insert':
-      return `A new revision to "${articleTitle}" has been made.`;
+      return `A new revision to « ${articleTitle} » has been made by ${revisionAuthor}.`;
 
-    case 'comment.insert': {
-      const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
-      const changeOwnerId = notification.triggered_on;
-      const currentUserId = currentUser.value.id;
-
+    case 'comment.insert':
       if (currentUserId === changeOwnerId) {
-        return `"${actorEmail}" has replied to your change on article "${articleTitle}".`;
+        return `${actorEmail} has replied to your change on article « ${articleTitle} ».`;
       }
-
-      return `A new comment has been made to a change on "${articleTitle}".`;
-    }
+      return `A new comment has been made to a change on « ${articleTitle} ».`;
 
     case 'role.insert':
       if (
         notification.user_id === currentUser.value.id &&
         notification.triggered_on === currentUser.value.id
       ) {
-        return `You have been granted "${role}" permission to "${articleTitle}".`;
+        return `You have been granted « ${role} » permission to « ${articleTitle} ».`;
       }
-      return `"${subject}" has been granted access to "${articleTitle}".`;
+      return `${subject} has been granted « ${role} » permission to « ${articleTitle} ».`;
 
     case 'role.update':
       if (notification.user_id === currentUser.value.id) {
-        return `Your permission for "${articleTitle}" has been changed to ${role}.`;
+        return `Your permission for « ${articleTitle} » has been changed to ${role}.`;
       }
-      return `${subject}'s permission for "${articleTitle}" has been changed to ${role}.`;
+      return `${subject}'s permission for « ${articleTitle} » has been changed to « ${role} ».`;
 
     default:
       return 'You have a new notification.';
@@ -197,7 +231,7 @@ async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
     return new Map();
   }
 
-  const map = new Map<string, string>();
+  const map = new Map<string, string | null>();
   (perms || []).forEach((p) => {
     map.set(`${p.article_id}:${p.user_id}`, p.role);
   });
@@ -232,13 +266,17 @@ async function loadNotificationsForUser(userId: string) {
     return;
   }
 
-  const rows = (data || []) as NotificationData[];
+  const rows = (data ?? []) as unknown as NotificationData[];
 
   const articleIds = Array.from(
-    new Set(rows.map((r) => r.article_id).filter(Boolean)),
+    new Set(
+      rows.map((r) => r.article_id).filter((id): id is string => id !== null),
+    ),
   );
   const userIds = Array.from(
-    new Set(rows.map((r) => r.triggered_on).filter(Boolean)),
+    new Set(
+      rows.map((r) => r.triggered_on).filter((id): id is string => id !== null),
+    ),
   );
 
   const permsMap = await fetchPermissionsMap(articleIds, userIds);
@@ -278,22 +316,19 @@ async function fetchNotificationById(id: string) {
     return null;
   }
 
-  const row = data as NotificationData | null;
+  const row = data as unknown as NotificationData;
   if (!row) return null;
 
-  const { data: perms, error: pErr } = await supabase
-    .from('permissions')
-    .select('role')
-    .eq('article_id', row.article_id)
-    .eq('user_id', row.triggered_on)
-    .single();
+  if (row.article_id && row.triggered_on) {
+    const { data: perms, error: pErr } = await supabase
+      .from('permissions')
+      .select('role')
+      .eq('article_id', row.article_id)
+      .eq('user_id', row.triggered_on)
+      .single();
 
-  if (!pErr && perms) {
-    row.triggered_on_role = perms.role;
-  } else {
-    row.triggered_on_role = null;
+    row.triggered_on_role = !pErr && perms ? perms.role : null;
   }
-
   return row;
 }
 

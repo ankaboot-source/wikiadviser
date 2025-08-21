@@ -23,17 +23,9 @@ check_screen() {
     fi
 }
 
-# Function to download game
-#game_download() {
-#    if [ ! -f shtris ]; then
-#      wget -q https://raw.githubusercontent.com/ContentsViewer/shtris/v3.0.0/shtris
-#      chmod +x shtris
-#    fi
-#}
 
 # Function to run waiting game in tmux or screen
 start_game() {
-#  game_download
   if check_tmux; then
     tmux new-session -d -s waiting_game "./shtris"
     sleep 2

@@ -50,16 +50,14 @@
                   :key="notification.id"
                   clickable
                   class="px-4 py-3"
-                  @click="markRead(notification)"
+                  @click="markRead(notification.id)"
                 >
                   <q-item-section avatar>
                     <q-avatar color="grey-2" text-color="grey-8" size="32px">
                       <q-icon
-                        v-if="navigating !== notification.id"
                         :name="getNotificationIcon(notification)"
                         size="24px"
                       />
-                      <q-spinner v-else size="16px" color="primary" />
                     </q-avatar>
                   </q-item-section>
 
@@ -110,7 +108,6 @@
           "
           color="grey-8"
           label="Mark all as read"
-          :loading="markingAllRead"
           @click="markAllRead"
         />
       </q-card>
@@ -119,11 +116,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, nextTick } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
-import { useRouter } from 'vue-router';
 import supabase from 'src/api/supabase';
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import type { Tables } from 'src/types/database.types';
 
 type NotificationData = Tables<'notifications'> & {
@@ -138,15 +133,8 @@ type NotificationData = Tables<'notifications'> & {
   triggered_on_role?: string | null;
 };
 
-const router = useRouter();
-const selectedChangeStore = useSelectedChangeStore();
-const notificationMenu = ref();
-
 const unread = ref<NotificationData[]>([]);
 const unreadCount = computed(() => unread.value.length);
-const navigating = ref<string | null>(null);
-const markingAllRead = ref(false);
-
 const currentUser = ref<{ id?: string; email?: string }>({});
 
 function formatTime(timestamp: string | null): string {
@@ -192,10 +180,8 @@ function getNotificationMessage(notification: NotificationData): string {
   const type = notification.type;
   const action = notification.action;
   const articleTitle = notification.article?.title ?? 'an article';
-
   const subject = notification.triggered_on_profile?.email ?? 'Someone';
   const role = notification.triggered_on_role ?? '';
-
   const key = `${type}.${action}`;
 
   switch (key) {
@@ -346,125 +332,20 @@ async function fetchNotificationById(id: string) {
   return row;
 }
 
-async function getChangeIdFromComment(notification: NotificationData) {
+async function markRead(id: string) {
   try {
-    const { data, error } = await supabase
-      .from('comments')
-      .select('change_id')
-      .eq('id', notification.triggered_by!)
-      .single();
-
-    if (error) {
-      console.error('Error fetching change ID:', error);
-      return null;
-    }
-
-    return data?.change_id || null;
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    unread.value = unread.value.filter((n) => n.id !== id);
   } catch (err) {
-    console.error('Failed to get change ID from comment', err);
-    return null;
-  }
-}
-
-async function getRecentChangeForArticle(articleId: string) {
-  try {
-    const { data, error } = await supabase
-      .from('changes')
-      .select('id')
-      .eq('article_id', articleId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error) {
-      console.error('Error fetching recent change:', error);
-      return null;
-    }
-
-    return data?.id || null;
-  } catch (err) {
-    console.error('Failed to get recent change', err);
-    return null;
-  }
-}
-
-async function navigateToNotificationTarget(notification: NotificationData) {
-  const articleId = notification.article_id;
-  if (!articleId) return;
-
-  const key = `${notification.type}.${notification.action}`;
-  const targetPath = `/articles/${articleId}`;
-
-  try {
-    const isCurrentRouteArticle = router.currentRoute.value.name === 'article';
-
-    if (isCurrentRouteArticle) {
-      window.location.href = targetPath;
-    } else {
-      await router.replace(targetPath);
-    }
-    await nextTick();
-    setTimeout(async () => {
-      let changeId: string | null = null;
-
-      switch (key) {
-        case 'revision.insert':
-          changeId = await getRecentChangeForArticle(articleId);
-          break;
-
-        case 'comment.insert':
-          changeId = await getChangeIdFromComment(notification);
-          break;
-
-        case 'role.insert':
-        case 'role.update':
-          break;
-        default:
-          console.warn('Unhandled notification type:', key);
-          return;
-      }
-
-      if (changeId) {
-        selectedChangeStore.selectedChangeId = changeId;
-        selectedChangeStore.hoveredChangeId = changeId;
-
-        setTimeout(() => {
-          selectedChangeStore.hoveredChangeId = '';
-        }, 2000);
-      }
-    }, 100);
-  } catch (err) {
-    Notify.create({
-      color: 'negative',
-    });
-  }
-}
-
-async function markRead(notification: NotificationData) {
-  navigating.value = notification.id;
-
-  try {
-    await supabase
-      .from('notifications')
-      .update({ is_read: true })
-      .eq('id', notification.id);
-
-    unread.value = unread.value.filter((n) => n.id !== notification.id);
-
-    notificationMenu.value?.hide();
-    await navigateToNotificationTarget(notification);
-  } catch (err) {
+    console.error('Failed markRead', err);
     Notify.create({
       message: 'Failed to clear notification',
       color: 'negative',
     });
-  } finally {
-    navigating.value = null;
   }
 }
 
 async function markAllRead() {
-  markingAllRead.value = true;
   try {
     const ids = unread.value.map((n) => n.id).filter(Boolean);
     if (ids.length) {
@@ -474,19 +355,12 @@ async function markAllRead() {
         .in('id', ids);
     }
     unread.value = [];
-    notificationMenu.value?.hide();
     Notify.create({
       message: 'All notifications marked as read',
       color: 'positive',
     });
   } catch (err) {
     console.error('Failed markAllRead', err);
-    Notify.create({
-      message: 'Failed to mark all notifications as read',
-      color: 'negative',
-    });
-  } finally {
-    markingAllRead.value = false;
   }
 }
 
@@ -525,21 +399,9 @@ onMounted(async () => {
               timeout: 5000,
               actions: [
                 {
-                  label: 'View',
-                  color: 'white',
-                  handler: () => markRead(full),
-                },
-                {
                   label: 'Clear',
                   color: 'white',
-                  handler: () => {
-                    supabase
-                      .from('notifications')
-                      .update({ is_read: true })
-                      .eq('id', full.id);
-                    unread.value = unread.value.filter((n) => n.id !== full.id);
-                    return false;
-                  },
+                  handler: () => markRead(full.id),
                 },
               ],
             });

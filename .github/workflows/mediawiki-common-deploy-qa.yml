@@ -8,6 +8,9 @@ on:
 jobs:
   deploy-commons:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       matrix:
         lang: [fr, en]

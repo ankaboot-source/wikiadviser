@@ -50,7 +50,7 @@
                   :key="notification.id"
                   clickable
                   class="px-4 py-3"
-                  @click="markRead(notification.id)"
+                  @click="navigateAndMarkRead(notification)"
                 >
                   <q-item-section avatar>
                     <q-avatar color="grey-2" text-color="grey-8" size="32px">
@@ -118,13 +118,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
+import { useRouter } from 'vue-router';
 import supabase from 'src/api/supabase';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import type { Tables } from 'src/types/database.types';
 
 type NotificationData = Tables<'notifications'> & {
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';
-  article_id: string | null;
+  article_id: string;
   triggered_by: string | null;
   triggered_on: string | null;
   article?: { title?: string };
@@ -136,6 +138,8 @@ type NotificationData = Tables<'notifications'> & {
 const unread = ref<NotificationData[]>([]);
 const unreadCount = computed(() => unread.value.length);
 const currentUser = ref<{ id?: string; email?: string }>({});
+const router = useRouter();
+const store = useSelectedChangeStore();
 
 function formatTime(timestamp: string | null): string {
   if (!timestamp) return 'Unknown';
@@ -154,6 +158,7 @@ function formatTime(timestamp: string | null): string {
   }
   return date.toLocaleDateString();
 }
+
 function getNotificationIcon(notification: NotificationData): string {
   const key = `${notification.type}.${notification.action}`;
   const isReply = notification.triggered_on === currentUser.value.id;
@@ -161,16 +166,13 @@ function getNotificationIcon(notification: NotificationData): string {
   switch (key) {
     case 'revision.insert':
       return 'difference';
-
     case 'comment.insert':
       return isReply ? 'forum' : 'chat';
 
     case 'role.insert':
       return 'person_add';
-
     case 'role.update':
       return 'manage_accounts';
-
     default:
       return 'notifications_active';
   }
@@ -190,13 +192,11 @@ function getNotificationMessage(notification: NotificationData): string {
   switch (key) {
     case 'revision.insert':
       return `A new revision to « ${articleTitle} » has been made by ${revisionAuthor}.`;
-
     case 'comment.insert':
       if (currentUserId === changeOwnerId) {
         return `${actorEmail} has replied to your change on article « ${articleTitle} ».`;
       }
       return `A new comment has been made to a change on « ${articleTitle} ».`;
-
     case 'role.insert':
       if (
         notification.user_id === currentUser.value.id &&
@@ -205,13 +205,11 @@ function getNotificationMessage(notification: NotificationData): string {
         return `You have been granted « ${role} » permission to « ${articleTitle} ».`;
       }
       return `${subject} has been granted « ${role} » permission to « ${articleTitle} ».`;
-
     case 'role.update':
       if (notification.user_id === currentUser.value.id) {
         return `Your permission for « ${articleTitle} » has been changed to ${role}.`;
       }
       return `${subject}'s permission for « ${articleTitle} » has been changed to « ${role} ».`;
-
     default:
       return 'You have a new notification.';
   }
@@ -332,14 +330,64 @@ async function fetchNotificationById(id: string) {
   return row;
 }
 
-async function markRead(id: string) {
+async function getChangeIdForNotification(notification: NotificationData) {
+  if (notification.type === 'comment' && notification.triggered_on) {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('change_id')
+      .eq('commenter_id', notification.triggered_on)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error('Error fetching comment change_id:', error);
+      return null;
+    }
+    return data?.change_id ?? null;
+  }
+  if (notification.type === 'revision' && notification.triggered_on) {
+    const { data, error } = await supabase
+      .from('changes')
+      .select('id')
+      .eq('article_id', notification.article_id)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .single();
+    if (error) {
+      console.error('Error fetching first change for revision:', error);
+      return null;
+    }
+    return data?.id;
+  }
+  return null;
+}
+
+async function navigateAndMarkRead(notification: NotificationData) {
   try {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-    unread.value = unread.value.filter((n) => n.id !== id);
+    const changeId = await getChangeIdForNotification(notification);
+    const route = {
+      path: `/articles/${notification.article_id}`,
+      query:
+        notification.type === 'revision' || notification.type === 'comment'
+          ? { change: changeId }
+          : {},
+    };
+
+    await router.push(route);
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notification.id);
+    unread.value = unread.value.filter((n) => n.id !== notification.id);
+
+    if (changeId) {
+      store.selectedChangeId = changeId;
+    }
   } catch (err) {
-    console.error('Failed markRead', err);
+    console.error('Failed navigateAndMarkRead', err);
     Notify.create({
-      message: 'Failed to clear notification',
+      message: 'Failed to process notification',
       color: 'negative',
     });
   }
@@ -401,7 +449,7 @@ onMounted(async () => {
                 {
                   label: 'Clear',
                   color: 'white',
-                  handler: () => markRead(full.id),
+                  handler: () => navigateAndMarkRead(full),
                 },
               ],
             });

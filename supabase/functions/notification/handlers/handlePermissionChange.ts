@@ -1,5 +1,10 @@
-import { Notification, NotificationAction, NotificationType, TriggerPayload } from '../schema.ts';
-import { getOwner, getEditors } from '../utils/db.ts';
+import {
+  Notification,
+  NotificationAction,
+  NotificationType,
+  TriggerPayload,
+} from '../schema.ts';
+import { getOwner } from '../utils/db.ts';
 
 export async function handlePermissionChange(
   payload: TriggerPayload
@@ -21,21 +26,16 @@ export async function handlePermissionChange(
     });
 
     const ownerId = await getOwner(article_id);
-    const editors = await getEditors(article_id);
-    const recipients = new Set([ownerId, ...editors]);
-    recipients.delete(affectedUserId);
 
-    for (const recipientId of recipients) {
-      notifications.push({
-        user_id: recipientId,
-        article_id,
-        type: NotificationType.Role,
-        action: NotificationAction.Insert,
-        triggered_by: ownerId,
-        triggered_on: affectedUserId,
-        is_read: false,
-      });
-    }
+    notifications.push({
+      user_id: ownerId,
+      article_id,
+      type: NotificationType.Role,
+      action: NotificationAction.Insert,
+      triggered_by: ownerId,
+      triggered_on: affectedUserId,
+      is_read: false,
+    });
   }
 
   if (type === 'UPDATE') {

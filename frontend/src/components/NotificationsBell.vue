@@ -331,11 +331,11 @@ async function fetchNotificationById(id: string) {
 }
 
 async function getChangeIdForNotification(notification: NotificationData) {
-  if (notification.type === 'comment' && notification.article_id) {
+  if (notification.type === 'comment' && notification.triggered_on) {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('id', notification.triggered_on!)
+      .eq('id', notification.triggered_on)
       .single();
     if (error) {
       console.error('Error fetching comment change_id:', error);
@@ -343,11 +343,11 @@ async function getChangeIdForNotification(notification: NotificationData) {
     }
     return data?.change_id;
   }
-  if (notification.type === 'revision' && notification.article_id) {
+  if (notification.type === 'revision' && notification.triggered_on) {
     const { data, error } = await supabase
       .from('changes')
       .select('id')
-      .eq('revision_id', notification.triggered_on!)
+      .eq('revision_id', notification.triggered_on)
       .order('created_at', { ascending: true })
       .limit(1)
       .single();

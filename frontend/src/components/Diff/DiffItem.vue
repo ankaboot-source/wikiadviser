@@ -61,6 +61,18 @@
           {{ localeDateString }} at {{ localeTimeString }}
         </div>
       </q-item-section>
+      <q-item-section v-if="expanded" side top>
+        <q-btn
+          flat
+          round
+          dense
+          icon="link"
+          size="md"
+          @click.stop="copyDirectLink"
+        >
+          <q-tooltip>Copy direct link to this change</q-tooltip>
+        </q-btn>
+      </q-item-section>
     </template>
 
     <q-separator />
@@ -489,6 +501,17 @@ async function hideChange() {
   }
   hidingChange.value = false;
   hideChangeDialoge.value = false;
+}
+
+function copyDirectLink() {
+  const url = new URL(window.location.href);
+  url.searchParams.set('change', props.item.id);
+  navigator.clipboard.writeText(url.toString());
+  $quasar.notify({
+    message: 'Direct link copied to clipboard',
+    color: 'positive',
+    icon: 'content_copy',
+  });
 }
 </script>
 <style scoped>

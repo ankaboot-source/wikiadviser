@@ -126,7 +126,7 @@ import type { Tables } from 'src/types/database.types';
 type NotificationData = Tables<'notifications'> & {
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';
-  article_id: string | null;
+  article_id: string;
   triggered_by: string | null;
   triggered_on: string | null;
   article?: { title?: string };
@@ -335,19 +335,22 @@ async function getChangeIdForNotification(notification: NotificationData) {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('id', notification.triggered_on)
+      .eq('commenter_id', notification.triggered_on)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .single();
+
     if (error) {
       console.error('Error fetching comment change_id:', error);
       return null;
     }
-    return data?.change_id;
+    return data?.change_id ?? null;
   }
   if (notification.type === 'revision' && notification.triggered_on) {
     const { data, error } = await supabase
       .from('changes')
       .select('id')
-      .eq('revision_id', notification.triggered_on)
+      .eq('article_id', notification.article_id)
       .order('created_at', { ascending: true })
       .limit(1)
       .single();
@@ -362,15 +365,6 @@ async function getChangeIdForNotification(notification: NotificationData) {
 
 async function navigateAndMarkRead(notification: NotificationData) {
   try {
-    if (!notification.article_id) {
-      await supabase
-        .from('notifications')
-        .update({ is_read: true })
-        .eq('id', notification.id);
-      unread.value = unread.value.filter((n) => n.id !== notification.id);
-      return;
-    }
-
     const changeId = await getChangeIdForNotification(notification);
     const route = {
       path: `/articles/${notification.article_id}`,

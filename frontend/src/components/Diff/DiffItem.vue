@@ -68,7 +68,7 @@
           dense
           icon="link"
           size="md"
-          @click.stop="copyDirectLink"
+          @click.stop="copyChangeLink()"
         >
           <q-tooltip>Copy direct link to this change</q-tooltip>
         </q-btn>
@@ -503,7 +503,7 @@ async function hideChange() {
   hideChangeDialoge.value = false;
 }
 
-function copyDirectLink() {
+function copyChangeLink() {
   const url = new URL(window.location.href);
   url.searchParams.set('change', props.item.id);
   navigator.clipboard.writeText(url.toString());

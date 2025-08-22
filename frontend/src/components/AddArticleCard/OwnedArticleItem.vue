@@ -91,7 +91,7 @@
               <q-item-section>
                 <q-item-label class="flex items-center">
                   <q-icon name="edit" class="q-mr-xs" size="xs" />
-                  <span>Open Article</span>
+                  <span>Edit Article</span>
                 </q-item-label>
               </q-item-section>
             </q-item>

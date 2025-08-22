@@ -77,6 +77,7 @@ import { copyToClipboard, useQuasar } from 'quasar';
 import {
   createLink,
   deletePermission,
+  getUsers,
   updateArticleWebPublication,
   updatePermission,
 } from 'src/api/supabaseHelper';
@@ -85,7 +86,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article, Enums, Permission, Profile, User } from 'src/types';
 import { HOURS_IN_DAY, SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
-import { ref } from 'vue';
+import { onBeforeMount, ref } from 'vue';
 import ShareUser from './ShareUser.vue';
 
 const $q = useQuasar();
@@ -113,8 +114,16 @@ const shareRoleOptions = [
 const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
-  users: User[];
+  users?: User[];
 }>();
+
+const users = ref<User[]>(props.users ?? []);
+
+onBeforeMount(async () => {
+  if (!props.users) {
+    users.value = await getUsers(props.article.article_id);
+  }
+});
 
 const ownerPermission = props.role === 'owner';
 

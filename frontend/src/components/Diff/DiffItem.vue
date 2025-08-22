@@ -70,7 +70,7 @@
           size="md"
           @click.stop="copyChangeLink()"
         >
-          <q-tooltip>Copy direct link to this change</q-tooltip>
+          <q-tooltip>Copy change link to this change</q-tooltip>
         </q-btn>
       </q-item-section>
     </template>
@@ -508,7 +508,7 @@ function copyChangeLink() {
   url.searchParams.set('change', props.item.id);
   navigator.clipboard.writeText(url.toString());
   $quasar.notify({
-    message: 'Direct link copied to clipboard',
+    message: 'Change link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',
   });

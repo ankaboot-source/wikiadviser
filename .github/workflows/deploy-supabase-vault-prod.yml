@@ -4,6 +4,9 @@ on:
 jobs:
   deploy-vault-secrets:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     env:
       DB_URL: ${{ secrets.DB_URL_PROD }}
       supabase_project_url: ${{ vars.SAAS_SUPABASE_ENDPOINT_PROD }}

@@ -9,6 +9,9 @@ on:
 jobs:
   deploy-monitoring-wikiadviser:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Deploy monitoring wikiadviser demo
         uses: appleboy/ssh-action@master

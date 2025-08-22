@@ -1,5 +1,4 @@
-name: Supabase Deploy
-
+name: Supabase Deploy QA
 on:
   push:
     branches:
@@ -9,19 +8,18 @@ on:
   workflow_dispatch:
 jobs:
   release:
+    permissions:
+      contents: read
+      pull-requests: write
     runs-on: ubuntu-latest
-
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
       SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-
     steps:
       - uses: actions/checkout@v3
-
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-
       - run: supabase link --project-ref $SUPABASE_PROJECT_ID --debug
       - run: supabase db push --include-all

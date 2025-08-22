@@ -24,6 +24,9 @@ jobs:
       SMTP_PORT: ${{ vars.SMTP_PORT }}
       SMTP_HOST: ${{ vars.SMTP_HOST }}
       SITE_URL: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1

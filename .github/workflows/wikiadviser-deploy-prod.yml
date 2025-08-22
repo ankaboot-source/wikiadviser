@@ -93,6 +93,9 @@ jobs:
 
   deploy-visual-editor-prod:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       matrix:
         lang: [fr, en]

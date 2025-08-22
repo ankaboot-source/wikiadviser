@@ -9,6 +9,7 @@ import {
   getUserEmail,
   getArticleTitle,
   getUserRole,
+  getChangeIdForNotification,
 } from '../utils/helpers.ts';
 
 export async function sendEmailNotification(notification: Notification) {
@@ -48,6 +49,12 @@ export async function sendEmailNotification(notification: Notification) {
 
     let subject = '';
     let text = '';
+    let redirectUrl = '';
+
+    const changeId = await getChangeIdForNotification(notification);
+
+    const baseUrl = `/articles/${notification.article_id}`;
+    redirectUrl = changeId ? `${baseUrl}?change=${changeId}` : baseUrl;
 
     switch (notification.type) {
       case NotificationType.Revision:
@@ -78,12 +85,14 @@ export async function sendEmailNotification(notification: Notification) {
             : `«${
                 triggeredOnEmail || 'Someone'
               }» has been granted access to «${articleTitle}».`;
+          redirectUrl = baseUrl;
         } else if (notification.action === NotificationAction.Update) {
           if (recipientIsTarget) {
             subject = `Your role updated on «${articleTitle}»`;
             text = `Your permission for «${articleTitle}» has been changed to «${
               role ?? 'a role'
             }».`;
+            redirectUrl = baseUrl;
           }
         }
         break;
@@ -93,7 +102,7 @@ export async function sendEmailNotification(notification: Notification) {
         return;
     }
 
-    const html = buildHtmlEmail(subject, text);
+    const html = buildHtmlEmail(subject, text, redirectUrl);
 
     await transporter.sendMail({
       from: Deno.env.get('SMTP_USER'),

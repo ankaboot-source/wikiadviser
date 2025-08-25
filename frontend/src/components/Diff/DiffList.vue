@@ -64,11 +64,13 @@
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums } from 'src/types';
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
 
 const store = useSelectedChangeStore();
+const route = useRoute();
 
 const props = defineProps<{
   articleId: string;
@@ -145,6 +147,13 @@ watch(
     );
   },
 );
+
+onMounted(() => {
+  const changeId = route.query.change as string | undefined;
+  if (changeId) {
+    store.selectedChangeId = changeId;
+  }
+});
 </script>
 <style>
 .q-scrollarea__content {

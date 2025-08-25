@@ -33,9 +33,9 @@
         label="Share"
         no-caps
         class="q-pr-lg"
-        @click="share = !share"
+        @click="shareDialog = !shareDialog"
       >
-        <q-dialog v-model="share">
+        <q-dialog v-model="shareDialog">
           <share-card :article="article" :role :users />
         </q-dialog>
       </q-btn>
@@ -171,7 +171,7 @@ watch(
   },
 );
 
-const share = ref(false);
+const shareDialog = ref(false);
 
 const viewButton = {
   label: 'Review changes',

@@ -91,7 +91,7 @@
               <q-item-section>
                 <q-item-label class="flex items-center">
                   <q-icon name="edit" class="q-mr-xs" size="xs" />
-                  <span>Open Article</span>
+                  <span>Edit Article</span>
                 </q-item-label>
               </q-item-section>
             </q-item>
@@ -115,6 +115,20 @@
             </q-item>
 
             <q-item
+              v-if="article.role != 'viewer'"
+              v-close-popup
+              clickable
+              @click="shareDialog = !shareDialog"
+            >
+              <q-item-section>
+                <q-item-label class="flex items-center">
+                  <q-icon name="o_group" class="q-mr-xs" size="xs" />
+                  <span>Share Article</span>
+                </q-item-label>
+              </q-item-section>
+            </q-item>
+
+            <q-item
               v-if="article.role === 'owner'"
               v-close-popup
               clickable
@@ -129,6 +143,10 @@
             </q-item>
           </q-list>
         </q-btn-dropdown>
+
+        <q-dialog v-model="shareDialog">
+          <share-card :article="article" :role="article.role" />
+        </q-dialog>
 
         <q-dialog v-model="deleteArticleDialog">
           <q-card>
@@ -178,6 +196,7 @@
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
 import { deleteArticle } from 'src/api/supabaseHelper';
+import ShareCard from 'src/components/Share/ShareCard.vue';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
@@ -193,6 +212,7 @@ const $q = useQuasar();
 const router = useRouter();
 const deleteArticleDialog = ref(false);
 const deletingArticle = ref(false);
+const shareDialog = ref(false);
 const articlesStore = useArticlesStore();
 
 const userLocale = navigator.language || navigator.languages[0];

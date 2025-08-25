@@ -7,12 +7,24 @@
 
     <q-card-section v-if="ownerPermission">
       <div class="text-h6 text-weight-regular">Share link</div>
-      <div class="q-mr-sm row no-wrap items-center">
-        Anyone with this link will be a
+      <div class="q-mr-sm row wrap items-center q-gutter-sm">
+        <div class="col-12">
+          <span v-if="shareRoleModel.value === 'editor'"
+            >Anyone with this link will be able to edit, review and view this
+            article.</span
+          >
+          <span v-else-if="shareRoleModel.value === 'reviewer'"
+            >Anyone with this link will be able to review and view this
+            article.</span
+          >
+          <span v-else-if="shareRoleModel.value === 'viewer'"
+            >Anyone with this link will be able to view only this article.</span
+          >
+        </div>
         <q-select
           v-model="shareRoleModel"
           :options="shareRoleOptions"
-          class="q-ml-sm text-capitalize"
+          class="text-capitalize"
           dense
         />
         <q-space />
@@ -21,7 +33,6 @@
           outline
           label="Create share link"
           no-caps
-          class="q-mr-xs"
           @click="copyShareLinkToClipboard()"
         />
       </div>

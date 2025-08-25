@@ -43,7 +43,13 @@
       >
         <q-card-section class="q-pa-0">
           <div v-if="unread.length">
-            <q-scroll-area :style="{ 'min-height': '150px', 'max-height': '400px', height: unread.length * 70 + 'px' }">
+            <q-scroll-area
+              :style="{
+                'min-height': '150px',
+                'max-height': '400px',
+                height: unread.length * 70 + 'px',
+              }"
+            >
               <q-list>
                 <q-item
                   v-for="(notification, index) in unread"
@@ -174,7 +180,6 @@ function getNotificationIcon(notification: NotificationData): string {
       return 'difference';
     case 'comment.insert':
       return isReply ? 'forum' : 'chat';
-
     case 'role.insert':
       return 'person_add';
     case 'role.update':
@@ -337,11 +342,12 @@ async function fetchNotificationById(id: string) {
 }
 
 async function getChangeIdForNotification(notification: NotificationData) {
-  if (notification.type === 'comment' && notification.triggered_on) {
+  if (notification.type === 'comment') {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('commenter_id', notification.triggered_on)
+      .eq('commenter_id', notification.triggered_by!)
+      .eq('article_id', notification.article_id)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -352,19 +358,21 @@ async function getChangeIdForNotification(notification: NotificationData) {
     }
     return data?.change_id ?? null;
   }
-  if (notification.type === 'revision' && notification.triggered_on) {
+
+  if (notification.type === 'revision') {
     const { data, error } = await supabase
       .from('changes')
       .select('id')
       .eq('article_id', notification.article_id)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(1)
       .single();
+
     if (error) {
-      console.error('Error fetching first change for revision:', error);
+      console.error('Error fetching revision change_id:', error);
       return null;
     }
-    return data?.id;
+    return data?.id ?? null;
   }
   return null;
 }
@@ -372,15 +380,31 @@ async function getChangeIdForNotification(notification: NotificationData) {
 async function navigateAndMarkRead(notification: NotificationData) {
   try {
     const changeId = await getChangeIdForNotification(notification);
-    const route = {
-      path: `/articles/${notification.article_id}`,
-      query:
-        notification.type === 'revision' || notification.type === 'comment'
-          ? { change: changeId }
-          : {},
-    };
 
-    await router.push(route);
+    const targetPath = `/articles/${notification.article_id}`;
+    const targetQuery =
+      notification.type === 'revision' || notification.type === 'comment'
+        ? { change: changeId }
+        : {};
+
+    const currentPath = router.currentRoute.value.path;
+    const isSameArticle = currentPath === targetPath;
+
+    if (isSameArticle) {
+      const route = {
+        path: targetPath,
+        query: targetQuery,
+      };
+      await router.push(route);
+    } else {
+      const url = new URL(window.location.origin);
+      url.pathname = targetPath;
+
+      if (targetQuery.change) {
+        url.searchParams.set('change', targetQuery.change);
+      }
+      window.location.href = url.href;
+    }
     await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -391,7 +415,7 @@ async function navigateAndMarkRead(notification: NotificationData) {
       store.selectedChangeId = changeId;
     }
   } catch (err) {
-    console.error('Failed navigateAndMarkRead', err);
+    console.error('Failed navigateAndMarkRead:', err);
     Notify.create({
       message: 'Failed to process notification',
       color: 'negative',

@@ -49,6 +49,8 @@
                 'max-height': '400px',
                 height: unread.length * 70 + 'px',
               }"
+              :bar-style="{ display: 'none' }"
+              :thumb-style="{ display: 'none' }"
             >
               <q-list>
                 <q-item

@@ -49,7 +49,7 @@
                   v-for="(notification, index) in unread"
                   :key="notification.id"
                   clickable
-                  class="px-4 py-3"
+                  class="px-4 py-3 relative"
                   @click="navigateAndMarkRead(notification)"
                 >
                   <q-item-section avatar>
@@ -61,18 +61,24 @@
                     </q-avatar>
                   </q-item-section>
 
-                  <q-item-section>
-                    <q-item-label class="text-body2 text-grey-9">
+                  <q-item-section class="pr-8">
+                    <q-item-label
+                      class="text-body2 text-grey-9"
+                      style="
+                        white-space: normal;
+                        overflow-wrap: anywhere;
+                        word-break: break-word;
+                      "
+                    >
                       {{ getNotificationMessage(notification) }}
                     </q-item-label>
                     <q-item-label caption>
                       {{ formatTime(notification.created_at) }}
                     </q-item-label>
                   </q-item-section>
-
-                  <q-item-section side top>
+                  <div>
                     <q-icon name="circle" color="primary" size="8px" />
-                  </q-item-section>
+                  </div>
 
                   <q-separator v-if="index < unread.length - 1" />
                 </q-item>

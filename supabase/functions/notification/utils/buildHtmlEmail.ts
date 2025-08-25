@@ -1,6 +1,5 @@
 import ENV from '../../_shared/schema/env.schema.ts';
 const siteUrl = ENV.SITE_URL;
-
 export function buildHtmlEmail(
   subject: string,
   content: string,
@@ -110,6 +109,12 @@ export function buildHtmlEmail(
         border: 0;
         outline: none;
       }
+
+      .content-link {
+        color: inherit;
+        text-decoration: none;
+        display: block;
+      }
     </style>
   </head>
   <body style="background-color: #e9ecef">
@@ -145,7 +150,7 @@ export function buildHtmlEmail(
           >
             <tr>
               <td align="center" valign="top" style="padding: 36px 24px">
-                <a
+                
                   href="${siteUrl}"
                   target="_blank"
                   style="display: inline-block"
@@ -231,30 +236,20 @@ export function buildHtmlEmail(
                   line-height: 24px;
                 "
               >
+                ${
+                  redirectUrl
+                    ? `<a href="${siteUrl}${redirectUrl}" class="content-link" target="_blank">`
+                    : ''
+                }
                 <p style="margin: 0">
                   ${content}
                 </p>
+                ${redirectUrl ? '</a>' : ''}
               </td>
             </tr>
-            <!-- start button -->
-            <tr>
-              <td align="left" bgcolor="#ffffff">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                  <tr>
-                    <td align="center" bgcolor="#ffffff" style="padding: 12px">
-                      <table border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                          <td align="center" bgcolor="#1a82e2" style="border-radius: 6px">
-                            <a href="${siteUrl}${redirectUrl}" target="_blank" style="display: inline-block; padding: 16px 36px; font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif; font-size: 16px; color: #ffffff; text-decoration: none; border-radius: 6px;">View Details</a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-            <!-- end button -->
+            <!-- end copy -->
+
+            
             <!-- start copy -->
             <tr>
               <td
@@ -301,9 +296,7 @@ export function buildHtmlEmail(
                 "
               >
                 <p style="margin: 0">
-                  You received this email because we received a request for
-                  registration for your account. If you didn't request
-                  registration you can safely delete this email.
+                  You received this email because notifications by email is enabled for your account. If you don't want to receive such emails in the future, you can disable them in your <a href="${siteUrl}/account" style="color: #1a82e2; text-decoration: underline;">account page</a>.
                 </p>
               </td>
             </tr>

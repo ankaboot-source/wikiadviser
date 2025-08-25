@@ -93,7 +93,7 @@ cleanup() {
   echo ""
   printf "\n\r\033[K\033[1;35mCleaning up services...\033[0m\n"
   echo "Stopping Wikiadviser & Mediawiki..."
-  pushd docker && docker compose down && popd
+  docker compose -f docker/docker-compose.yml down
   echo "Stopping Supabase..."
   npx supabase stop 2>/dev/null
   echo "All services stopped."
@@ -132,7 +132,11 @@ echo ""
 
 # Setup Supabase, Wikiadviser & MW in background
 (
+    set -e
     exec > setup.log 2>&1
+    
+    trap stop_game EXIT # Quit the game on EXIT signal
+    sleep 20 # Delay the execution until the game starts in case of an occured error
     # Check if package-lock.json exists
     if [ -f "package-lock.json" ]; then
       echo "package-lock.json found, skipping 'npm install'"
@@ -153,13 +157,12 @@ echo ""
     echo ""
     echo "Starting Mediawiki & Wikiadviser..."
     echo ""
-    pushd docker && docker compose up -d && popd
+    docker compose -f docker/docker-compose.yml up -d
     echo ""
     echo "Updating .env files..."
     echo ""
     bash ./generate-env.sh --bot-creds
     echo ""
-    stop_game
     echo "✅ All services started successfully"
 ) &
 SETUP_PID=$!
@@ -167,7 +170,7 @@ SETUP_PID=$!
 if check_tmux || check_screen; then
     echo -n "Press any KEY to play the game or ESC to stay in waiting room. Auto start in "
 
-    for i in {30..1}; do
+    for i in {10..1}; do
         printf "%2d" $i    
         set +e
         read -rs -n1 -t 1 key

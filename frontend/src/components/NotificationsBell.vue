@@ -43,7 +43,7 @@
       >
         <q-card-section class="q-pa-0">
           <div v-if="unread.length">
-            <q-scroll-area style="height: 300px">
+            <q-scroll-area :style="{ 'min-height': '150px', 'max-height': '400px', height: unread.length * 70 + 'px' }">
               <q-list>
                 <q-item
                   v-for="(notification, index) in unread"

@@ -16,7 +16,7 @@
     "url": "git+https://github.com/ankaboot-source/wikiadviser.git"
   },
   "devDependencies": {
-    "supabase": "^2.24.3"
+    "supabase": "^2.34.3"
   },
   "keywords": [],
   "author": "",

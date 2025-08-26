@@ -141,7 +141,7 @@ type NotificationData = Tables<'notifications'> & {
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';
   article_id: string;
-  triggered_by: string | null;
+  triggered_by: string;
   triggered_on: string | null;
   article?: { title?: string };
   triggered_by_profile?: { email?: string };
@@ -348,7 +348,7 @@ async function getChangeIdForNotification(notification: NotificationData) {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('commenter_id', notification.triggered_by!)
+      .eq('commenter_id', notification.triggered_by)
       .eq('article_id', notification.article_id)
       .order('created_at', { ascending: false })
       .limit(1)

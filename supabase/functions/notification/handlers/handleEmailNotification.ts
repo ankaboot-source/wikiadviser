@@ -59,39 +59,41 @@ export async function sendEmailNotification(notification: Notification) {
     switch (notification.type) {
       case NotificationType.Revision:
         if (notification.action === NotificationAction.Insert) {
-          subject = `New revision on «${articleTitle}»`;
-          text = `A new revision to «${articleTitle}» has been made.`;
+          subject = `New revision on « ${articleTitle} »`;
+          text = `A new revision to « ${articleTitle} » has been made by ${
+            triggeredByEmail || 'Someone'
+          }.`;
         }
         break;
 
       case NotificationType.Comment:
         if (notification.action === NotificationAction.Insert) {
-          subject = `New comment on «${articleTitle}»`;
+          subject = `New comment on « ${articleTitle} »`;
           text = recipientIsChangeOwner
-            ? `«${
+            ? `${
                 triggeredByEmail || 'Someone'
-              }» has replied to your change on article «${articleTitle}».`
-            : `A new comment has been made to a change on «${articleTitle}».`;
+              } has replied to your change on article « ${articleTitle} ».`
+            : `A new comment has been made to a change on « ${articleTitle} ».`;
         }
         break;
 
       case NotificationType.Role:
         if (notification.action === NotificationAction.Insert) {
-          subject = `Access granted to «${articleTitle}»`;
+          subject = `Access granted to « ${articleTitle} »`;
           text = recipientIsTarget
-            ? `You have been granted «${
+            ? `You have been granted « ${
                 role ?? 'a role'
-              }» permission to «${articleTitle}».`
-            : `«${
-                triggeredOnEmail || 'Someone'
-              }» has been granted access to «${articleTitle}».`;
+              } » permission to « ${articleTitle} ».`
+            : `${triggeredOnEmail || 'Someone'} has been granted ${
+                role ?? 'a role'
+              } permission to « ${articleTitle} ».`;
           redirectUrl = baseUrl;
         } else if (notification.action === NotificationAction.Update) {
           if (recipientIsTarget) {
             subject = `Your role updated on «${articleTitle}»`;
-            text = `Your permission for «${articleTitle}» has been changed to «${
+            text = `Your permission for « ${articleTitle} » has been changed to ${
               role ?? 'a role'
-            }».`;
+            }.`;
             redirectUrl = baseUrl;
           }
         }
@@ -105,7 +107,8 @@ export async function sendEmailNotification(notification: Notification) {
     const html = buildHtmlEmail(subject, text, redirectUrl);
 
     await transporter.sendMail({
-      from: Deno.env.get('SMTP_USER'),
+      from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
+      replyTo: triggeredByEmail,
       to: toEmail,
       subject,
       html,

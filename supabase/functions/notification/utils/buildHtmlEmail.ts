@@ -150,7 +150,7 @@ export function buildHtmlEmail(
           >
             <tr>
               <td align="center" valign="top" style="padding: 36px 24px">
-                
+                <a
                   href="${siteUrl}"
                   target="_blank"
                   style="display: inline-block"

@@ -109,11 +109,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   switch (data.type) {
     case 'saved-changes':
-      isProcessingChanges.value = true;
-      loading.value = { ...loaderPresets.changes };
-      gotoDiffLink();
-      break;
-
     case 'deleted-revision':
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };

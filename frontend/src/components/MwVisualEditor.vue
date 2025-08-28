@@ -87,7 +87,7 @@ async function handleDiffChange(data: {
 
 function gotoDiffLink() {
   props.toggleEditTab();
-
+  // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {
       type: 'wikiadviser',

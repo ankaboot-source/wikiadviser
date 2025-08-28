@@ -11,7 +11,6 @@
   <div
     v-if="buttonToggle === 'edit' && loading.value"
     class="q-pa-xl row justify-center text-center col-grow rounded-borders borders bg-secondary absolute-full z-top"
-    style="z-index: 1000; background-color: rgba(255, 255, 255, 0.95)"
   >
     <div>
       <div class="text-h6">

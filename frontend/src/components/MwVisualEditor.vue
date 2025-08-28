@@ -1,7 +1,7 @@
 <template>
   <iframe
     v-if="renderIframe"
-    v-show="buttonToggle === 'edit' && !loading.value"
+    v-show="buttonToggle === 'edit'"
     ref="iframeRef"
     :src="articleLink"
     class="col-grow rounded-borders borders bg-secondary"
@@ -10,7 +10,7 @@
   />
   <div
     v-if="buttonToggle === 'edit' && loading.value"
-    class="q-pa-xl row justify-center text-center col-grow rounded-borders borders bg-secondary"
+    class="q-pa-xl row justify-center text-center col-grow rounded-borders borders bg-secondary absolute-full z-top"
   >
     <div>
       <div class="text-h6">
@@ -47,11 +47,12 @@ const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    message: 'Redirecting to visual diff',
+    message: 'Processing changes',
   },
 };
 const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
+const isProcessingChanges = ref(false);
 
 const emit = defineEmits(['switchTabEmit']);
 
@@ -73,12 +74,13 @@ async function handleDiffChange(data: {
     method: 'PUT',
     body: JSON.stringify({ diffHtml: data.diffHtml }),
   });
-  emit('switchTabEmit', 'view');
+  emit('switchTabEmit', 'edit');
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',
     color: 'positive',
   });
+  isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
   reloadIframe();
 }
@@ -101,16 +103,13 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   if (data.type === 'diff-change') {
     await handleDiffChange(data);
-
     return;
   }
 
   switch (data.type) {
     case 'saved-changes':
-      loading.value = { ...loaderPresets.changes };
-      break;
-
     case 'deleted-revision':
+      isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
       gotoDiffLink();
       break;
@@ -120,7 +119,9 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 }
 
 async function onIframeLoad() {
-  loading.value.value = false;
+  if (!isProcessingChanges.value) {
+    loading.value.value = false;
+  }
 }
 
 onMounted(() => {

@@ -75,7 +75,7 @@ async function handleDiffChange(data: {
     method: 'PUT',
     body: JSON.stringify({ diffHtml: data.diffHtml }),
   });
-  emit('switchTabEmit', 'view');
+  emit('switchTabEmit', 'edit');
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',

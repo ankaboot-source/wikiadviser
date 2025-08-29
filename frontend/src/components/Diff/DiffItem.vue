@@ -413,7 +413,7 @@ async function handleReview(Status: Status) {
 }
 
 const emit = defineEmits<{
-  updateChange: [id: string, updates: Partial<ChangeItem>]
+  updateChange: [id: string, updates: Partial<ChangeItem>];
 }>();
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value as string);

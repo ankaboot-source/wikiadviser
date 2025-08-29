@@ -412,8 +412,12 @@ async function handleReview(Status: Status) {
   expanded.value = false;
 }
 
+const emit = defineEmits<{
+  (event: 'updateChange', id: string, updates: Partial<ChangeItem>): void;
+}>();
 async function handleDescription() {
   await updateChange(props.item.id, undefined, description.value as string);
+  emit('updateChange', props.item.id, { description: description.value });
 }
 
 const isArchived = computed(() => props.item.archived);

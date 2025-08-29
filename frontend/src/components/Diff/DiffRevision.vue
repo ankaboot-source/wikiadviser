@@ -54,6 +54,7 @@
         :is-last-recent-item="
           revision.isRecent && index === revision.items.length - 1
         "
+        @update-change="updateItem"
       />
     </q-list>
     <div v-if="$props.revision.isRecent" class="q-pb-md q-pr-xs text-right">
@@ -112,7 +113,7 @@
 
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Enums, Revision } from 'src/types';
+import { ChangeItem, Enums, Revision } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
@@ -159,6 +160,10 @@ watch(
   },
 );
 
+function updateItem(id: string, updates: Partial<ChangeItem>) {
+  const item = props.revision.items.find((i) => i.id === id);
+  if (item) Object.assign(item, updates);
+}
 async function deleteRevision() {
   deletingRevision.value = true;
 

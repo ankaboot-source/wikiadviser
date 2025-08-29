@@ -326,11 +326,15 @@ $wgExtraNamespaces[NS_PORTAL] = "Portal";
 $wgExtraNamespaces[NS_PORTAL_TALK] = "Portal_talk";
 
 # To enable the import of images from Wikipedia that are not in Commons
+$wgUploadDirectory = "$IP/images";
+$wgUploadPath = "/images";
 $wgForeignFileRepos[] = [
 	'class' => ForeignAPIRepo::class,
 	'name' => "images-wikipedia-${LANGUAGE}", // Must be a distinct name
 	'apibase' => "https://${LANGUAGE}.wikipedia.org/w/api.php",
 	'hashLevels' => 2,
+        'directory' => $wgUploadDirectory,  // This must be set and correct
+        'url' => $wgUploadPath,
 	'fetchDescription' => true, // Optional
 	'descriptionCacheExpiry' => 43200, // 12 hours, optional (values are seconds)
 	'apiThumbCacheExpiry' => 86400, // 24 hours, optional, but required for local thumb caching

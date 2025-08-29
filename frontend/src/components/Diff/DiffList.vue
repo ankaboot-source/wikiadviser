@@ -28,7 +28,9 @@
               :key="item.id"
               :item="item"
               :role="role"
-              :past-change="{ text: 'This change was manually archived.' }"
+              :past-change="{
+                text: 'This change was manually archived.',
+              }"
             />
             <diff-item
               v-for="item in unindexedChanges"

@@ -29,7 +29,6 @@
               :item="item"
               :role="role"
               :past-change="{ text: 'This change was manually archived.' }"
-              @update-change="updateItem"
             />
             <diff-item
               v-for="item in unindexedChanges"
@@ -41,7 +40,6 @@
                 text: 'This change was automatically orphaned.',
                 disable: true,
               }"
-              @update-change="updateItem"
             />
           </q-list>
         </q-item-section>
@@ -135,10 +133,6 @@ const pastChanges = computed(() =>
 );
 const expanded = ref(false);
 
-function updateItem(id: string, updates: Partial<ChangeItem>) {
-  const item = props.changesList.find((i) => i.id === id);
-  if (item) Object.assign(item, updates);
-}
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {

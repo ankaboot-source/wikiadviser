@@ -1,7 +1,7 @@
 <template>
-  <div 
+  <div
     v-if="buttonToggle === 'edit'"
-    style="position: relative;" 
+    style="position: relative"
     class="col-grow"
   >
     <iframe
@@ -15,7 +15,14 @@
     <div
       v-if="loading.value"
       class="q-pa-xl row justify-center text-center rounded-borders borders bg-secondary"
-      style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000;"
+      style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+      "
     >
       <div>
         <div class="text-h6">

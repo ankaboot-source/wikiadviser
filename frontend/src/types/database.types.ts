@@ -270,6 +270,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      profiles_view: {
+        Row: {
+          display_name: string | null;
+          is_anonymous: boolean;
+          has_password: boolean;
+          allowed_articles: number;
+          avatar_url: string | null;
+          default_avatar: boolean | null;
+          email: string;
+          id: string;
+        };
+        Insert: {
+          display_name: string | null;
+          is_anonymous: boolean;
+          has_password: boolean;
+          allowed_articles: number;
+          avatar_url?: string | null;
+          default_avatar?: boolean | null;
+          email: string;
+          id: string;
+        };
+        Update: {
+          display_name: string | null;
+          is_anonymous: boolean;
+          has_password: boolean;
+          allowed_articles?: number;
+          avatar_url?: string | null;
+          default_avatar?: boolean | null;
+          email?: string;
+          id?: string;
+        };
+        Relationships: [];
+      };
       revisions: {
         Row: {
           article_id: string | null;

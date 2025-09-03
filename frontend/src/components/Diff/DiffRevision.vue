@@ -24,7 +24,10 @@
             <div class="text-black">
               <user-component
                 :avatar-url="revision.items[0]?.user.avatar_url"
-                :email="revision.items[0]?.user.email"
+                :name="
+                  revision.items[0]?.user.display_name ||
+                  revision.items[0]?.user.email
+                "
                 section="revision"
               />
             </div>
@@ -111,12 +114,12 @@
 </template>
 
 <script setup lang="ts">
+import supabaseClient from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Enums, Revision } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
-import supabaseClient from 'src/api/supabase';
 
 const props = defineProps<{
   role: Enums<'role'>;

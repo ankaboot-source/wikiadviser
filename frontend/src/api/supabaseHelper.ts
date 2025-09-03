@@ -220,8 +220,8 @@ export async function getParsedChanges(
         revision_id,
         archived,
         hidden,
-        user: profiles(id, email, avatar_url), 
-        comments: comments(content,created_at, user: profiles(id, email, avatar_url)),
+        user: profiles_view(id, email, avatar_url, display_name), 
+        comments: comments(content,created_at, user: profiles_view(id, email, avatar_url, display_name)),
         revision: revisions(summary, revid)
         `,
     )

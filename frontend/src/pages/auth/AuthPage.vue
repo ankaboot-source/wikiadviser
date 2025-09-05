@@ -5,12 +5,6 @@
         <p class="text-h5 text-center merriweather q-pb-md">
           {{ message }}
         </p>
-        <button
-          class="supabase-auth-ui_ui-button c-bOcPnF c-bOcPnF-iwjZXY-color-default"
-          @click="loginAnonymously()"
-        >
-          Sign in as Guest
-        </button>
         <Auth
           v-model:view="authView"
           social-layout="vertical"

@@ -1,6 +1,6 @@
-drop view public.profiles_view;
+DROP VIEW public.profiles_view;
 
-create view public.profiles_view with (security_invoker = on) as
+CREATE VIEW public.profiles_view AS
  SELECT p.id,
     u.email,
     u.raw_user_meta_data ->> 'display_name'::text AS display_name,

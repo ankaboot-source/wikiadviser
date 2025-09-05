@@ -76,6 +76,7 @@ export interface Profile {
   has_password?: boolean;
   email_verified?: boolean | null;
   email_change?: string | null;
+  is_email_provider: boolean;
 }
 
 export type {

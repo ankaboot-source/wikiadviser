@@ -32,7 +32,7 @@ function goToAccount() {
 onMounted(async () => {
   await userStore.getSession();
   await userStore.fetchProfile();
-  console.log(userStore.user?.email, userStore?.user?.display_name);
+  console.log(userStore.user);
   if (userStore.session) {
     if (!userStore.user?.avatar_url) {
       await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
@@ -44,7 +44,7 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password) {
+    if (!userStore.user?.has_password && userStore.user?.is_email_provider) {
       Notify.create({
         message:
           'You will lose all your progress if you dont link your account.',

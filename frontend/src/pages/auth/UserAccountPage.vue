@@ -369,7 +369,6 @@ async function linkEmail() {
   $q.notify({
     message: 'A confirmation email has been sent to your email address',
     icon: 'check',
-    color: 'positive',
   });
 
   await userStore.fetchProfile();
@@ -397,7 +396,6 @@ async function verifyOTP() {
     message: 'Email successfully verified',
     caption: 'Please set your password',
     icon: 'check',
-    color: 'positive',
   });
   await userStore.fetchProfile();
   updateStepper();
@@ -422,6 +420,7 @@ async function setDisplayName(remove?: boolean) {
     icon: 'check',
   });
   await userStore.fetchProfile();
+  nameInput.value = userStore.user?.display_name || '';
 }
 
 async function prepareNewAccount() {

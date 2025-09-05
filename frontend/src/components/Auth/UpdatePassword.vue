@@ -50,7 +50,6 @@ onMounted(() => {
         // Assuming the event is related to password update
         $q.notify({
           message: 'Your password has been successfully updated',
-          color: 'positive',
         });
         updated.value = true;
         $router.push('/account');

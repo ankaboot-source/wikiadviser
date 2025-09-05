@@ -5,6 +5,15 @@
         <p class="text-h5 text-center merriweather q-pb-md">
           {{ message }}
         </p>
+        <button
+          class="supabase-auth-ui_ui-button c-bOcPnF c-bOcPnF-iwjZXY-color-default"
+          @click="loginAnonymously()"
+        >
+          <q-icon name="person_4" />
+          Sign in Anonymously
+        </button>
+        <q-separator class="q-mt-md" />
+
         <Auth
           v-model:view="authView"
           social-layout="vertical"
@@ -32,14 +41,6 @@
             },
           }"
           :providers="['google', 'azure']"
-        />
-        <q-separator />
-        <q-btn
-          outline
-          no-caps
-          class="full-width q-mt-md"
-          label="Sign in as Guest"
-          @click="loginAnonymously()"
         />
       </q-card-section>
     </q-card-section>

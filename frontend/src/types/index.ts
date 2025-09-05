@@ -72,11 +72,9 @@ export interface Profile {
   default_avatar: boolean;
   avatar_url?: string;
   allowed_articles: number;
-  is_anonymous?: boolean | null;
   display_name?: string | null;
   has_password?: boolean;
   email_verified?: boolean | null;
-  is_confirmed?: boolean;
   email_change?: string | null;
 }
 

@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION public.create_profile()
 AS $$
 BEGIN
     INSERT INTO public.profiles (id, email, avatar_url, default_avatar, allowed_articles)
-    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data, FALSE, 10);
+    VALUES (NEW.id, NEW.email, NEW.raw_user_meta_data ->> 'picture', FALSE, 10);
     RETURN NEW;
 END;
 $$;

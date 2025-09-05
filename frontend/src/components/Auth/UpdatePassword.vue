@@ -36,7 +36,7 @@ const updated = ref(false);
 const props = defineProps({
   prepareNewAccount: {
     type: Function,
-    default: () => {},
+    default: () => {}, // skipcq: JS-0321
   },
 });
 

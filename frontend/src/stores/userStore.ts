@@ -1,10 +1,10 @@
-import { Session } from "@supabase/supabase-js";
-import { defineStore } from "pinia";
-import supabase from "src/api/supabase";
-import { Profile } from "src/types";
-import { ref } from "vue";
+import { Session } from '@supabase/supabase-js';
+import { defineStore } from 'pinia';
+import supabase from 'src/api/supabase';
+import { Profile } from 'src/types';
+import { ref } from 'vue';
 
-export const useUserStore = defineStore("session", () => {
+export const useUserStore = defineStore('session', () => {
   // States
   const session = ref<Session | null>(null);
   const user = ref<Profile | null>(null);
@@ -21,12 +21,12 @@ export const useUserStore = defineStore("session", () => {
 
     user.value = session.value
       ? ((
-        await supabase
-          .from("profiles_view")
-          .select("*")
-          .eq("id", session.value.user.id)
-          .single()
-      ).data as Profile)
+          await supabase
+            .from('profiles_view')
+            .select('*')
+            .eq('id', session.value.user.id)
+            .single()
+        ).data as Profile)
       : null;
   }
 

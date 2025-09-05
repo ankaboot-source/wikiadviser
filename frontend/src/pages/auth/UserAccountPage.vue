@@ -276,12 +276,13 @@ const isUninitializedUser = computed(
   () => isAnon.value && !Boolean(changeEmail.value),
 );
 const hasPassword = computed(() => Boolean(userStore.user?.has_password));
+const hasEmailProvider = computed(() => userStore.user?.has_email_provider);
 
 const stepperRef = ref();
 const computedStep = computed(() => {
   if (isUninitializedUser.value) return 1;
   else if (isAnon.value) return 2;
-  else if (!hasPassword.value) return 3;
+  else if (!hasPassword.value && hasEmailProvider.value) return 3;
   else return 0;
 });
 const step = ref();

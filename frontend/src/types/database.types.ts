@@ -275,6 +275,7 @@ export type Database = {
           display_name: string | null;
           email_change: string | null;
           has_password: boolean;
+          has_email_provider: boolean;
           allowed_articles: number;
           avatar_url: string | null;
           default_avatar: boolean | null;
@@ -285,6 +286,7 @@ export type Database = {
           display_name: string | null;
           email_change: string | null;
           has_password: boolean;
+          has_email_provider: boolean;
           allowed_articles: number;
           avatar_url?: string | null;
           default_avatar?: boolean | null;
@@ -295,6 +297,7 @@ export type Database = {
           display_name: string | null;
           email_change: string | null;
           has_password: boolean;
+          has_email_provider: boolean;
           allowed_articles?: number;
           avatar_url?: string | null;
           default_avatar?: boolean | null;

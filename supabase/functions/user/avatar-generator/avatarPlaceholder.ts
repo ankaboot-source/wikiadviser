@@ -1,5 +1,5 @@
-import ColorsGenerator from "../colors-generator/Generator.ts";
 import { encodeMD5 } from "../utils.ts";
+import ColorsGenerator from "./colorsGenerator.ts";
 
 /**
  * Builds a UI avatar URL based on the provided name and colors.

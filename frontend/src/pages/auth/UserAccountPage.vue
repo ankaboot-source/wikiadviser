@@ -265,8 +265,8 @@ const articlesStore = useArticlesStore();
 const stepperRef = ref();
 
 const computedStep = computed(() => {
-  if (isAnon.value && !changingEmail.value) return 1;
-  else if (!isVerified.value) return 2;
+  if (isUninitializedUser.value) return 1;
+  else if (isAnon.value) return 2;
   else if (!hasPassword.value) return 3;
   else return 0;
 });
@@ -292,11 +292,12 @@ const picture = computed(() => userStore.user?.avatar_url);
 const defaultAvatar = computed(() => userStore.user?.default_avatar);
 const displayName = computed(() => userStore.user?.display_name);
 
-const isAnon = computed(() => Boolean(userStore.user?.is_anonymous));
-const hasPassword = computed(() => Boolean(userStore.user?.has_password));
-const changingEmail = computed(() => Boolean(userStore.user?.email_change));
+const isAnon = computed(() => !Boolean(userStore.user?.email));
 const changeEmail = computed(() => userStore.user?.email_change);
-const isVerified = computed(() => Boolean(userStore.user?.email_verified));
+const isUninitializedUser = computed(
+  () => isAnon.value && !Boolean(changeEmail.value),
+);
+const hasPassword = computed(() => Boolean(userStore.user?.has_password));
 
 console.log(isAnon.value);
 const nameInput = ref(displayName.value);

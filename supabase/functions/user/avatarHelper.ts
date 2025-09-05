@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import ENV from "../_shared/schema/env.schema.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
-import buildAvatar from "./external-avatars/buildAvatar.ts";
+import buildAvatar from "./avatar-generator/avatarPlaceholder.ts";
 
 export async function setDefaultAvatar(c: Context) {
   const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
@@ -19,8 +19,9 @@ export async function setDefaultAvatar(c: Context) {
   ).data;
 
   const backgrounds = ENV.WIKIADVISER_BACKGROUND_COLORS;
+  const isAnon = !profile.email;
   const avatar = buildAvatar(
-    profile.is_anonymous ? null : profile.display_name || profile.email,
+    isAnon ? null : profile.display_name || profile.email,
     backgrounds,
   );
 

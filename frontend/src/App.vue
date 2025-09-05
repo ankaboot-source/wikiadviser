@@ -39,7 +39,7 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.display_name && userStore.user?.is_anonymous) {
+    if (!userStore.user?.display_name && !userStore.user?.email) {
       await supabaseClient.functions.invoke('user/name', { method: 'POST' });
       await userStore.fetchProfile();
     }

@@ -43,13 +43,21 @@
       >
         <q-card-section class="q-pa-0">
           <div v-if="unread.length">
-            <q-scroll-area style="height: 300px">
+            <q-scroll-area
+              :style="{
+                'min-height': '150px',
+                'max-height': '400px',
+                height: unread.length * 70 + 'px',
+              }"
+              :bar-style="{ display: 'none' }"
+              :thumb-style="{ display: 'none' }"
+            >
               <q-list>
                 <q-item
                   v-for="(notification, index) in unread"
                   :key="notification.id"
                   clickable
-                  class="px-4 py-3"
+                  class="px-4 py-3 relative"
                   @click="navigateAndMarkRead(notification)"
                 >
                   <q-item-section avatar>
@@ -61,18 +69,24 @@
                     </q-avatar>
                   </q-item-section>
 
-                  <q-item-section>
-                    <q-item-label class="text-body2 text-grey-9">
+                  <q-item-section class="pr-8">
+                    <q-item-label
+                      class="text-body2 text-grey-9"
+                      style="
+                        white-space: normal;
+                        overflow-wrap: anywhere;
+                        word-break: break-word;
+                      "
+                    >
                       {{ getNotificationMessage(notification) }}
                     </q-item-label>
                     <q-item-label caption>
                       {{ formatTime(notification.created_at) }}
                     </q-item-label>
                   </q-item-section>
-
-                  <q-item-section side top>
+                  <div>
                     <q-icon name="circle" color="primary" size="8px" />
-                  </q-item-section>
+                  </div>
 
                   <q-separator v-if="index < unread.length - 1" />
                 </q-item>
@@ -127,7 +141,7 @@ type NotificationData = Tables<'notifications'> & {
   type: 'revision' | 'comment' | 'role';
   action: 'insert' | 'update' | 'delete';
   article_id: string;
-  triggered_by: string | null;
+  triggered_by: string;
   triggered_on: string | null;
   article?: { title?: string };
   triggered_by_profile?: { email?: string };
@@ -168,7 +182,6 @@ function getNotificationIcon(notification: NotificationData): string {
       return 'difference';
     case 'comment.insert':
       return isReply ? 'forum' : 'chat';
-
     case 'role.insert':
       return 'person_add';
     case 'role.update':
@@ -331,11 +344,12 @@ async function fetchNotificationById(id: string) {
 }
 
 async function getChangeIdForNotification(notification: NotificationData) {
-  if (notification.type === 'comment' && notification.triggered_on) {
+  if (notification.type === 'comment') {
     const { data, error } = await supabase
       .from('comments')
       .select('change_id')
-      .eq('commenter_id', notification.triggered_on)
+      .eq('commenter_id', notification.triggered_by)
+      .eq('article_id', notification.article_id)
       .order('created_at', { ascending: false })
       .limit(1)
       .single();
@@ -346,19 +360,21 @@ async function getChangeIdForNotification(notification: NotificationData) {
     }
     return data?.change_id ?? null;
   }
-  if (notification.type === 'revision' && notification.triggered_on) {
+
+  if (notification.type === 'revision') {
     const { data, error } = await supabase
       .from('changes')
       .select('id')
       .eq('article_id', notification.article_id)
-      .order('created_at', { ascending: true })
+      .order('created_at', { ascending: false })
       .limit(1)
       .single();
+
     if (error) {
-      console.error('Error fetching first change for revision:', error);
+      console.error('Error fetching revision change_id:', error);
       return null;
     }
-    return data?.id;
+    return data?.id ?? null;
   }
   return null;
 }
@@ -366,15 +382,31 @@ async function getChangeIdForNotification(notification: NotificationData) {
 async function navigateAndMarkRead(notification: NotificationData) {
   try {
     const changeId = await getChangeIdForNotification(notification);
-    const route = {
-      path: `/articles/${notification.article_id}`,
-      query:
-        notification.type === 'revision' || notification.type === 'comment'
-          ? { change: changeId }
-          : {},
-    };
 
-    await router.push(route);
+    const targetPath = `/articles/${notification.article_id}`;
+    const targetQuery =
+      notification.type === 'revision' || notification.type === 'comment'
+        ? { change: changeId }
+        : {};
+
+    const currentPath = router.currentRoute.value.path;
+    const isSameArticle = currentPath === targetPath;
+
+    if (isSameArticle) {
+      const route = {
+        path: targetPath,
+        query: targetQuery,
+      };
+      await router.push(route);
+    } else {
+      const url = new URL(window.location.origin);
+      url.pathname = targetPath;
+
+      if (targetQuery.change) {
+        url.searchParams.set('change', targetQuery.change);
+      }
+      window.location.href = url.href;
+    }
     await supabase
       .from('notifications')
       .update({ is_read: true })
@@ -385,7 +417,7 @@ async function navigateAndMarkRead(notification: NotificationData) {
       store.selectedChangeId = changeId;
     }
   } catch (err) {
-    console.error('Failed navigateAndMarkRead', err);
+    console.error('Failed navigateAndMarkRead:', err);
     Notify.create({
       message: 'Failed to process notification',
       color: 'negative',

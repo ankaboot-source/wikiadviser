@@ -1,23 +1,36 @@
 <template>
-  <iframe
-    v-if="renderIframe"
-    v-show="buttonToggle === 'edit' && !loading.value"
-    ref="iframeRef"
-    :src="articleLink"
-    class="col-grow rounded-borders borders bg-secondary"
-    frameBorder="0"
-    @load="onIframeLoad()"
-  />
   <div
-    v-if="buttonToggle === 'edit' && loading.value"
-    class="q-pa-xl row justify-center text-center col-grow rounded-borders borders bg-secondary"
+    v-if="buttonToggle === 'edit'"
+    style="position: relative"
+    class="col-grow"
   >
-    <div>
-      <div class="text-h6">
-        {{ loading.message }}
+    <iframe
+      v-if="renderIframe"
+      ref="iframeRef"
+      :src="articleLink"
+      class="full-width full-height rounded-borders borders bg-secondary"
+      frameBorder="0"
+      @load="onIframeLoad()"
+    />
+    <div
+      v-if="loading.value"
+      class="q-pa-xl row justify-center text-center rounded-borders borders bg-secondary"
+      style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1000;
+      "
+    >
+      <div>
+        <div class="text-h6">
+          {{ loading.message }}
+        </div>
+        <QSpinner class="q-my-xl self-center" color="primary" size="140" />
+        <div class="text-body1">Please wait…</div>
       </div>
-      <QSpinner class="q-my-xl self-center" color="primary" size="140" />
-      <div class="text-body1">Please wait…</div>
     </div>
   </div>
 </template>
@@ -47,11 +60,12 @@ const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
     value: true,
-    message: 'Redirecting to visual diff',
+    message: 'Processing changes',
   },
 };
 const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
+const isProcessingChanges = ref(false);
 
 const emit = defineEmits(['switchTabEmit']);
 
@@ -73,12 +87,13 @@ async function handleDiffChange(data: {
     method: 'PUT',
     body: JSON.stringify({ diffHtml: data.diffHtml }),
   });
-  emit('switchTabEmit', 'view');
+  emit('switchTabEmit', 'edit');
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',
     color: 'positive',
   });
+  isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
   reloadIframe();
 }
@@ -101,16 +116,13 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   if (data.type === 'diff-change') {
     await handleDiffChange(data);
-
     return;
   }
 
   switch (data.type) {
     case 'saved-changes':
-      loading.value = { ...loaderPresets.changes };
-      break;
-
     case 'deleted-revision':
+      isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
       gotoDiffLink();
       break;
@@ -120,7 +132,9 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 }
 
 async function onIframeLoad() {
-  loading.value.value = false;
+  if (!isProcessingChanges.value) {
+    loading.value.value = false;
+  }
 }
 
 onMounted(() => {

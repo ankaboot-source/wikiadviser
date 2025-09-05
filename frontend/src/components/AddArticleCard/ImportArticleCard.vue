@@ -171,7 +171,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
       spinnerSize: 140,
 
       message: `
-      <div class='text-h6'>Importing “${searchedArticle.title}” from Wikipedia.</div></br>
+      <div class='text-h6'>Importing “${searchedArticle.title}” from Wikipedia. </div></br>
       <div class='text-body1'>Please wait…</div>`,
       html: true,
     });

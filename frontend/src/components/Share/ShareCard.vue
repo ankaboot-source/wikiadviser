@@ -53,7 +53,7 @@
           <q-tooltip>This article is published on the Web</q-tooltip>
         </q-icon>
       </q-toggle>
-      <div>
+      <div v-if="web_publication_toggle">
         <q-btn
           icon="open_in_new"
           outline

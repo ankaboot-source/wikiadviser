@@ -6,7 +6,7 @@
         <div class="text-h5 merriweather">Account Settings</div>
       </div>
 
-      <div class="q-my-lg" v-if="computedStep !== 0">
+      <div v-if="computedStep !== 0" class="q-my-lg">
         <q-stepper
           ref="stepperRef"
           v-model="step"

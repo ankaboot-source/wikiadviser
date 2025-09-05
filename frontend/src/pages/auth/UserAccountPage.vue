@@ -262,28 +262,6 @@ const $router = useRouter();
 const userStore = useUserStore();
 const articlesStore = useArticlesStore();
 
-const stepperRef = ref();
-
-const computedStep = computed(() => {
-  if (isUninitializedUser.value) return 1;
-  else if (isAnon.value) return 2;
-  else if (!hasPassword.value) return 3;
-  else return 0;
-});
-const step = ref();
-
-function updateStepper() {
-  step.value = computedStep.value;
-}
-
-onBeforeMount(async () => {
-  await userStore.fetchProfile();
-
-  updateStepper();
-  emailInput.value = userStore.user?.email_change || '';
-  console.log(userStore.user);
-});
-
 const revertingImage = ref(false);
 const deletingAccount = ref(false);
 const showDeleteModal = ref(false);
@@ -299,7 +277,19 @@ const isUninitializedUser = computed(
 );
 const hasPassword = computed(() => Boolean(userStore.user?.has_password));
 
-console.log(isAnon.value);
+const stepperRef = ref();
+const computedStep = computed(() => {
+  if (isUninitializedUser.value) return 1;
+  else if (isAnon.value) return 2;
+  else if (!hasPassword.value) return 3;
+  else return 0;
+});
+const step = ref();
+
+function updateStepper() {
+  step.value = computedStep.value;
+}
+
 const nameInput = ref(displayName.value);
 const isValidNameInput = computed(
   () =>
@@ -363,12 +353,10 @@ const isValidEmailInput = computed(
 );
 
 async function linkEmail() {
-  console.log(userStore.user);
-  const { data, error } = await supabaseClient.auth.updateUser({
+  const { error } = await supabaseClient.auth.updateUser({
     email: emailInput.value,
   });
 
-  console.log(data, error);
   if (error) {
     $q.notify({
       message: 'Error linking email',
@@ -391,18 +379,11 @@ const OTPtoken = ref('');
 const isValidOTP = computed(() => OTPtoken.value.length === 6);
 async function verifyOTP() {
   if (!userStore.user?.email_change) return;
-  console.log(
-    'Verifying OTP for:',
-    userStore.user.email_change,
-    OTPtoken.value,
-  );
-
-  const { data, error } = await supabaseClient.auth.verifyOtp({
+  const { error } = await supabaseClient.auth.verifyOtp({
     email: userStore.user.email_change,
     token: OTPtoken.value,
     type: 'email_change',
   });
-  console.log(data, error);
   if (error) {
     $q.notify({
       message: 'Error verifying OTP',
@@ -447,6 +428,12 @@ async function prepareNewAccount() {
   await setDisplayName(true);
   await userStore.fetchProfile();
 }
+
+onBeforeMount(async () => {
+  await userStore.fetchProfile();
+  updateStepper();
+  emailInput.value = userStore.user?.email_change || '';
+});
 </script>
 
 <style scoped>

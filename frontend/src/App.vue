@@ -44,7 +44,7 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password && userStore.user?.is_email_provider) {
+    if (!userStore.user?.has_password && userStore.user?.has_email_provider) {
       Notify.create({
         message:
           'You will lose all your progress if you dont link your account.',

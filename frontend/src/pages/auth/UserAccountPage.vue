@@ -276,7 +276,7 @@ const isUninitializedUser = computed(
   () => isAnon.value && !Boolean(changeEmail.value),
 );
 const hasPassword = computed(() => Boolean(userStore.user?.has_password));
-const hasEmailProvider = computed(() => userStore.user?.is_email_provider);
+const hasEmailProvider = computed(() => userStore.user?.has_email_provider);
 
 const stepperRef = ref();
 const computedStep = computed(() => {

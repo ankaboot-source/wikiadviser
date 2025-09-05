@@ -39,7 +39,6 @@ jobs:
       - name: set Supabase secrets
         run: supabase secrets set WIKIADVISER_BACKGROUND_COLORS="$WIKIADVISER_BACKGROUND_COLORS" WIKIADVISER_LANGUAGES="$WIKIADVISER_LANGUAGES" WIKIPEDIA_PROXY="$WIKIPEDIA_PROXY" MEDIAWIKI_ENDPOINT="$MEDIAWIKI_ENDPOINT" MW_BOT_USERNAME="$MW_BOT_USERNAME" MW_BOT_PASSWORD="$MW_BOT_PASSWORD" X_API_KEY="$X_API_KEY" ROOT_DOMAIN="$ROOT_DOMAIN" SMTP_USER="$SMTP_USER" SMTP_PASS="$SMTP_PASS" SMTP_PORT="$SMTP_PORT" SMTP_HOST="$SMTP_HOST" SITE_URL="$SITE_URL"
 
-
       - name: list Supabase secrets
         run: supabase secrets list
 
@@ -49,8 +48,8 @@ jobs:
       - name: deploy share-link
         run: supabase functions deploy share-link --debug
 
-      - name: deploy user-avatar
-        run: supabase functions deploy user-avatar --debug
+      - name: deploy user
+        run: supabase functions deploy user --debug
 
       - name: deploy wikipedia
         run: supabase functions deploy wikipedia --no-verify-jwt --debug

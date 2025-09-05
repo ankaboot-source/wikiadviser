@@ -121,17 +121,17 @@
 </template>
 
 <script setup lang="ts">
-import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
-import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
 import CreateArticle from 'src/components/AddArticleCard/CreateArticleCard.vue';
-import { Article, Profile } from 'src/types';
-import { computed, onBeforeMount, ref } from 'vue';
+import ImportArticle from 'src/components/AddArticleCard/ImportArticleCard.vue';
+import OwnedArticle from 'src/components/AddArticleCard/OwnedArticleItem.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import { Article, Profile } from 'src/types';
+import { computed, onBeforeMount, ref } from 'vue';
 
 const user = computed(() => useUserStore().user as Profile);
 const articlesStore = useArticlesStore();
-
+const userStore = useUserStore();
 const term = ref('');
 const loading = ref(true);
 const showImportArticleDialog = ref(false);
@@ -140,7 +140,7 @@ const showCreateArticleDialog = ref(false);
 const articles = computed(() => articlesStore.articles);
 
 onBeforeMount(async () => {
-  await useUserStore().fetchProfile();
+  await userStore.fetchProfile();
   await articlesStore.fetchArticles(user.value.id);
   loading.value = false;
 });

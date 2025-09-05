@@ -72,6 +72,10 @@ export interface Profile {
   default_avatar: boolean;
   avatar_url?: string;
   allowed_articles: number;
+  display_name?: string | null;
+  has_password?: boolean;
+  email_verified?: boolean | null;
+  email_change?: string | null;
 }
 
 export type {

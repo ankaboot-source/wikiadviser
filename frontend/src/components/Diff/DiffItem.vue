@@ -288,7 +288,7 @@ import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
 
-const $quasar = useQuasar();
+const $q = useQuasar();
 const userStore = useUserStore();
 const store = useSelectedChangeStore();
 const props = defineProps<{
@@ -489,7 +489,7 @@ async function hideChange() {
   hidingChange.value = true;
   try {
     await hideChanges(props.item.id);
-    $quasar.notify({
+    $q.notify({
       message: 'Change is successfully and permanently hidden',
       icon: 'check',
       color: 'positive',
@@ -507,7 +507,7 @@ function copyChangeLink() {
   const url = new URL(window.location.href);
   url.searchParams.set('change', props.item.id);
   navigator.clipboard.writeText(url.toString());
-  $quasar.notify({
+  $q.notify({
     message: 'Change link copied to clipboard',
     color: 'positive',
     icon: 'content_copy',

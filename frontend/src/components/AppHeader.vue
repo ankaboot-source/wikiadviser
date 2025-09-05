@@ -22,10 +22,10 @@
       </q-toolbar-title>
       <q-space />
       <NotificationsBell v-if="user" />
-      <q-btn v-if="user" no-caps unelevated @click="account">
+      <q-btn v-if="user" no-caps unelevated @click="goToAccount">
         <user-component
           :avatar-url="avatarURL"
-          :email="user.email"
+          :name="user.display_name || user.email"
           section="profile"
         />
       </q-btn>
@@ -49,8 +49,8 @@ import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import UserComponent from './UserComponent.vue';
 import NotificationsBell from './NotificationsBell.vue';
+import UserComponent from './UserComponent.vue';
 
 const router = useRouter();
 const $q = useQuasar();
@@ -85,7 +85,7 @@ async function signOut() {
   $q.notify({ message: 'Signed out', icon: 'logout' });
 }
 
-function account() {
+function goToAccount() {
   router.push({
     path: '/account',
   });

@@ -4,15 +4,15 @@
       <img :src="avatarUrl" referrerpolicy="no-referrer" />
     </q-avatar>
     <span class="username q-ml-sm ellipsis">
-      {{ email }}
+      {{ name }}
     </span>
   </div>
 </template>
 
 <script setup lang="ts">
-const { avatarUrl, email } = defineProps<{
+const { avatarUrl, name } = defineProps<{
   avatarUrl: string | undefined;
-  email: string;
+  name: string;
   section: 'profile' | 'revision';
 }>();
 </script>

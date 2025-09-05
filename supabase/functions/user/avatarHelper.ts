@@ -1,9 +1,9 @@
 import { Context } from "hono";
 import ENV from "../_shared/schema/env.schema.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
-import generateAvatar from "./external-avatars/authUi.ts";
+import buildAvatar from "./avatar-generator/avatarPlaceholder.ts";
 
-export async function deleteUserAvatar(c: Context) {
+export async function setDefaultAvatar(c: Context) {
   const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
   const {
     data: { user },
@@ -14,20 +14,28 @@ export async function deleteUserAvatar(c: Context) {
     });
   }
   const profile = (
-    await supabaseClient.from("profiles").select("*").eq("id", user.id).single()
+    await supabaseClient.from("profiles_view").select("*").eq("id", user.id)
+      .single()
   ).data;
+
   const backgrounds = ENV.WIKIADVISER_BACKGROUND_COLORS;
-  const { error: deleteError } = await supabaseClient
+  const isAnon = !profile.email;
+  const avatar = buildAvatar(
+    isAnon ? null : profile.display_name || profile.email,
+    backgrounds,
+  );
+
+  const { error: updateError } = await supabaseClient
     .from("profiles")
     .update({
-      avatar_url: generateAvatar(profile.email, backgrounds),
+      avatar_url: avatar,
       default_avatar: true,
     })
     .eq("id", profile.id);
 
-  if (deleteError) {
-    throw new Error(deleteError.message);
+  if (updateError) {
+    throw new Error(updateError.message);
   }
 
-  return new Response("Avatar deleted");
+  return new Response("Avatar updated");
 }

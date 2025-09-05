@@ -49,6 +49,7 @@ import { parseArticleHtml } from 'src/utils/parsing';
 const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
+const userStore = useUserStore();
 
 const { params } = route;
 
@@ -56,7 +57,6 @@ const articleId = ref('');
 
 const loading = ref(true);
 
-const userStore = useUserStore();
 const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
 const $q = useQuasar();
@@ -175,14 +175,14 @@ async function handlePermissionsRealtime(
 }
 
 onBeforeMount(async () => {
-  const user = (await useUserStore().fetchProfile()) as Profile;
+  await userStore.fetchProfile();
 
   // Access the article id parameter from the route's params object
   const { articleId: articleIdFromParams } = params;
 
   articleId.value = articleIdFromParams as string;
   users.value = await getUsers(articleId.value);
-  await articlesStore.fetchArticles(user.id);
+  await articlesStore.fetchArticles(userId.value);
 
   if (!article.value) {
     const isArticle = await isArticleExists(articleId.value);

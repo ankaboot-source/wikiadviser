@@ -33,19 +33,30 @@
           }"
           :providers="['google', 'azure']"
         />
+        <q-separator />
+        <q-btn
+          outline
+          no-caps
+          class="full-width q-mt-md"
+          label="Sign in as Guest"
+          @click="loginAnonymously()"
+        />
       </q-card-section>
     </q-card-section>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import supabaseClient from 'src/api/supabase';
 import { Auth } from '@nuxtbase/auth-ui-vue';
 import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
+import { storeToRefs } from 'pinia';
+import {
+  default as supabase,
+  default as supabaseClient,
+} from 'src/api/supabase';
+import { useUserStore } from 'src/stores/userStore';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import { useUserStore } from 'src/stores/userStore';
 
 const { session } = storeToRefs(useUserStore());
 
@@ -121,4 +132,10 @@ onBeforeRouteLeave(() => {
 onMounted(() => {
   convretToMicrosoftButton();
 });
+
+async function loginAnonymously() {
+  const { data, error } = await supabase.auth.signInAnonymously();
+
+  console.log(data, error);
+}
 </script>

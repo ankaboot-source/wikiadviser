@@ -16,18 +16,18 @@ export const useUserStore = defineStore('session', () => {
   }
 
   async function fetchProfile() {
-    const userId = await getSession();
+    await getSession();
+    if (!session.value) return;
 
-    user.value = userId
+    user.value = session.value
       ? ((
           await supabase
-            .from('profiles')
+            .from('profiles_view')
             .select('*')
-            .eq('id', session.value?.user.id)
+            .eq('id', session.value.user.id)
             .single()
         ).data as Profile)
       : null;
-    return user.value;
   }
 
   function $resetUser() {

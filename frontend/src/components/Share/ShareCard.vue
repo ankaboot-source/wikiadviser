@@ -113,16 +113,16 @@ const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 const shareRoleModel = ref({
-  label: 'edit, review, and view',
+  label: 'edit, review and view',
   value: 'editor',
 });
 const shareRoleOptions = [
   {
-    label: 'edit, review, and view',
+    label: 'edit, review and view',
     value: 'editor',
   },
   {
-    label: 'review, and view',
+    label: 'review and view',
     value: 'reviewer',
   },
   {

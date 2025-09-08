@@ -4,13 +4,13 @@
       <q-toolbar-title class="col-9 col-shrink">
         <q-breadcrumbs class="merriweather">
           <q-breadcrumbs-el
+            v-if="!article?.title || !$q.screen.lt.md"
             class="no-wrap"
             label="WikiAdviser"
             icon="img:/icons/logo.svg"
             to="/"
           />
-
-          <q-breadcrumbs-el v-if="article?.title" to="." @click="$router.go(0)">
+          <q-breadcrumbs-el v-if="article?.title">
             <div class="ellipsis">
               {{ article.title }}
             </div>
@@ -21,8 +21,13 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
-      <NotificationsBell v-if="user" />
-      <q-btn v-if="user" no-caps unelevated @click="goToAccount">
+      <NotificationsBell v-if="user && !$q.screen.lt.md" />
+      <q-btn
+        v-if="user && !$q.screen.lt.md"
+        no-caps
+        unelevated
+        @click="goToAccount"
+      >
         <user-component
           :avatar-url="avatarURL"
           :name="user.display_name || user.email"
@@ -30,15 +35,80 @@
         />
       </q-btn>
       <q-btn
-        v-if="user"
+        v-if="user && !$q.screen.lt.md"
         clickable
         icon="logout"
         no-caps
         unelevated
         @click="signOut()"
       />
+      <q-btn
+        v-if="user && $q.screen.lt.md"
+        flat
+        dense
+        round
+        icon="menu"
+        @click="showDrawer = true"
+      />
     </q-toolbar>
   </q-header>
+  <q-drawer
+    v-if="user"
+    v-model="showDrawer"
+    side="right"
+    behavior="mobile"
+    overlay
+    :width="$q.screen.width"
+    :content-style="{ display: 'flex', flexDirection: 'column' }"
+  >
+    <q-toolbar class="bg-secondary text-black flex-no-grow">
+      <q-toolbar-title>
+        <q-breadcrumbs class="merriweather">
+          <q-breadcrumbs-el
+            class="no-wrap"
+            label="WikiAdviser"
+            icon="img:/icons/logo.svg"
+            to="/"
+          />
+        </q-breadcrumbs>
+      </q-toolbar-title>
+      <q-btn flat dense round icon="close" @click="showDrawer = false" />
+    </q-toolbar>
+    <q-list class="flex-no-grow">
+      <q-item
+        clickable
+        @click="
+          goToAccount();
+          showDrawer = false;
+        "
+      >
+        <q-item-section avatar>
+          <q-avatar>
+            <img v-if="avatarURL" :src="avatarURL" />
+            <q-icon v-else name="person" />
+          </q-avatar>
+        </q-item-section>
+        <q-item-section>
+          {{ user.display_name || user.email }}
+        </q-item-section>
+      </q-item>
+    </q-list>
+    <q-separator class="flex-no-grow" />
+    <q-list class="flex-no-grow q-mb-lg">
+      <q-item
+        clickable
+        @click="
+          signOut();
+          showDrawer = false;
+        "
+      >
+        <q-item-section avatar>
+          <q-icon name="logout" />
+        </q-item-section>
+        <q-item-section> Log out </q-item-section>
+      </q-item>
+    </q-list>
+  </q-drawer>
 </template>
 
 <script setup lang="ts">
@@ -54,6 +124,8 @@ import UserComponent from './UserComponent.vue';
 
 const router = useRouter();
 const $q = useQuasar();
+
+const showDrawer = ref(false);
 
 const article = ref<Article | null>();
 const articlesStore = useArticlesStore();

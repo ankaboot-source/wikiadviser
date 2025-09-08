@@ -27,18 +27,7 @@
                 fontSize: '15px',
               },
             },
-            variables: {
-              default: {
-                colors: {
-                  brand: '#56564c' /* primary */,
-                  brandAccent: '#56564c' /* primary */,
-                  inputLabelText: '#263238' /* dark */,
-                  defaultButtonText: '#263238' /* dark */,
-                  messageTextDanger: '#b71c1c' /* negative */,
-                  messageText: '#1b5e20' /* positive */,
-                },
-              },
-            },
+            variables: AUTH_UI_VUE_VARIABLES_STYLE,
           }"
           :providers="['google', 'azure']"
         />
@@ -56,6 +45,7 @@ import {
   default as supabaseClient,
 } from 'src/api/supabase';
 import { useUserStore } from 'src/stores/userStore';
+import { AUTH_UI_VUE_VARIABLES_STYLE } from 'src/utils/consts';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 

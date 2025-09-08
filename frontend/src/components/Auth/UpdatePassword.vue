@@ -9,18 +9,7 @@
           fontSize: '15px',
         },
       },
-      variables: {
-        default: {
-          colors: {
-            brand: '#56564c' /* primary */,
-            brandAccent: '#56564c' /* primary */,
-            inputLabelText: '#263238' /* dark */,
-            defaultButtonText: '#263238' /* dark */,
-            messageTextDanger: '#b71c1c' /* negative */,
-            messageText: '#1b5e20' /* positive */,
-          },
-        },
-      },
+      variables: AUTH_UI_VUE_VARIABLES_STYLE,
     }"
   />
 </template>
@@ -30,6 +19,7 @@ import { Auth } from '@nuxtbase/auth-ui-vue';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
+import { AUTH_UI_VUE_VARIABLES_STYLE } from 'src/utils/consts';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 

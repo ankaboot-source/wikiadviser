@@ -7,17 +7,21 @@
       </div>
 
       <div v-if="computedStep !== 0" class="q-my-lg">
+        <h2 class="text-h6 merriweather q-mb-xs">Link your account</h2>
+        <p class="text-body1 q-mb-none">
+          Convert your anonymous account to a permanent user.
+        </p>
         <q-stepper
           ref="stepperRef"
           v-model="step"
           color="primary"
           animated
           flat
-          bordered
         >
           <q-step
             :name="1"
-            title="Link your account"
+            prefix="1"
+            title="Link your email"
             icon="link"
             active-icon="none"
             :done="step > 1"
@@ -28,7 +32,6 @@
               dense
               outlined
               type="email"
-              class="q-mb-sm"
               :rules="[
                 (string) => !!string || 'Email is required',
                 (string) =>
@@ -49,11 +52,11 @@
                 />
               </template>
             </q-input>
-            <q-stepper-navigation class="q-pt-none">
+            <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
                 label="Link email"
-                outline
                 unelevated
+                color="primary"
                 icon="link"
                 :disable="!isValidEmailInput"
                 @click="linkEmail"
@@ -63,6 +66,7 @@
 
           <q-step
             :name="2"
+            prefix="2"
             title="Verify your account"
             icon="hourglass_empty"
             active-icon="none"
@@ -86,15 +90,7 @@
                   'OTP must be 6 characters long.',
               ]"
             />
-            <q-stepper-navigation class="q-pt-none">
-              <q-btn
-                :disable="!isValidOTP"
-                label="Verify"
-                outline
-                unelevated
-                icon="check"
-                @click="verifyOTP"
-              />
+            <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
                 flat
                 color="primary"
@@ -102,16 +98,33 @@
                 class="q-ml-sm"
                 @click="stepperRef.previous()"
               />
+              <q-btn
+                :disable="!isValidOTP"
+                label="Verify"
+                unelevated
+                color="primary"
+                icon="check"
+                @click="verifyOTP"
+              />
             </q-stepper-navigation>
           </q-step>
 
           <q-step
             :name="3"
+            prefix="3"
             title="Set password"
             icon="lock_open"
             active-icon="none"
           >
             <UpdatePassword :prepare-new-account="prepareNewAccount" />
+            <q-btn
+              :disable="!isValidOTP"
+              label="Verify"
+              unelevated
+              color="primary"
+              icon="check"
+              @click="verifyOTP"
+            />
           </q-step>
         </q-stepper>
       </div>
@@ -435,9 +448,13 @@ onBeforeMount(async () => {
 });
 </script>
 
-<style scoped>
+<style>
 a {
   color: var(--q-primary);
   text-decoration: none;
+}
+
+.q-stepper__step-inner {
+  padding: 0 24px 24px !important;
 }
 </style>

@@ -12,8 +12,12 @@
       variables: {
         default: {
           colors: {
-            brand: 'hsl(207, 90%, 49%)',
-            brandAccent: 'hsl(207, 85%, 41%)',
+            brand: '#56564c' /* primary */,
+            brandAccent: '#56564c' /* primary */,
+            inputLabelText: '#263238' /* dark */,
+            defaultButtonText: '#263238' /* dark */,
+            messageTextDanger: '#b71c1c' /* negative */,
+            messageText: '#1b5e20' /* positive */,
           },
         },
       },

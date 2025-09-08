@@ -1,5 +1,5 @@
 <template>
-  <q-card style="min-width: 30vw">
+  <q-card style="min-width: 40vw">
     <q-toolbar class="bg-white borders">
       <q-toolbar-title class="merriweather">Share settings</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
@@ -8,25 +8,19 @@
     <q-card-section v-if="ownerPermission">
       <div class="text-h6 text-weight-regular">Share link</div>
       <div class="q-mr-sm row wrap items-center q-gutter-sm">
-        <div class="col-12">
-          <span v-if="shareRoleModel.value === 'editor'"
-            >Anyone with this link will be able to edit, review and view this
-            article.</span
-          >
-          <span v-else-if="shareRoleModel.value === 'reviewer'"
-            >Anyone with this link will be able to review and view this
-            article.</span
-          >
-          <span v-else-if="shareRoleModel.value === 'viewer'"
-            >Anyone with this link will be able to view only this article.</span
-          >
+        <div class="col">
+          <span style="display: inline-flex; align-items: center">
+            Anyone with this link can
+            <q-select
+              v-model="shareRoleModel"
+              :options="shareRoleOptions"
+              class="text-capitalize"
+              dense
+              style="margin: 0 8px; width: auto"
+            />
+            this article.
+          </span>
         </div>
-        <q-select
-          v-model="shareRoleModel"
-          :options="shareRoleOptions"
-          class="text-capitalize"
-          dense
-        />
         <q-space />
         <q-btn
           icon="content_copy"
@@ -59,6 +53,21 @@
           <q-tooltip>This article is published on the Web</q-tooltip>
         </q-icon>
       </q-toggle>
+      <div v-if="web_publication_toggle">
+        <q-btn
+          icon="open_in_new"
+          outline
+          label="View article"
+          no-caps
+          class="q-mt-sm"
+          @click="
+            articlesStore.viewArticleInNewTab(
+              article.language,
+              article.article_id,
+            )
+          "
+        />
+      </div>
     </q-card-section>
 
     <q-card-actions v-if="ownerPermission" class="borders">
@@ -104,20 +113,20 @@ const $q = useQuasar();
 const articlesStore = useArticlesStore();
 
 const shareRoleModel = ref({
-  label: 'Editor',
+  label: 'edit, review and view',
   value: 'editor',
 });
 const shareRoleOptions = [
   {
-    label: 'Editor',
+    label: 'edit, review and view',
     value: 'editor',
   },
   {
-    label: 'Reviewer',
+    label: 'review and view',
     value: 'reviewer',
   },
   {
-    label: 'Viewer',
+    label: 'view',
     value: 'viewer',
   },
 ];

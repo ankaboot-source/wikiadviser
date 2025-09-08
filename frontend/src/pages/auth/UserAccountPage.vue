@@ -348,7 +348,7 @@ const isValidEmailInput = computed(
   () =>
     emailInput.value &&
     emailInput.value.length > 0 &&
-    emailInput.value.length <= 30 &&
+    emailInput.value.length <= 60 &&
     emailRegex.test(emailInput.value),
 );
 

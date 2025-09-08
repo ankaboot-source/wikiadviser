@@ -30,7 +30,7 @@
       >
         <user-component
           :avatar-url="avatarURL"
-          :name="displayName"
+          :name="name!"
           section="profile"
         />
       </q-btn>
@@ -89,7 +89,7 @@
           </q-avatar>
         </q-item-section>
         <q-item-section>
-          {{ displayName }}
+          {{ name }}
         </q-item-section>
       </q-item>
     </q-list>
@@ -136,10 +136,7 @@ const userStore = useUserStore();
 const user = computed(() => userStore.user);
 const avatarURL = computed(() => user.value?.avatar_url);
 
-const displayName = computed(() => {
-  const userData = user.value;
-  return userData?.display_name || userData?.email || '';
-});
+const name = computed(() => userStore.name);
 
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;

@@ -6,9 +6,9 @@
       </q-avatar>
     </q-item-section>
     <q-item-section>
-      <q-item-label caption class="ellipsis">{{
-        props.user.email
-      }}</q-item-label>
+      <q-item-label caption class="ellipsis">
+        {{ props.user.name }}
+      </q-item-label>
     </q-item-section>
     <q-select
       v-model="roleModel"

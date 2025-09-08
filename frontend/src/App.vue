@@ -32,14 +32,14 @@ function goToAccount() {
 onMounted(async () => {
   await userStore.getSession();
   await userStore.fetchProfile();
-  console.log(userStore.user);
+
   if (userStore.session) {
     if (!userStore.user?.avatar_url) {
       await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.display_name && !userStore.user?.email) {
+    if (!userStore.name) {
       await supabaseClient.functions.invoke('user/name', { method: 'POST' });
       await userStore.fetchProfile();
     }

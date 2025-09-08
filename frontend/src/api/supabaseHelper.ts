@@ -14,7 +14,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       id,
       article_id,
       role,
-      user: profiles(id, email, avatar_url, default_avatar, allowed_articles)
+      user: profiles_view(id, email, avatar_url, default_avatar, allowed_articles, display_name)
       `,
     )
     .order('created_at')
@@ -29,7 +29,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       ({
         id: permission.user?.id,
         picture: permission.user?.avatar_url,
-        email: permission.user?.email,
+        name: permission.user?.display_name || permission.user?.email,
         role: permission.role,
         permissionId: permission.id,
       }) as User,
@@ -97,7 +97,7 @@ export async function getArticles(userId: string): Promise<Article[]> {
       imported,
       changes!changes_article_id_fkey(
         created_at,
-        profiles:contributor_id(email)
+        profiles_view(display_name, email)
       )
     )
   `,
@@ -135,7 +135,9 @@ export async function getArticles(userId: string): Promise<Article[]> {
             created_at: article.articles?.changes[0]?.created_at
               ? new Date(article.articles?.changes[0]?.created_at as string)
               : undefined,
-            user: article.articles?.changes[0]?.profiles?.email,
+            name:
+              article.articles?.changes[0]?.profiles_view?.display_name ||
+              article.articles?.changes[0]?.profiles_view?.email,
           },
         }) as Article,
     )

@@ -9,14 +9,7 @@
           fontSize: '15px',
         },
       },
-      variables: {
-        default: {
-          colors: {
-            brand: 'hsl(207, 90%, 49%)',
-            brandAccent: 'hsl(207, 85%, 41%)',
-          },
-        },
-      },
+      variables: AUTH_UI_VUE_VARIABLES_STYLE,
     }"
   />
 </template>
@@ -26,6 +19,7 @@ import { Auth } from '@nuxtbase/auth-ui-vue';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
+import { AUTH_UI_VUE_VARIABLES_STYLE } from 'src/utils/consts';
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 

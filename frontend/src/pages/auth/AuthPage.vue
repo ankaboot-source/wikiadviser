@@ -9,7 +9,7 @@
           class="supabase-auth-ui_ui-button c-bOcPnF c-bOcPnF-iwjZXY-color-default"
           @click="loginAnonymously()"
         >
-          <q-icon name="person_4" />
+          <q-icon name="theater_comedy" />
           Sign in Anonymously
         </button>
         <q-separator class="q-mt-md" />

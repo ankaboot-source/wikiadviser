@@ -123,7 +123,7 @@
 
         <q-input
           v-model="nameInput"
-          :readonly="!hasPassword"
+          :disable="!hasPassword"
           :hint="
             !hasPassword
               ? 'You can change your name once you have successfully linked your account'

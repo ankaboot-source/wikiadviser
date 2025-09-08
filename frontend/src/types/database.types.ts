@@ -17,10 +17,10 @@ export type Database = {
     Functions: {
       graphql: {
         Args: {
+          extensions?: Json;
           operationName?: string;
           query?: string;
           variables?: Json;
-          extensions?: Json;
         };
         Returns: Json;
       };
@@ -126,6 +126,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'changes_contributor_id_fkey';
+            columns: ['contributor_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'changes_revision_id_fkey';
             columns: ['revision_id'];
             isOneToOne: false;
@@ -175,6 +182,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'comments_commenter_id_fkey';
+            columns: ['commenter_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'fk_comments_article_id';
             columns: ['article_id'];
             isOneToOne: false;
@@ -185,27 +199,89 @@ export type Database = {
       };
       notifications: {
         Row: {
-          created_at: string | null;
+          action: string;
+          article_id: string;
+          created_at: string;
           id: string;
-          is_read: boolean | null;
-          message: string;
+          is_read: boolean;
+          triggered_by: string;
+          triggered_on: string;
+          type: string;
           user_id: string;
         };
         Insert: {
-          created_at?: string | null;
+          action: string;
+          article_id: string;
+          created_at?: string;
           id?: string;
-          is_read?: boolean | null;
-          message: string;
+          is_read?: boolean;
+          triggered_by: string;
+          triggered_on: string;
+          type: string;
           user_id: string;
         };
         Update: {
-          created_at?: string | null;
+          action?: string;
+          article_id?: string;
+          created_at?: string;
           id?: string;
-          is_read?: boolean | null;
-          message?: string;
+          is_read?: boolean;
+          triggered_by?: string;
+          triggered_on?: string;
+          type?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'notifications_article_id_fkey';
+            columns: ['article_id'];
+            isOneToOne: false;
+            referencedRelation: 'articles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_triggered_by_fkey';
+            columns: ['triggered_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_triggered_by_fkey';
+            columns: ['triggered_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_triggered_on_fkey';
+            columns: ['triggered_on'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_triggered_on_fkey';
+            columns: ['triggered_on'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'notifications_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       permissions: {
         Row: {
@@ -244,6 +320,13 @@ export type Database = {
             referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
+          {
+            foreignKeyName: 'permissions_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
         ];
       };
       profiles: {
@@ -251,57 +334,21 @@ export type Database = {
           allowed_articles: number;
           avatar_url: string | null;
           default_avatar: boolean | null;
-          email: string;
+          email: string | null;
           id: string;
         };
         Insert: {
           allowed_articles: number;
           avatar_url?: string | null;
           default_avatar?: boolean | null;
-          email: string;
+          email?: string | null;
           id: string;
         };
         Update: {
           allowed_articles?: number;
           avatar_url?: string | null;
           default_avatar?: boolean | null;
-          email?: string;
-          id?: string;
-        };
-        Relationships: [];
-      };
-      profiles_view: {
-        Row: {
-          display_name: string | null;
-          email_change: string | null;
-          has_password: boolean;
-          has_email_provider: boolean;
-          allowed_articles: number;
-          avatar_url: string | null;
-          default_avatar: boolean | null;
-          email: string;
-          id: string;
-        };
-        Insert: {
-          display_name: string | null;
-          email_change: string | null;
-          has_password: boolean;
-          has_email_provider: boolean;
-          allowed_articles: number;
-          avatar_url?: string | null;
-          default_avatar?: boolean | null;
-          email: string;
-          id: string;
-        };
-        Update: {
-          display_name: string | null;
-          email_change: string | null;
-          has_password: boolean;
-          has_email_provider: boolean;
-          allowed_articles?: number;
-          avatar_url?: string | null;
-          default_avatar?: boolean | null;
-          email?: string;
+          email?: string | null;
           id?: string;
         };
         Relationships: [];
@@ -369,85 +416,28 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      profiles_view: {
+        Row: {
+          allowed_articles: number | null;
+          avatar_url: string | null;
+          default_avatar: boolean | null;
+          display_name: string | null;
+          email: string | null;
+          email_change: string | null;
+          has_email_provider: boolean | null;
+          has_password: boolean | null;
+          id: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
-      bytea_to_text: {
-        Args: { data: string };
-        Returns: string;
-      };
       delete_user_and_anonymize_data: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
-      get_article_stakeholders: {
-        Args: { p_article_id: string };
-        Returns: {
-          user_id: string;
-          role: string;
-        }[];
-      };
-      http: {
-        Args: { request: Database['public']['CompositeTypes']['http_request'] };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_delete: {
-        Args:
-          | { uri: string }
-          | { uri: string; content: string; content_type: string };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_get: {
-        Args: { uri: string } | { uri: string; data: Json };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_head: {
-        Args: { uri: string };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_header: {
-        Args: { field: string; value: string };
-        Returns: Database['public']['CompositeTypes']['http_header'];
-      };
-      http_list_curlopt: {
-        Args: Record<PropertyKey, never>;
-        Returns: {
-          curlopt: string;
-          value: string;
-        }[];
-      };
-      http_patch: {
-        Args: { uri: string; content: string; content_type: string };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_post: {
-        Args:
-          | { uri: string; content: string; content_type: string }
-          | { uri: string; data: Json };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_put: {
-        Args: { uri: string; content: string; content_type: string };
-        Returns: Database['public']['CompositeTypes']['http_response'];
-      };
-      http_reset_curlopt: {
-        Args: Record<PropertyKey, never>;
-        Returns: boolean;
-      };
-      http_set_curlopt: {
-        Args: { curlopt: string; value: string };
-        Returns: boolean;
-      };
       is_article_exists: {
         Args: { article_id: string };
-        Returns: string;
-      };
-      text_to_bytea: {
-        Args: { data: string };
-        Returns: string;
-      };
-      urlencode: {
-        Args: { data: Json } | { string: string } | { string: string };
         Returns: string;
       };
     };
@@ -455,23 +445,7 @@ export type Database = {
       role: 'owner' | 'editor' | 'reviewer' | 'viewer';
     };
     CompositeTypes: {
-      http_header: {
-        field: string | null;
-        value: string | null;
-      };
-      http_request: {
-        method: unknown | null;
-        uri: string | null;
-        headers: Database['public']['CompositeTypes']['http_header'][] | null;
-        content_type: string | null;
-        content: string | null;
-      };
-      http_response: {
-        status: number | null;
-        content_type: string | null;
-        headers: Database['public']['CompositeTypes']['http_header'][] | null;
-        content: string | null;
-      };
+      [_ in never]: never;
     };
   };
 };

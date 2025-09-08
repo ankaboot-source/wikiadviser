@@ -18,7 +18,7 @@ export type SearchResult = {
 export type User = {
   id?: string;
   picture: string;
-  email: string;
+  name: string;
   role: Enums<'role'>;
   permissionId: string;
 };
@@ -35,7 +35,7 @@ export type Article = {
   imported: boolean;
   latest_change: {
     created_at: Date;
-    user: string;
+    name: string;
   };
 };
 
@@ -69,6 +69,7 @@ export interface Revision {
 export interface Profile {
   id: string;
   email: string;
+  name: string;
   default_avatar: boolean;
   avatar_url?: string;
   allowed_articles: number;

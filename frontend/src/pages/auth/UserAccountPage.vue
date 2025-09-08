@@ -117,14 +117,6 @@
             active-icon="none"
           >
             <UpdatePassword :prepare-new-account="prepareNewAccount" />
-            <q-btn
-              :disable="!isValidOTP"
-              label="Verify"
-              unelevated
-              color="primary"
-              icon="check"
-              @click="verifyOTP"
-            />
           </q-step>
         </q-stepper>
       </div>
@@ -456,6 +448,6 @@ a {
 }
 
 .q-stepper__step-inner {
-  padding: 0 24px 24px !important;
+  padding: 0 24px !important;
 }
 </style>

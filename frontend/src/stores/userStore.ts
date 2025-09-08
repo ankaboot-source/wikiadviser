@@ -8,6 +8,7 @@ export const useUserStore = defineStore('session', () => {
   // States
   const session = ref<Session | null>(null);
   const user = ref<Profile | null>(null);
+  const name = ref<string | undefined>(undefined);
 
   // Actions
   async function getSession() {
@@ -28,16 +29,20 @@ export const useUserStore = defineStore('session', () => {
             .single()
         ).data as Profile)
       : null;
+
+    name.value = user.value?.display_name || user.value?.email;
   }
 
   function $resetUser() {
     session.value = null;
     user.value = null;
+    name.value = undefined;
   }
 
   return {
     session,
     user,
+    name,
     getSession,
     fetchProfile,
     $resetUser,

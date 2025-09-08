@@ -49,7 +49,7 @@
                 />
               </template>
             </q-input>
-            <q-stepper-navigation>
+            <q-stepper-navigation class="q-pt-none">
               <q-btn
                 label="Link email"
                 outline
@@ -86,7 +86,7 @@
                   'OTP must be 6 characters long.',
               ]"
             />
-            <q-stepper-navigation>
+            <q-stepper-navigation class="q-pt-none">
               <q-btn
                 :disable="!isValidOTP"
                 label="Verify"

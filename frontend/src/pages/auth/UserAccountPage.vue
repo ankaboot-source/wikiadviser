@@ -448,6 +448,6 @@ a {
 }
 
 .q-stepper__step-inner {
-  padding: 0 24px !important;
+  padding: 0 !important;
 }
 </style>

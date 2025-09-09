@@ -57,7 +57,10 @@
                 label="Link email"
                 unelevated
                 color="primary"
-                icon="link"
+                icon="email"
+                rounded
+                padding="sm md"
+                push
                 :disable="!isValidEmailInput"
                 @click="linkEmail"
               />
@@ -448,6 +451,6 @@ a {
 }
 
 .q-stepper__step-inner {
-  padding: 0 24px !important;
+  padding: 0 !important;
 }
 </style>

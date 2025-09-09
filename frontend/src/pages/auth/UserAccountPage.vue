@@ -54,13 +54,11 @@
             </q-input>
             <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
-                label="Link email"
+                label="Link Email"
                 unelevated
                 color="primary"
-                icon="email"
-                rounded
-                padding="sm md"
-                push
+                icon="link"
+                size="md"
                 :disable="!isValidEmailInput"
                 @click="linkEmail"
               />

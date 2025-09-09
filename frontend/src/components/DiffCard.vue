@@ -26,6 +26,7 @@
           )
         "
       />
+      <ReviewByMira :article="article" />
       <q-btn
         v-if="role != 'viewer'"
         icon="o_group"
@@ -81,6 +82,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, Enums, User } from 'src/types';
 import { computed, nextTick, ref, watch } from 'vue';
+import ReviewByMira from 'src/components/ReviewByMira.vue';
 
 const selectedChangeStore = useSelectedChangeStore();
 const articlesStore = useArticlesStore();

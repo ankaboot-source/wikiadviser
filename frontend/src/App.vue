@@ -44,21 +44,16 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password && userStore.user?.has_email_provider) {
+    if (!userStore.user?.has_password && !userStore.user?.has_email_provider && !userStore.user?.email) {
       Notify.create({
-        message:
-          'You will lose all your progress if you dont link your account.',
-        caption: 'Please link your account at settings.',
+        message: 'Your account is not linked. Link it to save your progress.',
+        caption: 'Go to settings to link your account.',
         color: 'warning',
         icon: 'warning',
         textColor: 'black',
         progress: true,
-        actions: [
-          {
-            label: 'Settings',
-            handler: () => goToAccount(),
-          },
-        ],
+        timeout: 10000,
+        actions: [{ label: 'Settings', handler: goToAccount }],
       });
     }
   }

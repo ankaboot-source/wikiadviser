@@ -54,8 +54,8 @@
             </q-input>
             <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
-                class="step-btn"
                 label="Link email"
+                no-caps
                 unelevated
                 color="primary"
                 icon="link"
@@ -94,15 +94,16 @@
             <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
                 flat
+                no-caps
                 color="primary"
                 label="Back"
-                class="q-ml-sm step-btn"
+                class="q-ml-sm"
                 @click="stepperRef.previous()"
               />
               <q-btn
-                class="step-btn"
                 :disable="!isValidOTP"
                 label="Verify"
+                no-caps
                 unelevated
                 color="primary"
                 icon="check"
@@ -306,47 +307,16 @@ const isValidNameInput = computed(
     nameInput.value.length <= 30 &&
     nameInput.value !== displayName.value,
 );
-const notifyMessages = {
-  linkEmailSuccess: {
-    message: 'A confirmation email has been sent to your email address',
-    icon: 'check',
-  },
-  linkEmailError: (caption: string) => ({
-    message: 'Error linking email',
-    caption,
-    icon: 'error',
-    color: 'negative',
-  }),
-  verifySuccess: {
-    message: 'Email successfully verified',
-    caption: 'Please set your password',
-    icon: 'check',
-  },
-  verifyError: (caption: string) => ({
-    message: 'Error verifying OTP',
-    caption,
-    icon: 'error',
-    color: 'negative',
-  }),
-  avatarRevert: {
-    message: 'Reverted to default avatar picture',
-    icon: 'check',
-  },
-  nameUpdate: {
-    message: 'Successfully updated display name',
-    icon: 'check',
-  },
-  nameError: (caption: string) => ({
-    message: 'Error setting name',
-    caption,
-    icon: 'error',
-  }),
-};
+
 async function revertImage() {
   revertingImage.value = true;
   await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
   await userStore.fetchProfile();
-  $q.notify(notifyMessages.avatarRevert);
+  $q.notify({
+    message: 'Reverted to default avatar picture',
+    icon: 'check',
+    color: 'positive',
+  });
   revertingImage.value = false;
 }
 
@@ -397,10 +367,18 @@ async function linkEmail() {
   });
 
   if (error) {
-    $q.notify(notifyMessages.linkEmailError(error.message));
+    $q.notify({
+      message: 'Error linking email',
+      caption: error.message,
+      icon: 'error',
+      color: 'negative',
+    });
     return;
   }
-  $q.notify(notifyMessages.linkEmailSuccess);
+  $q.notify({
+    message: 'A confirmation email has been sent to your email address',
+    icon: 'check',
+  });
 
   await userStore.fetchProfile();
   updateStepper();
@@ -415,10 +393,19 @@ async function verifyOTP() {
     type: 'email_change',
   });
   if (error) {
-    $q.notify(notifyMessages.verifyError(error.message));
+    $q.notify({
+      message: 'Error verifying OTP',
+      caption: error.message,
+      icon: 'error',
+      color: 'negative',
+    });
     return;
   }
-  $q.notify(notifyMessages.verifySuccess);
+  $q.notify({
+    message: 'Email successfully verified',
+    caption: 'Please set your password',
+    icon: 'check',
+  });
   await userStore.fetchProfile();
   updateStepper();
 }
@@ -427,12 +414,20 @@ async function setDisplayName(remove?: boolean) {
     data: { display_name: remove ? null : nameInput.value },
   });
   if (error) {
-    $q.notify(notifyMessages.nameError(error.message));
+    $q.notify({
+      message: 'Error setting name',
+      caption: error.message,
+      icon: 'error',
+      color: 'negative',
+    });
     return;
   }
   if (defaultAvatar.value)
     await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
-  $q.notify(notifyMessages.nameUpdate);
+  $q.notify({
+    message: 'Successfully updated display name',
+    icon: 'check',
+  });
   await userStore.fetchProfile();
   nameInput.value = userStore.user?.display_name || '';
 }
@@ -457,8 +452,5 @@ a {
 
 .q-stepper__step-inner {
   padding: 0 !important;
-}
-.step-btn .q-btn__content {
-  text-transform: none; /* keep text as written */
 }
 </style>

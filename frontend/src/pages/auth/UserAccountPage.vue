@@ -306,16 +306,47 @@ const isValidNameInput = computed(
     nameInput.value.length <= 30 &&
     nameInput.value !== displayName.value,
 );
-
+const notifyMessages = {
+  linkEmailSuccess: {
+    message: 'A confirmation email has been sent to your email address',
+    icon: 'check',
+  },
+  linkEmailError: (caption: string) => ({
+    message: 'Error linking email',
+    caption,
+    icon: 'error',
+    color: 'negative',
+  }),
+  verifySuccess: {
+    message: 'Email successfully verified',
+    caption: 'Please set your password',
+    icon: 'check',
+  },
+  verifyError: (caption: string) => ({
+    message: 'Error verifying OTP',
+    caption,
+    icon: 'error',
+    color: 'negative',
+  }),
+  avatarRevert: {
+    message: 'Reverted to default avatar picture',
+    icon: 'check',
+  },
+  nameUpdate: {
+    message: 'Successfully updated display name',
+    icon: 'check',
+  },
+  nameError: (caption: string) => ({
+    message: 'Error setting name',
+    caption,
+    icon: 'error',
+  }),
+};
 async function revertImage() {
   revertingImage.value = true;
   await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
   await userStore.fetchProfile();
-  $q.notify({
-    message: 'Reverted to default avatar picture',
-    icon: 'check',
-    color: 'positive',
-  });
+  $q.notify(notifyMessages.avatarRevert);
   revertingImage.value = false;
 }
 
@@ -366,18 +397,10 @@ async function linkEmail() {
   });
 
   if (error) {
-    $q.notify({
-      message: 'Error linking email',
-      caption: error.message,
-      icon: 'error',
-      color: 'negative',
-    });
+    $q.notify(notifyMessages.linkEmailError(error.message));
     return;
   }
-  $q.notify({
-    message: 'A confirmation email has been sent to your email address',
-    icon: 'check',
-  });
+  $q.notify(notifyMessages.linkEmailSuccess);
 
   await userStore.fetchProfile();
   updateStepper();
@@ -392,19 +415,10 @@ async function verifyOTP() {
     type: 'email_change',
   });
   if (error) {
-    $q.notify({
-      message: 'Error verifying OTP',
-      caption: error.message,
-      icon: 'error',
-      color: 'negative',
-    });
+    $q.notify(notifyMessages.verifyError(error.message));
     return;
   }
-  $q.notify({
-    message: 'Email successfully verified',
-    caption: 'Please set your password',
-    icon: 'check',
-  });
+  $q.notify(notifyMessages.verifySuccess);
   await userStore.fetchProfile();
   updateStepper();
 }
@@ -413,20 +427,12 @@ async function setDisplayName(remove?: boolean) {
     data: { display_name: remove ? null : nameInput.value },
   });
   if (error) {
-    $q.notify({
-      message: 'Error setting name',
-      caption: error.message,
-      icon: 'error',
-      color: 'negative',
-    });
+    $q.notify(notifyMessages.nameError(error.message));
     return;
   }
   if (defaultAvatar.value)
     await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });
-  $q.notify({
-    message: 'Successfully updated display name',
-    icon: 'check',
-  });
+  $q.notify(notifyMessages.nameUpdate);
   await userStore.fetchProfile();
   nameInput.value = userStore.user?.display_name || '';
 }

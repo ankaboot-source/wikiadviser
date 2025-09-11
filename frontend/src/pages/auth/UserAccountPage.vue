@@ -54,6 +54,7 @@
             </q-input>
             <q-stepper-navigation class="q-pt-none flex justify-end">
               <q-btn
+                class="step-btn"
                 label="Link email"
                 unelevated
                 color="primary"
@@ -95,10 +96,11 @@
                 flat
                 color="primary"
                 label="Back"
-                class="q-ml-sm"
+                class="q-ml-sm step-btn"
                 @click="stepperRef.previous()"
               />
               <q-btn
+                class="step-btn"
                 :disable="!isValidOTP"
                 label="Verify"
                 unelevated
@@ -449,5 +451,8 @@ a {
 
 .q-stepper__step-inner {
   padding: 0 !important;
+}
+.step-btn .q-btn__content {
+  text-transform: none; /* keep text as written */
 }
 </style>

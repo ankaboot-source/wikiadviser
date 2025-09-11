@@ -259,7 +259,7 @@ import UpdatePassword from 'src/components/Auth/UpdatePassword.vue';
 import LoadingButton from 'src/components/LoadingButton.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { computed, onBeforeMount, ref, watchEffect } from 'vue';
+import { computed, onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const $q = useQuasar();
@@ -296,53 +296,6 @@ function updateStepper() {
   step.value = computedStep.value;
 }
 
-const stepWarningsShown = ref({
-  1: false,
-  2: false,
-  3: false,
-});
-watchEffect(() => {
-  if (
-    step.value === 1 &&
-    isUninitializedUser.value &&
-    !stepWarningsShown.value[1]
-  ) {
-    $q.notify({
-      type: 'warning',
-      message:
-        'You will lose all your progress if you don’t link your account.',
-      position: 'bottom',
-      timeout: 60000,
-      actions: [{ label: 'Dismiss', color: 'white' }],
-    });
-    stepWarningsShown.value[1] = true;
-  }
-  if (step.value === 2 && isAnon.value && !stepWarningsShown.value[2]) {
-    $q.notify({
-      type: 'warning',
-      message: 'Please verify your email before continuing.',
-      position: 'bottom',
-      timeout: 60000,
-      actions: [{ label: 'Dismiss', color: 'white' }],
-    });
-    stepWarningsShown.value[2] = true;
-  }
-  if (
-    step.value === 3 &&
-    !hasPassword.value &&
-    hasEmailProvider.value &&
-    !stepWarningsShown.value[3]
-  ) {
-    $q.notify({
-      type: 'warning',
-      message: 'You must set a password to secure your account.',
-      position: 'bottom',
-      timeout: 60000,
-      actions: [{ label: 'Dismiss', color: 'white' }],
-    });
-    stepWarningsShown.value[3] = true;
-  }
-});
 const nameInput = ref(displayName.value);
 const isValidNameInput = computed(
   () =>

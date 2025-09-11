@@ -44,7 +44,11 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password && !userStore.user?.has_email_provider && !userStore.user?.email) {
+    if (
+      !userStore.user?.has_password &&
+      !userStore.user?.has_email_provider &&
+      !userStore.user?.email
+    ) {
       Notify.create({
         message: 'Your account is not linked. Link it to save your progress.',
         caption: 'Go to settings to link your account.',

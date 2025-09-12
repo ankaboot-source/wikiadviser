@@ -8,25 +8,46 @@
         <q-card-section v-if="articles?.length" class="row">
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
-          <q-btn
-            icon="note_add"
-            no-caps
-            outline
-            unelevated
-            class="q-ml-sm"
-            color="primary"
-            label="Create a new Article"
-            @click="showCreateArticleDialog = !showCreateArticleDialog"
-          />
-          <q-btn
-            icon="cloud_download"
-            no-caps
-            unelevated
-            class="q-ml-sm"
-            color="primary"
-            label="Import Article from Wikipedia"
-            @click="showImportArticleDialog = !showImportArticleDialog"
-          />
+          <div class="gt-sm row q-gutter-sm">
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
+          <div class="lt-md column q-gutter-sm" style="width: 100%">
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              class="full-width"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              class="full-width"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
         </q-card-section>
 
         <q-card-section>
@@ -92,25 +113,49 @@
           <div class="text-body2 q-mt-md q-mb-lg">
             Add a new article to get started
           </div>
-          <q-btn
-            icon="note_add"
-            no-caps
-            outline
-            unelevated
-            class="q-mx-sm"
-            color="primary"
-            label="Create a new Article"
-            @click="showCreateArticleDialog = !showCreateArticleDialog"
-          />
-          <q-btn
-            icon="cloud_download"
-            no-caps
-            unelevated
-            class="q-mx-sm"
-            color="primary"
-            label="Import Article from Wikipedia"
-            @click="showImportArticleDialog = !showImportArticleDialog"
-          />
+          <div class="gt-sm row justify-center q-gutter-sm">
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
+
+          <div class="lt-md column items-center q-gutter-sm">
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              class="self-center"
+              style="width: 100%; max-width: 320px"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              class="self-center"
+              style="width: 100%; max-width: 320px"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
         </q-card-section>
       </q-card>
     </div>

@@ -97,7 +97,11 @@
             Add a new article to get started
           </div>
           <div
-            :class="$q.screen.gt.sm ? 'row justify-center q-gutter-sm' : 'column q-gutter-sm'"
+            :class="
+              $q.screen.gt.sm
+                ? 'row justify-center q-gutter-sm'
+                : 'column q-gutter-sm'
+            "
             :style="$q.screen.lt.md ? 'width: 100%' : ''"
           >
             <q-btn

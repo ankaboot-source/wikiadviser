@@ -5,33 +5,37 @@
         <!-- Loading state content -->
       </q-card>
       <q-card v-else class="q-pa-sm column" flat style="width: 80vw">
-        <q-card-section v-if="articles?.length" class="row">
+        <q-card-section v-if="articles?.length" class="row items-center">
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
-          <q-btn
-            icon="note_add"
-            no-caps
-            outline
-            unelevated
-            class="q-ml-sm"
-            color="primary"
-            label="Create a new Article"
-            @click="showCreateArticleDialog = !showCreateArticleDialog"
-          />
-          <q-btn
-            icon="cloud_download"
-            no-caps
-            unelevated
-            class="q-ml-sm"
-            color="primary"
-            label="Import Article from Wikipedia"
-            @click="showImportArticleDialog = !showImportArticleDialog"
-          />
+          <div
+            :class="$q.screen.gt.sm ? 'row q-gutter-sm' : 'column q-gutter-sm'"
+            :style="$q.screen.lt.md ? 'width: 100%' : ''"
+          >
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              :class="$q.screen.lt.md ? 'full-width' : ''"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              :class="$q.screen.lt.md ? 'full-width' : ''"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section v-if="articles?.length">
           <q-input
-            v-if="articles?.length"
             v-model="term"
             bg-color="white"
             dense
@@ -92,25 +96,34 @@
           <div class="text-body2 q-mt-md q-mb-lg">
             Add a new article to get started
           </div>
-          <q-btn
-            icon="note_add"
-            no-caps
-            outline
-            unelevated
-            class="q-mx-sm"
-            color="primary"
-            label="Create a new Article"
-            @click="showCreateArticleDialog = !showCreateArticleDialog"
-          />
-          <q-btn
-            icon="cloud_download"
-            no-caps
-            unelevated
-            class="q-mx-sm"
-            color="primary"
-            label="Import Article from Wikipedia"
-            @click="showImportArticleDialog = !showImportArticleDialog"
-          />
+          <div
+            :class="
+              $q.screen.gt.sm
+                ? 'row justify-center q-gutter-sm'
+                : 'column q-gutter-sm'
+            "
+            :style="$q.screen.lt.md ? 'width: 100%' : ''"
+          >
+            <q-btn
+              icon="note_add"
+              no-caps
+              outline
+              unelevated
+              color="primary"
+              label="Create a new Article"
+              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
+              @click="showCreateArticleDialog = !showCreateArticleDialog"
+            />
+            <q-btn
+              icon="cloud_download"
+              no-caps
+              unelevated
+              color="primary"
+              label="Import Article from Wikipedia"
+              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
+              @click="showImportArticleDialog = !showImportArticleDialog"
+            />
+          </div>
         </q-card-section>
       </q-card>
     </div>

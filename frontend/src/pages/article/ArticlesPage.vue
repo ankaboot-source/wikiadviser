@@ -11,7 +11,6 @@
           <div
             class="q-gutter-sm"
             :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
-            :style="$q.screen.lt.md ? 'width: 100%' : ''"
           >
             <q-btn
               icon="note_add"
@@ -20,7 +19,6 @@
               unelevated
               color="primary"
               label="Create a new Article"
-              :class="$q.screen.lt.md ? 'full-width' : ''"
               @click="showCreateArticleDialog = !showCreateArticleDialog"
             />
             <q-btn
@@ -29,13 +27,12 @@
               unelevated
               color="primary"
               label="Import Article from Wikipedia"
-              :class="$q.screen.lt.md ? 'full-width' : ''"
               @click="showImportArticleDialog = !showImportArticleDialog"
             />
           </div>
         </q-card-section>
 
-        <q-card-section v-if="articles?.length">
+        <q-card-section class="row justify-center" v-if="articles?.length">
           <q-input
             v-model="term"
             bg-color="white"
@@ -51,7 +48,7 @@
 
         <q-scroll-area
           v-if="articlesFiltered?.length"
-          class="col-grow q-pt-none q-pb-lg"
+          class="col-grow q-pt-none q-pb-lg row justify-center"
         >
           <q-list class="q-mx-md">
             <owned-article
@@ -63,8 +60,7 @@
         </q-scroll-area>
         <q-card-section
           v-if="!articlesFiltered?.length && articles?.length"
-          padding
-          class="q-mx-md q-my-xs"
+          class="q-mx-md q-my-xs text-center"
         >
           <div class="text-center q-gutter-sm">
             <q-icon name="search_off" size="xl" />
@@ -98,9 +94,8 @@
             Add a new article to get started
           </div>
           <div
-            class="q-gutter-sm"
-            :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
-            :style="$q.screen.lt.md ? 'width: 100%' : ''"
+            class="q-gutter-sm row justify-center"
+            :class="{ column: $q.screen.lt.md }"
           >
             <q-btn
               icon="note_add"
@@ -109,7 +104,6 @@
               unelevated
               color="primary"
               label="Create a new Article"
-              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
               @click="showCreateArticleDialog = !showCreateArticleDialog"
             />
             <q-btn
@@ -118,7 +112,6 @@
               unelevated
               color="primary"
               label="Import Article from Wikipedia"
-              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
               @click="showImportArticleDialog = !showImportArticleDialog"
             />
           </div>

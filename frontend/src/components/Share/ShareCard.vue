@@ -1,28 +1,25 @@
 <template>
-  <q-card style="min-width: 40vw">
+  <q-card style="min-width: 50vw; max-width: 100vw">
     <q-toolbar class="bg-white borders">
       <q-toolbar-title class="merriweather">Share settings</q-toolbar-title>
       <q-btn v-close-popup flat round dense icon="close" size="sm" />
     </q-toolbar>
 
     <q-card-section v-if="ownerPermission">
-      <div class="text-h6 text-weight-regular">Share link</div>
-      <div class="q-mr-sm row wrap items-center q-gutter-sm">
-        <div class="col">
-          <span style="display: inline-flex; align-items: center">
-            Anyone with this link can
-            <q-select
-              v-model="shareRoleModel"
-              :options="shareRoleOptions"
-              class="text-capitalize"
-              dense
-              style="margin: 0 8px; width: auto"
-            />
-            this article.
-          </span>
-        </div>
+      <div class="text-h6 text-weight-regular q-mb-sm">Share link</div>
+      <div class="row wrap items-center q-gutter-sm text-body1">
+        <span>Anyone with this link can</span>
+        <q-select
+          v-model="shareRoleModel"
+          :options="shareRoleOptions"
+          class="text-capitalize"
+          dense
+          style="min-width: 100px"
+        />
+        <span>this article.</span>
         <q-space />
         <q-btn
+          class="col-xs-12 col-sm-auto"
           icon="content_copy"
           outline
           label="Create share link"

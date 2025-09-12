@@ -5,10 +5,14 @@
         <!-- Loading state content -->
       </q-card>
       <q-card v-else class="q-pa-sm column" flat style="width: 80vw">
-        <q-card-section v-if="articles?.length" class="row">
+        <q-card-section v-if="articles?.length" class="row items-center">
           <div class="text-h5 merriweather">Articles</div>
           <q-space />
-          <div class="gt-sm row q-gutter-sm">
+          <div
+            class="q-gutter-sm"
+            :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
+            :style="$q.screen.lt.md ? 'width: 100%' : ''"
+          >
             <q-btn
               icon="note_add"
               no-caps
@@ -16,6 +20,7 @@
               unelevated
               color="primary"
               label="Create a new Article"
+              :class="$q.screen.lt.md ? 'full-width' : ''"
               @click="showCreateArticleDialog = !showCreateArticleDialog"
             />
             <q-btn
@@ -24,35 +29,14 @@
               unelevated
               color="primary"
               label="Import Article from Wikipedia"
-              @click="showImportArticleDialog = !showImportArticleDialog"
-            />
-          </div>
-          <div class="lt-md column q-gutter-sm" style="width: 100%">
-            <q-btn
-              icon="note_add"
-              no-caps
-              outline
-              unelevated
-              color="primary"
-              label="Create a new Article"
-              class="full-width"
-              @click="showCreateArticleDialog = !showCreateArticleDialog"
-            />
-            <q-btn
-              icon="cloud_download"
-              no-caps
-              unelevated
-              color="primary"
-              label="Import Article from Wikipedia"
-              class="full-width"
+              :class="$q.screen.lt.md ? 'full-width' : ''"
               @click="showImportArticleDialog = !showImportArticleDialog"
             />
           </div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section v-if="articles?.length">
           <q-input
-            v-if="articles?.length"
             v-model="term"
             bg-color="white"
             dense
@@ -113,7 +97,11 @@
           <div class="text-body2 q-mt-md q-mb-lg">
             Add a new article to get started
           </div>
-          <div class="gt-sm row justify-center q-gutter-sm">
+          <div
+            class="q-gutter-sm"
+            :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
+            :style="$q.screen.lt.md ? 'width: 100%' : ''"
+          >
             <q-btn
               icon="note_add"
               no-caps
@@ -121,6 +109,7 @@
               unelevated
               color="primary"
               label="Create a new Article"
+              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
               @click="showCreateArticleDialog = !showCreateArticleDialog"
             />
             <q-btn
@@ -129,30 +118,7 @@
               unelevated
               color="primary"
               label="Import Article from Wikipedia"
-              @click="showImportArticleDialog = !showImportArticleDialog"
-            />
-          </div>
-
-          <div class="lt-md column items-center q-gutter-sm">
-            <q-btn
-              icon="note_add"
-              no-caps
-              outline
-              unelevated
-              color="primary"
-              label="Create a new Article"
-              class="self-center"
-              style="width: 100%; max-width: 320px"
-              @click="showCreateArticleDialog = !showCreateArticleDialog"
-            />
-            <q-btn
-              icon="cloud_download"
-              no-caps
-              unelevated
-              color="primary"
-              label="Import Article from Wikipedia"
-              class="self-center"
-              style="width: 100%; max-width: 320px"
+              :class="$q.screen.lt.md ? 'full-width self-center' : ''"
               @click="showImportArticleDialog = !showImportArticleDialog"
             />
           </div>

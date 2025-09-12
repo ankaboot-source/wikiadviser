@@ -11,6 +11,7 @@
           <div
             class="q-gutter-sm"
             :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
+
             :style="$q.screen.lt.md ? 'width: 100%' : ''"
           >
             <q-btn
@@ -100,6 +101,7 @@
           <div
             class="q-gutter-sm"
             :class="{ row: $q.screen.gt.sm, column: $q.screen.lt.md }"
+
             :style="$q.screen.lt.md ? 'width: 100%' : ''"
           >
             <q-btn

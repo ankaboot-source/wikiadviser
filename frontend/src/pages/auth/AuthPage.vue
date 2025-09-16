@@ -91,7 +91,13 @@ const convretToMicrosoftButton = () => {
 
 watch(session, (currentSession) => {
   if (currentSession) {
-    window.location.href = '/';
+    const redirectPath = sessionStorage.getItem('redirectAfterAuth');
+    if (redirectPath) {
+      sessionStorage.removeItem('redirectAfterAuth');
+      window.location.href = redirectPath;
+    } else {
+      window.location.href = '/';
+    }
   }
 });
 

@@ -44,6 +44,9 @@ export default route((/* { store, ssrContext } */) => {
     }
 
     if (!authorized && to.meta.requiresAuth) {
+      if (to.path !== '/auth') {
+        sessionStorage.setItem('redirectAfterAuth', to.fullPath);
+      }
       return '/auth';
     }
     return true;

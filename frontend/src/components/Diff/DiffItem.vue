@@ -369,6 +369,10 @@ const previewDescription = computed(() => {
 });
 
 function getName(email: string) {
+  if (!email) {
+    return 'Unknown User';
+  }
+  
   return (
     email.substring(0, MAX_EMAIL_LENGTH) +
     (email.length > MAX_EMAIL_LENGTH ? '...' : '')

@@ -39,7 +39,7 @@
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.39.2",
     "@types/node": "^20.11.0",
-    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.18.1",
     "@vue/test-utils": "^2.4.1",
     "autoprefixer": "^10.4.16",

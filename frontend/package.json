@@ -24,7 +24,7 @@
     "@sentry/vue": "^7.101.1",
     "@supabase/ssr": "^0.0.10",
     "cheerio": "^1.0.0-rc.12",
-    "dotenv": "^16.3.1",
+    "dotenv": "^17.2.2",
     "pinia": "^2.1.7",
     "posthog-js": "^1.191.0",
     "quasar": "^2.14.2",

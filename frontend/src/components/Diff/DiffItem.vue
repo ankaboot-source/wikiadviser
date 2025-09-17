@@ -132,7 +132,7 @@
         >
           <template v-for="comment in comments" :key="comment.id">
             <q-chat-message
-              :name="getName(comment.user.email)"
+              :name="getName(comment.user)"
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
@@ -368,15 +368,17 @@ const previewDescription = computed(() => {
   return '';
 });
 
-function getName(email: string) {
-  if (!email) {
-    return undefined;
+function getName(user: { display_name?: string | null; email: string }) {
+  if (user.display_name && user.display_name.trim() !== '') {
+    return user.display_name;
   }
 
-  return (
-    email.substring(0, MAX_EMAIL_LENGTH) +
-    (email.length > MAX_EMAIL_LENGTH ? '...' : '')
-  );
+  if (user.email) {
+    return (
+      user.email.substring(0, MAX_EMAIL_LENGTH) +
+      (user.email.length > MAX_EMAIL_LENGTH ? '...' : '')
+    );
+  }
 }
 
 const previewItem = computed(() => {

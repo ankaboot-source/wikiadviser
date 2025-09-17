@@ -10,12 +10,12 @@ export async function getArticleTitle(articleId: string): Promise<string> {
   return article?.title ?? 'Unknown Article';
 }
 
-export async function getUserEmail(userId: string): Promise<string> {
+export async function getUserEmail(userId: string): Promise<string | null> {
   const supabase = createSupabaseAdmin();
   const user = await safeSingle<{ email: string }>(
     supabase.from('profiles').select('email').eq('id', userId)
   );
-  return user?.email ?? 'Unknown User';
+  return user?.email ?? null;
 }
 
 export async function getUserRole(

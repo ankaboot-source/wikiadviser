@@ -15,7 +15,7 @@ import {
 export async function sendEmailNotification(notification: Notification) {
   try {
     const toEmail = await getUserEmail(notification.user_id);
-    if (!toEmail ||toEmail === "Unknown User") {
+    if (!toEmail) {
       console.warn('No email found for recipient:', notification.user_id);
       return;
     }
@@ -106,7 +106,7 @@ export async function sendEmailNotification(notification: Notification) {
 
     const html = buildHtmlEmail(subject, text, redirectUrl);
 
-      await transporter.sendMail({
+    await transporter.sendMail({
       from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
       replyTo: triggeredByEmail,
       to: toEmail,

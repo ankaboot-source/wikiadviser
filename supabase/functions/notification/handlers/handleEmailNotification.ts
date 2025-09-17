@@ -106,7 +106,8 @@ export async function sendEmailNotification(notification: Notification) {
 
     const html = buildHtmlEmail(subject, text, redirectUrl);
 
-    await transporter.sendMail({
+    if ( toEmail !== "Unknown User") {
+      await transporter.sendMail({
       from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
       replyTo: triggeredByEmail,
       to: toEmail,
@@ -115,6 +116,7 @@ export async function sendEmailNotification(notification: Notification) {
     });
 
     console.log(`Email sent to ${toEmail}`);
+    }
   } catch (err) {
     console.error('Failed to send email:', err);
   }

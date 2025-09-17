@@ -370,7 +370,7 @@ const previewDescription = computed(() => {
 
 function getName(email: string) {
   if (!email) {
-    return 'Unknown User';
+    return undefined;
   }
 
   return (

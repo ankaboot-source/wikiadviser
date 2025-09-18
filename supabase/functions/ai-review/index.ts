@@ -1,50 +1,84 @@
 import { Hono } from 'hono';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
 import createSupabaseAdmin from '../_shared/supabaseAdmin.ts';
-import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
+import createSupabaseClient from '../_shared/supabaseClient.ts';
+import {
+  insertRevision,
+  getArticle,
+} from '../_shared/helpers/supabaseHelper.ts';
 
 const functionName = 'ai-review';
 const app = new Hono().basePath(`/${functionName}`);
 
 const MIRA_BOT_ID = Deno.env.get('MIRA_BOT_ID');
 
-const miraPrompt = `You are Mira, a Wikipedia editing assistant. You will receive the complete content of an article.
-Your task is to review and improve it focusing on three aspects:
+const miraPrompt = `You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time.
+Your task is to review it focusing on three aspects:
 
 1. Readability – clarity, grammar, logical flow.
-2. Eloquence – conciseness, neutral and smooth phrasing.  
-3. Wikipedia Eligibility Criteria – 
-   * Neutral Point of View (NPOV)
-   * Verifiability
-   * Encyclopedic Style
+2. Eloquence – conciseness, neutral and smooth phrasing.
+3. Wikipedia Eligibility Criteria – NPOV, verifiability, encyclopedic style.
 
-IMPORTANT: Return the COMPLETE improved article content in the same format as provided.
-
-**Response format:** Always reply in JSON with two fields:
+Return only JSON:
 {
-  "comment": "A concise explanation of improvements made (or that none were needed).",
-  "revised_content": "The complete improved article content, or the original if no changes needed."
+  "comment": "Brief note on improvements",
+  "proposed_change": "Improved text or 'No changes needed.'"
 }
 
-Make targeted, minimal improvements. If no changes are needed, return the original content exactly.`;
+Make minimal necessary changes. Keep neutral, encyclopedic tone.`;
 
 app.use('*', corsMiddleware);
+
+function stripHtml(html: string | null | undefined): string {
+  if (!html) return '';
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function parseMiraJson(content: string | null | undefined) {
+  const raw = content ?? '';
+  try {
+    return JSON.parse(raw);
+  } catch {
+    const match = raw.match(/{[\s\S]*}/);
+    if (match) {
+      try {
+        return JSON.parse(match[0]);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+}
+
 app.post('/', async (c) => {
   try {
-    const body = await c.req.json();
-    console.log('Received body:', body);
-
-    const { article_id } = body;
+    const { article_id } = await c.req.json();
     if (!article_id) return c.json({ error: 'Missing article_id' }, 400);
 
-    const supabaseClient = createSupabaseAdmin();
+    const supabaseAdmin = createSupabaseAdmin();
 
-    const article = await getArticle(article_id);
-    if (!article) {
-      return c.json({ error: 'Article not found' }, 404);
+    const authHeader = c.req.header('Authorization');
+    if (authHeader) {
+      const userClient = createSupabaseClient(authHeader);
+      const {
+        data: { user },
+      } = await userClient.auth.getUser();
+      if (user?.id === MIRA_BOT_ID) {
+        return c.json({ error: 'Mira cannot review her own changes' }, 403);
+      }
     }
 
-    const { data: latestRevision, error: revError } = await supabaseClient
+    const article = await getArticle(article_id);
+    if (!article) return c.json({ error: 'Article not found' }, 404);
+
+    const apiKey = Deno.env.get('OPENROUTER_API_KEY');
+    if (!apiKey) return c.json({ error: 'No LLM API key configured' }, 500);
+
+    const { data: latestRevision } = await supabaseAdmin
       .from('revisions')
       .select('id, revid')
       .eq('article_id', article_id)
@@ -52,162 +86,139 @@ app.post('/', async (c) => {
       .limit(1)
       .maybeSingle();
 
-    if (revError || !latestRevision) {
-      console.error('Failed to fetch latest revision:', revError);
+    if (!latestRevision)
       return c.json({ error: 'Could not fetch latest revision' }, 500);
-    }
 
-    const { data: changes, error: changesError } = await supabaseClient
+    const { data: changes } = await supabaseAdmin
       .from('changes')
-      .select('id')
+      .select('id, content, index')
       .eq('revision_id', latestRevision.id)
-      .neq('contributor_id', MIRA_BOT_ID);
+      .neq('contributor_id', MIRA_BOT_ID)
+      .eq('archived', false)
+      .order('index', { ascending: true });
 
-    if (changesError) {
-      console.error('Failed to fetch changes:', changesError);
-      return c.json({ error: 'Could not fetch changes' }, 500);
-    }
-
-    if (!changes || changes.length === 0) {
+    if (!changes?.length)
       return c.json({ summary: 'No new changes to review.' });
-    }
 
-    const { data: articleContent, error: contentError } = await supabaseClient
-      .from('articles')
-      .select('current_html_content, title')
-      .eq('id', article_id)
-      .maybeSingle();
+    const newRevisionId = await insertRevision(
+      article_id,
+      String(Date.now()),
+      `AI review by Mira - ${changes.length} change(s) reviewed`
+    );
 
-    if (contentError || !articleContent) {
-      console.error('Failed to fetch article content:', contentError);
-      return c.json({ error: 'Could not fetch article content' }, 500);
-    }
+    const reviews: {
+      change_id: string;
+      comment: string;
+      proposed_change: string;
+      inserted: boolean;
+    }[] = [];
 
-    let currentContent = articleContent.current_html_content;
-    
-    if (!currentContent) {
-      const { data: latestChange } = await supabaseClient
-        .from('changes')
-        .select('content')
-        .eq('revision_id', latestRevision.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (latestChange?.content) {
-        currentContent = latestChange.content;
+    for (let i = 0; i < changes.length; i++) {
+      const ch = changes[i];
+      const originalContent = ch.content ?? '';
+      const userText = stripHtml(originalContent).slice(0, 4000);
+      if (!userText) {
+        reviews.push({
+          change_id: ch.id,
+          comment: 'Empty content',
+          proposed_change: 'No changes needed.',
+          inserted: false,
+        });
+        continue;
       }
-    }
-    
-    if (!currentContent) {
-      return c.json({ error: 'No content available for review' }, 500);
-    }
 
-    const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
-    if (!openRouterKey) {
-      return c.json({ error: 'OpenRouter API key not configured' }, 500);
-    }
+      const resp = await fetch(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'openai/gpt-4o-mini',
+            messages: [
+              { role: 'system', content: miraPrompt },
+              { role: 'user', content: userText },
+            ],
+            max_tokens: 1200,
+            temperature: 0.3,
+          }),
+        }
+      );
 
-    console.log('Sending content to Mira for review...');
+      if (!resp.ok) {
+        reviews.push({
+          change_id: ch.id,
+          comment: `LLM error ${resp.status}`,
+          proposed_change: 'No changes needed.',
+          inserted: false,
+        });
+        continue;
+      }
 
-    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${openRouterKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'openai/gpt-4o-mini',
-        messages: [
-          { role: 'system', content: miraPrompt },
-          { role: 'user', content: currentContent.slice(0, 1000) },
-        ],
-        max_tokens: 600,
-        temperature: 0.7,
-      }),
-    });
+      const data = await resp.json();
+      const rawContent =
+        data?.choices?.[0]?.message?.content ??
+        data?.choices?.[0]?.text ??
+        null;
+      const parsed = await parseMiraJson(rawContent);
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      console.error('OpenRouter API error:', err);
-      return c.json({ error: 'AI review service unavailable' }, 500);
-    }
+      const comment = parsed?.comment?.trim() ?? 'Review completed';
+      const proposed_change =
+        parsed?.proposed_change?.trim() ?? 'No changes needed.';
 
-    const data = await resp.json();
-    let parsed;
-    
-    try {
-      parsed = JSON.parse(data.choices[0].message.content);
-    } catch (parseError) {
-      console.error('Failed to parse Mira response:', parseError);
-      return c.json({ error: 'Could not parse AI response' }, 500);
-    }
+      const changed =
+        proposed_change !== 'No changes needed.' &&
+        proposed_change !== originalContent &&
+        proposed_change !== stripHtml(originalContent);
 
-    if (parsed.revised_content === currentContent) {
-      return c.json({
-        summary: 'Mira reviewed the article but found no improvements needed.',
-        comment: parsed.comment,
-        changes_made: false
+      let inserted = false;
+      if (changed) {
+        const insertPayload = {
+          revision_id: newRevisionId,
+          article_id,
+          contributor_id: MIRA_BOT_ID ?? null,
+          description: `Mira: ${comment}`,
+          content: proposed_change,
+          type_of_edit: 1,
+          status: 0,
+          archived: false,
+          hidden: false,
+          index: typeof ch.index === 'number' ? ch.index : i + 1,
+        };
+
+        const { error: insertError } = await supabaseAdmin
+          .from('changes')
+          .insert([insertPayload]);
+        if (!insertError) inserted = true;
+      }
+
+      reviews.push({
+        change_id: ch.id,
+        comment,
+        proposed_change,
+        inserted,
       });
+
+      await new Promise((res) => setTimeout(res, 300));
     }
 
-    console.log('Mira made improvements, creating diff and calling updateArticleChanges...');
-
-    const diffHtml = `
-<div class="mira-review-diff">
-  <div class="diff-header">
-    <h3>Mira AI Review</h3>
-    <p><strong>Improvements:</strong> ${parsed.comment}</p>
-  </div>
-  <div class="diff-content">
-    ${parsed.revised_content}
-  </div>
-</div>`;
-
-    const updateUrl = `${c.req.url.replace('/ai-review', '/article')}/${article_id}/changes`;
-    
-    const updateResponse = await fetch(updateUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(c.req.header('Authorization') && { 
-          'Authorization': c.req.header('Authorization') 
-        })
-      },
-      body: JSON.stringify({
-        diffHtml: diffHtml
-      })
-    });
-
-    if (!updateResponse.ok) {
-      const error = await updateResponse.text();
-      console.error('Failed to call updateArticleChanges:', error);
-      
-      return c.json({
-        summary: 'Mira completed review but could not process changes through existing system.',
-        comment: parsed.comment,
-        changes_made: true,
-        fallback: true,
-        original_length: currentContent.length,
-        revised_length: parsed.revised_content.length
-      });
-    }
-
-    const updateResult = await updateResponse.json();
-    console.log('Successfully processed Mira review through updateArticleChanges');
+    const totalInserted = reviews.filter((r) => r.inserted).length;
 
     return c.json({
-      summary: 'Mira successfully reviewed and improved the article.',
-      comment: parsed.comment,
-      changes_made: true,
-      processed_via_existing_system: true,
-      update_result: updateResult
+      summary:
+        totalInserted > 0
+          ? `Mira reviewed ${changes.length} change(s) and suggested ${totalInserted} improvements.`
+          : `Mira reviewed ${changes.length} change(s). No improvements needed.`,
+      revision_id: newRevisionId,
+      total_changes_reviewed: changes.length,
+      total_inserted: totalInserted,
+      reviews,
     });
-
   } catch (err) {
-    console.error('Error in ai-review:', err);
     return c.json(
-      { error: 'Unexpected error', details: String(err) },
+      { error: 'Unexpected error during review', details: String(err) },
       500
     );
   }

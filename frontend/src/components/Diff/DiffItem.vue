@@ -368,12 +368,12 @@ const previewDescription = computed(() => {
   return '';
 });
 
-function getName(user: { display_name?: string | null; email: string }) {
+function getName(user: Profile) {
   if (user.display_name && user.display_name.trim() !== '') {
     return user.display_name;
   }
 
-  if (user.email) {
+  if (user.email && user.email.trim() !== '') {
     return (
       user.email.substring(0, MAX_EMAIL_LENGTH) +
       (user.email.length > MAX_EMAIL_LENGTH ? '...' : '')

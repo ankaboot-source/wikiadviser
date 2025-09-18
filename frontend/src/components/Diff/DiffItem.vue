@@ -379,6 +379,7 @@ function getName(user: Profile) {
       (user.email.length > MAX_EMAIL_LENGTH ? '...' : '')
     );
   }
+  return undefined;
 }
 
 const previewItem = computed(() => {

@@ -17,7 +17,7 @@ INSERT INTO auth.users (
 )
 SELECT
   '11111111-1111-1111-1111-111111111111',
-  '11111111-1111-1111-1111-111111111111',
+  gen_random_uuid(),
   'authenticated',
   'authenticated',
   'mira@wikiadviser.io',

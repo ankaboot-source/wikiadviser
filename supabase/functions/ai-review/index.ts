@@ -10,7 +10,21 @@ import {
 const functionName = 'ai-review';
 const app = new Hono().basePath(`/${functionName}`);
 
-const MIRA_BOT_ID = Deno.env.get('MIRA_BOT_ID');
+async function getMiraBotId(
+  supabaseAdmin: ReturnType<typeof createSupabaseAdmin>
+) {
+  const { data, error } = await supabaseAdmin
+    .from('profiles')
+    .select('id')
+    .eq('email', 'mira@wikiadviser.io')
+    .maybeSingle();
+
+  if (error) {
+    console.error('Error fetching Mira bot ID:', error);
+    return null;
+  }
+  return data?.id ?? null;
+}
 
 const miraPrompt = `You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time.
 Your task is to review it focusing on three aspects:
@@ -61,6 +75,10 @@ app.post('/', async (c) => {
 
     const supabaseAdmin = createSupabaseAdmin();
 
+    const MIRA_BOT_ID = await getMiraBotId(supabaseAdmin);
+    if (!MIRA_BOT_ID) {
+      return c.json({ error: 'Mira bot account not found' }, 500);
+    }
     const authHeader = c.req.header('Authorization');
     if (authHeader) {
       const userClient = createSupabaseClient(authHeader);

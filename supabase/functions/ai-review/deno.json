@@ -1,0 +1,7 @@
+{
+  "imports": {
+    "hono": "npm:hono@4.7.4",
+    "supabase": "https://esm.sh/@supabase/supabase-js@2",
+    "supabase-ssr": "npm:@supabase/ssr@0.6.1"
+  }
+}

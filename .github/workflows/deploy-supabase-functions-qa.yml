@@ -59,3 +59,6 @@ jobs:
 
       - name: deploy notification
         run: supabase functions deploy notification --no-verify-jwt --debug
+
+      - name: deploy ai-review
+        run: supabase functions deploy ai-review --no-verify-jwt --debug

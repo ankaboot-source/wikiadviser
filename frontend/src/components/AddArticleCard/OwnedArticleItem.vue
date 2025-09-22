@@ -42,7 +42,7 @@
             >
               Last edited by
               <span>
-                {{ article.latest_change.user }}
+                {{ article.latest_change.name }}
               </span>
               on
               {{

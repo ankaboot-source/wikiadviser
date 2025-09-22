@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@quasar/cli": "^2.3.0",
-    "@quasar/extras": "^1.16.9",
+    "@quasar/extras": "^1.17.0",
     "@sentry/vue": "^7.101.1",
     "@supabase/ssr": "^0.7.0",
     "cheerio": "^1.0.0-rc.12",

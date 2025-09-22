@@ -12,8 +12,8 @@ importers:
         specifier: ^2.3.0
         version: 2.4.1(@types/express@4.17.21)
       '@quasar/extras':
-        specifier: ^1.16.9
-        version: 1.16.16
+        specifier: ^1.17.0
+        version: 1.17.0
       '@sentry/vue':
         specifier: ^7.101.1
         version: 7.120.3(vue@3.5.13(typescript@5.9.2))
@@ -476,8 +476,8 @@ packages:
     engines: {node: '>= 16', npm: '>= 5.6.0', yarn: '>= 1.6.0'}
     hasBin: true
 
-  '@quasar/extras@1.16.16':
-    resolution: {integrity: sha512-aswGUbEyLvt45KB1u6hBD3s82KnOdkqTn6YVu3xX5aGgwQkCWPyqb3FMTEHG+4+gGTMp4pIcnng96RlqswQctQ==}
+  '@quasar/extras@1.17.0':
+    resolution: {integrity: sha512-KqAHdSJfIDauiR1nJ8rqHWT0diqD0QradZKoVIZJAilHAvgwyPIY7MbyR2z4RIMkUIMUSqBZcbshMpEw+9A30w==}
 
   '@quasar/quasar-app-extension-testing-unit-vitest@0.4.0':
     resolution: {integrity: sha512-eyzdUdmZiCueNS+5nedjMmzdbpCetSrtdGIwW6KplW1dTzRbLiNvYUjpBOxQGmJCgEhWy9zuswJ7MZ/bTql24Q==}
@@ -3666,7 +3666,7 @@ snapshots:
       - debug
       - supports-color
 
-  '@quasar/extras@1.16.16': {}
+  '@quasar/extras@1.17.0': {}
 
   '@quasar/quasar-app-extension-testing-unit-vitest@0.4.0(@vue/test-utils@2.4.6)(quasar@2.17.7)(typescript@5.9.2)(vite@5.4.14(@types/node@20.17.17)(sass@1.84.0)(terser@5.38.0))(vitest@0.34.6(happy-dom@11.2.0)(sass@1.84.0)(terser@5.38.0))(vue@3.5.13(typescript@5.9.2))':
     dependencies:

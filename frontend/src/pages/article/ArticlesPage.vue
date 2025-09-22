@@ -10,7 +10,7 @@
             <div class="row items-center q-mb-sm">
               <div class="text-h5 merriweather">Articles</div>
             </div>
-            
+
             <div class="row justify-center q-mb-md">
               <div class="column q-gutter-sm full-width">
                 <q-btn

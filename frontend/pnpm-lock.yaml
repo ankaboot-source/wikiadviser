@@ -30,8 +30,8 @@ importers:
         specifier: ^2.1.7
         version: 2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2))
       posthog-js:
-        specifier: ^1.191.0
-        version: 1.215.4
+        specifier: ^1.267.0
+        version: 1.267.0
       quasar:
         specifier: ^2.14.2
         version: 2.17.7
@@ -439,6 +439,9 @@ packages:
   '@pnpm/npm-conf@2.3.1':
     resolution: {integrity: sha512-c83qWb22rNRuB0UaVCI0uRPNRr8Z0FWnEIvT47jiHAmOIUHbBOg5XvV7pM5x+rKn9HRpjxquDbXYSXr3fAKFcw==}
     engines: {node: '>=12'}
+
+  '@posthog/core@1.1.0':
+    resolution: {integrity: sha512-igElrcnRPJh2nWYACschjH4OwGwzSa6xVFzRDVzpnjirUivdJ8nv4hE+H31nvwE56MFhvvglfHuotnWLMcRW7w==}
 
   '@quasar/app-vite@1.11.0':
     resolution: {integrity: sha512-PUeqtYs2liA/O17LJ25jzKckB0MG1ZW/iuDC7NvCMZpYT6Ab66AypiYfPf4WGWeAqricorHVNRyMfMpTscR/hA==}
@@ -1254,8 +1257,8 @@ packages:
     resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
     engines: {node: '>=18'}
 
-  core-js@3.40.0:
-    resolution: {integrity: sha512-7vsMc/Lty6AGnn7uFpYT56QesI5D2Y/UkgKounk87OP9Z2H9Z8kj6jzcSGAxFmUtDOS0ntK6lbQz+Nsa0Jj6mQ==}
+  core-js@3.45.1:
+    resolution: {integrity: sha512-L4NPsJlCfZsPeXukyzHFlg/i7IIVwHSItR0wg0FLNqYClJ4MQYTYLbC7EkjKYRLZF2iof2MUgN0EGy7MdQFChg==}
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
@@ -2545,11 +2548,19 @@ packages:
     resolution: {integrity: sha512-6oz2beyjc5VMn/KV1pPw8fliQkhBXrVn1Z3TVyqZxU8kZpzEKhBdmCFqI6ZbmGtamQvQGuU1sgPTk8ZrXDD7jQ==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.215.4:
-    resolution: {integrity: sha512-FlPITI3dVPBRMQGk+jbJcL4Z1FXDyc7O2vNfsspNV2C6dKIJ4F1cTkxhQBEdG5jV1nJ6ZQjgZz1LxbbkSgx9Bg==}
+  posthog-js@1.267.0:
+    resolution: {integrity: sha512-VNONHbVlgjOeZ7xDMv+og5CEwaEjr32vENJ5H6PUztnvhzkHSD5r6/KleE69ezAwd5/7NIJ1kP2O0Lbu09sIdw==}
+    peerDependencies:
+      '@rrweb/types': 2.0.0-alpha.17
+      rrweb-snapshot: 2.0.0-alpha.17
+    peerDependenciesMeta:
+      '@rrweb/types':
+        optional: true
+      rrweb-snapshot:
+        optional: true
 
-  preact@10.25.4:
-    resolution: {integrity: sha512-jLdZDb+Q+odkHJ+MpW/9U5cODzqnB+fy2EiHSZES7ldV5LK7yjlVzTp7R8Xy6W6y75kfK8iWYtFVH7lvjwrCMA==}
+  preact@10.27.2:
+    resolution: {integrity: sha512-5SYSgFKSyhCbk6SrXyMpqjb5+MQBgfvEKE/OC+PujcY34sOpqtr+0AZQtPYx5IA6VxynQ7rUPCtKzyovpj9Bpg==}
 
   prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
@@ -3596,6 +3607,8 @@ snapshots:
       '@pnpm/network.ca-file': 1.0.2
       config-chain: 1.1.13
 
+  '@posthog/core@1.1.0': {}
+
   '@quasar/app-vite@1.11.0(eslint@8.57.1)(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(rollup@4.34.4)(vue-router@4.5.0(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))':
     dependencies:
       '@quasar/render-ssr-error': 1.0.3
@@ -4581,7 +4594,7 @@ snapshots:
 
   cookie@1.0.2: {}
 
-  core-js@3.40.0: {}
+  core-js@3.45.1: {}
 
   core-util-is@1.0.3: {}
 
@@ -5851,14 +5864,15 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.215.4:
+  posthog-js@1.267.0:
     dependencies:
-      core-js: 3.40.0
+      '@posthog/core': 1.1.0
+      core-js: 3.45.1
       fflate: 0.4.8
-      preact: 10.25.4
+      preact: 10.27.2
       web-vitals: 4.2.4
 
-  preact@10.25.4: {}
+  preact@10.27.2: {}
 
   prelude-ls@1.2.1: {}
 

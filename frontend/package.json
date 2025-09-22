@@ -23,7 +23,7 @@
     "@quasar/extras": "^1.16.9",
     "@sentry/vue": "^7.101.1",
     "@supabase/ssr": "^0.7.0",
-    "cheerio": "^1.0.0-rc.12",
+    "cheerio": "^1.1.2",
     "dotenv": "^17.2.2",
     "pinia": "^2.1.7",
     "posthog-js": "^1.267.0",

@@ -1,23 +1,58 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-md q-pb-sm">
-      <q-icon size="sm" name="thumbs_up_down" /> Changes to review
-    </div>
-    <q-scroll-area v-if="props.changesList.length" class="col-grow">
-      <diff-revision
-        v-for="revision in groupedIndexedChanges"
-        :key="revision.revid"
-        :revision="revision"
-        :role="role"
-        :article-id="articleId"
-      />
+    <q-expansion-item v-if="props.changesList.length" v-model="changesExpanded">
+      <template #header>
+        <q-item-section>
+          <q-item-label class="text-h6">
+            <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+            <q-badge
+              v-if="groupedIndexedChanges.length"
+              outline
+              rounded
+              class="q-ml-sm text-capitalize text-dark"
+              :label="groupedIndexedChanges.length"
+              size="sm"
+            >
+              <q-tooltip>
+                {{ groupedIndexedChanges.length }} revision{{
+                  groupedIndexedChanges.length !== 1 ? 's' : ''
+                }}
+                to review
+              </q-tooltip>
+            </q-badge>
+          </q-item-label>
+        </q-item-section>
+      </template>
+
+      <q-scroll-area  style="height: 500px">
+        <diff-revision
+          v-for="revision in groupedIndexedChanges"
+          :key="revision.revid"
+          :revision="revision"
+          :role="role"
+          :article-id="articleId"
+        />
+      </q-scroll-area>
 
       <!-- Past changes -->
-      <q-expansion-item v-if="pastChanges.length" v-model="expanded">
+      <q-expansion-item v-if="pastChanges.length" v-model="pastChangesExpanded">
         <template #header>
           <q-item-section>
             <q-item-label class="text-h6">
               <q-icon size="sm" name="archive" /> Past changes
+              <q-badge
+                outline
+                rounded
+                class="q-ml-sm text-capitalize text-dark"
+                :label="pastChanges.length"
+                size="sm"
+              >
+                <q-tooltip>
+                  {{ pastChanges.length }} past change{{
+                    pastChanges.length !== 1 ? 's' : ''
+                  }}
+                </q-tooltip>
+              </q-badge>
             </q-item-label>
           </q-item-section>
         </template>
@@ -46,8 +81,11 @@
           </q-list>
         </q-item-section>
       </q-expansion-item>
-    </q-scroll-area>
-    <template v-else>
+    </q-expansion-item>
+    <template v-if="!props.changesList.length">
+      <div class="text-h6 q-px-md q-pb-sm">
+        <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+      </div>
       <div class="q-pa-sm">
         <div class="q-pb-sm text-body1 text-weight-medium">
           There are currently no changes
@@ -133,7 +171,9 @@ const unindexedChanges = computed(() =>
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
-const expanded = ref(false);
+
+const changesExpanded = ref(true);
+const pastChangesExpanded = ref(false);
 
 watch(
   () => store.selectedChangeId,
@@ -142,7 +182,15 @@ watch(
       return;
     }
 
-    expanded.value = archivedChanges.value.some(
+    const hasSelectedInCurrent = groupedIndexedChanges.value.some((revision) =>
+      revision.items.some((item) => item.id === selectedChangeId),
+    );
+
+    if (hasSelectedInCurrent) {
+      changesExpanded.value = true;
+    }
+
+    pastChangesExpanded.value = archivedChanges.value.some(
       (item) => item.status !== 0 && item.id === selectedChangeId,
     );
   },

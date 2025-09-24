@@ -24,7 +24,7 @@
         </q-item-section>
       </template>
 
-      <q-scroll-area  style="height: 500px">
+      <q-scroll-area style="height: 500px">
         <diff-revision
           v-for="revision in groupedIndexedChanges"
           :key="revision.revid"

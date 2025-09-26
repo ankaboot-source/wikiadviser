@@ -99,6 +99,7 @@
         v-if="props.changesList.length"
         v-model="changesExpanded"
         class="mobile-expansion"
+        @update:model-value="onExpansionToggle"
       >
         <template #header>
           <q-item-section>
@@ -123,7 +124,11 @@
           </q-item-section>
         </template>
 
-        <q-scroll-area style="height: 35vh" class="mobile-scroll no-scrollbar">
+        <q-scroll-area
+          v-if="changesExpanded"
+          style="height: 35vh"
+          class="mobile-scroll no-scrollbar"
+        >
           <diff-revision
             v-for="revision in groupedIndexedChanges"
             :key="revision.revid"
@@ -135,8 +140,9 @@
 
         <!-- Past changes -->
         <q-expansion-item
-          v-if="pastChanges.length"
+          v-if="pastChanges.length && changesExpanded"
           v-model="pastChangesExpanded"
+          @update:model-value="onPastChangesToggle"
         >
           <template #header>
             <q-item-section>
@@ -158,7 +164,11 @@
               </q-item-label>
             </q-item-section>
           </template>
-          <q-scroll-area style="height: 15vh" class="no-scrollbar">
+          <q-scroll-area
+            v-if="pastChangesExpanded"
+            style="height: 15vh"
+            class="no-scrollbar"
+          >
             <q-item-section>
               <q-list class="q-mt-md">
                 <div class="column">
@@ -210,7 +220,7 @@
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums } from 'src/types';
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
@@ -284,29 +294,68 @@ const pastChanges = computed(() =>
 const changesExpanded = ref(true);
 const pastChangesExpanded = ref(false);
 
-// In mobile mode, start collapsed to save space and keep close to content
+let expansionToggleTimeout: NodeJS.Timeout | null = null;
+let pastChangesToggleTimeout: NodeJS.Timeout | null = null;
+
+const onExpansionToggle = (expanded: boolean) => {
+  if (expansionToggleTimeout) {
+    clearTimeout(expansionToggleTimeout);
+  }
+
+  expansionToggleTimeout = setTimeout(() => {
+    console.log('Changes expansion toggled:', expanded);
+    expansionToggleTimeout = null;
+  }, 150);
+};
+
+const onPastChangesToggle = (expanded: boolean) => {
+  if (pastChangesToggleTimeout) {
+    clearTimeout(pastChangesToggleTimeout);
+  }
+
+  pastChangesToggleTimeout = setTimeout(() => {
+    console.log('Past changes expansion toggled:', expanded);
+    pastChangesToggleTimeout = null;
+  }, 150);
+};
+
 if (props.mobileMode) {
   changesExpanded.value = false;
 }
 
+let selectedChangeTimeout: NodeJS.Timeout | null = null;
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeId === '') {
-      return;
+    if (selectedChangeTimeout) {
+      clearTimeout(selectedChangeTimeout);
     }
 
-    const hasSelectedInCurrent = groupedIndexedChanges.value.some((revision) =>
-      revision.items.some((item) => item.id === selectedChangeId),
-    );
+    selectedChangeTimeout = setTimeout(async () => {
+      if (selectedChangeId === '') {
+        return;
+      }
 
-    if (hasSelectedInCurrent) {
-      changesExpanded.value = true;
-    }
+      const hasSelectedInCurrent = groupedIndexedChanges.value.some(
+        (revision) =>
+          revision.items.some((item) => item.id === selectedChangeId),
+      );
 
-    pastChangesExpanded.value = archivedChanges.value.some(
-      (item) => item.status !== 0 && item.id === selectedChangeId,
-    );
+      if (hasSelectedInCurrent) {
+        changesExpanded.value = true;
+        await nextTick();
+      }
+
+      const hasSelectedInPast = archivedChanges.value.some(
+        (item) => item.status !== 0 && item.id === selectedChangeId,
+      );
+
+      if (hasSelectedInPast) {
+        pastChangesExpanded.value = true;
+      }
+
+      selectedChangeTimeout = null;
+    }, 100);
   },
 );
 

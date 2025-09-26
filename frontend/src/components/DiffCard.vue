@@ -1,8 +1,8 @@
 <template>
   <div class="column">
-    <q-toolbar class="q-px-none">
+    <q-toolbar v-if="!hideToolbar" class="q-px-none">
       <q-btn-toggle
-        v-model="buttonToggle"
+        v-model="internalToggle"
         no-caps
         unelevated
         toggle-color="blue-grey-2"
@@ -26,7 +26,7 @@
           )
         "
       />
-      <ReviewByMira :article="article" />
+      <ReviewByMira :article="article" class="q-mr-sm" />
       <q-btn
         v-if="role != 'viewer'"
         icon="o_group"
@@ -42,15 +42,16 @@
       </q-btn>
     </q-toolbar>
 
+    <!-- Only render the editor ONCE based on effective toggle -->
     <mw-visual-editor
-      v-if="article.title && article.permission_id && editorPermission"
-      :button-toggle="buttonToggle"
+      v-if="article.title && article.permission_id && editorPermission && effectiveToggle === 'edit'"
+      :button-toggle="effectiveToggle"
       :article="article"
       :toggle-edit-tab="toggleEditTab"
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="buttonToggle === 'view'">
+    <template v-if="effectiveToggle === 'view'">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -84,6 +85,10 @@ import { Article, Enums, User } from 'src/types';
 import { computed, nextTick, ref, watch } from 'vue';
 import ReviewByMira from 'src/components/ReviewByMira.vue';
 
+const emit = defineEmits<{
+  'toggle-edit-tab': [tab?: string];
+}>();
+
 const selectedChangeStore = useSelectedChangeStore();
 const articlesStore = useArticlesStore();
 
@@ -93,6 +98,8 @@ const props = defineProps<{
   role: Enums<'role'>;
   editorPermission: boolean | null;
   users: User[];
+  hideToolbar?: boolean;
+  mobileButtonToggle?: string;
 }>();
 
 // There is an error when passing a variable into import()
@@ -101,6 +108,10 @@ if (props.article.language === 'fr') {
 } else if (props.article.language === 'en') {
   import('src/css/styles/en-common.css');
 }
+
+const internalToggle = ref('view');
+
+const effectiveToggle = computed(() => props.mobileButtonToggle ?? internalToggle.value);
 
 function setTabindexForElements(selector: string, tabindexValue: string) {
   const elements = document.querySelectorAll(selector);
@@ -186,7 +197,6 @@ const editButton = {
   icon: 'edit',
 };
 
-const buttonToggle = ref('');
 const toggleOptions = computed(() =>
   !(
     props.article.title &&
@@ -196,6 +206,7 @@ const toggleOptions = computed(() =>
     ? [viewButton]
     : [viewButton, editButton],
 );
+
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
   const emptyContent = !props.changesContent || !props.changesContent.length;
@@ -208,17 +219,27 @@ watch(
     if (oldToggle === 'edit') {
       return;
     }
-    buttonToggle.value = newToggle;
+    if (!props.hideToolbar) {
+      internalToggle.value = newToggle;
+    }
   },
   { immediate: true },
 );
 
 const onSwitchTabEmitChange = (tab: string) => {
-  buttonToggle.value = tab;
+  if (props.hideToolbar) {
+    emit('toggle-edit-tab', tab);
+  } else {
+    internalToggle.value = tab;
+  }
 };
 
 function toggleEditTab() {
-  buttonToggle.value = 'edit';
+  if (props.hideToolbar) {
+    emit('toggle-edit-tab');
+  } else {
+    internalToggle.value = 'edit';
+  }
 }
 </script>
 

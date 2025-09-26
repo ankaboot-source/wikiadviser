@@ -48,19 +48,19 @@
               class="q-mr-sm"
             />
             <q-btn
-  v-if="role != 'viewer'"
-  icon="o_group"
-  outline
-  unelevated
-  dense
-  size="17.08px"
-  class="borders"
-  @click="shareDialog = !shareDialog"
->
-  <q-dialog v-model="shareDialog">
-    <share-card :article="article" :role="role" :users="users" />
-  </q-dialog>
-</q-btn>
+              v-if="role != 'viewer'"
+              icon="o_group"
+              outline
+              unelevated
+              dense
+              size="17.08px"
+              class="borders"
+              @click="shareDialog = !shareDialog"
+            >
+              <q-dialog v-model="shareDialog">
+                <share-card :article="article" :role="role" :users="users" />
+              </q-dialog>
+            </q-btn>
           </q-toolbar>
         </div>
 
@@ -414,14 +414,14 @@ onBeforeUnmount(() => {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
-  
+
   .main-content-area {
     flex: 1;
     min-width: 0;
     margin-right: 0;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   .sidebar-area {
     flex: 0 0 400px;
     max-width: 400px;
@@ -429,14 +429,14 @@ onBeforeUnmount(() => {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
   }
-  
+
   .sidebar-collapsed .sidebar-area {
-  flex: 0 0 80px !important;
-  max-width: 80px !important;
-  min-width: 80px !important;
-  overflow: hidden !important;
-}
-  
+    flex: 0 0 80px !important;
+    max-width: 80px !important;
+    min-width: 80px !important;
+    overflow: hidden !important;
+  }
+
   .sidebar-collapsed .main-content-area {
     padding-right: 60px;
   }

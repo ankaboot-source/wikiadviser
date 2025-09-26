@@ -44,7 +44,12 @@
 
     <!-- Only render the editor ONCE based on effective toggle -->
     <mw-visual-editor
-      v-if="article.title && article.permission_id && editorPermission && effectiveToggle === 'edit'"
+      v-if="
+        article.title &&
+        article.permission_id &&
+        editorPermission &&
+        effectiveToggle === 'edit'
+      "
       :button-toggle="effectiveToggle"
       :article="article"
       :toggle-edit-tab="toggleEditTab"
@@ -111,7 +116,9 @@ if (props.article.language === 'fr') {
 
 const internalToggle = ref('view');
 
-const effectiveToggle = computed(() => props.mobileButtonToggle ?? internalToggle.value);
+const effectiveToggle = computed(
+  () => props.mobileButtonToggle ?? internalToggle.value,
+);
 
 function setTabindexForElements(selector: string, tabindexValue: string) {
   const elements = document.querySelectorAll(selector);

@@ -60,7 +60,7 @@ import { ref } from 'vue';
 import supabaseClient from 'src/api/supabase';
 import { Article } from 'src/types';
 
-const props = defineProps<{ article: Article ,hideLabel?: boolean}>();
+const props = defineProps<{ article: Article; hideLabel?: boolean }>();
 
 const loading = ref(false);
 const dialog = ref(false);

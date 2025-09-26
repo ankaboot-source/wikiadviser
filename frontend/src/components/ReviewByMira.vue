@@ -2,9 +2,12 @@
   <div>
     <q-btn
       icon="img:/icons/logo.svg"
-      label="Review by Mira"
+      :label="hideLabel ? '' : 'Review by Mira'"
       outline
       no-caps
+      unelevated
+      dense
+      class="borders review-btn"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"
@@ -57,7 +60,7 @@ import { ref } from 'vue';
 import supabaseClient from 'src/api/supabase';
 import { Article } from 'src/types';
 
-const props = defineProps<{ article: Article }>();
+const props = defineProps<{ article: Article ,hideLabel?: boolean}>();
 
 const loading = ref(false);
 const dialog = ref(false);
@@ -105,3 +108,11 @@ async function triggerReview() {
   }
 }
 </script>
+
+<style scoped>
+.review-btn {
+  min-width: 40px;
+  height: 40px;
+  padding: 0 8px;
+}
+</style>

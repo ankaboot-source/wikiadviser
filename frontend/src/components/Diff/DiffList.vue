@@ -1,62 +1,218 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-md q-pb-sm">
-      <q-icon size="sm" name="thumbs_up_down" /> Changes to review
-    </div>
-    <q-scroll-area v-if="props.changesList.length" class="col-grow">
-      <diff-revision
-        v-for="revision in groupedIndexedChanges"
-        :key="revision.revid"
-        :revision="revision"
-        :role="role"
-        :article-id="articleId"
-      />
+    <!-- Desktop layout: Always expanded, no outer expansion-item -->
+    <template v-if="!mobileMode">
+      <template v-if="props.changesList.length">
+        <div class="text-h6 q-px-md q-pb-sm">
+          <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+          <q-badge
+            v-if="groupedIndexedChanges.length"
+            outline
+            rounded
+            class="q-ml-sm text-capitalize text-dark"
+            :label="groupedIndexedChanges.length"
+            size="sm"
+          >
+            <q-tooltip>
+              {{ groupedIndexedChanges.length }} revision{{
+                groupedIndexedChanges.length !== 1 ? 's' : ''
+              }}
+              to review
+            </q-tooltip>
+          </q-badge>
+        </div>
+        <q-scroll-area style="height: 500px" class="no-scrollbar">
+          <diff-revision
+            v-for="revision in groupedIndexedChanges"
+            :key="revision.revid"
+            :revision="revision"
+            :role="role"
+            :article-id="articleId"
+          />
+        </q-scroll-area>
 
-      <!-- Past changes -->
-      <q-expansion-item v-if="pastChanges.length" v-model="expanded">
+        <!-- Past changes - always visible in desktop -->
+        <template v-if="pastChanges.length">
+          <div class="text-h6 q-px-md q-pt-md q-pb-sm">
+            <q-icon size="sm" name="archive" /> Past changes
+            <q-badge
+              outline
+              rounded
+              class="q-ml-sm text-capitalize text-dark"
+              :label="pastChanges.length"
+              size="sm"
+            >
+              <q-tooltip>
+                {{ pastChanges.length }} past change{{
+                  pastChanges.length !== 1 ? 's' : ''
+                }}
+              </q-tooltip>
+            </q-badge>
+          </div>
+          <q-scroll-area style="height: 200px" class="no-scrollbar q-mb-md">
+            <q-list class="q-mt-md">
+              <div class="column">
+                <diff-item
+                  v-for="item in archivedChanges"
+                  :key="item.id"
+                  :item="item"
+                  :role="role"
+                  :past-change="{
+                    text: 'This change was manually archived.',
+                  }"
+                />
+                <diff-item
+                  v-for="item in unindexedChanges"
+                  :key="item.id"
+                  :item="item"
+                  :role="role"
+                  :past-change="{
+                    icon: 'link_off',
+                    text: 'This change was automatically orphaned.',
+                    disable: true,
+                  }"
+                />
+              </div>
+            </q-list>
+          </q-scroll-area>
+        </template>
+      </template>
+      <template v-else>
+        <div class="text-h6 q-px-md q-pb-sm">
+          <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+        </div>
+        <div class="q-pa-sm">
+          <div class="q-pb-sm text-body1 text-weight-medium">
+            There are currently no changes
+          </div>
+          <div class="text-body2">
+            After the article is edited, the changes will be displayed here for
+            your review.
+          </div>
+        </div>
+      </template>
+    </template>
+
+    <!-- Mobile layout: Collapsible outer expansion-item -->
+    <template v-else>
+      <q-expansion-item
+        v-if="props.changesList.length"
+        v-model="changesExpanded"
+        class="mobile-expansion"
+        @update:model-value="onExpansionToggle"
+      >
         <template #header>
           <q-item-section>
-            <q-item-label class="text-h6">
-              <q-icon size="sm" name="archive" /> Past changes
+            <q-item-label class="text-h6 mobile-header">
+              <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+              <q-badge
+                v-if="groupedIndexedChanges.length"
+                outline
+                rounded
+                class="q-ml-sm text-capitalize text-dark"
+                :label="groupedIndexedChanges.length"
+                size="sm"
+              >
+                <q-tooltip>
+                  {{ groupedIndexedChanges.length }} revision{{
+                    groupedIndexedChanges.length !== 1 ? 's' : ''
+                  }}
+                  to review
+                </q-tooltip>
+              </q-badge>
             </q-item-label>
           </q-item-section>
         </template>
-        <q-item-section>
-          <q-list class="q-mt-md">
-            <diff-item
-              v-for="item in archivedChanges"
-              :key="item.id"
-              :item="item"
-              :role="role"
-              :past-change="{
-                text: 'This change was manually archived.',
-              }"
-            />
-            <diff-item
-              v-for="item in unindexedChanges"
-              :key="item.id"
-              :item="item"
-              :role="role"
-              :past-change="{
-                icon: 'link_off',
-                text: 'This change was automatically orphaned.',
-                disable: true,
-              }"
-            />
-          </q-list>
-        </q-item-section>
+
+        <q-scroll-area
+          v-if="changesExpanded"
+          style="height: 35vh"
+          class="mobile-scroll no-scrollbar"
+        >
+          <diff-revision
+            v-for="revision in groupedIndexedChanges"
+            :key="revision.revid"
+            :revision="revision"
+            :role="role"
+            :article-id="articleId"
+          />
+        </q-scroll-area>
+
+        <!-- Past changes -->
+        <q-expansion-item
+          v-if="pastChanges.length && changesExpanded"
+          v-model="pastChangesExpanded"
+          @update:model-value="onPastChangesToggle"
+        >
+          <template #header>
+            <q-item-section>
+              <q-item-label class="text-h6">
+                <q-icon size="sm" name="archive" /> Past changes
+                <q-badge
+                  outline
+                  rounded
+                  class="q-ml-sm text-capitalize text-dark"
+                  :label="pastChanges.length"
+                  size="sm"
+                >
+                  <q-tooltip>
+                    {{ pastChanges.length }} past change{{
+                      pastChanges.length !== 1 ? 's' : ''
+                    }}
+                  </q-tooltip>
+                </q-badge>
+              </q-item-label>
+            </q-item-section>
+          </template>
+          <q-scroll-area
+            v-if="pastChangesExpanded"
+            style="height: 15vh"
+            class="no-scrollbar"
+          >
+            <q-item-section>
+              <q-list class="q-mt-md">
+                <div class="column">
+                  <diff-item
+                    v-for="item in archivedChanges"
+                    :key="item.id"
+                    :item="item"
+                    :role="role"
+                    :past-change="{
+                      text: 'This change was manually archived.',
+                    }"
+                  />
+                  <diff-item
+                    v-for="item in unindexedChanges"
+                    :key="item.id"
+                    :item="item"
+                    :role="role"
+                    :past-change="{
+                      icon: 'link_off',
+                      text: 'This change was automatically orphaned.',
+                      disable: true,
+                    }"
+                  />
+                </div>
+              </q-list>
+            </q-item-section>
+          </q-scroll-area>
+        </q-expansion-item>
       </q-expansion-item>
-    </q-scroll-area>
-    <template v-else>
-      <div class="q-pa-sm">
-        <div class="q-pb-sm text-body1 text-weight-medium">
-          There are currently no changes
+
+      <template v-if="!props.changesList.length">
+        <div class="text-h6 q-px-md q-pb-sm mobile-header">
+          <q-icon size="sm" name="thumbs_up_down" /> Changes to review
         </div>
-        <div class="text-body2">
-          After the article is edited, the changes will be displayed here for
-          your review.
+        <div class="q-pa-sm">
+          <div class="q-pb-sm text-body1 text-weight-medium">
+            There are currently no changes
+          </div>
+          <div class="text-body2">
+            After the article is edited, the changes will be displayed here for
+            your review.
+          </div>
         </div>
-      </div>
+      </template>
     </template>
   </div>
 </template>
@@ -64,7 +220,7 @@
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums } from 'src/types';
-import { computed, ref, watch, onMounted } from 'vue';
+import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import { useRoute } from 'vue-router';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
@@ -76,6 +232,7 @@ const props = defineProps<{
   articleId: string;
   role: Enums<'role'>;
   changesList: ChangeItem[];
+  mobileMode?: boolean;
 }>();
 
 const groupedChanges = computed(() => {
@@ -133,18 +290,72 @@ const unindexedChanges = computed(() =>
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
-const expanded = ref(false);
 
+const changesExpanded = ref(true);
+const pastChangesExpanded = ref(false);
+
+let expansionToggleTimeout: NodeJS.Timeout | null = null;
+let pastChangesToggleTimeout: NodeJS.Timeout | null = null;
+
+const onExpansionToggle = (expanded: boolean) => {
+  if (expansionToggleTimeout) {
+    clearTimeout(expansionToggleTimeout);
+  }
+
+  expansionToggleTimeout = setTimeout(() => {
+    console.log('Changes expansion toggled:', expanded);
+    expansionToggleTimeout = null;
+  }, 150);
+};
+
+const onPastChangesToggle = (expanded: boolean) => {
+  if (pastChangesToggleTimeout) {
+    clearTimeout(pastChangesToggleTimeout);
+  }
+
+  pastChangesToggleTimeout = setTimeout(() => {
+    console.log('Past changes expansion toggled:', expanded);
+    pastChangesToggleTimeout = null;
+  }, 150);
+};
+
+if (props.mobileMode) {
+  changesExpanded.value = false;
+}
+
+let selectedChangeTimeout: NodeJS.Timeout | null = null;
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeId === '') {
-      return;
+    if (selectedChangeTimeout) {
+      clearTimeout(selectedChangeTimeout);
     }
 
-    expanded.value = archivedChanges.value.some(
-      (item) => item.status !== 0 && item.id === selectedChangeId,
-    );
+    selectedChangeTimeout = setTimeout(async () => {
+      if (selectedChangeId === '') {
+        return;
+      }
+
+      const hasSelectedInCurrent = groupedIndexedChanges.value.some(
+        (revision) =>
+          revision.items.some((item) => item.id === selectedChangeId),
+      );
+
+      if (hasSelectedInCurrent) {
+        changesExpanded.value = true;
+        await nextTick();
+      }
+
+      const hasSelectedInPast = archivedChanges.value.some(
+        (item) => item.status !== 0 && item.id === selectedChangeId,
+      );
+
+      if (hasSelectedInPast) {
+        pastChangesExpanded.value = true;
+      }
+
+      selectedChangeTimeout = null;
+    }, 100);
   },
 );
 
@@ -155,8 +366,47 @@ onMounted(() => {
   }
 });
 </script>
-<style>
+
+<style scoped>
 .q-scrollarea__content {
   width: inherit !important;
+}
+
+.no-scrollbar .q-scroll-area__content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar .q-scroll-area__content::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-expansion {
+  margin: 0 !important;
+}
+
+.mobile-header {
+  font-size: 1.1rem !important;
+  padding: 8px 0 !important;
+}
+
+.mobile-scroll {
+  max-height: 250px;
+}
+
+.mobile-expansion .q-expansion-item__container {
+  transition: all 0.3s ease;
+}
+
+.mobile-expansion:not(.q-expansion-item--expanded) {
+  min-height: 48px;
+}
+
+.mobile-expansion:not(.q-expansion-item--expanded) .q-expansion-item__content {
+  display: none;
+}
+
+.mobile-expansion .q-expansion-item__content {
+  padding-bottom: 16px;
 }
 </style>

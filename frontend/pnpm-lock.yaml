@@ -39,8 +39,8 @@ importers:
         specifier: ^3.4.10
         version: 3.5.13(typescript@5.9.2)
       vue-router:
-        specifier: ^4.2.5
-        version: 4.5.0(vue@3.5.13(typescript@5.9.2))
+        specifier: ^4.5.1
+        version: 4.5.1(vue@3.5.13(typescript@5.9.2))
       zod:
         specifier: ^4.1.8
         version: 4.1.8
@@ -50,7 +50,7 @@ importers:
         version: 0.3.7(@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.48.1))(@supabase/supabase-js@2.48.1)
       '@quasar/app-vite':
         specifier: ^1.7.1
-        version: 1.11.0(eslint@8.57.1)(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(rollup@4.34.4)(vue-router@4.5.0(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))
+        version: 1.11.0(eslint@8.57.1)(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(rollup@4.34.4)(vue-router@4.5.1(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))
       '@quasar/quasar-app-extension-testing-unit-vitest':
         specifier: ^0.4.0
         version: 0.4.0(@vue/test-utils@2.4.6)(quasar@2.17.7)(typescript@5.9.2)(vite@5.4.14(@types/node@20.17.17)(sass@1.84.0)(terser@5.38.0))(vitest@0.34.6(happy-dom@11.2.0)(sass@1.84.0)(terser@5.38.0))(vue@3.5.13(typescript@5.9.2))
@@ -3217,8 +3217,8 @@ packages:
     peerDependencies:
       eslint: '>=6.0.0'
 
-  vue-router@4.5.0:
-    resolution: {integrity: sha512-HDuk+PuH5monfNuY+ct49mNmkCRK4xJAV9Ts4z9UFc4rzdDnxQLyCMGGc8pKhZhHTVzfanpNwB/lwqevcBwI4w==}
+  vue-router@4.5.1:
+    resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
     peerDependencies:
       vue: ^3.2.0
 
@@ -3613,7 +3613,7 @@ snapshots:
 
   '@posthog/core@1.1.0': {}
 
-  '@quasar/app-vite@1.11.0(eslint@8.57.1)(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(rollup@4.34.4)(vue-router@4.5.0(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))':
+  '@quasar/app-vite@1.11.0(eslint@8.57.1)(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(rollup@4.34.4)(vue-router@4.5.1(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))':
     dependencies:
       '@quasar/render-ssr-error': 1.0.3
       '@quasar/vite-plugin': 1.9.0(@vitejs/plugin-vue@2.3.4(vite@2.9.18(sass@1.84.0))(vue@3.5.13(typescript@5.9.2)))(quasar@2.17.7)(vite@2.9.18(sass@1.84.0))(vue@3.5.13(typescript@5.9.2))
@@ -3650,7 +3650,7 @@ snapshots:
       table: 6.9.0
       vite: 2.9.18(sass@1.84.0)
       vue: 3.5.13(typescript@5.9.2)
-      vue-router: 4.5.0(vue@3.5.13(typescript@5.9.2))
+      vue-router: 4.5.1(vue@3.5.13(typescript@5.9.2))
       webpack-merge: 5.10.0
     optionalDependencies:
       eslint: 8.57.1
@@ -6534,7 +6534,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  vue-router@4.5.0(vue@3.5.13(typescript@5.9.2)):
+  vue-router@4.5.1(vue@3.5.13(typescript@5.9.2)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.9.2)

@@ -4,7 +4,7 @@
       <!-- Loading state content -->
     </div>
     <div v-else class="q-panel scroll col">
-      <!-- Desktop Layout (>= 1024px) -->
+      <!-- Desktop Layout-->
       <div
         class="desktop-layout row q-pa-sm gt-md"
         :class="{ 'sidebar-collapsed': sidebarCollapsed }"
@@ -26,10 +26,10 @@
         />
       </div>
 
-      <!-- Mobile Layout (< 1024px) -->
+      <!-- Mobile Layout-->
       <div class="column lt-lg mobile-container">
         <div class="mobile-toolbar-top q-pa-sm bg-white">
-          <q-toolbar class="q-px-none">
+          <q-toolbar class="q-px-none items-center">
             <q-btn-toggle
               v-model="buttonToggle"
               no-caps
@@ -40,12 +40,14 @@
               color="bg-secondary"
               class="borders"
               :options="mobileToggleOptions"
+              style="height: 36px"
             />
             <q-space />
             <ReviewByMira
               :article="article"
               :hide-label="true"
-              class="q-mr-sm"
+              class="q-mr-sm flex justify-center"
+              style="height: 40px"
             />
             <q-btn
               v-if="role != 'viewer'"
@@ -53,8 +55,8 @@
               outline
               unelevated
               dense
-              size="17.08px"
-              class="borders"
+              class="borders flex justify-center"
+              style="height: 40px; width: 40px"
               @click="shareDialog = !shareDialog"
             >
               <q-dialog v-model="shareDialog">
@@ -405,7 +407,7 @@ onBeforeUnmount(() => {
 </script>
 <style>
 /* Desktop Layout */
-@media (min-width: 1024px) {
+@media (min-width: 1440px) {
   .desktop-layout {
     height: 100vh;
     gap: 16px;
@@ -441,8 +443,9 @@ onBeforeUnmount(() => {
     padding-right: 60px;
   }
 }
+
 /* Mobile Layout */
-@media (max-width: 1023px) {
+@media (max-width: 1439px) {
   .mobile-container {
     height: 100vh;
     overflow: hidden;
@@ -450,17 +453,14 @@ onBeforeUnmount(() => {
 
   .mobile-toolbar-top {
     flex-shrink: 0;
-    border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   }
 
   .mobile-changes-section {
     flex-shrink: 0;
-    min-height: 100px;
+    min-height: 60px;
     max-height: 40vh;
     overflow-y: auto;
-    margin: 8px;
-    margin-bottom: 0;
+    margin: 0 8px 2px 8px;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -469,11 +469,16 @@ onBeforeUnmount(() => {
     display: none;
   }
 
-  .mobile-content-section {
-    flex: 1;
-    margin: 0 8px 8px 8px;
-    margin-top: 0;
-    overflow: hidden;
+  .mobile-content-section .q-scroll-area,
+  .mobile-content-section .col-grow {
+    margin: -8px 8px 8px -4px;
+    background: transparent !important;
+  }
+
+  .mobile-content-section .rounded-borders,
+  .mobile-content-section .borders {
+    border: none !important;
+    border-radius: 0 !important;
   }
 
   .mobile-content-section .full-height {

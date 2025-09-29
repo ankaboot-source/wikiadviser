@@ -1,15 +1,16 @@
 <template>
   <div class="column">
-    <!-- Desktop layout: Always expanded, no outer expansion-item -->
+    <!-- Desktop layout -->
     <template v-if="!mobileMode">
       <template v-if="props.changesList.length">
-        <div class="text-h6 q-px-md q-pb-sm">
-          <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+        <div class="text-h6 q-px-md q-pb-sm row items-center">
+          <q-icon size="sm" name="thumbs_up_down" class="q-mr-sm" />
+
           <q-badge
             v-if="groupedIndexedChanges.length"
             outline
             rounded
-            class="q-ml-sm text-capitalize text-dark"
+            class="q-mr-sm text-capitalize text-dark"
             :label="groupedIndexedChanges.length"
             size="sm"
           >
@@ -20,6 +21,7 @@
               to review
             </q-tooltip>
           </q-badge>
+          <span>Changes to review</span>
         </div>
         <q-scroll-area style="height: 500px" class="no-scrollbar">
           <diff-revision
@@ -31,14 +33,14 @@
           />
         </q-scroll-area>
 
-        <!-- Past changes - always visible in desktop -->
+        <!-- Past changes -->
         <template v-if="pastChanges.length">
-          <div class="text-h6 q-px-md q-pt-md q-pb-sm">
-            <q-icon size="sm" name="archive" /> Past changes
+          <div class="text-h6 q-px-md q-pt-md q-pb-sm row items-center">
+            <q-icon size="sm" name="archive" class="q-mr-sm" />
             <q-badge
               outline
               rounded
-              class="q-ml-sm text-capitalize text-dark"
+              class="q-mr-sm text-capitalize text-dark"
               :label="pastChanges.length"
               size="sm"
             >
@@ -48,6 +50,7 @@
                 }}
               </q-tooltip>
             </q-badge>
+            <span>Past changes</span>
           </div>
           <q-scroll-area style="height: 200px" class="no-scrollbar q-mb-md">
             <q-list class="q-mt-md">
@@ -92,8 +95,7 @@
         </div>
       </template>
     </template>
-
-    <!-- Mobile layout: Collapsible outer expansion-item -->
+    <!-- Mobile layout -->
     <template v-else>
       <q-expansion-item
         v-if="props.changesList.length"
@@ -103,13 +105,13 @@
       >
         <template #header>
           <q-item-section>
-            <q-item-label class="text-h6 mobile-header">
-              <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+            <q-item-label class="text-h6 mobile-header row items-center">
+              <q-icon size="sm" name="thumbs_up_down" class="q-mr-sm" />
               <q-badge
                 v-if="groupedIndexedChanges.length"
                 outline
                 rounded
-                class="q-ml-sm text-capitalize text-dark"
+                class="q-mr-sm text-capitalize text-dark"
                 :label="groupedIndexedChanges.length"
                 size="sm"
               >
@@ -120,6 +122,7 @@
                   to review
                 </q-tooltip>
               </q-badge>
+              <span>Changes to review</span>
             </q-item-label>
           </q-item-section>
         </template>
@@ -146,12 +149,12 @@
         >
           <template #header>
             <q-item-section>
-              <q-item-label class="text-h6">
-                <q-icon size="sm" name="archive" /> Past changes
+              <q-item-label class="text-h6 row items-center">
+                <q-icon size="sm" name="archive" class="q-mr-sm" />
                 <q-badge
                   outline
                   rounded
-                  class="q-ml-sm text-capitalize text-dark"
+                  class="q-mr-sm text-capitalize text-dark"
                   :label="pastChanges.length"
                   size="sm"
                 >
@@ -161,6 +164,7 @@
                     }}
                   </q-tooltip>
                 </q-badge>
+                <span>Past changes</span>
               </q-item-label>
             </q-item-section>
           </template>

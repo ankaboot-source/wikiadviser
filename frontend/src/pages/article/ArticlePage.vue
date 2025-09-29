@@ -85,8 +85,8 @@
             :users="users"
             :hide-toolbar="true"
             :mobile-button-toggle="buttonToggle"
-            @toggle-edit-tab="onToggleEditTab"
             class="full-width full-height"
+            @toggle-edit-tab="onToggleEditTab"
           />
         </div>
       </div>

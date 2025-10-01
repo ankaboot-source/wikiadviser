@@ -247,7 +247,6 @@ async function handlePermissionsRealtime(
     if (!userToUpdate || !updatedPermission.role) {
       return;
     }
-    const oldRole = userToUpdate.role;
     userToUpdate.role = updatedPermission.role;
     // If current user's own role is updated
     if (updatedPermission.user_id === userId.value && article.value) {

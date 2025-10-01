@@ -283,6 +283,8 @@ const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
 
+const expanded = ref(false);
+
 const revisionsLabel = computed(
   () =>
     `${groupedIndexedChanges.value.length} revision${groupedIndexedChanges.value.length !== 1 ? 's' : ''} to review`,
@@ -299,26 +301,12 @@ const pastChangesExpanded = ref(false);
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
-    if (!selectedChangeId) return;
-
-    requestAnimationFrame(() => {
-      const hasSelectedInCurrent = groupedIndexedChanges.value.some(
-        (revision) =>
-          revision.items.some((item) => item.id === selectedChangeId),
-      );
-
-      if (hasSelectedInCurrent) {
-        changesExpanded.value = true;
-      }
-
-      const hasSelectedInPast = archivedChanges.value.some(
-        (item) => item.status !== 0 && item.id === selectedChangeId,
-      );
-
-      if (hasSelectedInPast) {
-        pastChangesExpanded.value = true;
-      }
-    });
+    if (selectedChangeId === '') {
+      return;
+    }
+    expanded.value = archivedChanges.value.some(
+      (item) => item.status !== 0 && item.id === selectedChangeId,
+    );
   },
 );
 

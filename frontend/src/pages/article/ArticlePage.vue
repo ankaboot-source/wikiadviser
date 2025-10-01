@@ -122,22 +122,23 @@ const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
+const $q = useQuasar();
 
 const { params } = route;
 
 const articleId = ref('');
-
 const loading = ref(true);
-
-const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
-const $q = useQuasar();
-
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
+const sidebarCollapsed = ref(false);
+const shareDialog = ref(false);
+const buttonToggle = ref('view');
 
 const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
+let isSubscribed = false;
 
+const userId = computed(() => (userStore.user as Profile).id);
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
@@ -147,10 +148,6 @@ const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 const activeChanges = computed(
   () => changesList.value.map((item) => item?.hidden).length > 0,
 );
-
-const sidebarCollapsed = ref(false);
-
-const shareDialog = ref(false);
 
 const viewButton = {
   label: 'Review changes',
@@ -163,7 +160,6 @@ const editButton = {
   icon: 'edit',
 };
 
-const buttonToggle = ref('view');
 const toggleOptions = computed(() =>
   !(
     article.value?.title &&
@@ -178,12 +174,6 @@ const mobileToggleOptions = computed(() =>
   toggleOptions.value.map((opt) => ({ ...opt, label: '' })),
 );
 
-let lastArticleUpdate = 0;
-let lastChangeUpdate = 0;
-let lastCommentUpdate = 0;
-let lastPermissionsUpdate = 0;
-let isSubscribed = false;
-
 const onSidebarCollapsed = (collapsed: boolean) => {
   sidebarCollapsed.value = collapsed;
 };
@@ -191,10 +181,6 @@ const onSidebarCollapsed = (collapsed: boolean) => {
 async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'articles'>>,
 ) {
-  const now = Date.now();
-  if (now - lastArticleUpdate < 1000) return;
-  lastArticleUpdate = now;
-
   const updatedArticle = payload.new as Tables<'articles'>;
 
   if (!Object.keys(updatedArticle).length) {
@@ -211,10 +197,6 @@ async function handleArticleRealtime(
 async function handleChangeRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'changes'>>,
 ) {
-  const now = Date.now();
-  if (now - lastChangeUpdate < 1000) return;
-  lastChangeUpdate = now;
-
   const newChange = payload.new as Tables<'changes'>;
   const oldChangeIndex = changesList.value.find(
     (change) => change.id === newChange.id,
@@ -234,10 +216,6 @@ async function handleChangeRealtime(
 async function handleCommentRealtime(
   payload: RealtimePostgresChangesPayload<Comment>,
 ) {
-  const now = Date.now();
-  if (now - lastCommentUpdate < 1000) return;
-  lastCommentUpdate = now;
-
   const insertedComment = payload.new as Comment;
   for (const change of changesList.value) {
     if (change.id === insertedComment.change_id) {
@@ -257,10 +235,6 @@ async function handleCommentRealtime(
 async function handlePermissionsRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'permissions'>>,
 ) {
-  const now = Date.now();
-  if (now - lastPermissionsUpdate < 1000) return;
-  lastPermissionsUpdate = now;
-
   if (payload.eventType === 'INSERT') {
     users.value = await getUsers(articleId.value);
   }

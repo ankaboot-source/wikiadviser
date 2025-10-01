@@ -15,10 +15,7 @@
             size="sm"
           >
             <q-tooltip>
-              {{ groupedIndexedChanges.length }} revision{{
-                groupedIndexedChanges.length !== 1 ? 's' : ''
-              }}
-              to review
+              {{ revisionsLabel }}
             </q-tooltip>
           </q-badge>
           <span>Changes to review</span>
@@ -45,9 +42,7 @@
               size="sm"
             >
               <q-tooltip>
-                {{ pastChanges.length }} past change{{
-                  pastChanges.length !== 1 ? 's' : ''
-                }}
+                {{ pastChangesLabel }}
               </q-tooltip>
             </q-badge>
             <span>Past changes</span>
@@ -101,7 +96,6 @@
         v-if="props.changesList.length"
         v-model="changesExpanded"
         class="mobile-expansion"
-        @update:model-value="onExpansionToggle"
       >
         <template #header>
           <q-item-section>
@@ -116,10 +110,7 @@
                 size="sm"
               >
                 <q-tooltip>
-                  {{ groupedIndexedChanges.length }} revision{{
-                    groupedIndexedChanges.length !== 1 ? 's' : ''
-                  }}
-                  to review
+                  {{ revisionsLabel }}
                 </q-tooltip>
               </q-badge>
               <span>Changes to review</span>
@@ -145,7 +136,6 @@
         <q-expansion-item
           v-if="pastChanges.length && changesExpanded"
           v-model="pastChangesExpanded"
-          @update:model-value="onPastChangesToggle"
         >
           <template #header>
             <q-item-section>
@@ -159,9 +149,7 @@
                   size="sm"
                 >
                   <q-tooltip>
-                    {{ pastChanges.length }} past change{{
-                      pastChanges.length !== 1 ? 's' : ''
-                    }}
+                    {{ pastChangesLabel }}
                   </q-tooltip>
                 </q-badge>
                 <span>Past changes</span>
@@ -224,7 +212,7 @@
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums } from 'src/types';
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
+import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
@@ -295,51 +283,25 @@ const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
 
-const changesExpanded = ref(true);
+const revisionsLabel = computed(
+  () =>
+    `${groupedIndexedChanges.value.length} revision${groupedIndexedChanges.value.length !== 1 ? 's' : ''} to review`,
+);
+
+const pastChangesLabel = computed(
+  () =>
+    `${pastChanges.value.length} past change${pastChanges.value.length !== 1 ? 's' : ''}`,
+);
+
+const changesExpanded = ref(!props.mobileMode);
 const pastChangesExpanded = ref(false);
 
-let expansionToggleTimeout: NodeJS.Timeout | null = null;
-let pastChangesToggleTimeout: NodeJS.Timeout | null = null;
-
-const onExpansionToggle = (expanded: boolean) => {
-  if (expansionToggleTimeout) {
-    clearTimeout(expansionToggleTimeout);
-  }
-
-  expansionToggleTimeout = setTimeout(() => {
-    console.log('Changes expansion toggled:', expanded);
-    expansionToggleTimeout = null;
-  }, 150);
-};
-
-const onPastChangesToggle = (expanded: boolean) => {
-  if (pastChangesToggleTimeout) {
-    clearTimeout(pastChangesToggleTimeout);
-  }
-
-  pastChangesToggleTimeout = setTimeout(() => {
-    console.log('Past changes expansion toggled:', expanded);
-    pastChangesToggleTimeout = null;
-  }, 150);
-};
-
-if (props.mobileMode) {
-  changesExpanded.value = false;
-}
-
-let selectedChangeTimeout: NodeJS.Timeout | null = null;
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeTimeout) {
-      clearTimeout(selectedChangeTimeout);
-    }
+    if (!selectedChangeId) return;
 
-    selectedChangeTimeout = setTimeout(async () => {
-      if (selectedChangeId === '') {
-        return;
-      }
-
+    requestAnimationFrame(() => {
       const hasSelectedInCurrent = groupedIndexedChanges.value.some(
         (revision) =>
           revision.items.some((item) => item.id === selectedChangeId),
@@ -347,7 +309,6 @@ watch(
 
       if (hasSelectedInCurrent) {
         changesExpanded.value = true;
-        await nextTick();
       }
 
       const hasSelectedInPast = archivedChanges.value.some(
@@ -357,9 +318,7 @@ watch(
       if (hasSelectedInPast) {
         pastChangesExpanded.value = true;
       }
-
-      selectedChangeTimeout = null;
-    }, 100);
+    });
   },
 );
 

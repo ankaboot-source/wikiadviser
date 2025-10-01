@@ -2,7 +2,7 @@
   <div class="column">
     <q-toolbar v-if="!hideToolbar" class="q-px-none">
       <q-btn-toggle
-        v-model="internalToggle"
+        v-model="activeToggle"
         no-caps
         unelevated
         toggle-color="blue-grey-2"
@@ -91,21 +91,20 @@
       </q-btn>
     </q-toolbar>
 
-    <!-- Only render the editor ONCE based on effective toggle -->
     <mw-visual-editor
       v-if="
         article.title &&
         article.permission_id &&
         editorPermission &&
-        effectiveToggle === 'edit'
+        activeToggle === 'edit'
       "
-      :button-toggle="effectiveToggle"
+      :button-toggle="activeToggle"
       :article="article"
       :toggle-edit-tab="toggleEditTab"
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="effectiveToggle === 'view'">
+    <template v-if="activeToggle === 'view'">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -136,7 +135,7 @@ import 'src/css/styles/ve.scss';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, Enums, User } from 'src/types';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch, onMounted, nextTick } from 'vue';
 import supabaseClient from 'src/api/supabase';
 
 const emit = defineEmits<{
@@ -164,10 +163,17 @@ if (props.article.language === 'fr') {
 }
 
 const internalToggle = ref('view');
+const activeToggle = computed({
+  get: () => props.mobileButtonToggle ?? internalToggle.value,
+  set: (val) => {
+    if (props.hideToolbar) {
+      emit('toggle-edit-tab', val);
+    } else {
+      internalToggle.value = val;
+    }
+  },
+});
 
-const effectiveToggle = computed(
-  () => props.mobileButtonToggle ?? internalToggle.value,
-);
 const loading = ref(false);
 const dialog = ref(false);
 const result = ref<string | null>(null);
@@ -309,36 +315,21 @@ const toggleOptions = computed(() =>
 const firstToggle = computed(() => {
   // editorPerm & !changes -> Editor
   const emptyContent = !props.changesContent || !props.changesContent.length;
-  return props.editorPermission && emptyContent ? 'edit' : 'view';
+  return props.editorPermission && emptyContent;
 });
 
-watch(
-  firstToggle,
-  (newToggle, oldToggle) => {
-    if (oldToggle === 'edit') {
-      return;
-    }
-    if (!props.hideToolbar) {
-      internalToggle.value = newToggle;
-    }
-  },
-  { immediate: true },
-);
+onMounted(() => {
+  if (!props.hideToolbar && firstToggle.value) {
+    internalToggle.value = 'edit';
+  }
+});
 
 const onSwitchTabEmitChange = (tab: string) => {
-  if (props.hideToolbar) {
-    emit('toggle-edit-tab', tab);
-  } else {
-    internalToggle.value = tab;
-  }
+  activeToggle.value = tab;
 };
 
 function toggleEditTab() {
-  if (props.hideToolbar) {
-    emit('toggle-edit-tab');
-  } else {
-    internalToggle.value = 'edit';
-  }
+  activeToggle.value = 'edit';
 }
 </script>
 
@@ -518,7 +509,7 @@ figure[data-diff-action='insert'] {
 [data-type-of-edit='5'] > span {
   display: none;
 }
-/* Solves: beginning of article not displaying correctly #400 */
+
 .ve-ce-leafNode.ve-ce-focusableNode.ve-ce-mwTransclusionNode.ve-ce-focusableNode-invisible {
   display: none;
 }

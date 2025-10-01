@@ -7,21 +7,22 @@
       no-caps
       unelevated
       dense
-      class="borders review-btn"
+      class="borders"
+      style="min-width: 40px; height: 40px; padding: 0 8px"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"
     />
 
     <q-dialog v-model="dialog">
-      <q-card class="q-pa-md" style="min-width: 500px; max-width: 80vw">
+      <q-card class="q-pa-md review-dialog-card">
         <q-card-section>
           <div class="text-h6">AI Review by Mira</div>
         </q-card-section>
 
         <q-separator />
 
-        <q-card-section>
+        <q-card-section class="review-content">
           <div v-if="error" class="text-negative">
             {{ error }}
           </div>
@@ -44,7 +45,7 @@
             {{ result }}
           </div>
 
-          <div v-else>Waiting for Mira’s review...</div>
+          <div v-else>Waiting for Mira's review...</div>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -108,11 +109,3 @@ async function triggerReview() {
   }
 }
 </script>
-
-<style scoped>
-.review-btn {
-  min-width: 40px;
-  height: 40px;
-  padding: 0 8px;
-}
-</style>

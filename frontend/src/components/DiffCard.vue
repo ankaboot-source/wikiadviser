@@ -2,7 +2,7 @@
   <div class="column">
     <q-toolbar v-if="!hideToolbar" class="q-px-none">
       <q-btn-toggle
-        v-model="activeToggle"
+        v-model="buttonToggle"
         no-caps
         unelevated
         toggle-color="blue-grey-2"
@@ -96,15 +96,15 @@
         article.title &&
         article.permission_id &&
         editorPermission &&
-        activeToggle === 'edit'
+        buttonToggle === 'edit'
       "
-      :button-toggle="activeToggle"
+      :button-toggle="buttonToggle"
       :article="article"
       :toggle-edit-tab="toggleEditTab"
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="activeToggle === 'view'">
+    <template v-if="buttonToggle === 'view'">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -163,7 +163,7 @@ if (props.article.language === 'fr') {
 }
 
 const internalToggle = ref('view');
-const activeToggle = computed({
+const buttonToggle = computed({
   get: () => props.mobileButtonToggle ?? internalToggle.value,
   set: (val) => {
     if (props.hideToolbar) {
@@ -325,11 +325,11 @@ onMounted(() => {
 });
 
 const onSwitchTabEmitChange = (tab: string) => {
-  activeToggle.value = tab;
+  buttonToggle.value = tab;
 };
 
 function toggleEditTab() {
-  activeToggle.value = 'edit';
+  buttonToggle.value = 'edit';
 }
 </script>
 

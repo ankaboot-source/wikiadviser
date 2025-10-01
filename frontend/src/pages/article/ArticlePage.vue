@@ -251,15 +251,12 @@ async function handlePermissionsRealtime(
     userToUpdate.role = updatedPermission.role;
     // If current user's own role is updated
     if (updatedPermission.user_id === userId.value && article.value) {
-      const newRole = updatedPermission.role;
-      if (oldRole !== newRole) {
-        article.value.role = newRole;
-        $q.notify({
-          message: `Your role was updated to ${newRole}`,
-          icon: 'check',
-          color: 'positive',
-        });
-      }
+      article.value.role = updatedPermission.role;
+      $q.notify({
+        message: `Your role was updated to ${role.value}`,
+        icon: 'check',
+        color: 'positive',
+      });
     }
   }
 

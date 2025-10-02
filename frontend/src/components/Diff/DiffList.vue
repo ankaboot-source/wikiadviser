@@ -20,7 +20,10 @@
           </q-badge>
           <span>Changes to review</span>
         </div>
-        <q-scroll-area style="height: 500px" class="no-scrollbar">
+        <q-scroll-area 
+          style="height: 500px; -ms-overflow-style: none; scrollbar-width: none;"
+          :thumb-style="{ display: 'none' }"
+        >
           <diff-revision
             v-for="revision in groupedIndexedChanges"
             :key="revision.revid"
@@ -47,7 +50,11 @@
             </q-badge>
             <span>Past changes</span>
           </div>
-          <q-scroll-area style="height: 200px" class="no-scrollbar q-mb-md">
+          <q-scroll-area 
+            style="height: 200px; -ms-overflow-style: none; scrollbar-width: none;" 
+            class="q-mb-md"
+            :thumb-style="{ display: 'none' }"
+          >
             <q-list class="q-mt-md">
               <div class="column">
                 <diff-item
@@ -95,11 +102,11 @@
       <q-expansion-item
         v-if="props.changesList.length"
         v-model="changesExpanded"
-        class="mobile-expansion"
+        class="q-ma-none"
       >
         <template #header>
           <q-item-section>
-            <q-item-label class="text-h6 mobile-header row items-center">
+            <q-item-label class="text-h6 row items-center" style="font-size: 1.1rem; padding: 8px 0;">
               <q-icon size="sm" name="thumbs_up_down" class="q-mr-sm" />
               <q-badge
                 v-if="groupedIndexedChanges.length"
@@ -120,8 +127,8 @@
 
         <q-scroll-area
           v-if="changesExpanded"
-          style="height: 35vh"
-          class="mobile-scroll no-scrollbar"
+          style="height: 35vh; max-height: 250px; -ms-overflow-style: none; scrollbar-width: none;"
+          :thumb-style="{ display: 'none' }"
         >
           <diff-revision
             v-for="revision in groupedIndexedChanges"
@@ -158,8 +165,8 @@
           </template>
           <q-scroll-area
             v-if="pastChangesExpanded"
-            style="height: 15vh"
-            class="no-scrollbar"
+            style="height: 15vh; -ms-overflow-style: none; scrollbar-width: none;"
+            :thumb-style="{ display: 'none' }"
           >
             <q-item-section>
               <q-list class="q-mt-md">
@@ -192,7 +199,7 @@
       </q-expansion-item>
 
       <template v-if="!props.changesList.length">
-        <div class="text-h6 q-px-md q-pb-sm mobile-header">
+        <div class="text-h6 q-px-md q-pb-sm" style="font-size: 1.1rem; padding: 8px 0;">
           <q-icon size="sm" name="thumbs_up_down" /> Changes to review
         </div>
         <div class="q-pa-sm">
@@ -317,47 +324,3 @@ onMounted(() => {
   }
 });
 </script>
-
-<style scoped>
-.q-scrollarea__content {
-  width: inherit !important;
-}
-
-.no-scrollbar .q-scroll-area__content {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.no-scrollbar .q-scroll-area__content::-webkit-scrollbar {
-  display: none;
-}
-
-.mobile-expansion {
-  margin: 0 !important;
-}
-
-.mobile-header {
-  font-size: 1.1rem !important;
-  padding: 8px 0 !important;
-}
-
-.mobile-scroll {
-  max-height: 250px;
-}
-
-.mobile-expansion .q-expansion-item__container {
-  transition: all 0.3s ease;
-}
-
-.mobile-expansion:not(.q-expansion-item--expanded) {
-  min-height: 48px;
-}
-
-.mobile-expansion:not(.q-expansion-item--expanded) .q-expansion-item__content {
-  display: none;
-}
-
-.mobile-expansion .q-expansion-item__content {
-  padding-bottom: 16px;
-}
-</style>

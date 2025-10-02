@@ -509,7 +509,7 @@ figure[data-diff-action='insert'] {
 [data-type-of-edit='5'] > span {
   display: none;
 }
-
+/* Solves: beginning of article not displaying correctly #400 */
 .ve-ce-leafNode.ve-ce-focusableNode.ve-ce-mwTransclusionNode.ve-ce-focusableNode-invisible {
   display: none;
 }

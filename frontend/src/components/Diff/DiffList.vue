@@ -20,8 +20,8 @@
           </q-badge>
           <span>Changes to review</span>
         </div>
-        <q-scroll-area 
-          style="height: 500px; -ms-overflow-style: none; scrollbar-width: none;"
+        <q-scroll-area
+          style="height: 500px; -ms-overflow-style: none; scrollbar-width: none"
           :thumb-style="{ display: 'none' }"
         >
           <diff-revision
@@ -50,8 +50,12 @@
             </q-badge>
             <span>Past changes</span>
           </div>
-          <q-scroll-area 
-            style="height: 200px; -ms-overflow-style: none; scrollbar-width: none;" 
+          <q-scroll-area
+            style="
+              height: 200px;
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            "
             class="q-mb-md"
             :thumb-style="{ display: 'none' }"
           >
@@ -106,7 +110,10 @@
       >
         <template #header>
           <q-item-section>
-            <q-item-label class="text-h6 row items-center" style="font-size: 1.1rem; padding: 8px 0;">
+            <q-item-label
+              class="text-h6 row items-center"
+              style="font-size: 1.1rem; padding: 8px 0"
+            >
               <q-icon size="sm" name="thumbs_up_down" class="q-mr-sm" />
               <q-badge
                 v-if="groupedIndexedChanges.length"
@@ -127,7 +134,12 @@
 
         <q-scroll-area
           v-if="changesExpanded"
-          style="height: 35vh; max-height: 250px; -ms-overflow-style: none; scrollbar-width: none;"
+          style="
+            height: 35vh;
+            max-height: 250px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          "
           :thumb-style="{ display: 'none' }"
         >
           <diff-revision
@@ -165,7 +177,11 @@
           </template>
           <q-scroll-area
             v-if="pastChangesExpanded"
-            style="height: 15vh; -ms-overflow-style: none; scrollbar-width: none;"
+            style="
+              height: 15vh;
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            "
             :thumb-style="{ display: 'none' }"
           >
             <q-item-section>
@@ -199,7 +215,10 @@
       </q-expansion-item>
 
       <template v-if="!props.changesList.length">
-        <div class="text-h6 q-px-md q-pb-sm" style="font-size: 1.1rem; padding: 8px 0;">
+        <div
+          class="text-h6 q-px-md q-pb-sm"
+          style="font-size: 1.1rem; padding: 8px 0"
+        >
           <q-icon size="sm" name="thumbs_up_down" /> Changes to review
         </div>
         <div class="q-pa-sm">

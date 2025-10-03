@@ -29,8 +29,7 @@
       <ReviewByMira
         :article="article"
         :hide-label="false"
-        class="q-mr-xs"
-        style="margin: 0"
+        class="q-ma-none"
       />
       <q-btn
         v-if="role != 'viewer'"

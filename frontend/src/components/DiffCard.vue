@@ -26,11 +26,7 @@
           )
         "
       />
-      <ReviewByMira
-        :article="article"
-        :hide-label="false"
-        class="q-ma-none"
-      />
+      <ReviewByMira :article="article" :hide-label="false" class="q-ma-none" />
       <q-btn
         v-if="role != 'viewer'"
         icon="o_group"

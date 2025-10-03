@@ -6,7 +6,7 @@
     <div v-else class="q-panel scroll col">
       <!-- Desktop Layout-->
       <div
-        class="desktop-layout row q-pa-sm gt-md"
+        class="desktop-layout row q-pa-sm full-height relative-position gt-md"
         :class="{ 'sidebar-collapsed': sidebarCollapsed }"
       >
         <diff-card
@@ -15,20 +15,20 @@
           :role="role"
           :editor-permission="editorPermission"
           :users="users"
-          class="main-content-area q-mr-md"
+          class="main-content-area col-grow q-mr-md"
         />
         <diff-list
           :article-id="articleId"
           :role="role"
           :changes-list="changesList"
-          class="sidebar-area rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
+          class="sidebar-area rounded-borders q-pt-sm q-mt-xs bg-secondary borders full-height relative-position overflow-hidden"
           @sidebar-collapsed="onSidebarCollapsed"
         />
       </div>
 
       <!-- Mobile Layout-->
-      <div class="column lt-lg mobile-container">
-        <div class="mobile-toolbar-top q-pa-sm bg-white">
+      <div class="column lt-lg mobile-container full-height overflow-hidden">
+        <div class="mobile-toolbar-top q-pa-sm bg-white no-shrink">
           <q-toolbar class="q-px-none items-center">
             <q-btn-toggle
               v-model="buttonToggle"
@@ -66,7 +66,9 @@
           </q-toolbar>
         </div>
 
-        <div class="mobile-changes-section">
+        <div
+          class="mobile-changes-section no-shrink overflow-auto q-mx-sm q-mb-xs"
+        >
           <diff-list
             :article-id="articleId"
             :role="role"
@@ -375,84 +377,56 @@ onBeforeUnmount(() => {
   isSubscribed = false;
 });
 </script>
-<style>
-/* Desktop Layout */
-@media (min-width: 1440px) {
-  .desktop-layout {
-    height: 100vh;
-    gap: 16px;
-    align-items: stretch;
-    justify-content: flex-start;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-
-  .main-content-area {
-    flex: 1;
-    min-width: 0;
-    margin-right: 0;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .sidebar-area {
-    flex: 0 0 400px;
-    max-width: 400px;
-    min-height: 100%;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-  }
-
-  .sidebar-collapsed .sidebar-area {
-    flex: 0 0 80px !important;
-    max-width: 80px !important;
-    min-width: 80px !important;
-    overflow: hidden !important;
-  }
-
-  .sidebar-collapsed .main-content-area {
-    padding-right: 60px;
-  }
+<style scoped>
+.desktop-layout {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Mobile Layout */
-@media (max-width: 1439px) {
-  .mobile-container {
-    height: 100vh;
-    overflow: hidden;
-  }
+.main-content-area {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
 
-  .mobile-toolbar-top {
-    flex-shrink: 0;
-  }
+.sidebar-area {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex: 0 0 400px;
+  max-width: 400px;
+}
 
-  .mobile-changes-section {
-    flex-shrink: 0;
-    min-height: 60px;
-    max-height: 40vh;
-    overflow-y: auto;
-    margin: 0 8px 2px 8px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+.sidebar-collapsed .sidebar-area {
+  flex: 0 0 80px !important;
+  max-width: 80px !important;
+  min-width: 80px !important;
+}
 
-  .mobile-changes-section::-webkit-scrollbar {
-    display: none;
-  }
+.sidebar-collapsed .main-content-area {
+  padding-right: 60px;
+}
 
-  .mobile-content-section .q-scroll-area,
-  .mobile-content-section .col-grow {
-    margin: 0px 8px 8px -4px;
-    background: transparent !important;
-  }
+.mobile-changes-section {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  min-height: 60px;
+  max-height: 40vh;
+}
 
-  .mobile-content-section .rounded-borders,
-  .mobile-content-section .borders {
-    border: none !important;
-    border-radius: 0 !important;
-  }
+.mobile-changes-section::-webkit-scrollbar {
+  display: none;
+}
 
-  .mobile-content-section .full-height {
-    height: 100%;
-  }
+.mobile-content-section :deep(.q-scroll-area),
+.mobile-content-section :deep(.col-grow) {
+  margin: 0px 8px 8px -4px;
+  background: transparent !important;
+}
+
+.mobile-content-section :deep(.rounded-borders),
+.mobile-content-section :deep(.borders) {
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.mobile-content-section :deep(.full-height) {
+  height: 100%;
 }
 </style>

@@ -441,7 +441,7 @@ onBeforeUnmount(() => {
 
   .mobile-content-section .q-scroll-area,
   .mobile-content-section .col-grow {
-    margin: -8px 8px 8px -4px;
+    margin: 0px 8px 8px -4px;
     background: transparent !important;
   }
 

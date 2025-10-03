@@ -5,24 +5,24 @@
       :label="hideLabel ? '' : 'Review by Mira'"
       outline
       no-caps
-      unelevated
-      dense
-      class="borders"
-      style="min-width: 40px; height: 40px; padding: 0 8px"
+      :class="hideLabel ? 'borders' : 'q-mr-xs'"
+      :style="hideLabel ? 'min-width: 40px; height: 40px;' : ''"
+      :dense="hideLabel"
+      :unelevated="hideLabel"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"
     />
 
     <q-dialog v-model="dialog">
-      <q-card class="q-pa-md review-dialog-card">
+      <q-card class="q-pa-md">
         <q-card-section>
           <div class="text-h6">AI Review by Mira</div>
         </q-card-section>
 
         <q-separator />
 
-        <q-card-section class="review-content">
+        <q-card-section>
           <div v-if="error" class="text-negative">
             {{ error }}
           </div>

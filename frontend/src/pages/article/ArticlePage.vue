@@ -378,55 +378,18 @@ onBeforeUnmount(() => {
 });
 </script>
 <style scoped>
-.desktop-layout {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.main-content-area {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
-}
-
 .sidebar-area {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex: 0 0 400px;
   max-width: 400px;
 }
-
-.sidebar-collapsed .sidebar-area {
-  flex: 0 0 80px !important;
-  max-width: 80px !important;
-  min-width: 80px !important;
-}
-
-.sidebar-collapsed .main-content-area {
-  padding-right: 60px;
-}
-
-.mobile-changes-section {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-  min-height: 60px;
-  max-height: 40vh;
-}
-
-.mobile-changes-section::-webkit-scrollbar {
-  display: none;
-}
-
 .mobile-content-section :deep(.q-scroll-area),
 .mobile-content-section :deep(.col-grow) {
   margin: 0px 8px 8px -4px;
   background: transparent !important;
 }
-
 .mobile-content-section :deep(.rounded-borders),
 .mobile-content-section :deep(.borders) {
   border: none !important;
   border-radius: 0 !important;
-}
-
-.mobile-content-section :deep(.full-height) {
-  height: 100%;
 }
 </style>

@@ -308,7 +308,6 @@ const unindexedChanges = computed(() =>
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
-
 const expanded = ref(false);
 
 const revisionsLabel = computed(
@@ -330,6 +329,7 @@ watch(
     if (selectedChangeId === '') {
       return;
     }
+
     expanded.value = archivedChanges.value.some(
       (item) => item.status !== 0 && item.id === selectedChangeId,
     );
@@ -343,3 +343,8 @@ onMounted(() => {
   }
 });
 </script>
+<style>
+.q-scrollarea__content {
+  width: inherit !important;
+}
+</style>

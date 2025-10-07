@@ -1,6 +1,5 @@
 <template>
   <div class="column">
-    <!-- Desktop layout -->
     <template v-if="!mobileMode">
       <template v-if="props.changesList.length">
         <div class="text-h6 q-px-md q-pb-sm row items-center">
@@ -33,32 +32,27 @@
           />
         </q-scroll-area>
 
-        <!-- Past changes -->
-        <template v-if="pastChanges.length">
-          <div class="text-h6 q-px-md q-pt-md q-pb-sm row items-center">
-            <q-icon size="sm" name="archive" class="q-mr-sm" />
-            <q-badge
-              outline
-              rounded
-              class="q-mr-sm text-capitalize text-dark"
-              :label="pastChanges.length"
-              size="sm"
-            >
-              <q-tooltip>
-                {{ pastChangesLabel }}
-              </q-tooltip>
-            </q-badge>
-            <span>Past changes</span>
-          </div>
-          <q-scroll-area
-            style="
-              height: 200px;
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            "
-            class="q-mb-md"
-            :thumb-style="{ display: 'none' }"
-          >
+        <q-expansion-item v-if="pastChanges.length" v-model="expanded">
+          <template #header>
+            <q-item-section>
+              <q-item-label class="text-h6 row items-center">
+                <q-icon size="sm" name="archive" class="q-mr-sm" />
+                <q-badge
+                  outline
+                  rounded
+                  class="q-mr-sm text-capitalize text-dark"
+                  :label="pastChanges.length"
+                  size="sm"
+                >
+                  <q-tooltip>
+                    {{ pastChangesLabel }}
+                  </q-tooltip>
+                </q-badge>
+                <span>Past changes</span>
+              </q-item-label>
+            </q-item-section>
+          </template>
+          <q-item-section>
             <q-list class="q-mt-md">
               <div class="column">
                 <diff-item
@@ -83,8 +77,8 @@
                 />
               </div>
             </q-list>
-          </q-scroll-area>
-        </template>
+          </q-item-section>
+        </q-expansion-item>
       </template>
       <template v-else>
         <div class="text-h6 q-px-md q-pb-sm">
@@ -101,7 +95,7 @@
         </div>
       </template>
     </template>
-    <!-- Mobile layout -->
+
     <template v-else>
       <q-expansion-item
         v-if="props.changesList.length"
@@ -151,7 +145,6 @@
           />
         </q-scroll-area>
 
-        <!-- Past changes -->
         <q-expansion-item
           v-if="pastChanges.length && changesExpanded"
           v-model="pastChangesExpanded"

@@ -31,7 +31,8 @@
       icon="o_group"
       outline
       no-caps
-      :class="$q.screen.lt.sm ? '' : 'q-pr-lg'"
+      :class="'q-pr-lg'"
+      @click="shareDialog = !shareDialog"
     >
       <div v-if="$q.screen.gt.sm" class="q-ml-xs">Share</div>
       <q-dialog v-model="shareDialog">

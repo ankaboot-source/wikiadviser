@@ -101,6 +101,8 @@ async function triggerReview() {
       error.value = String(err) || 'Something went wrong';
     }
     dialog.value = true;
+  } finally {
+    loading.value = false;
   }
 }
 </script>

@@ -3,7 +3,15 @@
     <!-- Desktop Layout -->
     <template v-if="$q.screen.gt.sm">
       <div class="text-h6 q-px-md q-pb-sm">
-        <q-icon size="sm" name="thumbs_up_down" /> Changes to review
+        <q-icon size="sm" name="thumbs_up_down" />
+        <q-badge
+          outline
+          rounded
+          class="q-ml-xs q-mr-xs"
+          text-color="black"
+          :label="groupedIndexedChanges.length"
+        />
+        Changes to review
       </div>
       <q-scroll-area v-if="props.changesList.length" class="col-grow">
         <diff-revision
@@ -18,7 +26,15 @@
           <template #header>
             <q-item-section>
               <q-item-label class="text-h6">
-                <q-icon size="sm" name="archive" /> Past changes
+                <q-icon size="sm" name="archive" />
+                <q-badge
+                  outline
+                  rounded
+                  class="q-ml-xs q-mr-xs"
+                  text-color="black"
+                  :label="pastChanges.length"
+                />
+                Past changes
               </q-item-label>
             </q-item-section>
           </template>
@@ -64,9 +80,23 @@
       <q-expansion-item
         v-model="expandedMain"
         icon="thumbs_up_down"
-        label="Changes to review"
         header-class="text-h6"
       >
+        <template #header>
+          <q-item-section>
+            <q-item-label class="text-h6">
+              <q-icon size="sm" name="thumbs_up_down" />
+              <q-badge
+                outline
+                rounded
+                class="q-ml-xs q-mr-xs"
+                text-color="black"
+                :label="groupedIndexedChanges.length"
+              />
+              Changes to review
+            </q-item-label>
+          </q-item-section>
+        </template>
         <div v-if="props.changesList.length" class="q-pa-sm">
           <diff-revision
             v-for="revision in groupedIndexedChanges"
@@ -80,7 +110,15 @@
             <template #header>
               <q-item-section>
                 <q-item-label class="text-h6">
-                  <q-icon size="sm" name="archive" /> Past changes
+                  <q-icon size="sm" name="archive" />
+                  <q-badge
+                    outline
+                    rounded
+                    class="q-ml-xs q-mr-xs"
+                    text-color="black"
+                    :label="pastChanges.length"
+                  />
+                  Past changes
                 </q-item-label>
               </q-item-section>
             </template>

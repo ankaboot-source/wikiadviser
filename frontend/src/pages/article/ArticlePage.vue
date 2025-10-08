@@ -2,7 +2,7 @@
   <div v-if="loading"></div>
   <div v-else-if="article" class="q-panel scroll col">
     <!-- Desktop Layout -->
-    <div v-if="$q.screen.gt.sm" class="row justify-evenly q-pa-sm">
+    <div v-if="$q.screen.gt.sm" class="row justify-evenly q-pa-md">
       <div class="col-9 q-mr-md column">
         <diff-toolbar
           :article="article"
@@ -19,6 +19,7 @@
           :editor-permission="editorPermission"
           :button-toggle="buttonToggle"
           :users="users"
+          @update:button-toggle="buttonToggle = $event"
         />
       </div>
       <diff-list
@@ -53,6 +54,7 @@
         :editor-permission="editorPermission"
         :button-toggle="buttonToggle"
         :users="users"
+        @update:button-toggle="buttonToggle = $event"
         class="q-mt-sm"
       />
     </div>
@@ -75,6 +77,7 @@ import DiffCard from 'src/components/DiffCard.vue';
 import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -86,6 +89,7 @@ const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
+const selectedChangeStore = useSelectedChangeStore();
 const $q = useQuasar();
 
 const { params } = route;
@@ -119,6 +123,15 @@ watch(
     buttonToggle.value = newToggle;
   },
   { immediate: true },
+);
+
+watch(
+  () => selectedChangeStore.selectedChangeId,
+  (selectedChangeId) => {
+    if (selectedChangeId && buttonToggle.value === 'edit') {
+      buttonToggle.value = 'view';
+    }
+  },
 );
 
 async function handleArticleRealtime(

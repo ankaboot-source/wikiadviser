@@ -1,99 +1,62 @@
 <template>
-  <template v-if="article">
-    <div v-if="loading">
-      <!-- Loading state content -->
-    </div>
-    <div v-else class="q-panel scroll col">
-      <!-- Desktop Layout-->
-      <div
-        class="desktop-layout row q-pa-sm full-height relative-position gt-md"
-        :class="{ 'sidebar-collapsed': sidebarCollapsed }"
-      >
-        <diff-card
+  <div v-if="loading"></div>
+  <div v-else-if="article" class="q-panel scroll col">
+    <!-- Desktop Layout -->
+    <div v-if="$q.screen.gt.sm" class="row justify-evenly q-pa-sm">
+      <div class="col-9 q-mr-md column">
+        <diff-toolbar
           :article="article"
-          :changes-content="activeChanges ? changesContent : null"
           :role="role"
           :editor-permission="editorPermission"
           :users="users"
-          class="main-content-area col-grow q-mr-md"
+          :button-toggle="buttonToggle"
+          @update:button-toggle="buttonToggle = $event"
         />
-        <diff-list
-          :article-id="articleId"
+        <diff-card
+          :article="article"
+          :changes-content="changesContent"
           :role="role"
-          :changes-list="changesList"
-          class="sidebar-area rounded-borders q-pt-sm q-mt-xs bg-secondary borders full-height relative-position overflow-hidden"
-          @sidebar-collapsed="onSidebarCollapsed"
+          :editor-permission="editorPermission"
+          :button-toggle="buttonToggle"
+          :users="users"
         />
       </div>
-
-      <!-- Mobile Layout-->
-      <div class="column lt-lg mobile-container full-height overflow-hidden">
-        <div class="mobile-toolbar-top q-pa-sm bg-white no-shrink">
-          <q-toolbar class="q-px-none items-center">
-            <q-btn-toggle
-              v-model="buttonToggle"
-              no-caps
-              unelevated
-              toggle-color="blue-grey-2"
-              toggle-text-color="dark"
-              text-color="dark"
-              color="bg-secondary"
-              class="borders"
-              :options="mobileToggleOptions"
-              style="height: 36px"
-            />
-            <q-space />
-            <ReviewByMira
-              :article="article"
-              :hide-label="true"
-              class="q-mr-sm flex justify-center"
-              style="height: 40px"
-            />
-            <q-btn
-              v-if="role != 'viewer'"
-              icon="o_group"
-              outline
-              unelevated
-              dense
-              class="borders flex justify-center"
-              style="height: 40px; width: 40px"
-              @click="shareDialog = !shareDialog"
-            >
-              <q-dialog v-model="shareDialog">
-                <share-card :article="article" :role="role" :users="users" />
-              </q-dialog>
-            </q-btn>
-          </q-toolbar>
-        </div>
-
-        <div
-          class="mobile-changes-section no-shrink overflow-auto q-mx-sm q-mb-xs"
-        >
-          <diff-list
-            :article-id="articleId"
-            :role="role"
-            :changes-list="changesList"
-            :mobile-mode="true"
-            class="rounded-borders bg-secondary borders"
-          />
-        </div>
-
-        <div class="mobile-content-section col-grow">
-          <diff-card
-            :article="article"
-            :changes-content="activeChanges ? changesContent : null"
-            :role="role"
-            :editor-permission="editorPermission"
-            :users="users"
-            :hide-toolbar="true"
-            :mobile-button-toggle="buttonToggle"
-            class="full-width full-height"
-            @toggle-edit-tab="onToggleEditTab"
-          />
-        </div>
-      </div>
+      <diff-list
+        :article-id="articleId"
+        :role="role"
+        :changes-list="changesList"
+        class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
+      />
     </div>
-  </template>
+
+    <!-- Mobile Layout -->
+    <div v-else class="column q-pa-sm" style="width: 100%">
+      <diff-toolbar
+        :article="article"
+        :role="role"
+        :editor-permission="editorPermission"
+        :users="users"
+        :button-toggle="buttonToggle"
+        @update:button-toggle="buttonToggle = $event"
+      />
+      <diff-list
+        :article-id="articleId"
+        :role="role"
+        :changes-list="changesList"
+        class="rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
+        style="width: 100%"
+      />
+      <diff-card
+        :article="article"
+        :changes-content="changesContent"
+        :role="role"
+        :editor-permission="editorPermission"
+        :button-toggle="buttonToggle"
+        :users="users"
+        class="q-mt-sm"
+      />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -109,12 +72,11 @@ import {
 } from 'src/api/supabaseHelper';
 import DiffList from 'src/components/Diff/DiffList.vue';
 import DiffCard from 'src/components/DiffCard.vue';
-import ShareCard from 'src/components/Share/ShareCard.vue';
-import ReviewByMira from 'src/components/ReviewByMira.vue';
+import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
-import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useQuasar } from 'quasar';
@@ -130,55 +92,34 @@ const { params } = route;
 
 const articleId = ref('');
 const loading = ref(true);
+const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
-const sidebarCollapsed = ref(false);
-const shareDialog = ref(false);
-const buttonToggle = ref('view');
-
 const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
-let isSubscribed = false;
-
-const userId = computed(() => (userStore.user as Profile).id);
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 
-const activeChanges = computed(
-  () => changesList.value.map((item) => item?.hidden).length > 0,
+const buttonToggle = ref('');
+
+const firstToggle = computed(() => {
+  const emptyContent = !changesContent.value || !changesContent.value.length;
+  return editorPermission.value && emptyContent ? 'edit' : 'view';
+});
+
+watch(
+  firstToggle,
+  (newToggle, oldToggle) => {
+    if (oldToggle === 'edit') {
+      return;
+    }
+    buttonToggle.value = newToggle;
+  },
+  { immediate: true },
 );
-
-const viewButton = {
-  label: 'Review changes',
-  value: 'view',
-  icon: 'thumbs_up_down',
-};
-const editButton = {
-  label: 'Edit article',
-  value: 'edit',
-  icon: 'edit',
-};
-
-const toggleOptions = computed(() =>
-  !(
-    article.value?.title &&
-    article.value?.permission_id &&
-    editorPermission.value
-  )
-    ? [viewButton]
-    : [viewButton, editButton],
-);
-
-const mobileToggleOptions = computed(() =>
-  toggleOptions.value.map((opt) => ({ ...opt, label: '' })),
-);
-
-const onSidebarCollapsed = (collapsed: boolean) => {
-  sidebarCollapsed.value = collapsed;
-};
 
 async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'articles'>>,
@@ -278,10 +219,6 @@ async function handlePermissionsRealtime(
   }
 }
 
-const onToggleEditTab = () => {
-  buttonToggle.value = 'edit';
-};
-
 onBeforeMount(async () => {
   await userStore.fetchProfile();
 
@@ -318,78 +255,53 @@ onBeforeMount(async () => {
     changesList.value,
   );
 
-  const emptyContent = !changesContent.value || !changesContent.value.length;
-  if (editorPermission.value && emptyContent) {
-    buttonToggle.value = 'edit';
-  }
-
-  if (!isSubscribed) {
-    realtimeChannel
-      .on<Tables<'articles'>>(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'articles',
-          filter: `id=eq.${articleId.value}`,
-        },
-        handleArticleRealtime,
-      )
-      .on<Tables<'changes'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'changes',
-          filter: `article_id=eq.${articleId.value}`,
-        },
-        handleChangeRealtime,
-      )
-      .on<Comment>(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'comments',
-          filter: `article_id=eq.${articleId.value}`,
-        },
-        handleCommentRealtime,
-      )
-      .on<Tables<'permissions'>>(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'permissions',
-          filter: `article_id=eq.${articleId.value}`,
-        },
-        handlePermissionsRealtime,
-      )
-      .subscribe();
-    isSubscribed = true;
-  }
+  realtimeChannel
+    .on<Tables<'articles'>>(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'articles',
+        filter: `id=eq.${articleId.value}`,
+      },
+      handleArticleRealtime,
+    )
+    .on<Tables<'changes'>>(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'changes',
+        filter: `article_id=eq.${articleId.value}`,
+      },
+      handleChangeRealtime,
+    )
+    .on<Comment>(
+      'postgres_changes',
+      {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'comments',
+        filter: `article_id=eq.${articleId.value}`,
+      },
+      handleCommentRealtime,
+    )
+    .on<Tables<'permissions'>>(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'permissions',
+        filter: `article_id=eq.${articleId.value}`,
+      },
+      handlePermissionsRealtime,
+    )
+    .subscribe();
 
   loading.value = false;
 });
 
 onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
-  isSubscribed = false;
 });
 </script>
-<style scoped>
-.sidebar-area {
-  flex: 0 0 400px;
-  max-width: 400px;
-}
-.mobile-content-section :deep(.q-scroll-area),
-.mobile-content-section :deep(.col-grow) {
-  margin: 0px 8px 8px -4px;
-  background: transparent !important;
-}
-.mobile-content-section :deep(.rounded-borders),
-.mobile-content-section :deep(.borders) {
-  border: none !important;
-  border-radius: 0 !important;
-}
-</style>

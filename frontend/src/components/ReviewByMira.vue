@@ -2,13 +2,10 @@
   <div>
     <q-btn
       icon="img:/icons/logo.svg"
-      :label="hideLabel ? '' : 'Review by Mira'"
+      :label="$q.screen.lt.md ? '' : 'Review by Mira'"
       outline
       no-caps
-      :class="hideLabel ? 'borders' : 'q-mr-xs'"
-      :style="hideLabel ? 'min-width: 40px; height: 40px;' : ''"
-      :dense="hideLabel"
-      :unelevated="hideLabel"
+      :class="'q-mr-xs'"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"
@@ -104,8 +101,6 @@ async function triggerReview() {
       error.value = String(err) || 'Something went wrong';
     }
     dialog.value = true;
-  } finally {
-    loading.value = false;
   }
 }
 </script>

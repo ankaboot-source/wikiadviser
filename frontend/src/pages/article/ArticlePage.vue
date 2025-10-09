@@ -1,9 +1,11 @@
 <template>
   <div v-if="loading"></div>
   <div v-else-if="article" class="q-panel scroll col">
-    <!-- Desktop Layout -->
-    <div v-if="$q.screen.gt.sm" class="row justify-evenly q-pa-md">
-      <div class="col-9 q-mr-md column">
+    <div
+      :class="$q.screen.gt.sm ? 'row justify-evenly q-pa-md' : 'column q-pa-sm'"
+      style="width: 100%"
+    >
+      <div :class="$q.screen.gt.sm ? 'col-9 q-mr-md column' : ''">
         <diff-toolbar
           :article="article"
           :role="role"
@@ -12,6 +14,28 @@
           :button-toggle="buttonToggle"
           @update:button-toggle="buttonToggle = $event"
         />
+        <template v-if="$q.screen.gt.sm">
+          <diff-card
+            :article="article"
+            :changes-content="changesContent"
+            :role="role"
+            :editor-permission="editorPermission"
+            :button-toggle="buttonToggle"
+            :users="users"
+            @update:button-toggle="buttonToggle = $event"
+            class="q-mt-sm"
+          />
+        </template>
+      </div>
+      <diff-list
+        :article-id="articleId"
+        :role="role"
+        :changes-list="changesList"
+        class="rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
+        :class="$q.screen.gt.sm ? 'col' : ''"
+        :style="$q.screen.gt.sm ? '' : 'width: 100%'"
+      />
+      <template v-if="!$q.screen.gt.sm">
         <diff-card
           :article="article"
           :changes-content="changesContent"
@@ -20,43 +44,9 @@
           :button-toggle="buttonToggle"
           :users="users"
           @update:button-toggle="buttonToggle = $event"
+          class="q-mt-sm"
         />
-      </div>
-      <diff-list
-        :article-id="articleId"
-        :role="role"
-        :changes-list="changesList"
-        class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-      />
-    </div>
-
-    <!-- Mobile Layout -->
-    <div v-else class="column q-pa-sm" style="width: 100%">
-      <diff-toolbar
-        :article="article"
-        :role="role"
-        :editor-permission="editorPermission"
-        :users="users"
-        :button-toggle="buttonToggle"
-        @update:button-toggle="buttonToggle = $event"
-      />
-      <diff-list
-        :article-id="articleId"
-        :role="role"
-        :changes-list="changesList"
-        class="rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-        style="width: 100%"
-      />
-      <diff-card
-        :article="article"
-        :changes-content="changesContent"
-        :role="role"
-        :editor-permission="editorPermission"
-        :button-toggle="buttonToggle"
-        :users="users"
-        class="q-mt-sm"
-        @update:button-toggle="buttonToggle = $event"
-      />
+      </template>
     </div>
   </div>
 </template>

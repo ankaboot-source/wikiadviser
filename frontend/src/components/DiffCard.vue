@@ -36,7 +36,7 @@ import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Article, Enums, User } from 'src/types';
+import { Article } from 'src/types';
 import { nextTick, watch } from 'vue';
 import { useQuasar } from 'quasar';
 

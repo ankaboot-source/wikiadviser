@@ -38,6 +38,7 @@ import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article, Enums, User } from 'src/types';
 import { nextTick, watch } from 'vue';
+import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
 
@@ -53,6 +54,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:buttonToggle': [value: string];
 }>();
+
+const $q = useQuasar();
 
 // There is an error when passing a variable into import()
 if (props.article.language === 'fr') {
@@ -107,6 +110,9 @@ watch(
 watch(
   () => selectedChangeStore.hoveredChangeId,
   (hoveredChangeId: string) => {
+    if (!$q.screen.gt.sm) {
+      return;
+    }
     if (hoveredChangeId) {
       const element = document.querySelector(
         `.ve-ui-diffElement-document [data-id="${hoveredChangeId}"]`,

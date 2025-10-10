@@ -1,47 +1,5 @@
 <template>
-  <div class="column">
-    <q-toolbar class="q-px-none">
-      <q-btn-toggle
-        v-model="buttonToggle"
-        no-caps
-        unelevated
-        toggle-color="blue-grey-2"
-        toggle-text-color="dark"
-        text-color="dark"
-        color="bg-secondary"
-        class="borders"
-        :options="toggleOptions"
-      />
-      <q-space />
-      <q-btn
-        icon="open_in_new"
-        outline
-        label="View article"
-        class="q-mr-xs"
-        no-caps
-        @click="
-          articlesStore.viewArticleInNewTab(
-            article.language,
-            article.article_id,
-          )
-        "
-      />
-      <ReviewByMira :article="article" />
-      <q-btn
-        v-if="role != 'viewer'"
-        icon="o_group"
-        outline
-        label="Share"
-        no-caps
-        class="q-pr-lg"
-        @click="shareDialog = !shareDialog"
-      >
-        <q-dialog v-model="shareDialog">
-          <share-card :article="article" :role :users />
-        </q-dialog>
-      </q-btn>
-    </q-toolbar>
-
+  <div class="column col-grow">
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
       :button-toggle="buttonToggle"
@@ -75,24 +33,23 @@
 
 <script setup lang="ts">
 import MwVisualEditor from 'src/components/MwVisualEditor.vue';
-import ShareCard from 'src/components/Share/ShareCard.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
-import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Article, Enums, User } from 'src/types';
-import { computed, nextTick, ref, watch } from 'vue';
-import ReviewByMira from 'src/components/ReviewByMira.vue';
+import { Article } from 'src/types';
+import { nextTick, watch } from 'vue';
 
 const selectedChangeStore = useSelectedChangeStore();
-const articlesStore = useArticlesStore();
 
 const props = defineProps<{
   changesContent: string | null;
   article: Article;
-  role: Enums<'role'>;
   editorPermission: boolean | null;
-  users: User[];
+  buttonToggle: string;
+}>();
+
+const emit = defineEmits<{
+  'update:buttonToggle': [value: string];
 }>();
 
 // There is an error when passing a variable into import()
@@ -173,52 +130,16 @@ watch(
   },
 );
 
-const shareDialog = ref(false);
-
-const viewButton = {
-  label: 'Review changes',
-  value: 'view',
-  icon: 'thumbs_up_down',
-};
-const editButton = {
-  label: 'Edit article',
-  value: 'edit',
-  icon: 'edit',
-};
-
-const buttonToggle = ref('');
-const toggleOptions = computed(() =>
-  !(
-    props.article.title &&
-    props.article.permission_id &&
-    props.editorPermission
-  )
-    ? [viewButton]
-    : [viewButton, editButton],
-);
-const firstToggle = computed(() => {
-  // editorPerm & !changes -> Editor
-  const emptyContent = !props.changesContent || !props.changesContent.length;
-  return props.editorPermission && emptyContent ? 'edit' : 'view';
-});
-
-watch(
-  firstToggle,
-  (newToggle, oldToggle) => {
-    if (oldToggle === 'edit') {
-      return;
-    }
-    buttonToggle.value = newToggle;
-  },
-  { immediate: true },
-);
-
 const onSwitchTabEmitChange = (tab: string) => {
-  buttonToggle.value = tab;
+  if (props.buttonToggle !== tab) {
+    emit('update:buttonToggle', tab);
+  }
 };
 
 function toggleEditTab() {
-  buttonToggle.value = 'edit';
+  if (props.buttonToggle !== 'edit') {
+    emit('update:buttonToggle', 'edit');
+  }
 }
 </script>
 

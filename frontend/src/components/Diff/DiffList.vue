@@ -1,54 +1,88 @@
 <template>
   <div class="column">
-    <div class="text-h6 q-px-md q-pb-sm">
-      <q-icon size="sm" name="thumbs_up_down" /> Changes to review
-    </div>
-    <q-scroll-area v-if="props.changesList.length" class="col-grow">
-      <diff-revision
-        v-for="revision in groupedIndexedChanges"
-        :key="revision.revid"
-        :revision="revision"
-        :role="role"
-        :article-id="articleId"
-      />
-
-      <!-- Past changes -->
-      <q-expansion-item v-if="pastChanges.length" v-model="expanded">
-        <template #header>
-          <q-item-section>
-            <q-item-label class="text-h6">
-              <q-icon size="sm" name="archive" /> Past changes
-            </q-item-label>
-          </q-item-section>
-        </template>
+    <q-expansion-item
+      v-model="expandedMain"
+      expand-icon="keyboard_arrow_down"
+      :header-class="$q.screen.gt.sm ? 'no-pointer-events' : 'text-h6'"
+      :expand-icon-class="$q.screen.gt.sm ? 'hidden' : ''"
+      class="changes-panel"
+      disable-icon-toggle
+    >
+      <template #header>
         <q-item-section>
-          <q-list class="q-mt-md">
-            <diff-item
-              v-for="item in archivedChanges"
-              :key="item.id"
-              :item="item"
-              :role="role"
-              :past-change="{
-                text: 'This change was manually archived.',
-              }"
+          <q-item-label class="text-h6">
+            <q-icon size="sm" name="thumbs_up_down" />
+            <q-badge
+              outline
+              rounded
+              class="q-ml-xs q-mr-xs"
+              text-color="black"
+              :label="groupedIndexedChanges.length"
             />
-            <diff-item
-              v-for="item in unindexedChanges"
-              :key="item.id"
-              :item="item"
-              :role="role"
-              :past-change="{
-                icon: 'link_off',
-                text: 'This change was automatically orphaned.',
-                disable: true,
-              }"
-            />
-          </q-list>
+            Changes to review
+          </q-item-label>
         </q-item-section>
-      </q-expansion-item>
-    </q-scroll-area>
-    <template v-else>
-      <div class="q-pa-sm">
+      </template>
+      <component
+        :is="$q.screen.gt.sm ? 'q-scroll-area' : 'div'"
+        v-if="props.changesList.length"
+        class="col-grow q-pa-sm"
+      >
+        <diff-revision
+          v-for="revision in groupedIndexedChanges"
+          :key="revision.revid"
+          :revision="revision"
+          :role="role"
+          :article-id="articleId"
+        />
+        <q-expansion-item
+          v-if="pastChanges.length"
+          v-model="expanded"
+          expand-icon="keyboard_arrow_down"
+          header-class="text-h6"
+        >
+          <template #header>
+            <q-item-section>
+              <q-item-label class="text-h6">
+                <q-icon size="sm" name="archive" />
+                <q-badge
+                  outline
+                  rounded
+                  class="q-ml-xs q-mr-xs"
+                  text-color="black"
+                  :label="pastChanges.length"
+                />
+                Past changes
+              </q-item-label>
+            </q-item-section>
+          </template>
+          <q-item-section>
+            <q-list class="q-mt-md">
+              <diff-item
+                v-for="item in archivedChanges"
+                :key="item.id"
+                :item="item"
+                :role="role"
+                :past-change="{
+                  text: 'This change was manually archived.',
+                }"
+              />
+              <diff-item
+                v-for="item in unindexedChanges"
+                :key="item.id"
+                :item="item"
+                :role="role"
+                :past-change="{
+                  icon: 'link_off',
+                  text: 'This change was automatically orphaned.',
+                  disable: true,
+                }"
+              />
+            </q-list>
+          </q-item-section>
+        </q-expansion-item>
+      </component>
+      <div v-else class="q-pa-sm">
         <div class="q-pb-sm text-body1 text-weight-medium">
           There are currently no changes
         </div>
@@ -57,7 +91,7 @@
           your review.
         </div>
       </div>
-    </template>
+    </q-expansion-item>
   </div>
 </template>
 
@@ -66,11 +100,13 @@ import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums } from 'src/types';
 import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
 import DiffItem from './DiffItem.vue';
 import DiffRevision from './DiffRevision.vue';
 
 const store = useSelectedChangeStore();
 const route = useRoute();
+const $q = useQuasar();
 
 const props = defineProps<{
   articleId: string;
@@ -133,7 +169,17 @@ const unindexedChanges = computed(() =>
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
+const expandedMobile = ref(false);
 const expanded = ref(false);
+
+const expandedMain = computed({
+  get: () => ($q.screen.gt.sm ? true : expandedMobile.value),
+  set: (val) => {
+    if ($q.screen.lt.md) {
+      expandedMobile.value = val;
+    }
+  },
+});
 
 watch(
   () => store.selectedChangeId,
@@ -142,9 +188,17 @@ watch(
       return;
     }
 
-    expanded.value = archivedChanges.value.some(
+    const isInPastChanges = archivedChanges.value.some(
       (item) => item.status !== 0 && item.id === selectedChangeId,
     );
+
+    if (isInPastChanges) {
+      expanded.value = true;
+    }
+
+    if ($q.screen.lt.md) {
+      expandedMobile.value = true;
+    }
   },
 );
 

@@ -2,16 +2,17 @@
   <div>
     <q-btn
       icon="img:/icons/logo.svg"
-      label="Review by Mira"
+      :label="$q.screen.lt.md ? '' : 'Review by Mira'"
       outline
       no-caps
+      class="q-mr-xs"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"
     />
 
     <q-dialog v-model="dialog">
-      <q-card class="q-pa-md" style="min-width: 500px; max-width: 80vw">
+      <q-card class="q-pa-md">
         <q-card-section>
           <div class="text-h6">AI Review by Mira</div>
         </q-card-section>
@@ -41,11 +42,11 @@
             {{ result }}
           </div>
 
-          <div v-else>Waiting for Mira’s review...</div>
+          <div v-else>Waiting for Mira's review...</div>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Close" v-close-popup color="primary" />
+          <q-btn v-close-popup flat label="Close" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -56,8 +57,9 @@
 import { ref } from 'vue';
 import supabaseClient from 'src/api/supabase';
 import { Article } from 'src/types';
-
-const props = defineProps<{ article: Article }>();
+const props = defineProps<{
+  article: Article;
+}>();
 
 const loading = ref(false);
 const dialog = ref(false);

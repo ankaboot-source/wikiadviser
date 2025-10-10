@@ -1,27 +1,36 @@
 <template>
-  <template v-if="article">
-    <div v-if="loading">
-      <!-- Loading state content -->
+  <div v-if="loading"></div>
+  <div v-else-if="article" class="q-panel scroll col">
+    <div class="diff-grid" :class="$q.screen.gt.sm ? 'q-pa-md' : 'q-pa-sm'">
+      <diff-toolbar
+        :article="article"
+        :role="role"
+        :editor-permission="editorPermission"
+        :users="users"
+        :button-toggle="buttonToggle"
+        class="toolbar-area"
+        @update:button-toggle="buttonToggle = $event"
+      />
+
+      <diff-list
+        :article-id="articleId"
+        :role="role"
+        :changes-list="changesList"
+        class="rounded-borders bg-secondary borders list-area"
+      />
+
+      <diff-card
+        :article="article"
+        :changes-content="changesContent"
+        :role="role"
+        :editor-permission="editorPermission"
+        :button-toggle="buttonToggle"
+        :users="users"
+        class="card-area"
+        @update:button-toggle="buttonToggle = $event"
+      />
     </div>
-    <div v-else class="q-panel scroll col">
-      <div class="row justify-evenly q-pa-sm">
-        <diff-card
-          :article="article"
-          :changes-content="activeChanges ? changesContent : null"
-          :role="role"
-          :editor-permission="editorPermission"
-          :users
-          class="col-9 q-mr-md"
-        />
-        <diff-list
-          :article-id="articleId"
-          :role="role"
-          :changes-list="changesList"
-          class="col rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-        />
-      </div>
-    </div>
-  </template>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -37,10 +46,12 @@ import {
 } from 'src/api/supabaseHelper';
 import DiffList from 'src/components/Diff/DiffList.vue';
 import DiffCard from 'src/components/DiffCard.vue';
+import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
-import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useQuasar } from 'quasar';
@@ -50,30 +61,49 @@ const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
+const selectedChangeStore = useSelectedChangeStore();
+const $q = useQuasar();
 
 const { params } = route;
 
 const articleId = ref('');
-
 const loading = ref(true);
-
 const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
-const $q = useQuasar();
-
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
-
 const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
-
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 
-const activeChanges = computed(
-  () => changesList.value.map((item) => item?.hidden).length > 0,
+const buttonToggle = ref('');
+
+const firstToggle = computed(() => {
+  const emptyContent = !changesContent.value || !changesContent.value.length;
+  return editorPermission.value && emptyContent ? 'edit' : 'view';
+});
+
+watch(
+  firstToggle,
+  (newToggle, oldToggle) => {
+    if (oldToggle === 'edit') {
+      return;
+    }
+    buttonToggle.value = newToggle;
+  },
+  { immediate: true },
+);
+
+watch(
+  () => selectedChangeStore.selectedChangeId,
+  (selectedChangeId) => {
+    if (selectedChangeId && buttonToggle.value === 'edit') {
+      buttonToggle.value = 'view';
+    }
+  },
 );
 
 async function handleArticleRealtime(
@@ -260,3 +290,41 @@ onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
 });
 </script>
+
+<style scoped>
+.diff-grid {
+  display: grid;
+  width: 100%;
+  gap: 0.5rem;
+}
+/* Desktop*/
+@media (min-width: 1024px) {
+  .diff-grid {
+    grid-template: auto 1fr / 1fr 0.3fr;
+    grid-template-areas:
+      'toolbar list'
+      'card list';
+  }
+}
+/*Mobile*/
+@media (max-width: 1023px) {
+  .diff-grid {
+    grid-template: auto auto 1fr / 1fr;
+    grid-template-areas:
+      'toolbar'
+      'list'
+      'card';
+  }
+}
+.toolbar-area {
+  grid-area: toolbar;
+}
+.list-area {
+  grid-area: list;
+  padding-top: 0.5rem;
+}
+.card-area {
+  grid-area: card;
+  margin-top: 0.5rem;
+}
+</style>

@@ -297,16 +297,16 @@ onBeforeUnmount(() => {
   width: 100%;
   gap: 0.5rem;
 }
-/* Desktop layout */
+/* Desktop*/
 @media (min-width: 1024px) {
   .diff-grid {
-    grid-template: auto 1fr / 1fr 1/3fr;
+    grid-template: auto 1fr / 1fr 0.3fr;
     grid-template-areas:
       'toolbar list'
       'card list';
   }
 }
-/* Mobile layout */
+/*Mobile*/
 @media (max-width: 1023px) {
   .diff-grid {
     grid-template: auto auto 1fr / 1fr;

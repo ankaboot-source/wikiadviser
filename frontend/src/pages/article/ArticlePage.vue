@@ -22,8 +22,8 @@
             :editor-permission="editorPermission"
             :button-toggle="buttonToggle"
             :users="users"
-            @update:button-toggle="buttonToggle = $event"
             class="q-mt-sm"
+            @update:button-toggle="buttonToggle = $event"
           />
         </template>
       </div>
@@ -43,8 +43,8 @@
           :editor-permission="editorPermission"
           :button-toggle="buttonToggle"
           :users="users"
-          @update:button-toggle="buttonToggle = $event"
           class="q-mt-sm"
+          @update:button-toggle="buttonToggle = $event"
         />
       </template>
     </div>

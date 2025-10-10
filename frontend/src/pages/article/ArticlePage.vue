@@ -295,61 +295,36 @@ onBeforeUnmount(() => {
 .diff-grid {
   display: grid;
   width: 100%;
+  gap: 0.5rem;
 }
 /* Desktop layout */
 @media (min-width: 1024px) {
   .diff-grid {
-    grid-template-columns: 1fr 0.3fr;
-    grid-template-rows: auto 1fr;
-    gap: 1rem;
+    grid-template: auto 1fr / 1fr 1/3fr;
     grid-template-areas:
       'toolbar list'
       'card list';
-  }
-
-  .toolbar-area {
-    grid-area: toolbar;
-  }
-
-  .list-area {
-    grid-area: list;
-    padding-top: 0.5rem;
-    margin-top: 0.25rem;
-  }
-
-  .card-area {
-    grid-area: card;
-    margin-top: 0.5rem;
   }
 }
 /* Mobile layout */
 @media (max-width: 1023px) {
   .diff-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto 1fr;
-    gap: 0;
+    grid-template: auto auto 1fr / 1fr;
     grid-template-areas:
       'toolbar'
       'list'
       'card';
   }
-
-  .toolbar-area {
-    grid-area: toolbar;
-    margin-bottom: 0.25rem;
-  }
-
-  .list-area {
-    grid-area: list;
-    width: 100%;
-    padding-top: 0.5rem;
-    margin-top: 0.25rem;
-    margin-bottom: 0;
-  }
-
-  .card-area {
-    grid-area: card;
-    margin-top: 0.5rem;
-  }
+}
+.toolbar-area {
+  grid-area: toolbar;
+}
+.list-area {
+  grid-area: list;
+  padding-top: 0.5rem;
+}
+.card-area {
+  grid-area: card;
+  margin-top: 0.5rem;
 }
 </style>

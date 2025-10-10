@@ -318,7 +318,7 @@ $wgRateLimits = [
 wfLoadExtension( 'TitleBlacklist' );
 
 # Keeps a distinction between 'pretty' URLs and 'ugly' URLs
-$wgUsePathInfo = true;
+$wgUsePathInfo = false;
 
 define("NS_PORTAL", 3000);
 define("NS_PORTAL_TALK", 3001);
@@ -347,3 +347,5 @@ $wgMaxUploadSize = 1024*1024*100; // 100MB, adjust as needed
 
 // Disable VisualEditor welcome dialog
 $wgVisualEditorShowBetaWelcome = false;
+
+$wgAllowExternalImages = true;

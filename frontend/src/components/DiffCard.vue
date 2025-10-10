@@ -45,10 +45,8 @@ const selectedChangeStore = useSelectedChangeStore();
 const props = defineProps<{
   changesContent: string | null;
   article: Article;
-  role: Enums<'role'>;
   editorPermission: boolean | null;
   buttonToggle: string;
-  users: User[];
 }>();
 
 const emit = defineEmits<{

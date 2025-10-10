@@ -1,52 +1,34 @@
 <template>
   <div v-if="loading"></div>
   <div v-else-if="article" class="q-panel scroll col">
-    <div
-      :class="$q.screen.gt.sm ? 'row justify-evenly q-pa-md' : 'column q-pa-sm'"
-      style="width: 100%"
-    >
-      <div :class="$q.screen.gt.sm ? 'col-9 q-mr-md column' : ''">
-        <diff-toolbar
-          :article="article"
-          :role="role"
-          :editor-permission="editorPermission"
-          :users="users"
-          :button-toggle="buttonToggle"
-          @update:button-toggle="buttonToggle = $event"
-        />
-        <template v-if="$q.screen.gt.sm">
-          <diff-card
-            :article="article"
-            :changes-content="changesContent"
-            :role="role"
-            :editor-permission="editorPermission"
-            :button-toggle="buttonToggle"
-            :users="users"
-            class="q-mt-sm"
-            @update:button-toggle="buttonToggle = $event"
-          />
-        </template>
-      </div>
+    <div class="diff-grid" :class="$q.screen.gt.sm ? 'q-pa-md' : 'q-pa-sm'">
+      <diff-toolbar
+        :article="article"
+        :role="role"
+        :editor-permission="editorPermission"
+        :users="users"
+        :button-toggle="buttonToggle"
+        class="toolbar-area"
+        @update:button-toggle="buttonToggle = $event"
+      />
+
       <diff-list
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
-        class="rounded-borders q-pt-sm q-mt-xs bg-secondary borders"
-        :class="$q.screen.gt.sm ? 'col' : ''"
-        :style="$q.screen.gt.sm ? '' : 'width: 100%'"
+        class="rounded-borders bg-secondary borders list-area"
       />
-      <template v-if="!$q.screen.gt.sm">
-        <diff-card
-          :article="article"
-          :changes-content="changesContent"
-          :role="role"
-          :editor-permission="editorPermission"
-          :button-toggle="buttonToggle"
-          :users="users"
-          class="q-mt-sm"
-          @update:button-toggle="buttonToggle = $event"
-        />
-      </template>
+
+      <diff-card
+        :article="article"
+        :changes-content="changesContent"
+        :role="role"
+        :editor-permission="editorPermission"
+        :button-toggle="buttonToggle"
+        :users="users"
+        class="card-area"
+        @update:button-toggle="buttonToggle = $event"
+      />
     </div>
   </div>
 </template>
@@ -308,3 +290,66 @@ onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
 });
 </script>
+
+<style scoped>
+.diff-grid {
+  display: grid;
+  width: 100%;
+}
+/* Desktop layout */
+@media (min-width: 1024px) {
+  .diff-grid {
+    grid-template-columns: 1fr 0.3fr;
+    grid-template-rows: auto 1fr;
+    gap: 1rem;
+    grid-template-areas:
+      'toolbar list'
+      'card list';
+  }
+
+  .toolbar-area {
+    grid-area: toolbar;
+  }
+
+  .list-area {
+    grid-area: list;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
+  .card-area {
+    grid-area: card;
+    margin-top: 0.5rem;
+  }
+}
+/* Mobile layout */
+@media (max-width: 1023px) {
+  .diff-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    gap: 0;
+    grid-template-areas:
+      'toolbar'
+      'list'
+      'card';
+  }
+
+  .toolbar-area {
+    grid-area: toolbar;
+    margin-bottom: 0.25rem;
+  }
+
+  .list-area {
+    grid-area: list;
+    width: 100%;
+    padding-top: 0.5rem;
+    margin-top: 0.25rem;
+    margin-bottom: 0;
+  }
+
+  .card-area {
+    grid-area: card;
+    margin-top: 0.5rem;
+  }
+}
+</style>

@@ -38,7 +38,7 @@
         <q-expansion-item
           v-if="pastChanges.length"
           v-model="expanded"
-          :expand-icon="'keyboard_arrow_down'"
+          expand-icon="keyboard_arrow_down"
           header-class="text-h6"
         >
           <template #header>

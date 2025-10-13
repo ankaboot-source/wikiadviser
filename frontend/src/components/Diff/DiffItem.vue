@@ -252,7 +252,6 @@
               @click="handleReview(Status.EditRejected)"
             />
             <q-btn
-              class="q-mr-sm"
               :size="$q.screen.lt.sm ? 'sm' : 'md'"
               no-caps
               icon="thumb_up"

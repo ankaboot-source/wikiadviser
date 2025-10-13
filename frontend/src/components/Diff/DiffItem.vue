@@ -174,7 +174,7 @@
         <q-btn
           no-caps
           outline
-          class="bg-white"
+          class="bg-white responsive-btn"
           label="Close"
           @click="expanded = false"
         />
@@ -240,7 +240,7 @@
         >
           <template v-if="!props.item.status">
             <q-btn
-              class="q-mr-sm"
+              class="q-mr-sm responsive-btn"
               no-caps
               icon="thumb_down"
               color="red-1"
@@ -250,6 +250,7 @@
               @click="handleReview(Status.EditRejected)"
             />
             <q-btn
+              class="q-mr-sm responsive-btn"
               no-caps
               icon="thumb_up"
               color="green-1"
@@ -537,6 +538,17 @@ function copyChangeLink() {
 
   100% {
     background-color: transparent;
+  }
+}
+@media (max-width: 420px) {
+  .responsive-btn {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    min-height: 28px;
+  }
+
+  .responsive-btn .q-icon {
+    font-size: 1rem;
   }
 }
 </style>

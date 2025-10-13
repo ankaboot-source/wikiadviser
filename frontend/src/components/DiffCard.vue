@@ -108,7 +108,7 @@ watch(
 watch(
   () => selectedChangeStore.hoveredChangeId,
   (hoveredChangeId: string) => {
-    if (!$q.screen.gt.sm) {
+    if ($q.screen.gt.xs) {
       return;
     }
     if (hoveredChangeId) {

@@ -298,9 +298,17 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
 }
 /* Desktop*/
-@media (min-width: 1024px) {
+@media (min-width: 1700px) {
   .diff-grid {
     grid-template: auto 1fr / 1fr 0.3fr;
+    grid-template-areas:
+      'toolbar list'
+      'card list';
+  }
+}
+@media (min-width: 1024px) and (max-width: 1699px) {
+  .diff-grid {
+    grid-template: auto 1fr / 1fr 400px;
     grid-template-areas:
       'toolbar list'
       'card list';

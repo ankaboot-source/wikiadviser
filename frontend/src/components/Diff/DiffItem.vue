@@ -175,6 +175,7 @@
           no-caps
           outline
           class="bg-white"
+          :size="$q.screen.lt.sm ? 'sm' : 'md'"
           label="Close"
           @click="expanded = false"
         />
@@ -241,6 +242,7 @@
           <template v-if="!props.item.status">
             <q-btn
               class="q-mr-sm"
+              :size="$q.screen.lt.sm ? 'sm' : 'md'"
               no-caps
               icon="thumb_down"
               color="red-1"
@@ -250,6 +252,7 @@
               @click="handleReview(Status.EditRejected)"
             />
             <q-btn
+              :size="$q.screen.lt.sm ? 'sm' : 'md'"
               no-caps
               icon="thumb_up"
               color="green-1"

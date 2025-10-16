@@ -13,7 +13,7 @@
       />
 
       <diff-list
-        v-show="buttonToggle !== 'edit' || $q.screen.gt.sm"
+        v-show="isShowingDiffList"
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
@@ -85,6 +85,10 @@ const buttonToggle = ref('');
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
   return editorPermission.value && emptyContent ? 'edit' : 'view';
+});
+
+const isShowingDiffList = computed(() => {
+  return buttonToggle.value !== 'edit' || $q.screen.gt.sm;
 });
 
 watch(

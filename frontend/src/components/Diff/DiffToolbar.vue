@@ -31,7 +31,7 @@
       icon="o_group"
       outline
       no-caps
-      class="q-px-lg"
+      class="q-px-md"
       @click="shareDialog = !shareDialog"
     >
       <div v-if="$q.screen.gt.sm" class="q-ml-xs">Share</div>
@@ -78,12 +78,20 @@ watch(
 
 const toggleOptions = computed(() => {
   const viewButton = {
-    label: $q.screen.gt.sm ? 'Review changes' : '',
+    label: $q.screen.gt.sm
+      ? 'Review changes'
+      : localButtonToggle.value === 'view'
+        ? 'Review changes'
+        : '',
     value: 'view',
     icon: 'thumbs_up_down',
   };
   const editButton = {
-    label: $q.screen.gt.sm ? 'Edit article' : '',
+    label: $q.screen.gt.sm
+      ? 'Edit article'
+      : localButtonToggle.value === 'edit'
+        ? 'Edit article'
+        : '',
     value: 'edit',
     icon: 'edit',
   };

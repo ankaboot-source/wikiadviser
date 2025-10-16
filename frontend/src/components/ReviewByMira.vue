@@ -5,7 +5,7 @@
       :label="$q.screen.lt.md ? '' : 'Review by Mira'"
       outline
       no-caps
-      class="q-mr-xs q-px-lg"
+      class="q-mr-xs q-px-md"
       :loading="loading"
       :disable="loading"
       @click="triggerReview"

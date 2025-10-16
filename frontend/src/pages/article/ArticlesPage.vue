@@ -1,6 +1,6 @@
 <template>
   <div class="col q-panel" :class="$q.screen.lt.md ? '' : 'q-py-lg'">
-    <div class="row justify-center" :class="$q.screen.lt.md ? '' : ''">
+    <div class="row justify-center">
       <q-card
         v-if="loading"
         class="q-pa-lg"

@@ -73,13 +73,6 @@ function handleScrollAreaClick(event: MouseEvent) {
     if (dataId) {
       selectedChangeStore.selectedChangeId = dataId;
     }
-    return;
-  }
-
-  // Prevent link navigation
-  const link = target.closest('a');
-  if (link) {
-    event.preventDefault();
   }
 }
 

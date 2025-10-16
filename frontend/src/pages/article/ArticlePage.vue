@@ -13,6 +13,7 @@
       />
 
       <diff-list
+        v-show="buttonToggle !== 'edit' || $q.screen.gt.sm"
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"

@@ -323,6 +323,7 @@ onBeforeUnmount(() => {
       'toolbar'
       'list'
       'card';
+    gap: 0;
   }
 }
 .toolbar-area {

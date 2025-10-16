@@ -12,6 +12,7 @@
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
+        @click="handleScrollAreaClick"
       >
         <div v-html="props.changesContent" />
       </q-scroll-area>
@@ -60,6 +61,26 @@ if (props.article.language === 'fr') {
   import('src/css/styles/fr-common.css');
 } else if (props.article.language === 'en') {
   import('src/css/styles/en-common.css');
+}
+
+function handleScrollAreaClick(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+
+  // Check if clicked on a change element
+  const changeElement = target.closest('.ve-ui-diffElement-document [data-id]');
+  if (changeElement) {
+    const dataId = changeElement.getAttribute('data-id');
+    if (dataId) {
+      selectedChangeStore.selectedChangeId = dataId;
+    }
+    return;
+  }
+
+  // Prevent link navigation
+  const link = target.closest('a');
+  if (link) {
+    event.preventDefault();
+  }
 }
 
 function setTabindexForElements(selector: string, tabindexValue: string) {

@@ -29,11 +29,12 @@
         class="col-grow q-pa-sm"
       >
         <diff-revision
-          v-for="revision in groupedIndexedChanges"
+          v-for="(revision, index) in groupedIndexedChanges"
           :key="revision.revid"
           :revision="revision"
           :role="role"
           :article-id="articleId"
+          :is-first="index === 0"
         />
         <q-expansion-item
           v-if="pastChanges.length"
@@ -169,7 +170,7 @@ const unindexedChanges = computed(() =>
 const pastChanges = computed(() =>
   archivedChanges.value.concat(unindexedChanges.value),
 );
-const expandedMobile = ref(false);
+const expandedMobile = ref(true);
 const expanded = ref(false);
 
 const expandedMain = computed({

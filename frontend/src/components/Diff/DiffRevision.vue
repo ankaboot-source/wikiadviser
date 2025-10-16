@@ -132,7 +132,7 @@ const props = defineProps<{
 const store = useSelectedChangeStore();
 const $q = useQuasar();
 
-const expanded = ref($q.screen.gt.sm ? true : props.isFirst);
+const expanded = ref($q.screen.gt.sm || props.isFirst);
 const deleteRevisionDialog = ref<boolean>(false);
 const deletingRevision = ref<boolean>(false);
 

@@ -331,11 +331,11 @@ onBeforeUnmount(() => {
   }
 
   .list-area {
-    max-height: 100vh 
+    max-height: 100vh;
   }
 
   .card-area {
-    min-height: 100vh
+    min-height: 100vh;
   }
 }
 .toolbar-area {

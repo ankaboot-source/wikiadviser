@@ -1,11 +1,24 @@
 <template>
-  <div class="col q-panel q-py-lg">
+  <div class="col q-panel" :class="$q.screen.lt.md ? '' : 'q-py-lg'">
     <div class="row justify-center">
-      <q-card v-if="loading" class="q-pa-lg" flat style="width: 80vw">
+      <q-card
+        v-if="loading"
+        class="q-pa-lg"
+        flat
+        :style="$q.screen.lt.md ? 'width: 100vw' : 'width: 80vw'"
+      >
         <!-- Loading state content -->
       </q-card>
-      <q-card v-else class="q-pa-sm column" flat style="width: 80vw">
-        <q-card-section v-if="articles?.length" class="q-pt-sm">
+      <q-card
+        v-else
+        class="q-pa-sm column"
+        flat
+        :style="$q.screen.lt.md ? 'width: 100vw; height: 100vh' : 'width: 80vw'"
+      >
+        <q-card-section
+          v-if="articles?.length"
+          :class="$q.screen.lt.md ? 'q-pt-sm q-px-sm' : 'q-pt-sm'"
+        >
           <div v-if="$q.screen.lt.md">
             <div class="row items-center q-mb-sm">
               <div class="text-h5 merriweather">Articles</div>
@@ -76,7 +89,7 @@
           v-if="articlesFiltered?.length"
           class="col-grow q-pt-none q-pb-lg"
         >
-          <q-list class="q-mx-md">
+          <q-list :class="$q.screen.lt.md ? 'q-px-sm' : 'q-mx-md'">
             <owned-article
               v-for="article in articlesFiltered"
               :key="article.article_id"
@@ -87,7 +100,7 @@
         <q-card-section
           v-if="!articlesFiltered?.length && articles?.length"
           padding
-          class="q-mx-md q-my-xs"
+          :class="$q.screen.lt.md ? 'q-px-sm q-my-xs' : 'q-mx-md q-my-xs'"
         >
           <div class="text-center q-gutter-sm">
             <q-icon name="search_off" size="xl" />
@@ -156,7 +169,9 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article, Profile } from 'src/types';
 import { computed, onBeforeMount, ref } from 'vue';
+import { useQuasar } from 'quasar';
 
+const $q = useQuasar();
 const user = computed(() => useUserStore().user as Profile);
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();

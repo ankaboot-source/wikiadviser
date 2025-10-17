@@ -1,6 +1,14 @@
 <template>
   <q-dialog v-if="!reachedLimits">
-    <q-card class="column fit" style="max-width: 60vw; max-height: 80vh" flat>
+    <q-card
+      class="column fit"
+      :style="
+        $q.screen.lt.md
+          ? 'max-width: 95vw; max-height: 85vh'
+          : 'max-width: 60vw; max-height: 80vh'
+      "
+      flat
+    >
       <q-toolbar class="borders">
         <q-toolbar-title class="merriweather">
           Import an article from Wikipedia

@@ -118,6 +118,7 @@ import supabaseClient from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Enums, Revision } from 'src/types';
 import { computed, ref, watch } from 'vue';
+import { useQuasar } from 'quasar';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
 
@@ -125,11 +126,13 @@ const props = defineProps<{
   role: Enums<'role'>;
   revision: Revision;
   articleId: string;
+  isFirst: boolean;
 }>();
 
 const store = useSelectedChangeStore();
+const $q = useQuasar();
 
-const expanded = ref(true);
+const expanded = ref($q.screen.gt.sm || props.isFirst);
 const deleteRevisionDialog = ref<boolean>(false);
 const deletingRevision = ref<boolean>(false);
 

@@ -31,7 +31,7 @@
       icon="o_group"
       outline
       no-caps
-      class="q-pr-lg"
+      class="q-px-md"
       @click="shareDialog = !shareDialog"
     >
       <div v-if="$q.screen.gt.sm" class="q-ml-xs">Share</div>
@@ -77,13 +77,16 @@ watch(
 );
 
 const toggleOptions = computed(() => {
+  function getLabel(value: string, text: string) {
+    return $q.screen.gt.sm || localButtonToggle.value === value ? text : '';
+  }
   const viewButton = {
-    label: $q.screen.gt.sm ? 'Review changes' : '',
+    label: getLabel('view', 'Review changes'),
     value: 'view',
     icon: 'thumbs_up_down',
   };
   const editButton = {
-    label: $q.screen.gt.sm ? 'Edit article' : '',
+    label: getLabel('edit', 'Edit article'),
     value: 'edit',
     icon: 'edit',
   };

@@ -13,6 +13,7 @@
       />
 
       <diff-list
+        v-show="isShowingDiffList"
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
@@ -84,6 +85,10 @@ const buttonToggle = ref('');
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
   return editorPermission.value && emptyContent ? 'edit' : 'view';
+});
+
+const isShowingDiffList = computed(() => {
+  return buttonToggle.value !== 'edit' || $q.screen.gt.sm;
 });
 
 watch(
@@ -322,6 +327,15 @@ onBeforeUnmount(() => {
       'toolbar'
       'list'
       'card';
+    gap: 0;
+  }
+
+  .list-area {
+    max-height: 100vh;
+  }
+
+  .card-area {
+    min-height: 100vh;
   }
 }
 .toolbar-area {
@@ -330,9 +344,12 @@ onBeforeUnmount(() => {
 .list-area {
   grid-area: list;
   padding-top: 0.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 .card-area {
   grid-area: card;
   margin-top: 0.5rem;
+  overflow-y: auto;
 }
 </style>

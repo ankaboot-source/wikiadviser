@@ -329,6 +329,14 @@ onBeforeUnmount(() => {
       'card';
     gap: 0;
   }
+
+  .list-area {
+    max-height: 100vh 
+  }
+
+  .card-area {
+    min-height: 100vh
+  }
 }
 .toolbar-area {
   grid-area: toolbar;
@@ -336,9 +344,12 @@ onBeforeUnmount(() => {
 .list-area {
   grid-area: list;
   padding-top: 0.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 .card-area {
   grid-area: card;
   margin-top: 0.5rem;
+  overflow-y: auto;
 }
 </style>

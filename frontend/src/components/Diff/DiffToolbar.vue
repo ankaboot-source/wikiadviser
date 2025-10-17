@@ -77,21 +77,16 @@ watch(
 );
 
 const toggleOptions = computed(() => {
+  function getLabel(value: string, text: string) {
+    return $q.screen.gt.sm || localButtonToggle.value === value ? text : '';
+  }
   const viewButton = {
-    label: $q.screen.gt.sm
-      ? 'Review changes'
-      : localButtonToggle.value === 'view'
-        ? 'Review changes'
-        : '',
+    label: getLabel('view', 'Review changes'),
     value: 'view',
     icon: 'thumbs_up_down',
   };
   const editButton = {
-    label: $q.screen.gt.sm
-      ? 'Edit article'
-      : localButtonToggle.value === 'edit'
-        ? 'Edit article'
-        : '',
+    label: getLabel('edit', 'Edit article'),
     value: 'edit',
     icon: 'edit',
   };

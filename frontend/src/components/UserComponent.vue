@@ -36,19 +36,19 @@ const { avatarUrl, name } = defineProps<{
 
 @media screen and (max-width: 672px) {
   .revision {
-    max-width: 2rem;
+    max-width: 12rem;
   }
 }
 
 @media screen and (min-width: 601px) and (max-width: 1024px) {
   .revision {
-    max-width: 7vw;
+    max-width: 20vw;
   }
 }
 
 @media screen and (min-width: 1025px) and (max-width: 1440px) {
   .revision {
-    max-width: 10vw;
+    max-width: 12vw;
   }
 }
 

@@ -4,8 +4,8 @@
       class="column"
       :style="
         $q.screen.lt.md
-          ? 'width: 95vw; max-height: 85vh'
-          : 'width: 60vw; max-height: 80vh'
+          ? 'width: 95vw; max-height: 40vh'
+          : 'width: 60vw; max-height: 40vh'
       "
       flat
     >

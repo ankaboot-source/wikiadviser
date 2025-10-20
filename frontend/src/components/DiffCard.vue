@@ -12,7 +12,6 @@
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
-        @click="handleScrollAreaClick"
       >
         <div v-html="props.changesContent" />
       </q-scroll-area>
@@ -38,7 +37,7 @@ import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article } from 'src/types';
-import { nextTick, watch } from 'vue';
+import { nextTick, watch, onMounted } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
@@ -61,19 +60,6 @@ if (props.article.language === 'fr') {
   import('src/css/styles/fr-common.css');
 } else if (props.article.language === 'en') {
   import('src/css/styles/en-common.css');
-}
-
-function handleScrollAreaClick(event: MouseEvent) {
-  const target = event.target as HTMLElement;
-
-  // Check if clicked on a change element
-  const changeElement = target.closest('.ve-ui-diffElement-document [data-id]');
-  if (changeElement) {
-    const dataId = changeElement.getAttribute('data-id');
-    if (dataId) {
-      selectedChangeStore.selectedChangeId = dataId;
-    }
-  }
 }
 
 function setTabindexForElements(selector: string, tabindexValue: string) {
@@ -106,8 +92,11 @@ function setTabindexForElements(selector: string, tabindexValue: string) {
 }
 
 function handleTabIndexes() {
-  setTabindexForElements('a', '-1'); // Links
-  setTabindexForElements('.ve-ui-diffElement-document [data-id]', '0'); // Changes
+  if (props.buttonToggle !== 'view' || !props.changesContent) return;
+  nextTick().then(() => {
+    setTabindexForElements('a', '-1'); // Links
+    setTabindexForElements('[data-id]', '0'); // Changes
+  });
 }
 
 watch(
@@ -118,6 +107,21 @@ watch(
   },
   { immediate: true },
 );
+
+watch(
+  () => props.buttonToggle,
+  (newToggle) => {
+    if (newToggle === 'view') {
+      handleTabIndexes();
+    }
+  },
+);
+
+onMounted(() => {
+  if (props.buttonToggle === 'view' && props.changesContent) {
+    handleTabIndexes();
+  }
+});
 
 watch(
   () => selectedChangeStore.hoveredChangeId,

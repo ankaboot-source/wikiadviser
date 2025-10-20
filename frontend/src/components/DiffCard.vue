@@ -37,7 +37,7 @@ import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article } from 'src/types';
-import { nextTick, watch, onMounted } from 'vue';
+import { nextTick, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
@@ -108,18 +108,9 @@ watch(
   { immediate: true },
 );
 
-watch(
-  () => props.buttonToggle,
-  (newToggle) => {
-    if (newToggle === 'view') {
-      handleTabIndexes();
-    }
-  },
-);
-
-onMounted(() => {
+watchEffect(() => {
   if (props.buttonToggle === 'view' && props.changesContent) {
-    handleTabIndexes();
+    nextTick().then(() => handleTabIndexes());
   }
 });
 

@@ -30,7 +30,7 @@
       />
 
       <q-expansion-item
-        v-if="pastChanges.length"
+        v-if="pastChanges.length && $q.screen.gt.sm"
         v-model="expanded"
         expand-icon="keyboard_arrow_down"
         header-class="text-h6"
@@ -196,5 +196,15 @@ onMounted(() => {
 <style>
 .q-scrollarea__content {
   width: inherit !important;
+}
+.column {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.col-grow {
+  flex: 1;
+  overflow: auto;
+  scrollbar-width: none;
 }
 </style>

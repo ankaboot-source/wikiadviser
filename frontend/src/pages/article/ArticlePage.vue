@@ -300,6 +300,7 @@ onBeforeUnmount(() => {
 .diff-grid {
   display: grid;
   width: 100%;
+  height: calc(100vh - 3.5rem);
   gap: 0.5rem;
 }
 /* Desktop*/
@@ -310,6 +311,15 @@ onBeforeUnmount(() => {
       'toolbar list'
       'card list';
   }
+  .list-area {
+    grid-area: list;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+  .card-area {
+    grid-area: card;
+    margin-top: 0.5rem;
+  }
 }
 @media (min-width: 1024px) and (max-width: 1699px) {
   .diff-grid {
@@ -317,6 +327,15 @@ onBeforeUnmount(() => {
     grid-template-areas:
       'toolbar list'
       'card list';
+  }
+  .list-area {
+    grid-area: list;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+  }
+  .card-area {
+    grid-area: card;
+    margin-top: 0.5rem;
   }
 }
 /*Mobile*/
@@ -328,28 +347,30 @@ onBeforeUnmount(() => {
       'list'
       'card';
     gap: 0;
+    height: auto;
   }
 
   .list-area {
     max-height: 100vh;
+    overflow-y: none;
+    scrollbar-width: none;
   }
 
   .card-area {
     min-height: 100vh;
+    margin-top: 0.3rem;
+    overflow-y: none;
+    scrollbar-width: none;
   }
 }
 .toolbar-area {
   grid-area: toolbar;
+  margin-top: 0.25rem;
 }
 .list-area {
   grid-area: list;
-  padding-top: 0.5rem;
-  overflow-y: auto;
-  scrollbar-width: none;
 }
 .card-area {
   grid-area: card;
-  margin-top: 0.5rem;
-  overflow-y: auto;
 }
 </style>

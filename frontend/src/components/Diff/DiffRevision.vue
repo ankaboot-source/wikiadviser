@@ -144,8 +144,8 @@ const localeDateString = computed(() =>
   new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric'
-  }).format(new Date(props.revision.items[0]?.created_at as string))
+    year: 'numeric',
+  }).format(new Date(props.revision.items[0]?.created_at as string)),
 );
 const localeTimeString = computed(() =>
   new Date(props.revision.items[0]?.created_at as string).toLocaleTimeString(

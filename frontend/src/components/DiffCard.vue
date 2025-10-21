@@ -92,7 +92,6 @@ function setTabindexForElements(selector: string, tabindexValue: string) {
 }
 
 function handleTabIndexes() {
-  if (props.buttonToggle !== 'view' || !props.changesContent) return;
   nextTick().then(() => {
     setTabindexForElements('a', '-1'); // Links
     setTabindexForElements('[data-id]', '0'); // Changes

@@ -15,43 +15,43 @@
       </q-item-label>
     </div>
 
-    <component
-      :is="$q.screen.gt.sm ? 'q-scroll-area' : 'div'"
-      v-if="props.changesList.length"
+    <q-scroll-area
+      v-if="props.changesList.length && $q.screen.gt.sm"
       class="col-grow q-pa-sm"
     >
-      <diff-revision
-        v-for="(revision, index) in groupedIndexedChanges"
-        :key="revision.revid"
-        :revision="revision"
-        :role="role"
-        :article-id="articleId"
-        :is-first="index === 0"
-      />
+      <div>
+        <diff-revision
+          v-for="(revision, index) in groupedIndexedChanges"
+          :key="revision.revid"
+          :revision="revision"
+          :role="role"
+          :article-id="articleId"
+          :is-first="index === 0"
+        />
 
-      <q-expansion-item
-        v-if="pastChanges.length && $q.screen.gt.sm"
-        v-model="expanded"
-        expand-icon="keyboard_arrow_down"
-        header-class="text-h6"
-      >
-        <template #header>
-          <q-item-section>
-            <q-item-label class="text-h6">
-              <q-icon size="sm" name="archive" />
-              <q-badge
-                outline
-                rounded
-                class="q-ml-xs q-mr-xs"
-                text-color="black"
-                :label="pastChanges.length"
-              />
-              Past changes
-            </q-item-label>
-          </q-item-section>
-        </template>
+        <q-expansion-item
+          v-if="pastChanges.length"
+          v-model="expanded"
+          expand-icon="keyboard_arrow_down"
+          header-class="text-h6"
+          class="past-changes-expansion"
+        >
+          <template #header>
+            <q-item-section>
+              <q-item-label class="text-h6">
+                <q-icon size="sm" name="archive" />
+                <q-badge
+                  outline
+                  rounded
+                  class="q-ml-xs q-mr-xs"
+                  text-color="black"
+                  :label="pastChanges.length"
+                />
+                Past changes
+              </q-item-label>
+            </q-item-section>
+          </template>
 
-        <q-item-section>
           <q-list class="q-mt-md">
             <diff-item
               v-for="item in archivedChanges"
@@ -72,9 +72,23 @@
               }"
             />
           </q-list>
-        </q-item-section>
-      </q-expansion-item>
-    </component>
+        </q-expansion-item>
+      </div>
+    </q-scroll-area>
+
+    <div
+      v-else-if="props.changesList.length && $q.screen.lt.md"
+      class="col-grow q-pa-sm"
+    >
+      <diff-revision
+        v-for="(revision, index) in groupedIndexedChanges"
+        :key="revision.revid"
+        :revision="revision"
+        :role="role"
+        :article-id="articleId"
+        :is-first="index === 0"
+      />
+    </div>
 
     <div v-else class="q-pa-sm">
       <div class="q-pb-sm text-body1 text-weight-medium">
@@ -193,18 +207,25 @@ onMounted(() => {
   }
 });
 </script>
+
 <style>
 .q-scrollarea__content {
   width: inherit !important;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 .column {
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 .col-grow {
   flex: 1;
   overflow: auto;
   scrollbar-width: none;
+}
+.past-changes-expansion .q-expansion-item__content {
+  padding: 10px 0;
 }
 </style>

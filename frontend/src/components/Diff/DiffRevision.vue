@@ -140,20 +140,21 @@ const summary = computed(() => props.revision.summary);
 const changesToReviewLength = computed(() => {
   return props.revision.items.filter((item) => item.status === 0).length;
 });
-const localeDateString = computed(() => {
-  const date = new Date(props.revision.items[0]?.created_at as string);
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const year = date.getFullYear();
-  return `${day}/${month}/${year}`;
-});
-
-const localeTimeString = computed(() => {
-  const date = new Date(props.revision.items[0]?.created_at as string);
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${hours}:${minutes}`;
-});
+const localeDateString = computed(() =>
+  new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  }).format(new Date(props.revision.items[0]?.created_at as string))
+);
+const localeTimeString = computed(() =>
+  new Date(props.revision.items[0]?.created_at as string).toLocaleTimeString(
+    undefined,
+    {
+      timeStyle: 'short',
+    },
+  ),
+);
 
 watch(
   () => store.selectedChangeId,

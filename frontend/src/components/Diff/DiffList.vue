@@ -218,7 +218,6 @@ onMounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 .col-grow {
   flex: 1;

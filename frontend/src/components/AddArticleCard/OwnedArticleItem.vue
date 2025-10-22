@@ -263,7 +263,7 @@ const language = computed(
 );
 
 function shortDateString(date: Date) {
-  return date.toLocaleString(userLocale, {
+  return date.toLocaleDateString(userLocale, {
     year: 'numeric',
     month: '2-digit',
     day: 'numeric',
@@ -274,7 +274,7 @@ function shortDateString(date: Date) {
 }
 
 function longDateString(date: Date) {
-  return date.toLocaleString(userLocale, {
+  return date.toLocaleDateString(userLocale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',

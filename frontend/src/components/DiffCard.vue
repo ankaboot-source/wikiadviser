@@ -37,7 +37,7 @@ import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { Article } from 'src/types';
-import { nextTick, watch } from 'vue';
+import { nextTick, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
@@ -92,8 +92,10 @@ function setTabindexForElements(selector: string, tabindexValue: string) {
 }
 
 function handleTabIndexes() {
-  setTabindexForElements('a', '-1'); // Links
-  setTabindexForElements('.ve-ui-diffElement-document [data-id]', '0'); // Changes
+  nextTick().then(() => {
+    setTabindexForElements('a', '-1'); // Links
+    setTabindexForElements('[data-id]', '0'); // Changes
+  });
 }
 
 watch(
@@ -104,6 +106,12 @@ watch(
   },
   { immediate: true },
 );
+
+watchEffect(() => {
+  if (props.buttonToggle === 'view' && props.changesContent) {
+    nextTick().then(() => handleTabIndexes());
+  }
+});
 
 watch(
   () => selectedChangeStore.hoveredChangeId,

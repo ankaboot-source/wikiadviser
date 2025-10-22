@@ -38,7 +38,11 @@
             </q-badge>
             <div
               v-if="article.latest_change.created_at"
-              class="text-weight-light on-right"
+              :class="
+                $q.screen.lt.sm
+                  ? 'text-weight-light'
+                  : 'text-weight-light on-right'
+              "
             >
               Last edited by
               <span>
@@ -46,28 +50,25 @@
               </span>
               on
               {{
-                article.latest_change.created_at.toLocaleString(userLocale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: user12H,
-                })
+                $q.screen.lt.md
+                  ? shortDateString(article.latest_change.created_at)
+                  : longDateString(article.latest_change.created_at)
               }}
             </div>
-            <div v-else class="text-weight-light on-right">
+            <div
+              v-else
+              :class="
+                $q.screen.lt.sm
+                  ? 'text-weight-light'
+                  : 'text-weight-light on-right'
+              "
+            >
               <span v-if="article.imported">Imported on</span>
               <span v-else>Created the</span>
               {{
-                article.created_at.toLocaleString(userLocale, {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: user12H,
-                })
+                $q.screen.lt.md
+                  ? shortDateString(article.created_at)
+                  : longDateString(article.created_at)
               }}
             </div>
           </div>
@@ -260,4 +261,26 @@ const language = computed(
       (option) => props.article.language === option.lang,
     )?.label,
 );
+
+function shortDateString(date: Date) {
+  return date.toLocaleDateString(userLocale, {
+    year: 'numeric',
+    month: '2-digit',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: user12H,
+  });
+}
+
+function longDateString(date: Date) {
+  return date.toLocaleDateString(userLocale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: user12H,
+  });
+}
 </script>

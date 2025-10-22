@@ -1,6 +1,14 @@
 <template>
   <q-dialog v-if="!reachedLimits">
-    <q-card class="column" style="width: 60vw; max-height: 80vh" flat>
+    <q-card
+      class="column"
+      :style="
+        $q.screen.lt.md
+          ? 'width: 95vw; max-height: 40vh'
+          : 'width: 60vw; max-height: 40vh'
+      "
+      flat
+    >
       <q-toolbar class="borders">
         <q-toolbar-title class="merriweather">
           Create a new article

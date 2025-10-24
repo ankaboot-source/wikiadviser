@@ -21,6 +21,14 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
+      <q-toggle
+        v-if="article && currentButtonToggle === 'edit' && !$q.screen.lt.md"
+        v-model="focusModeToggle"
+        color="primary"
+        icon="visibility"
+        checked-icon="fullscreen"
+        @update:model-value="handleFocusModeToggle"
+      />
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn
         v-if="user && !$q.screen.lt.md"
@@ -116,6 +124,7 @@ import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import { useFocusModeStore } from 'src/stores/useFocusModeStore';
 import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -131,6 +140,11 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
+const focusModeStore = useFocusModeStore();
+const isFocusMode = computed(() => focusModeStore.isFocusMode);
+const currentButtonToggle = computed(() => focusModeStore.currentButtonToggle);
+const focusModeToggle = ref(false);
+
 const { $resetUser } = useUserStore();
 const userStore = useUserStore();
 const user = computed(() => userStore.user);
@@ -144,8 +158,22 @@ watch([useRoute(), articles], ([newRoute]) => {
     article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
+    focusModeStore.disableFocusMode();
+    focusModeToggle.value = false;
   }
 });
+
+watch(isFocusMode, (newValue) => {
+  focusModeToggle.value = newValue;
+});
+
+function handleFocusModeToggle(value: boolean) {
+  if (value) {
+    focusModeStore.enableFocusMode();
+  } else {
+    focusModeStore.disableFocusMode();
+  }
+}
 
 async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -157,6 +185,8 @@ async function signOut() {
   $resetUser();
   await router.push('/auth');
   articlesStore.resetArticles();
+  focusModeStore.$reset();
+  focusModeToggle.value = false;
   $q.notify({ message: 'Signed out', icon: 'logout' });
 }
 

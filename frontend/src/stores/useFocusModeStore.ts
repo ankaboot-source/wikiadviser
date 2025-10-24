@@ -5,16 +5,11 @@ export const useFocusModeStore = defineStore('focusMode', () => {
   const isFocusMode = ref(false);
   const currentButtonToggle = ref('');
 
-  function toggleFocusMode() {
-    isFocusMode.value = !isFocusMode.value;
-  }
-
-  function enableFocusMode() {
-    isFocusMode.value = true;
-  }
-
-  function disableFocusMode() {
-    isFocusMode.value = false;
+  function toggleFocusMode(value?: boolean) {
+    if (value === undefined) isFocusMode.value = !isFocusMode.value;
+    else {
+      isFocusMode.value = value;
+    }
   }
 
   function setButtonToggle(value: string) {
@@ -30,8 +25,6 @@ export const useFocusModeStore = defineStore('focusMode', () => {
     isFocusMode,
     currentButtonToggle,
     toggleFocusMode,
-    enableFocusMode,
-    disableFocusMode,
     setButtonToggle,
     $reset,
   };

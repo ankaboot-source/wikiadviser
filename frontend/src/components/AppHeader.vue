@@ -158,7 +158,7 @@ watch([useRoute(), articles], ([newRoute]) => {
     article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
-    focusModeStore.disableFocusMode();
+    focusModeStore.toggleFocusMode();
     focusModeToggle.value = false;
   }
 });
@@ -168,11 +168,7 @@ watch(isFocusMode, (newValue) => {
 });
 
 function handleFocusModeToggle(value: boolean) {
-  if (value) {
-    focusModeStore.enableFocusMode();
-  } else {
-    focusModeStore.disableFocusMode();
-  }
+  focusModeStore.toggleFocusMode(value);
 }
 
 async function signOut() {

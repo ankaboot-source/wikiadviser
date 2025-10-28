@@ -59,7 +59,7 @@ import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { useFocusModeStore } from 'src/stores/useFocusModeStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -72,7 +72,7 @@ const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
 const selectedChangeStore = useSelectedChangeStore();
-const focusModeStore = useFocusModeStore();
+const focusModeStore = useActiveViewStore();
 const $q = useQuasar();
 
 const { params } = route;
@@ -109,7 +109,7 @@ watch(
       return;
     }
     buttonToggle.value = newToggle;
-    focusModeStore.setButtonToggle(newToggle);
+    focusModeStore.setActiveViewMode(newToggle);
   },
   { immediate: true },
 );
@@ -131,7 +131,7 @@ watch(isFocusMode, (newValue) => {
 
 function handleButtonToggleUpdate(value: string) {
   buttonToggle.value = value;
-  focusModeStore.setButtonToggle(value);
+  focusModeStore.setActiveViewMode(value);
   if (value !== 'edit' && isFocusMode.value) {
     focusModeStore.toggleFocusMode();
   }
@@ -340,7 +340,6 @@ onBeforeUnmount(() => {
 
 .focus-mode-card {
   margin: 0 !important;
-  height: 100vh !important;
 }
 
 @media (min-width: 1700px) {

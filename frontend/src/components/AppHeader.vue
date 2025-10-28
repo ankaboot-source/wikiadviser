@@ -22,12 +22,11 @@
       </q-toolbar-title>
       <q-space />
       <q-toggle
-        v-if="article && currentButtonToggle === 'edit' && !$q.screen.lt.md"
-        v-model="focusModeToggle"
-        color="primary"
+        v-if="article && activeViewMode === 'edit' && !$q.screen.lt.md"
+        v-model="isFocusMode"
         icon="visibility"
         checked-icon="fullscreen"
-        @update:model-value="handleFocusModeToggle"
+        @update:model-value="focusModeStore.toggleFocusMode()"
       />
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn
@@ -124,7 +123,7 @@ import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { useFocusModeStore } from 'src/stores/useFocusModeStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -140,9 +139,9 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
-const focusModeStore = useFocusModeStore();
+const focusModeStore = useActiveViewStore();
 const isFocusMode = computed(() => focusModeStore.isFocusMode);
-const currentButtonToggle = computed(() => focusModeStore.currentButtonToggle);
+const activeViewMode = computed(() => focusModeStore.activeViewMode);
 const focusModeToggle = ref(false);
 
 const { $resetUser } = useUserStore();
@@ -166,10 +165,6 @@ watch([useRoute(), articles], ([newRoute]) => {
 watch(isFocusMode, (newValue) => {
   focusModeToggle.value = newValue;
 });
-
-function handleFocusModeToggle(value: boolean) {
-  focusModeStore.toggleFocusMode(value);
-}
 
 async function signOut() {
   const { error } = await supabase.auth.signOut();

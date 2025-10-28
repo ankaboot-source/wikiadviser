@@ -4,9 +4,9 @@ import { ref } from 'vue';
 export const useActiveViewStore = defineStore('activeView', () => {
   const isFocusMode = ref(false);
   const activeViewMode = ref('');
-  
+
   function toggleFocusMode(value?: boolean) {
-      isFocusMode.value = value ?? !isFocusMode.value;  
+    isFocusMode.value = value ?? !isFocusMode.value;
   }
 
   function setActiveViewMode(value: string) {

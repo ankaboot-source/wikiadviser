@@ -890,7 +890,14 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
             });
         };
       });
-
+			// remove max-width property to make editor full width
+      mw.util.addCSS(`
+        .mw-page-container {
+          max-width: none !important;
+          width: 100% !important;
+        }
+      `);
+      // End of css addition
 })(); // Fermeture de la IIFE globale
 
 // </nowiki> /!\ Ne pas retirer cette balise

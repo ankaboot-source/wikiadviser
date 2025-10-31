@@ -26,7 +26,7 @@
         v-model="isFocusMode"
         icon="visibility"
         checked-icon="fullscreen"
-        @update:model-value="focusModeStore.toggleFocusMode()"
+        @update:model-value="focusModeStore.isFocusMode = $event"
       />
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn

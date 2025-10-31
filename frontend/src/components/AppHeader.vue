@@ -23,10 +23,9 @@
       <q-space />
       <q-toggle
         v-if="article && activeViewMode === 'edit' && !$q.screen.lt.md"
-        v-model="isFocusMode"
+        v-model="focusModeStore.isFocusMode"
         icon="visibility"
         checked-icon="fullscreen"
-        @update:model-value="focusModeStore.isFocusMode = $event"
       />
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn

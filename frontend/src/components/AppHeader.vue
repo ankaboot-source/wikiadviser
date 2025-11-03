@@ -143,7 +143,6 @@ const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
 const focusModeStore = useActiveViewStore();
-const focusModeToggle = ref(false);
 
 const { $resetUser } = useUserStore();
 const userStore = useUserStore();
@@ -158,15 +157,14 @@ watch([useRoute(), articles], ([newRoute]) => {
     article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
-    focusModeStore.toggleFocusMode();
-    focusModeToggle.value = false;
+    focusModeStore.isFocusMode = false;
   }
 });
 
 watch(
   () => focusModeStore.isFocusMode,
   (newValue) => {
-    focusModeToggle.value = newValue;
+    focusModeStore.isFocusMode = newValue;
   },
 );
 
@@ -181,7 +179,6 @@ async function signOut() {
   await router.push('/auth');
   articlesStore.resetArticles();
   focusModeStore.$reset();
-  focusModeToggle.value = false;
   $q.notify({ message: 'Signed out', icon: 'logout' });
 }
 

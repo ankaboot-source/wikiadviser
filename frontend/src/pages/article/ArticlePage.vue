@@ -133,7 +133,7 @@ function handleButtonToggleUpdate(value: string) {
   buttonToggle.value = value;
   focusModeStore.setActiveViewMode(value);
   if (value !== 'edit' && isFocusMode.value) {
-    focusModeStore.toggleFocusMode();
+    focusModeStore.isFocusMode;
   }
 }
 
@@ -319,7 +319,7 @@ onBeforeMount(async () => {
 
 onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
-  focusModeStore.toggleFocusMode();
+  focusModeStore.isFocusMode;
 });
 </script>
 

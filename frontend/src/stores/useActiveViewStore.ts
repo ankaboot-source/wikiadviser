@@ -5,10 +5,6 @@ export const useActiveViewStore = defineStore('activeView', () => {
   const isFocusMode = ref(false);
   const activeViewMode = ref('');
 
-  function toggleFocusMode(value?: boolean) {
-    isFocusMode.value = value ?? !isFocusMode.value;
-  }
-
   function setActiveViewMode(value: string) {
     activeViewMode.value = value;
   }
@@ -21,7 +17,6 @@ export const useActiveViewStore = defineStore('activeView', () => {
   return {
     isFocusMode,
     activeViewMode,
-    toggleFocusMode,
     setActiveViewMode,
     $reset,
   };

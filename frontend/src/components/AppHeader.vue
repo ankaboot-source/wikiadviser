@@ -22,7 +22,11 @@
       </q-toolbar-title>
       <q-space />
       <q-toggle
-        v-if="article && activeViewMode === 'edit' && !$q.screen.lt.md"
+        v-if="
+          article &&
+          focusModeStore.activeViewMode === 'edit' &&
+          !$q.screen.lt.md
+        "
         v-model="focusModeStore.isFocusMode"
         icon="visibility"
         checked-icon="fullscreen"
@@ -139,8 +143,6 @@ const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
 const focusModeStore = useActiveViewStore();
-const isFocusMode = computed(() => focusModeStore.isFocusMode);
-const activeViewMode = computed(() => focusModeStore.activeViewMode);
 const focusModeToggle = ref(false);
 
 const { $resetUser } = useUserStore();
@@ -161,9 +163,12 @@ watch([useRoute(), articles], ([newRoute]) => {
   }
 });
 
-watch(isFocusMode, (newValue) => {
-  focusModeToggle.value = newValue;
-});
+watch(
+  () => focusModeStore.isFocusMode,
+  (newValue) => {
+    focusModeToggle.value = newValue;
+  },
+);
 
 async function signOut() {
   const { error } = await supabase.auth.signOut();

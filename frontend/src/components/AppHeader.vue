@@ -161,13 +161,6 @@ watch([useRoute(), articles], ([newRoute]) => {
   }
 });
 
-watch(
-  () => focusModeStore.isFocusMode,
-  (newValue) => {
-    focusModeStore.isFocusMode = newValue;
-  },
-);
-
 async function signOut() {
   const { error } = await supabase.auth.signOut();
 

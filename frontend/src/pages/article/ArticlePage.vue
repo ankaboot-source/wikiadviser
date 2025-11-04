@@ -132,9 +132,6 @@ watch(isFocusMode, (newValue) => {
 function handleButtonToggleUpdate(value: string) {
   buttonToggle.value = value;
   focusModeStore.setActiveViewMode(value);
-  if (value !== 'edit' && isFocusMode.value) {
-    focusModeStore.isFocusMode;
-  }
 }
 
 async function handleArticleRealtime(
@@ -319,7 +316,6 @@ onBeforeMount(async () => {
 
 onBeforeUnmount(() => {
   realtimeChannel.unsubscribe();
-  focusModeStore.isFocusMode;
 });
 </script>
 

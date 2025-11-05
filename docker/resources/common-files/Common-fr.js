@@ -890,6 +890,7 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
             });
         };
       });
+			
 })(); // Fermeture de la IIFE globale
 
 // </nowiki> /!\ Ne pas retirer cette balise

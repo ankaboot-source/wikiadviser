@@ -481,3 +481,8 @@ span.texhtml span.texhtml {
       .vector-page-toolbar {
         display: none !important;
       }
+			/* remove max-width property to make editor full width */
+      .mw-page-container {
+        max-width: none !important;
+        width: 100% !important;
+      }

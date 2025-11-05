@@ -338,5 +338,6 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
             });
         };
       });
+      
 } );
 /* DO NOT ADD CODE BELOW THIS LINE */

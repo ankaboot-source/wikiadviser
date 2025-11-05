@@ -34,7 +34,7 @@
         :editor-permission="editorPermission"
         :button-toggle="buttonToggle"
         :users="users"
-        :class="{ 'focus-mode-card': isFocusMode }"
+        :class="{ 'q-ma-none': isFocusMode }"
         class="card-area"
         @update:button-toggle="handleButtonToggleUpdate"
       />
@@ -332,10 +332,6 @@ onBeforeUnmount(() => {
   grid-template-areas: 'card';
   padding: 0 !important;
   overflow-y: hidden;
-}
-
-.focus-mode-card {
-  margin: 0 !important;
 }
 
 @media (min-width: 1700px) {

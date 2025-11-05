@@ -338,13 +338,5 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
             });
         };
       });
-      // remove max-width property to make editor full width
-      mw.util.addCSS(`
-        .mw-page-container {
-          max-width: none !important;
-          width: 100% !important;
-        }
-      `);
-      // End of css addition
 } );
 /* DO NOT ADD CODE BELOW THIS LINE */

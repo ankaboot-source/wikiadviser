@@ -169,12 +169,4 @@ mw.hook("ve.activationComplete").add(function () {
         console.error("Failed to redirect to diff:", error);
       });
   };
-  // remove max-width property to make editor full width
-      mw.util.addCSS(`
-        .mw-page-container {
-          max-width: none !important;
-          width: 100% !important;
-        }
-      `);
-      // End of css addition
 });

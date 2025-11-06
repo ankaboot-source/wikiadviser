@@ -14,9 +14,7 @@
         :role="role"
         :editor-permission="editorPermission"
         :users="users"
-        :button-toggle="buttonToggle"
         class="toolbar-area"
-        @update:button-toggle="handleButtonToggleUpdate"
       />
 
       <diff-list
@@ -32,11 +30,9 @@
         :changes-content="changesContent"
         :role="role"
         :editor-permission="editorPermission"
-        :button-toggle="buttonToggle"
         :users="users"
         :class="{ 'q-ma-none': isFocusMode }"
         class="card-area"
-        @update:button-toggle="handleButtonToggleUpdate"
       />
     </div>
   </div>
@@ -72,7 +68,7 @@ const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
 const selectedChangeStore = useSelectedChangeStore();
-const focusModeStore = useActiveViewStore();
+const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
 const { params } = route;
@@ -89,9 +85,8 @@ const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
-const isFocusMode = computed(() => focusModeStore.isFocusMode);
-
-const buttonToggle = ref('');
+const isFocusMode = computed(() => activeViewStore.isFocusMode);
+const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
 
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
@@ -99,7 +94,7 @@ const firstToggle = computed(() => {
 });
 
 const isShowingDiffList = computed(() => {
-  return buttonToggle.value !== 'edit' || $q.screen.gt.sm;
+  return toggleEditButton.value !== 'edit' || $q.screen.gt.sm;
 });
 
 watch(
@@ -108,8 +103,7 @@ watch(
     if (oldToggle === 'edit') {
       return;
     }
-    buttonToggle.value = newToggle;
-    focusModeStore.setActiveViewMode(newToggle);
+    activeViewStore.setToggleEditButton(newToggle);
   },
   { immediate: true },
 );
@@ -117,22 +111,17 @@ watch(
 watch(
   () => selectedChangeStore.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeId && buttonToggle.value === 'edit') {
-      buttonToggle.value = 'view';
+    if (selectedChangeId && toggleEditButton.value === 'edit') {
+      activeViewStore.setToggleEditButton('view');
     }
   },
 );
 
 watch(isFocusMode, (newValue) => {
-  if (newValue && buttonToggle.value !== 'edit') {
-    buttonToggle.value = 'edit';
+  if (newValue && toggleEditButton.value !== 'edit') {
+    activeViewStore.setToggleEditButton('edit');
   }
 });
-
-function handleButtonToggleUpdate(value: string) {
-  buttonToggle.value = value;
-  focusModeStore.setActiveViewMode(value);
-}
 
 async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'articles'>>,

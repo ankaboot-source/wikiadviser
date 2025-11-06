@@ -24,7 +24,7 @@
       <q-toggle
         v-if="
           article &&
-          focusModeStore.activeViewMode === 'edit' &&
+          focusModeStore.toggleEditButton === 'edit' &&
           !$q.screen.lt.md
         "
         v-model="focusModeStore.isFocusMode"

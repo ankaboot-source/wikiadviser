@@ -1,7 +1,7 @@
 <template>
   <q-toolbar class="q-px-none">
     <q-btn-toggle
-      v-model="localButtonToggle"
+      :model-value="toggleEditButton"
       no-caps
       unelevated
       toggle-color="blue-grey-2"
@@ -10,7 +10,7 @@
       color="bg-secondary"
       class="borders"
       :options="toggleOptions"
-      @update:model-value="$emit('update:buttonToggle', $event)"
+      @update:model-value="activeViewStore.setToggleEditButton($event)"
     />
     <q-space />
     <q-btn
@@ -45,12 +45,14 @@
 <script setup lang="ts">
 import ShareCard from 'src/components/Share/ShareCard.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article, Enums, User } from 'src/types';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import ReviewByMira from 'src/components/ReviewByMira.vue';
 import { useQuasar } from 'quasar';
 
 const articlesStore = useArticlesStore();
+const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
 const props = defineProps<{
@@ -58,27 +60,15 @@ const props = defineProps<{
   role: Enums<'role'>;
   editorPermission: boolean | null;
   users: User[];
-  buttonToggle: string;
-}>();
-
-defineEmits<{
-  'update:buttonToggle': [value: string];
 }>();
 
 const shareDialog = ref(false);
 
-const localButtonToggle = ref(props.buttonToggle);
-
-watch(
-  () => props.buttonToggle,
-  (newValue) => {
-    localButtonToggle.value = newValue;
-  },
-);
+const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
 
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {
-    return $q.screen.gt.sm || localButtonToggle.value === value ? text : '';
+    return $q.screen.gt.sm || toggleEditButton.value === value ? text : '';
   }
   const viewButton = {
     label: getLabel('view', 'Review changes'),

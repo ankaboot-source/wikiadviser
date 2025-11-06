@@ -3,21 +3,21 @@ import { ref } from 'vue';
 
 export const useActiveViewStore = defineStore('activeView', () => {
   const isFocusMode = ref(false);
-  const activeViewMode = ref('');
+  const toggleEditButton = ref('');
 
-  function setActiveViewMode(value: string) {
-    activeViewMode.value = value;
+  function setToggleEditButton(value: string) {
+    toggleEditButton.value = value;
   }
 
   function $reset() {
     isFocusMode.value = false;
-    activeViewMode.value = '';
+    toggleEditButton.value = '';
   }
 
   return {
     isFocusMode,
-    activeViewMode,
-    setActiveViewMode,
+    toggleEditButton,
+    setToggleEditButton,
     $reset,
   };
 });

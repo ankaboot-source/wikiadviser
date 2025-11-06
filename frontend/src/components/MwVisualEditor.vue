@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="buttonToggle === 'edit'"
+    v-if="toggleEditButton === 'edit'"
     style="position: relative"
     class="col-grow"
   >
@@ -39,8 +39,9 @@
 import { QSpinner, useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import ENV from 'src/schema/env.schema';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, computed } from 'vue';
 
 const props = defineProps({
   toggleEditTab: {
@@ -48,10 +49,13 @@ const props = defineProps({
     required: true,
   },
   article: { type: Object as () => Article, required: true },
-  buttonToggle: { type: String, required: true },
 });
 
 const $q = useQuasar();
+
+const activeViewStore = useActiveViewStore();
+const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
+
 const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
 const articleLink = ref(
   `${mediawikiBaseUrl}/index.php?title=${props.article.article_id}&veaction=edit`,

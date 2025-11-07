@@ -36,7 +36,7 @@ export class WikipediaApi implements WikipediaInteractor {
           action: "query",
           format: "json",
           generator: "prefixsearch",
-          prop: "pageimages|description",
+          prop: "pageimages|description|pageprops",
           ppprop: "displaytitle",
           piprop: "thumbnail",
           pithumbsize: 60,

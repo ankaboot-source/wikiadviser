@@ -36,7 +36,7 @@ export class WikipediaApi implements WikipediaInteractor {
           action: "query",
           format: "json",
           generator: "prefixsearch",
-          prop: "pageimages|description",
+          prop: "pageimages|description|pageprops",
           ppprop: "displaytitle",
           piprop: "thumbnail",
           pithumbsize: 60,
@@ -46,6 +46,9 @@ export class WikipediaApi implements WikipediaInteractor {
           gpslimit: WikipediaApi.searchResultsLimit,
           origin: "*",
           ...(this.wpProxy && { lang: language }),
+        },
+        headers: {
+          "User-Agent": "WikiAdviser",
         },
       },
     );

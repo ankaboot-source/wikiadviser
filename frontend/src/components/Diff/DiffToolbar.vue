@@ -1,7 +1,7 @@
 <template>
   <q-toolbar class="q-px-none">
     <q-btn-toggle
-      :model-value="toggleEditButton"
+      :model-value="activeViewStore.toggleEditButton"
       no-caps
       unelevated
       toggle-color="blue-grey-2"
@@ -64,11 +64,11 @@ const props = defineProps<{
 
 const shareDialog = ref(false);
 
-const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
-
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {
-    return $q.screen.gt.sm || toggleEditButton.value === value ? text : '';
+    return $q.screen.gt.sm || activeViewStore.toggleEditButton === value
+      ? text
+      : '';
   }
   const viewButton = {
     label: getLabel('view', 'Review changes'),

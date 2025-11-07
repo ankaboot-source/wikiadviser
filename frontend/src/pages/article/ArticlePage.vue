@@ -86,7 +86,6 @@ const editorPermission = computed(
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 const isFocusMode = computed(() => activeViewStore.isFocusMode);
-const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
 
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
@@ -94,7 +93,7 @@ const firstToggle = computed(() => {
 });
 
 const isShowingDiffList = computed(() => {
-  return toggleEditButton.value !== 'edit' || $q.screen.gt.sm;
+  return activeViewStore.toggleEditButton !== 'edit' || $q.screen.gt.sm;
 });
 
 watch(
@@ -111,14 +110,14 @@ watch(
 watch(
   () => selectedChangeStore.selectedChangeId,
   (selectedChangeId) => {
-    if (selectedChangeId && toggleEditButton.value === 'edit') {
+    if (selectedChangeId && activeViewStore.toggleEditButton === 'edit') {
       activeViewStore.setToggleEditButton('view');
     }
   },
 );
 
 watch(isFocusMode, (newValue) => {
-  if (newValue && toggleEditButton.value !== 'edit') {
+  if (newValue && activeViewStore.toggleEditButton !== 'edit') {
     activeViewStore.setToggleEditButton('edit');
   }
 });

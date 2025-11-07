@@ -7,7 +7,7 @@
       @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="toggleEditButton === 'view'">
+    <template v-if="activeViewStore.toggleEditButton === 'view'">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -37,7 +37,7 @@ import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
-import { nextTick, watch, watchEffect, computed } from 'vue';
+import { nextTick, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
@@ -51,7 +51,6 @@ const props = defineProps<{
 
 const $q = useQuasar();
 
-const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
 // There is an error when passing a variable into import()
 if (props.article.language === 'fr') {
   import('src/css/styles/fr-common.css');
@@ -105,7 +104,7 @@ watch(
 );
 
 watchEffect(() => {
-  if (toggleEditButton.value === 'view' && props.changesContent) {
+  if (activeViewStore.toggleEditButton === 'view' && props.changesContent) {
     nextTick().then(() => handleTabIndexes());
   }
 });
@@ -142,13 +141,13 @@ watch(
 );
 
 const onSwitchTabEmitChange = (tab: string) => {
-  if (toggleEditButton.value !== tab) {
+  if (activeViewStore.toggleEditButton !== tab) {
     activeViewStore.setToggleEditButton(tab);
   }
 };
 
 function toggleEditTab() {
-  if (toggleEditButton.value !== 'edit') {
+  if (activeViewStore.toggleEditButton !== 'edit') {
     activeViewStore.setToggleEditButton('edit');
   }
 }

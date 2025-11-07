@@ -47,6 +47,9 @@ export class WikipediaApi implements WikipediaInteractor {
           origin: "*",
           ...(this.wpProxy && { lang: language }),
         },
+        headers: {
+          "User-Agent": "MyCoolTool/1.0 (https://MyCoolTool.com/contact)",
+        },
       },
     );
 

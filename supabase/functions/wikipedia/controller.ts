@@ -22,11 +22,13 @@ export default async function getWikipediaArticle(context: Context) {
       200,
     );
   } catch (error) {
+    const err_obj = {
+      message: "Error fetching Wikipedia articles.",
+      error: (error as Error).message,
+    };
+    console.error(err_obj);
     return context.json(
-      {
-        message: "Error fetching Wikipedia articles.",
-        error: (error as Error).message,
-      },
+      err_obj,
       500,
     );
   }

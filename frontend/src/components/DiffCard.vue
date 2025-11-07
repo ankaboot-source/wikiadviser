@@ -141,7 +141,7 @@ watch(
 
 function toggleEditTab() {
   if (activeViewStore.isEditing) {
-    activeViewStore.isEditing;
+    activeViewStore.setToggleEditButton('edit');
   }
 }
 </script>

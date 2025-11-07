@@ -22,11 +22,7 @@
       </q-toolbar-title>
       <q-space />
       <q-toggle
-        v-if="
-          article &&
-          focusModeStore.toggleEditButton === 'edit' &&
-          !$q.screen.lt.md
-        "
+        v-if="article && focusModeStore.isEditing && !$q.screen.lt.md"
         v-model="focusModeStore.isFocusMode"
         icon="visibility"
         checked-icon="fullscreen"

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="toggleEditButton === 'edit'"
+    v-if="activeViewStore.isEditing"
     style="position: relative"
     class="col-grow"
   >
@@ -41,7 +41,7 @@ import supabaseClient from 'src/api/supabase';
 import ENV from 'src/schema/env.schema';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
-import { nextTick, onBeforeUnmount, onMounted, ref, computed } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
   toggleEditTab: {
@@ -54,7 +54,6 @@ const props = defineProps({
 const $q = useQuasar();
 
 const activeViewStore = useActiveViewStore();
-const toggleEditButton = computed(() => activeViewStore.toggleEditButton);
 
 const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
 const articleLink = ref(

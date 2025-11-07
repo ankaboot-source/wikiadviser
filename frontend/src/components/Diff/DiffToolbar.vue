@@ -1,7 +1,8 @@
 <template>
   <q-toolbar class="q-px-none">
     <q-btn-toggle
-      :model-value="activeViewStore.toggleEditButton"
+      v-model="activeViewStore.toggleEditButton"
+      :options="toggleOptions"
       no-caps
       unelevated
       toggle-color="blue-grey-2"
@@ -9,8 +10,6 @@
       text-color="dark"
       color="bg-secondary"
       class="borders"
-      :options="toggleOptions"
-      @update:model-value="activeViewStore.setToggleEditButton($event)"
     />
     <q-space />
     <q-btn

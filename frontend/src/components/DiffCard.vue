@@ -4,10 +4,9 @@
       v-if="article.title && article.permission_id && editorPermission"
       :article="article"
       :toggle-edit-tab="toggleEditTab"
-      @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="activeViewStore.toggleEditButton === 'view'">
+    <template v-if="activeViewStore.isViewing">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -104,7 +103,7 @@ watch(
 );
 
 watchEffect(() => {
-  if (activeViewStore.toggleEditButton === 'view' && props.changesContent) {
+  if (activeViewStore.isViewing && props.changesContent) {
     nextTick().then(() => handleTabIndexes());
   }
 });
@@ -140,15 +139,9 @@ watch(
   },
 );
 
-const onSwitchTabEmitChange = (tab: string) => {
-  if (activeViewStore.toggleEditButton !== tab) {
-    activeViewStore.setToggleEditButton(tab);
-  }
-};
-
 function toggleEditTab() {
-  if (activeViewStore.toggleEditButton !== 'edit') {
-    activeViewStore.setToggleEditButton('edit');
+  if (activeViewStore.isEditing) {
+    activeViewStore.isEditing;
   }
 }
 </script>

@@ -96,7 +96,7 @@ async function handleDiffChange(data: {
 }
 
 function gotoDiffLink() {
-  activeViewStore.isEditButton = 'edit';
+  activeViewStore.modeToggle = 'edit';
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {

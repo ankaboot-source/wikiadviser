@@ -1,7 +1,7 @@
 <template>
   <q-toolbar class="q-px-none">
     <q-btn-toggle
-      v-model="activeViewStore.isEditButton"
+      v-model="activeViewStore.modeToggle"
       :options="toggleOptions"
       no-caps
       unelevated
@@ -65,9 +65,7 @@ const shareDialog = ref(false);
 
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {
-    return $q.screen.gt.sm || activeViewStore.isEditButton === value
-      ? text
-      : '';
+    return $q.screen.gt.sm || activeViewStore.modeToggle === value ? text : '';
   }
   const viewButton = {
     label: getLabel('view', 'Review changes'),

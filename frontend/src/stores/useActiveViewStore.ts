@@ -3,19 +3,19 @@ import { computed, ref } from 'vue';
 
 export const useActiveViewStore = defineStore('activeView', () => {
   const isFocusMode = ref(false);
-  const isEditButton = ref<'edit' | 'view'>('view');
+  const modeToggle = ref<'edit' | 'view'>('view');
 
-  const isViewing = computed(() => isEditButton.value === 'view');
-  const isEditing = computed(() => isEditButton.value === 'edit');
+  const isViewing = computed(() => modeToggle.value === 'view');
+  const isEditing = computed(() => modeToggle.value === 'edit');
 
   function $reset() {
     isFocusMode.value = false;
-    isEditButton.value = 'view';
+    modeToggle.value = 'view';
   }
 
   return {
     isFocusMode,
-    isEditButton,
+    modeToggle,
     $reset,
     isViewing,
     isEditing,

@@ -54,7 +54,6 @@ import DiffCard from 'src/components/DiffCard.vue';
 import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
@@ -67,7 +66,6 @@ const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
-const selectedChangeStore = useSelectedChangeStore();
 const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
@@ -105,15 +103,6 @@ watch(
     activeViewStore.toggleEditButton = newToggle;
   },
   { immediate: true },
-);
-
-watch(
-  () => selectedChangeStore.selectedChangeId,
-  (selectedChangeId) => {
-    if (selectedChangeId && activeViewStore.isEditing) {
-      activeViewStore.toggleEditButton = 'view';
-    }
-  },
 );
 
 async function handleArticleRealtime(

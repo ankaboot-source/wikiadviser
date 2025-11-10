@@ -44,10 +44,6 @@ import { Article } from 'src/types';
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({
-  toggleEditTab: {
-    type: Function,
-    required: true,
-  },
   article: { type: Object as () => Article, required: true },
 });
 
@@ -70,8 +66,6 @@ const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
 const isProcessingChanges = ref(false);
 
-const emit = defineEmits(['switchTabEmit']);
-
 const renderIframe = ref(true);
 async function reloadIframe() {
   renderIframe.value = false;
@@ -90,7 +84,7 @@ async function handleDiffChange(data: {
     method: 'PUT',
     body: JSON.stringify({ diffHtml: data.diffHtml }),
   });
-  emit('switchTabEmit', 'edit');
+
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',
@@ -102,7 +96,7 @@ async function handleDiffChange(data: {
 }
 
 function gotoDiffLink() {
-  props.toggleEditTab();
+  activeViewStore.toggleEditButton = 'edit';
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {

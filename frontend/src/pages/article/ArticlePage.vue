@@ -93,7 +93,7 @@ const firstToggle = computed(() => {
 });
 
 const isShowingDiffList = computed(() => {
-  return activeViewStore.isEditing || $q.screen.gt.sm;
+  return activeViewStore.isViewing || $q.screen.gt.sm;
 });
 
 watch(
@@ -102,7 +102,7 @@ watch(
     if (oldToggle === 'edit') {
       return;
     }
-    activeViewStore.setToggleEditButton(newToggle);
+    activeViewStore.toggleEditButton = newToggle;
   },
   { immediate: true },
 );
@@ -111,14 +111,14 @@ watch(
   () => selectedChangeStore.selectedChangeId,
   (selectedChangeId) => {
     if (selectedChangeId && activeViewStore.isEditing) {
-      activeViewStore.setToggleEditButton('view');
+      activeViewStore.toggleEditButton = 'view';
     }
   },
 );
 
 watch(isFocusMode, (newValue) => {
   if (newValue && activeViewStore.isEditing) {
-    activeViewStore.setToggleEditButton('edit');
+    activeViewStore.toggleEditButton = 'edit';
   }
 });
 

@@ -3,7 +3,6 @@
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
       :article="article"
-      :toggle-edit-tab="toggleEditTab"
     />
 
     <template v-if="activeViewStore.isViewing">
@@ -138,12 +137,6 @@ watch(
     }
   },
 );
-
-function toggleEditTab() {
-  if (activeViewStore.isEditing) {
-    activeViewStore.setToggleEditButton('edit');
-  }
-}
 </script>
 
 <style>

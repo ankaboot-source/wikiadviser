@@ -100,7 +100,7 @@ watch(
     if (oldToggle === 'edit') {
       return;
     }
-    activeViewStore.toggleEditButton = newToggle;
+    activeViewStore.isEditButton = newToggle;
   },
   { immediate: true },
 );

@@ -116,12 +116,6 @@ watch(
   },
 );
 
-watch(isFocusMode, (newValue) => {
-  if (newValue && activeViewStore.isEditing) {
-    activeViewStore.toggleEditButton = 'edit';
-  }
-});
-
 async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'articles'>>,
 ) {

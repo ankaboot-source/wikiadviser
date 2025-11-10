@@ -21,6 +21,12 @@
         </q-breadcrumbs>
       </q-toolbar-title>
       <q-space />
+      <q-toggle
+        v-if="article && focusModeStore.isEditing && !$q.screen.lt.md"
+        v-model="focusModeStore.isFocusMode"
+        icon="visibility"
+        checked-icon="fullscreen"
+      />
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn
         v-if="user && !$q.screen.lt.md"
@@ -116,6 +122,7 @@ import { useQuasar } from 'quasar';
 import supabase from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -131,6 +138,8 @@ const article = ref<Article | null>();
 const articlesStore = useArticlesStore();
 const articles = computed(() => articlesStore.articles);
 
+const focusModeStore = useActiveViewStore();
+
 const { $resetUser } = useUserStore();
 const userStore = useUserStore();
 const user = computed(() => userStore.user);
@@ -144,6 +153,7 @@ watch([useRoute(), articles], ([newRoute]) => {
     article.value = articlesStore.getArticleById(articleId as string);
   } else {
     article.value = null;
+    focusModeStore.isFocusMode = false;
   }
 });
 
@@ -157,6 +167,7 @@ async function signOut() {
   $resetUser();
   await router.push('/auth');
   articlesStore.resetArticles();
+  focusModeStore.$reset();
   $q.notify({ message: 'Signed out', icon: 'logout' });
 }
 

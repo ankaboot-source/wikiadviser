@@ -1,19 +1,24 @@
 <template>
   <div v-if="loading"></div>
   <div v-else-if="article" class="q-panel scroll col">
-    <div class="diff-grid" :class="$q.screen.gt.sm ? 'q-pa-md' : 'q-pa-sm'">
+    <div
+      class="diff-grid"
+      :class="[
+        $q.screen.gt.sm ? 'q-pa-md' : 'q-pa-sm',
+        { 'focus-mode': isFocusMode },
+      ]"
+    >
       <diff-toolbar
+        v-show="!isFocusMode"
         :article="article"
         :role="role"
         :editor-permission="editorPermission"
         :users="users"
-        :button-toggle="buttonToggle"
         class="toolbar-area"
-        @update:button-toggle="buttonToggle = $event"
       />
 
       <diff-list
-        v-show="isShowingDiffList"
+        v-show="isShowingDiffList && !isFocusMode"
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
@@ -25,10 +30,9 @@
         :changes-content="changesContent"
         :role="role"
         :editor-permission="editorPermission"
-        :button-toggle="buttonToggle"
         :users="users"
+        :class="{ 'q-ma-none': isFocusMode }"
         class="card-area"
-        @update:button-toggle="buttonToggle = $event"
       />
     </div>
   </div>
@@ -50,7 +54,7 @@ import DiffCard from 'src/components/DiffCard.vue';
 import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -62,7 +66,7 @@ const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
 const userStore = useUserStore();
-const selectedChangeStore = useSelectedChangeStore();
+const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
 const { params } = route;
@@ -79,8 +83,7 @@ const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
-
-const buttonToggle = ref('');
+const isFocusMode = computed(() => activeViewStore.isFocusMode);
 
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
@@ -88,7 +91,7 @@ const firstToggle = computed(() => {
 });
 
 const isShowingDiffList = computed(() => {
-  return buttonToggle.value !== 'edit' || $q.screen.gt.sm;
+  return activeViewStore.isViewing || $q.screen.gt.sm;
 });
 
 watch(
@@ -97,18 +100,9 @@ watch(
     if (oldToggle === 'edit') {
       return;
     }
-    buttonToggle.value = newToggle;
+    activeViewStore.modeToggle = newToggle;
   },
   { immediate: true },
-);
-
-watch(
-  () => selectedChangeStore.selectedChangeId,
-  (selectedChangeId) => {
-    if (selectedChangeId && buttonToggle.value === 'edit') {
-      buttonToggle.value = 'view';
-    }
-  },
 );
 
 async function handleArticleRealtime(
@@ -304,6 +298,13 @@ onBeforeUnmount(() => {
   gap: 0.5rem;
 }
 /* Desktop*/
+.diff-grid.focus-mode {
+  grid-template: 1fr / 1fr;
+  grid-template-areas: 'card';
+  padding: 0 !important;
+  overflow-y: hidden;
+}
+
 @media (min-width: 1700px) {
   .diff-grid {
     grid-template: auto 1fr / 1fr 0.3fr;

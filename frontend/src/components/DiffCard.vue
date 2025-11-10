@@ -2,13 +2,10 @@
   <div class="column col-grow">
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
-      :button-toggle="buttonToggle"
       :article="article"
-      :toggle-edit-tab="toggleEditTab"
-      @switch-tab-emit="onSwitchTabEmitChange"
     />
 
-    <template v-if="buttonToggle === 'view'">
+    <template v-if="activeViewStore.isViewing">
       <q-scroll-area
         v-if="props.changesContent"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
@@ -36,21 +33,18 @@ import MwVisualEditor from 'src/components/MwVisualEditor.vue';
 import 'src/css/styles/diff.scss';
 import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
 import { nextTick, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
+const activeViewStore = useActiveViewStore();
 
 const props = defineProps<{
   changesContent: string | null;
   article: Article;
   editorPermission: boolean | null;
-  buttonToggle: string;
-}>();
-
-const emit = defineEmits<{
-  'update:buttonToggle': [value: string];
 }>();
 
 const $q = useQuasar();
@@ -108,7 +102,7 @@ watch(
 );
 
 watchEffect(() => {
-  if (props.buttonToggle === 'view' && props.changesContent) {
+  if (activeViewStore.isViewing && props.changesContent) {
     nextTick().then(() => handleTabIndexes());
   }
 });
@@ -143,18 +137,6 @@ watch(
     }
   },
 );
-
-const onSwitchTabEmitChange = (tab: string) => {
-  if (props.buttonToggle !== tab) {
-    emit('update:buttonToggle', tab);
-  }
-};
-
-function toggleEditTab() {
-  if (props.buttonToggle !== 'edit') {
-    emit('update:buttonToggle', 'edit');
-  }
-}
 </script>
 
 <style>

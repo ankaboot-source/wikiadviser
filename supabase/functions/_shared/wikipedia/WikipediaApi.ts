@@ -4,6 +4,7 @@ import ENV from "../schema/env.schema.ts";
 import { WikipediaSearchResult } from "../types/index.ts";
 import WikipediaInteractor from "./WikipediaInteractor.ts";
 
+const USER_AGENT = "WikiAdviser/1.0";
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy = ENV.WIKIPEDIA_PROXY;
 
@@ -48,7 +49,7 @@ export class WikipediaApi implements WikipediaInteractor {
           ...(this.wpProxy && { lang: language }),
         },
         headers: {
-          "User-Agent": "WikiAdviser",
+          "User-Agent": USER_AGENT,
         },
       },
     );

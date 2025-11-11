@@ -10,6 +10,11 @@ export class WikipediaApi implements WikipediaInteractor {
 
   constructor() {
     axios.interceptors.request.use((config: AxiosRequestConfig) => {
+      config.headers = {
+        ...config.headers,
+        "User-Agent": USER_AGENT,
+      };
+
       console.info(
         "Request URL:",
         `${config.baseURL || ""}${config.url}?${
@@ -47,9 +52,6 @@ export class WikipediaApi implements WikipediaInteractor {
           gpslimit: WikipediaApi.searchResultsLimit,
           origin: "*",
           ...(this.wpProxy && { lang: language }),
-        },
-        headers: {
-          "User-Agent": USER_AGENT,
         },
       },
     );

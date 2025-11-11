@@ -42,9 +42,13 @@ export async function insertArticle(
   }
   const articleId = articlesData[0].id;
 
+  const permissionsToInsert = [
+    { role: "owner", user_id: userId, article_id: articleId },
+  ];
+
   const botUserId = await getBotUserId();
   if (botUserId && botUserId !== userId) {
-    [{ role: "owner", user_id: userId, article_id: articleId }].push({
+    permissionsToInsert.push({
       role: "editor",
       user_id: botUserId,
       article_id: articleId,
@@ -53,7 +57,7 @@ export async function insertArticle(
 
   const { error: permissionsError } = await supabase
     .from("permissions")
-    .insert({ role: "owner", user_id: userId, article_id: articleId });
+    .insert(permissionsToInsert);
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }

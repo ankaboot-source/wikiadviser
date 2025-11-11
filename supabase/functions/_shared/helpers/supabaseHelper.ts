@@ -3,6 +3,28 @@ import { Enums, Tables } from "../types/index.ts";
 
 const supabase = createSupabaseAdmin();
 
+async function getBotUserId(): Promise<string | null> {
+  const botEmail = Deno.env.get("AI_BOT_EMAIL");
+
+  if (!botEmail) {
+    console.warn("botEmail not configured in environment");
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("email", botEmail)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching bot user ID:", error);
+    return null;
+  }
+
+  return data?.id ?? null;
+}
+
 export async function insertArticle(
   title: string,
   userId: string,
@@ -19,6 +41,15 @@ export async function insertArticle(
     throw new Error(articlesError.message);
   }
   const articleId = articlesData[0].id;
+
+  const botUserId = await getBotUserId();
+  if (botUserId && botUserId !== userId) {
+    [{ role: "owner", user_id: userId, article_id: articleId }].push({
+      role: "editor",
+      user_id: botUserId,
+      article_id: articleId,
+    });
+  }
 
   const { error: permissionsError } = await supabase
     .from("permissions")

@@ -5,6 +5,7 @@ import {
   TriggerPayload,
 } from '../schema.ts';
 import { getOwner } from '../utils/db.ts';
+import { getUserEmail } from '../utils/helpers.ts';
 
 export async function handlePermissionChange(
   payload: TriggerPayload
@@ -13,8 +14,9 @@ export async function handlePermissionChange(
   const { user_id: affectedUserId, article_id, role } = record;
   if (role === 'owner' || role === 'viewer') return [];
   const notifications: Notification[] = [];
+  const botEmail = Deno.env.get('AI_BOT_EMAIL');
 
-  if (type === 'INSERT') {
+  if (type === 'INSERT' && (await getUserEmail(affectedUserId)) != botEmail) {
     notifications.push({
       user_id: affectedUserId,
       article_id,
@@ -38,7 +40,7 @@ export async function handlePermissionChange(
     });
   }
 
-  if (type === 'UPDATE') {
+  if (type === 'UPDATE' && (await getUserEmail(affectedUserId)) != botEmail) {
     notifications.push({
       user_id: affectedUserId,
       article_id,

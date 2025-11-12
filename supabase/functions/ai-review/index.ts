@@ -245,7 +245,6 @@ app.post('/', async (c) => {
       );
 
       if (!resp.ok) {
-        console.error(`API error for change ${ch.id}:`, resp.status);
         reviews.push({
           change_id: ch.id,
           comment: `API error ${resp.status}`,
@@ -340,7 +339,7 @@ app.post('/', async (c) => {
     if (appliedCount === 0) {
       console.log('Could not apply any improvements');
       return c.json({
-        summary: `Mira could not apply improvements to article.`,
+        summary: 'Mira could not apply improvements to article.',
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,

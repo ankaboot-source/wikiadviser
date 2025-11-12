@@ -6,21 +6,6 @@ import { WikipediaApi } from '../_shared/wikipedia/WikipediaApi.ts';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
-type RevisionDeleted = {
-  error?: {
-    info: string;
-  };
-  edit: {
-    result: string;
-    pageid: number;
-    title: string;
-    contentmodel: string;
-    oldrevid: number;
-    newrevid: number;
-    newtimestamp: string;
-    watched: string;
-  };
-};
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 

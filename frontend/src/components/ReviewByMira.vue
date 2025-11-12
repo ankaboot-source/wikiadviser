@@ -62,11 +62,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: 'miraReviewComplete', data: {
-    miraBotId: string;
-    oldRevid: number;
-    newRevid: number;
-  }): void;
+  (
+    e: 'miraReviewComplete',
+    data: {
+      miraBotId: string;
+      oldRevid: number;
+      newRevid: number;
+    },
+  ): void;
 }>();
 
 const loading = ref(false);
@@ -99,7 +102,7 @@ async function triggerReview() {
     if (data?.reviews?.length > 0) {
       reviews.value = data.reviews;
     }
-    
+
     result.value = data?.summary ?? 'No feedback returned';
 
     if (data?.trigger_diff_update && data?.mira_bot_id) {

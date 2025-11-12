@@ -22,14 +22,16 @@ export async function updateArticleChanges(c: Context) {
       status: 401,
     });
   }
-  const { diffHtml } = await c.req.json();
+
+  const { diffHtml, miraBotId } = await c.req.json();
+
+  const contributorId = miraBotId || user.id;
 
   try {
     const { language } = await getArticle(articleId);
     const mediawiki = new MediawikiClient(language, wikipediaApi);
-    await mediawiki.updateChanges(articleId, user.id, diffHtml);
 
-    console.info({ articleId }, "Updated Changes of article");
+    await mediawiki.updateChanges(articleId, contributorId, diffHtml);
     return c.json({ message: "Updating changes succeeded." }, 200);
   } catch (error) {
     console.error(error);

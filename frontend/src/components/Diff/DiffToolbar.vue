@@ -24,7 +24,11 @@
     >
       <div class="q-ml-xs">View article</div>
     </q-btn>
-    <ReviewByMira :article="article" :hide-label="$q.screen.lt.sm" />
+    <ReviewByMira
+      :article="article"
+      :hide-label="$q.screen.lt.sm"
+      @mira-review-complete="handleMiraReview"
+    />
     <q-btn
       v-if="role != 'viewer'"
       icon="o_group"
@@ -61,7 +65,26 @@ const props = defineProps<{
   users: User[];
 }>();
 
+const emit = defineEmits<{
+  (
+    e: 'miraReviewComplete',
+    data: {
+      miraBotId: string;
+      oldRevid: number;
+      newRevid: number;
+    },
+  ): void;
+}>();
+
 const shareDialog = ref(false);
+
+function handleMiraReview(data: {
+  miraBotId: string;
+  oldRevid: number;
+  newRevid: number;
+}) {
+  emit('miraReviewComplete', data);
+}
 
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {

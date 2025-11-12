@@ -61,10 +61,16 @@ const loaderPresets = {
     value: true,
     message: 'Processing changes',
   },
+  miraChanges: {
+    value: true,
+    message: "Processing Mira's improvements",
+  },
 };
 const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
 const isProcessingChanges = ref(false);
+const currentMiraBotId = ref<string | null>(null);
+const pendingMiraDiff = ref(false);
 
 const renderIframe = ref(true);
 async function reloadIframe() {
@@ -80,10 +86,24 @@ async function handleDiffChange(data: {
 }) {
   const functionName = `/article/${data.articleId}/changes`;
 
+  const body: { diffHtml: string; miraBotId?: string } = {
+    diffHtml: data.diffHtml,
+  };
+
+  if (currentMiraBotId.value) {
+    body.miraBotId = currentMiraBotId.value;
+    console.log(
+      'Sending diff update with Mira bot ID:',
+      currentMiraBotId.value,
+    );
+  }
+
   await supabaseClient.functions.invoke(functionName, {
     method: 'PUT',
-    body: JSON.stringify({ diffHtml: data.diffHtml }),
+    body: JSON.stringify(body),
   });
+
+  currentMiraBotId.value = null;
 
   $q.notify({
     message: 'Changes successfully updated',
@@ -127,6 +147,28 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       break;
   }
 }
+
+async function handleMiraReview(reviewData: {
+  miraBotId: string;
+  oldRevid: number;
+  newRevid: number;
+}) {
+  currentMiraBotId.value = reviewData.miraBotId;
+
+  console.log('Mira review complete, stored bot ID:', currentMiraBotId.value);
+
+  isProcessingChanges.value = true;
+  loading.value = { ...loaderPresets.miraChanges };
+
+  pendingMiraDiff.value = true;
+
+  await nextTick();
+  gotoDiffLink();
+}
+
+defineExpose({
+  handleMiraReview,
+});
 
 async function onIframeLoad() {
   if (!isProcessingChanges.value) {

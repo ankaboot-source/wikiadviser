@@ -61,6 +61,14 @@ const props = defineProps<{
   article: Article;
 }>();
 
+const emit = defineEmits<{
+  (e: 'miraReviewComplete', data: {
+    miraBotId: string;
+    oldRevid: number;
+    newRevid: number;
+  }): void;
+}>();
+
 const loading = ref(false);
 const dialog = ref(false);
 const result = ref<string | null>(null);
@@ -90,8 +98,16 @@ async function triggerReview() {
 
     if (data?.reviews?.length > 0) {
       reviews.value = data.reviews;
-    } else {
-      result.value = data?.summary ?? 'No feedback returned';
+    }
+    
+    result.value = data?.summary ?? 'No feedback returned';
+
+    if (data?.trigger_diff_update && data?.mira_bot_id) {
+      emit('miraReviewComplete', {
+        miraBotId: data.mira_bot_id,
+        oldRevid: data.old_revid,
+        newRevid: data.new_revid,
+      });
     }
 
     dialog.value = true;

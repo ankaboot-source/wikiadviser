@@ -2,6 +2,7 @@
   <div class="column col-grow">
     <mw-visual-editor
       v-if="article.title && article.permission_id && editorPermission"
+      ref="mwVisualEditorRef"
       :article="article"
     />
 
@@ -35,7 +36,7 @@ import 'src/css/styles/ve.scss';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { Article } from 'src/types';
-import { nextTick, watch, watchEffect } from 'vue';
+import { nextTick, ref, watch, watchEffect } from 'vue';
 import { useQuasar } from 'quasar';
 
 const selectedChangeStore = useSelectedChangeStore();
@@ -48,8 +49,22 @@ const props = defineProps<{
 }>();
 
 const $q = useQuasar();
+const mwVisualEditorRef = ref();
 
-// There is an error when passing a variable into import()
+function handleMiraReview(reviewData: {
+  miraBotId: string;
+  oldRevid: number;
+  newRevid: number;
+}) {
+  if (mwVisualEditorRef.value?.handleMiraReview) {
+    mwVisualEditorRef.value.handleMiraReview(reviewData);
+  }
+}
+
+defineExpose({
+  handleMiraReview,
+});
+
 if (props.article.language === 'fr') {
   import('src/css/styles/fr-common.css');
 } else if (props.article.language === 'en') {

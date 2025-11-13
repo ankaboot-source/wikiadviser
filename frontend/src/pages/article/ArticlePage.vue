@@ -15,7 +15,6 @@
         :editor-permission="editorPermission"
         :users="users"
         class="toolbar-area"
-        @mira-review-complete="handleMiraReview"
       />
 
       <diff-list
@@ -27,7 +26,6 @@
       />
 
       <diff-card
-        ref="diffCardRef"
         :article="article"
         :changes-content="changesContent"
         :role="role"
@@ -86,7 +84,6 @@ const editorPermission = computed(
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 const isFocusMode = computed(() => activeViewStore.isFocusMode);
-const diffCardRef = ref();
 
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
@@ -96,16 +93,6 @@ const firstToggle = computed(() => {
 const isShowingDiffList = computed(() => {
   return activeViewStore.isViewing || $q.screen.gt.sm;
 });
-
-function handleMiraReview(reviewData: {
-  miraBotId: string;
-  oldRevid: number;
-  newRevid: number;
-}) {
-  if (diffCardRef.value?.handleMiraReview) {
-    diffCardRef.value.handleMiraReview(reviewData);
-  }
-}
 
 watch(
   firstToggle,

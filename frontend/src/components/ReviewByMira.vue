@@ -56,35 +56,32 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import supabaseClient from 'src/api/supabase';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { Article } from 'src/types';
 const props = defineProps<{
   article: Article;
 }>();
 
-type MiraEmit = (
-  e: 'miraReviewComplete',
-  data: {
-    miraBotId: string;
-    oldRevid: number;
-    newRevid: number;
-  },
-) => void;
+interface ReviewItem {
+  change_id: string;
+  comment: string;
+  proposed_change: string;
+}
 
-const emit = defineEmits<MiraEmit>();
-
+const miraStore = useMiraReviewStore();
 const loading = ref(false);
 const dialog = ref(false);
 const result = ref<string | null>(null);
 const error = ref<string | null>(null);
-const reviews = ref<
-  { change_id: string; comment: string; proposed_change: string }[]
->([]);
+const reviews = ref<ReviewItem[]>([]);
 
 async function triggerReview() {
   loading.value = true;
   error.value = null;
   result.value = null;
   reviews.value = [];
+
+  miraStore.startReview();
 
   try {
     const { data, error: fnError } = await supabaseClient.functions.invoke(
@@ -106,19 +103,23 @@ async function triggerReview() {
     result.value = data?.summary ?? 'No feedback returned';
 
     if (data?.trigger_diff_update && data?.mira_bot_id) {
-      emit('miraReviewComplete', {
+      miraStore.completeReview({
         miraBotId: data.mira_bot_id,
-        oldRevid: data.old_revid,
-        newRevid: data.new_revid,
+        oldRevid: data.old_revision,
+        newRevid: data.new_revision,
       });
+    } else {
+      miraStore.$reset();
     }
 
     dialog.value = true;
   } catch (err: unknown) {
     if (err instanceof Error) {
       error.value = err.message;
+      miraStore.setError(err.message);
     } else {
       error.value = String(err) || 'Something went wrong';
+      miraStore.setError(String(err));
     }
     dialog.value = true;
   } finally {

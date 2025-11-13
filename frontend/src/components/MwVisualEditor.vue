@@ -40,8 +40,9 @@ import { QSpinner, useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import ENV from 'src/schema/env.schema';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { Article } from 'src/types';
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
@@ -50,6 +51,7 @@ const props = defineProps({
 const $q = useQuasar();
 
 const activeViewStore = useActiveViewStore();
+const miraStore = useMiraReviewStore();
 
 const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
 const articleLink = ref(
@@ -57,20 +59,11 @@ const articleLink = ref(
 );
 const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
-  changes: {
-    value: true,
-    message: 'Processing changes',
-  },
-  miraChanges: {
-    value: true,
-    message: "Processing Mira's improvements",
-  },
+  changes: { value: true, message: 'Processing changes' },
 };
 const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();
 const isProcessingChanges = ref(false);
-const currentMiraBotId = ref<string | null>(null);
-const pendingMiraDiff = ref(false);
 
 const renderIframe = ref(true);
 async function reloadIframe() {
@@ -90,20 +83,12 @@ async function handleDiffChange(data: {
     diffHtml: data.diffHtml,
   };
 
-  if (currentMiraBotId.value) {
-    body.miraBotId = currentMiraBotId.value;
-    console.log(
-      'Sending diff update with Mira bot ID:',
-      currentMiraBotId.value,
-    );
-  }
-
   await supabaseClient.functions.invoke(functionName, {
     method: 'PUT',
     body: JSON.stringify(body),
   });
 
-  currentMiraBotId.value = null;
+  miraStore.completeDiffUpdate();
 
   $q.notify({
     message: 'Changes successfully updated',
@@ -148,27 +133,16 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 }
 
-async function handleMiraReview(reviewData: {
-  miraBotId: string;
-  oldRevid: number;
-  newRevid: number;
-}) {
-  currentMiraBotId.value = reviewData.miraBotId;
-
-  console.log('Mira review complete, stored bot ID:', currentMiraBotId.value);
-
-  isProcessingChanges.value = true;
-  loading.value = { ...loaderPresets.miraChanges };
-
-  pendingMiraDiff.value = true;
-
-  await nextTick();
-  gotoDiffLink();
-}
-
-defineExpose({
-  handleMiraReview,
-});
+watch(
+  () => miraStore.isDiffUpdatePending,
+  (pending) => {
+    if (pending) {
+      isProcessingChanges.value = true;
+      loading.value = { value: true, message: miraStore.loadingMessage };
+      nextTick().then(() => gotoDiffLink());
+    }
+  },
+);
 
 async function onIframeLoad() {
   if (!isProcessingChanges.value) {
@@ -182,5 +156,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
+  miraStore.$reset();
 });
 </script>

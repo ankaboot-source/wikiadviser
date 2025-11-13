@@ -107,38 +107,28 @@ function validateAIResponse(data: OpenRouterResponse): AIResponse | null {
   }
 }
 
-function extractWikitext(content: string): string {
-  if (!content) return '';
-  return content
-    .replace(/<[^>]*>/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+function getChangeWikitext(
+  currentWikitext: string,
+  changeIndex: number
+): string {
+  try {
+    const sections = currentWikitext.split(/\n\n+/);
 
-function findWikitextMatch(contentText: string, fullWikitext: string): string {
-  const searchText = contentText.substring(0, 100).trim();
-
-  for (const line of fullWikitext.split('\n')) {
-    const lineClean = line.trim();
-    if (lineClean && searchText.includes(lineClean.substring(0, 50))) {
-      return line;
+    if (changeIndex >= 0 && changeIndex < sections.length) {
+      return sections[changeIndex].trim();
     }
-  }
 
-  for (const para of fullWikitext.split('\n\n')) {
-    if (para.includes(searchText.substring(0, 50))) {
-      return para.trim();
-    }
+    return currentWikitext.slice(0, 4000);
+  } catch (error) {
+    console.error('Error extracting change wikitext:', error);
+    return '';
   }
-
-  return contentText;
 }
 
 app.post('/', async (c) => {
   try {
     console.log('AI Review started');
     const { article_id } = await c.req.json();
-
     if (!article_id) return c.json({ error: 'Missing article_id' }, 400);
 
     const supabaseAdmin = createSupabaseAdmin();
@@ -191,7 +181,6 @@ app.post('/', async (c) => {
     const currentWikitext = await mediawiki.getCurrentArticleWikitext(
       article_id
     );
-    console.log(`Current wikitext length: ${currentWikitext.length}`);
 
     const reviews = [];
     const changesToApply: Array<{
@@ -200,21 +189,18 @@ app.post('/', async (c) => {
       comment: string;
     }> = [];
 
-    for (let i = 0; i < changes.length; i++) {
-      const ch = changes[i];
-      const contentText = extractWikitext(ch.content);
+    const reviewPromises = changes.map(async (ch, i) => {
+      const changeWikitext = getChangeWikitext(currentWikitext, ch.index);
 
-      if (!contentText) {
-        reviews.push({
+      if (!changeWikitext) {
+        return {
           change_id: ch.id,
           comment: 'Empty content',
           proposed_change: 'No changes needed.',
           has_improvement: false,
-        });
-        continue;
+          index: i,
+        };
       }
-
-      const changeWikitext = findWikitextMatch(contentText, currentWikitext);
 
       let editType = 'MODIFICATION';
       if (ch.type_of_edit === 0) editType = 'DELETION';
@@ -224,77 +210,106 @@ app.post('/', async (c) => {
 
       const prompt = `Edit Type: ${editType}\n\nContent to review:\n${changeWikitext}`;
 
-      const resp = await fetch(
-        'https://openrouter.ai/api/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: aiModel,
-            messages: [
-              { role: 'system', content: aiPrompt },
-              { role: 'user', content: prompt },
-            ],
-            max_tokens: 500,
-            temperature: 0.3,
-          }),
+      try {
+        const resp = await fetch(
+          'https://openrouter.ai/api/v1/chat/completions',
+          {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: aiModel,
+              messages: [
+                { role: 'system', content: aiPrompt },
+                { role: 'user', content: prompt },
+              ],
+              max_tokens: 600,
+              temperature: 0.3,
+            }),
+          }
+        );
+
+        if (!resp.ok) {
+          console.error(`API error for change ${ch.id}:`, resp.status);
+          return {
+            change_id: ch.id,
+            comment: `API error ${resp.status}`,
+            proposed_change: 'No changes needed.',
+            has_improvement: false,
+            index: i,
+          };
         }
-      );
 
-      if (!resp.ok) {
-        reviews.push({
+        const data = await resp.json();
+        const validated = validateAIResponse(data);
+
+        if (!validated) {
+          console.error(`Invalid AI response for change ${ch.id}`);
+          return {
+            change_id: ch.id,
+            comment: 'Invalid AI response',
+            proposed_change: 'No changes needed.',
+            has_improvement: false,
+            index: i,
+          };
+        }
+
+        const { comment, proposed_change } = validated;
+
+        const hasImprovement =
+          proposed_change !== 'No changes needed.' &&
+          proposed_change !== changeWikitext &&
+          proposed_change.trim() !== changeWikitext.trim() &&
+          proposed_change.length > 0;
+
+        if (hasImprovement) {
+          console.log(`Improvement found for change ${i + 1}`);
+        }
+
+        return {
           change_id: ch.id,
-          comment: `API error ${resp.status}`,
-          proposed_change: 'No changes needed.',
-          has_improvement: false,
-        });
-        continue;
-      }
-
-      const data: OpenRouterResponse = await resp.json();
-      const validated = validateAIResponse(data);
-
-      if (!validated) {
-        console.error(`Invalid AI response for change ${ch.id}`);
-        reviews.push({
-          change_id: ch.id,
-          comment: 'Invalid AI response',
-          proposed_change: 'No changes needed.',
-          has_improvement: false,
-        });
-        continue;
-      }
-
-      const { comment, proposed_change } = validated;
-
-      const hasImprovement =
-        proposed_change !== 'No changes needed.' &&
-        proposed_change !== changeWikitext &&
-        proposed_change.trim() !== changeWikitext.trim() &&
-        proposed_change.length > 0;
-
-      if (hasImprovement) {
-        changesToApply.push({
+          comment,
+          proposed_change: hasImprovement
+            ? proposed_change
+            : 'No changes needed.',
+          has_improvement: hasImprovement,
           original: changeWikitext,
           improved: proposed_change,
-          comment,
-        });
-        console.log(`Improvement found for change ${i + 1}`);
+          index: i,
+        };
+      } catch (error) {
+        console.error(`Error processing change ${ch.id}:`, error);
+        return {
+          change_id: ch.id,
+          comment: 'Processing error',
+          proposed_change: 'No changes needed.',
+          has_improvement: false,
+          index: i,
+        };
       }
+    });
 
+    const reviewResults = await Promise.all(reviewPromises);
+
+    reviewResults.sort((a, b) => a.index - b.index);
+
+    for (const result of reviewResults) {
       reviews.push({
-        change_id: ch.id,
-        comment,
-        proposed_change: hasImprovement
-          ? proposed_change
-          : 'No changes needed.',
-        has_improvement: hasImprovement,
+        change_id: result.change_id,
+        comment: result.comment,
+        proposed_change: result.proposed_change,
+        has_improvement: result.has_improvement,
       });
 
-      await new Promise((res) => setTimeout(res, 300));
+      if (result.has_improvement && result.original && result.improved) {
+        changesToApply.push({
+          original: result.original,
+          improved: result.improved,
+          comment: result.comment,
+        });
+      }
     }
 
     if (changesToApply.length === 0) {
@@ -308,7 +323,9 @@ app.post('/', async (c) => {
       });
     }
 
-    console.log(`Applying ${changesToApply.length} improvements`);
+    console.log(
+      `Applying ${changesToApply.length} improvements to current wikitext`
+    );
 
     let improvedWikitext = currentWikitext;
     let appliedCount = 0;
@@ -321,23 +338,14 @@ app.post('/', async (c) => {
         );
         appliedCount++;
       } else {
-        const normalizedOriginal = change.original.replace(/\s+/g, ' ').trim();
-        const escapedOriginal = normalizedOriginal.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          '\\$&'
+        console.warn(
+          `Could not find original text in wikitext for change: ${change.comment}`
         );
-        const regex = new RegExp(escapedOriginal, 'g');
-        if (regex.test(improvedWikitext)) {
-          improvedWikitext = improvedWikitext.replace(regex, change.improved);
-          appliedCount++;
-        } else {
-          console.warn(`Could not find original text: ${change.comment}`);
-        }
       }
     }
 
     if (appliedCount === 0) {
-      console.log('Could not apply any improvements');
+      console.log('Could not apply any improvements to wikitext');
       return c.json({
         summary: 'Mira could not apply improvements to article.',
         total_reviewed: changes.length,
@@ -348,20 +356,24 @@ app.post('/', async (c) => {
     }
 
     console.log(
-      `Applied ${appliedCount}/${changesToApply.length} improvements`
+      `Successfully applied ${appliedCount}/${changesToApply.length} improvements`
     );
 
     const summaryText = `Mira: ${appliedCount} improvement(s)`;
+
+    console.log('Creating NEW revision in MediaWiki as AI bot');
     const editResult = await mediawiki.editArticleAsBot(
       article_id,
       improvedWikitext,
       summaryText
     );
 
-    console.log(`New revision created: ${editResult.newrevid}`);
+    console.log(`NEW revision created successfully!`);
+    console.log(`  Old revision: ${editResult.oldrevid}`);
+    console.log(`  New revision: ${editResult.newrevid}`);
 
     return c.json({
-      summary: `Mira reviewed ${changes.length} change(s) and applied ${appliedCount} improvement(s).`,
+      summary: `Mira applied ${appliedCount} improvement(s)`,
       total_reviewed: changes.length,
       total_improvements: appliedCount,
       mira_bot_id: MIRA_BOT_ID,

@@ -241,7 +241,7 @@ app.post('/', async (c) => {
           };
         }
 
-        const data = await resp.json();
+        const data: OpenRouterResponse = await resp.json();
         const validated = validateAIResponse(data);
 
         if (!validated) {

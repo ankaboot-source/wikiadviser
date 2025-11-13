@@ -166,7 +166,7 @@ export default class MediawikiClient {
         action: 'edit',
         title: articleId,
         text: wikitext,
-        summary: summary,
+        summary,
         token: csrftoken,
         bot: true,
         format: 'json',

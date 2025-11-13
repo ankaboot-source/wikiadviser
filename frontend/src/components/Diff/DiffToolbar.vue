@@ -65,16 +65,16 @@ const props = defineProps<{
   users: User[];
 }>();
 
-const emit = defineEmits<{
-  (
-    e: 'miraReviewComplete',
-    data: {
-      miraBotId: string;
-      oldRevid: number;
-      newRevid: number;
-    },
-  ): void;
-}>();
+type MiraEmit = (
+  e: 'miraReviewComplete',
+  data: {
+    miraBotId: string;
+    oldRevid: number;
+    newRevid: number;
+  },
+) => void;
+
+const emit = defineEmits<MiraEmit>();
 
 const shareDialog = ref(false);
 

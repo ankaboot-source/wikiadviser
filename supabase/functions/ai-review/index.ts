@@ -232,7 +232,6 @@ app.post('/', async (c) => {
         );
 
         if (!resp.ok) {
-          console.error(`API error for change ${ch.id}:`, resp.status);
           return {
             change_id: ch.id,
             comment: `API error ${resp.status}`,
@@ -368,7 +367,7 @@ app.post('/', async (c) => {
       summaryText
     );
 
-    console.log(`NEW revision created successfully!`);
+    console.log('NEW revision created successfully!');
     console.log(`  Old revision: ${editResult.oldrevid}`);
     console.log(`  New revision: ${editResult.newrevid}`);
 

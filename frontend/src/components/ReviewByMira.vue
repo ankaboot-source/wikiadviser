@@ -61,16 +61,16 @@ const props = defineProps<{
   article: Article;
 }>();
 
-const emit = defineEmits<{
-  (
-    e: 'miraReviewComplete',
-    data: {
-      miraBotId: string;
-      oldRevid: number;
-      newRevid: number;
-    },
-  ): void;
-}>();
+type MiraEmit = (
+  e: 'miraReviewComplete',
+  data: {
+    miraBotId: string;
+    oldRevid: number;
+    newRevid: number;
+  },
+) => void;
+
+const emit = defineEmits<MiraEmit>();
 
 const loading = ref(false);
 const dialog = ref(false);

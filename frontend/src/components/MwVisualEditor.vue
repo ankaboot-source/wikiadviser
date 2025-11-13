@@ -59,7 +59,10 @@ const articleLink = ref(
 );
 const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
-  changes: { value: true, message: 'Processing changes' },
+  changes: {
+    value: true,
+    message: 'Processing changes',
+  },
 };
 const loading = ref({ ...loaderPresets.editor });
 const iframeRef = ref();

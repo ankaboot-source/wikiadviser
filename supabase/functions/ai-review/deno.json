@@ -1,7 +1,6 @@
 {
   "imports": {
     "hono": "npm:hono@4.7.4",
-    "axios": "npm:axios@^1.8.4",
     "supabase": "https://esm.sh/@supabase/supabase-js@2"
   }
 }

@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
-import createSupabaseAdmin from '../_shared/supabaseAdmin.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
 import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
 import MediawikiClient from './MediawikiClient.ts';
@@ -10,11 +9,10 @@ const functionName = 'ai-review';
 const app = new Hono().basePath(`/${functionName}`);
 
 async function getMiraBotId(
-  supabaseAdmin: ReturnType<typeof createSupabaseAdmin>
+  supabaseClient: ReturnType<typeof createSupabaseClient>
 ) {
   const botEmail = 'mira@wikiadviser.io';
-
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabaseClient
     .from('profiles')
     .select('id')
     .eq('email', botEmail)
@@ -130,21 +128,24 @@ app.post('/', async (c) => {
     console.log('AI Review started');
     const { article_id } = await c.req.json();
     if (!article_id) return c.json({ error: 'Missing article_id' }, 400);
+    const authHeader = c.req.header('Authorization');
+    if (!authHeader) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+    const supabase = createSupabaseClient(authHeader);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
 
-    const supabaseAdmin = createSupabaseAdmin();
-    const MIRA_BOT_ID = await getMiraBotId(supabaseAdmin);
+    const MIRA_BOT_ID = await getMiraBotId(supabase);
 
     if (!MIRA_BOT_ID) return c.json({ error: 'Mira bot not configured' }, 500);
 
-    const authHeader = c.req.header('Authorization');
-    if (authHeader) {
-      const userClient = createSupabaseClient(authHeader);
-      const {
-        data: { user },
-      } = await userClient.auth.getUser();
-      if (user?.id === MIRA_BOT_ID) {
-        return c.json({ error: 'Mira cannot review her own changes' }, 403);
-      }
+    if (user.id === MIRA_BOT_ID) {
+      return c.json({ error: 'Mira cannot review her own changes' }, 403);
     }
 
     const article = await getArticle(article_id);
@@ -155,7 +156,7 @@ app.post('/', async (c) => {
 
     const aiModel = Deno.env.get('AI_MODEL');
 
-    const { data: latestRevision } = await supabaseAdmin
+    const { data: latestRevision } = await supabase
       .from('revisions')
       .select('id, revid')
       .eq('article_id', article_id)
@@ -165,7 +166,7 @@ app.post('/', async (c) => {
 
     if (!latestRevision) return c.json({ error: 'No revision found' }, 500);
 
-    const { data: changes } = await supabaseAdmin
+    const { data: changes } = await supabase
       .from('changes')
       .select('id, content, type_of_edit, index')
       .eq('revision_id', latestRevision.id)
@@ -198,13 +199,15 @@ app.post('/', async (c) => {
           comment: 'Empty content',
           proposed_change: 'No changes needed.',
           has_improvement: false,
-          index: i,
         };
       }
 
-      let editType = 'MODIFICATION';
-      if (ch.type_of_edit === 0) editType = 'DELETION';
-      else if (ch.type_of_edit === 1) editType = 'ADDITION';
+      const editType =
+        ch.type_of_edit === 0
+          ? 'DELETION'
+          : ch.type_of_edit === 1
+          ? 'ADDITION'
+          : 'MODIFICATION';
 
       console.log(`Processing change ${i + 1}/${changes.length} (${editType})`);
 
@@ -237,7 +240,6 @@ app.post('/', async (c) => {
             comment: `API error ${resp.status}`,
             proposed_change: 'No changes needed.',
             has_improvement: false,
-            index: i,
           };
         }
 
@@ -251,7 +253,6 @@ app.post('/', async (c) => {
             comment: 'Invalid AI response',
             proposed_change: 'No changes needed.',
             has_improvement: false,
-            index: i,
           };
         }
 
@@ -270,13 +271,10 @@ app.post('/', async (c) => {
         return {
           change_id: ch.id,
           comment,
-          proposed_change: hasImprovement
-            ? proposed_change
-            : 'No changes needed.',
+          proposed_change,
           has_improvement: hasImprovement,
           original: changeWikitext,
           improved: proposed_change,
-          index: i,
         };
       } catch (error) {
         console.error(`Error processing change ${ch.id}:`, error);
@@ -285,20 +283,19 @@ app.post('/', async (c) => {
           comment: 'Processing error',
           proposed_change: 'No changes needed.',
           has_improvement: false,
-          index: i,
         };
       }
     });
 
     const reviewResults = await Promise.all(reviewPromises);
 
-    reviewResults.sort((a, b) => a.index - b.index);
-
     for (const result of reviewResults) {
       reviews.push({
         change_id: result.change_id,
         comment: result.comment,
-        proposed_change: result.proposed_change,
+        proposed_change: result.has_improvement
+          ? result.proposed_change
+          : 'No changes needed.',
         has_improvement: result.has_improvement,
       });
 

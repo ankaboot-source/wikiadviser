@@ -86,6 +86,10 @@ async function handleDiffChange(data: {
     diffHtml: data.diffHtml,
   };
 
+  if (miraStore.currentMiraBotId) {
+    body.miraBotId = miraStore.currentMiraBotId;
+  }
+
   await supabaseClient.functions.invoke(functionName, {
     method: 'PUT',
     body: JSON.stringify(body),

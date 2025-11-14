@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
 import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
-import MediawikiClient from './MediawikiClient.ts';
+import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
 
 const functionName = 'ai-review';

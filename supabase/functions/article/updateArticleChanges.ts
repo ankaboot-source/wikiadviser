@@ -2,7 +2,7 @@ import { Context } from 'hono';
 import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
 import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
-import MediawikiClient from './MediawikiClient.ts';
+import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 
 /**
  * Updates the changes made to a specified article in a MediaWiki instance.

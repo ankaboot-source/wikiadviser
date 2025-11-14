@@ -1,7 +1,7 @@
-import { Context } from "hono";
-import { getOwnedArticles } from "../_shared/helpers/supabaseHelper.ts";
-import createSupabaseClient from "../_shared/supabaseClient.ts";
-import { deleteArticleByArticleId } from "./deleteArticle.ts";
+import { Context } from 'hono';
+import { getOwnedArticles } from '../_shared/helpers/supabaseHelper.ts';
+import createSupabaseClient from '../_shared/supabaseClient.ts';
+import { deleteArticleByArticleId } from './deleteArticle.ts';
 
 /**
  * Retrieves Wikipedia articles based on the provided search term and language.
@@ -9,7 +9,7 @@ import { deleteArticleByArticleId } from "./deleteArticle.ts";
  */
 export async function deleteAllArticles(context: Context) {
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization"),
+    context.req.header('Authorization')
   );
 
   const {
@@ -17,7 +17,7 @@ export async function deleteAllArticles(context: Context) {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return new Response("", {
+    return new Response('', {
       status: 401,
     });
   }
@@ -27,28 +27,23 @@ export async function deleteAllArticles(context: Context) {
 
     for (const article of articles) {
       try {
-        console.info(
-          `Deleting article ${article.article_id}...`,
-        );
-        await deleteArticleByArticleId(
-          article.article_id,
-          article.language,
-        );
+        console.info(`Deleting article ${article.article_id}...`);
+        await deleteArticleByArticleId(article.article_id, article.language);
       } catch (error) {
-        console.error(
-          `Failed to delete article ${article.article_id}:`,
-          error,
-        );
+        console.error(`Failed to delete article ${article.article_id}:`, error);
       }
     }
-    return context.json({ message: "All articles deleted" }, 200);
+    return context.json({ message: 'All articles deleted' }, 200);
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
       return context.json({ error: error.message }, 500);
     }
-    return context.json({
-      error: "An unexpected error occurred while deleting articles",
-    }, 500);
+    return context.json(
+      {
+        error: 'An unexpected error occurred while deleting articles',
+      },
+      500
+    );
   }
 }

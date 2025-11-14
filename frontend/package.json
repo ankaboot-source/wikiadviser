@@ -13,10 +13,7 @@
     "prettier:fix": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build",
-    "test:unit:ui": "vitest --ui",
-    "test:unit": "vitest",
-    "test:unit:ci": "vitest run"
+    "build": "quasar build"
   },
   "dependencies": {
     "@quasar/cli": "^2.3.0",
@@ -35,7 +32,6 @@
   "devDependencies": {
     "@nuxtbase/auth-ui-vue": "^0.3.6",
     "@quasar/app-vite": "^1.7.1",
-    "@quasar/quasar-app-extension-testing-unit-vitest": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.39.2",
     "@types/node": "^20.11.0",
@@ -47,8 +43,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^9.20.0",
     "prettier": "^3.1.1",
-    "typescript": "^5.9.2",
-    "vitest": "^0.34.0"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": "^24 || ^22 || ^20 || ^18 || ^16 || ^14.19",

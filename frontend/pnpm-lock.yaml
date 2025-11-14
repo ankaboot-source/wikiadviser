@@ -15,8 +15,8 @@ importers:
         specifier: ^1.17.0
         version: 1.17.0
       '@sentry/vue':
-        specifier: ^7.101.1
-        version: 7.120.3(vue@3.5.13(typescript@5.9.2))
+        specifier: ^10.25.0
+        version: 10.25.0(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))
       '@supabase/ssr':
         specifier: ^0.7.0
         version: 0.7.0(@supabase/supabase-js@2.48.1)
@@ -447,47 +447,39 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@sentry-internal/feedback@7.120.3':
-    resolution: {integrity: sha512-ewJJIQ0mbsOX6jfiVFvqMjokxNtgP3dNwUv+4nenN+iJJPQsM6a0ocro3iscxwVdbkjw5hY3BUV2ICI5Q0UWoA==}
-    engines: {node: '>=12'}
+  '@sentry-internal/browser-utils@10.25.0':
+    resolution: {integrity: sha512-wzg1ITZxrRtQouHPCgpt3tl1GiNAWFVy2RYK2KstFEhpYBAOUn9BAdP7KU9UyHBFKqbAvV4oGtAT8H2/Y4+leA==}
+    engines: {node: '>=18'}
 
-  '@sentry-internal/replay-canvas@7.120.3':
-    resolution: {integrity: sha512-s5xy+bVL1eDZchM6gmaOiXvTqpAsUfO7122DxVdEDMtwVq3e22bS2aiGa8CUgOiJkulZ+09q73nufM77kOmT/A==}
-    engines: {node: '>=12'}
+  '@sentry-internal/feedback@10.25.0':
+    resolution: {integrity: sha512-qlbT4tOd+WRyKpLdsbi26rkynGBoVabnY8/9rFnTxZ0WIUG5EFhJFqEeRLMyv+uk0uRFF3H0I9+u+qP/BKxIcQ==}
+    engines: {node: '>=18'}
 
-  '@sentry-internal/tracing@7.120.3':
-    resolution: {integrity: sha512-Ausx+Jw1pAMbIBHStoQ6ZqDZR60PsCByvHdw/jdH9AqPrNE9xlBSf9EwcycvmrzwyKspSLaB52grlje2cRIUMg==}
-    engines: {node: '>=8'}
+  '@sentry-internal/replay-canvas@10.25.0':
+    resolution: {integrity: sha512-zuj5jVNswZ/aA1nPPbU+VIFkQG0695lbyIfS1Skq+5o2FdRIS3MGnBXw1abI9h4pft8GLQWcKiBxISM7UpSz6w==}
+    engines: {node: '>=18'}
 
-  '@sentry/browser@7.120.3':
-    resolution: {integrity: sha512-i9vGcK9N8zZ/JQo1TCEfHHYZ2miidOvgOABRUc9zQKhYdcYQB2/LU1kqlj77Pxdxf4wOa9137d6rPrSn9iiBxg==}
-    engines: {node: '>=8'}
+  '@sentry-internal/replay@10.25.0':
+    resolution: {integrity: sha512-V/kKQn9T46HBTiP0bIThmpVr94K4vXwYM3/EHVpGSq4P9RynX06cgps8GLHq94+A0kX/DbK9igEMZmIuzS1q3A==}
+    engines: {node: '>=18'}
 
-  '@sentry/core@7.120.3':
-    resolution: {integrity: sha512-vyy11fCGpkGK3qI5DSXOjgIboBZTriw0YDx/0KyX5CjIjDDNgp5AGgpgFkfZyiYiaU2Ww3iFuKo4wHmBusz1uA==}
-    engines: {node: '>=8'}
+  '@sentry/browser@10.25.0':
+    resolution: {integrity: sha512-UgSVT3RTM3vsK914TPuHVJQsjq5ooXVmjMtsWP3Ep+6f7N+1UVX4ZXsyyj5lDOcWdc79FgproD+MrEf9Cj6uBg==}
+    engines: {node: '>=18'}
 
-  '@sentry/integrations@7.120.3':
-    resolution: {integrity: sha512-6i/lYp0BubHPDTg91/uxHvNui427df9r17SsIEXa2eKDwQ9gW2qRx5IWgvnxs2GV/GfSbwcx4swUB3RfEWrXrQ==}
-    engines: {node: '>=8'}
+  '@sentry/core@10.25.0':
+    resolution: {integrity: sha512-mGi4BYIPwZjWdOXHrPoXz1AW4/cQbFoiuW/m+OOATmtSoGTDnWYwP+qZU7VLlL+v8ZEzxfPi2C1NPfJtPj7QWA==}
+    engines: {node: '>=18'}
 
-  '@sentry/replay@7.120.3':
-    resolution: {integrity: sha512-CjVq1fP6bpDiX8VQxudD5MPWwatfXk8EJ2jQhJTcWu/4bCSOQmHxnnmBM+GVn5acKUBCodWHBN+IUZgnJheZSg==}
-    engines: {node: '>=12'}
-
-  '@sentry/types@7.120.3':
-    resolution: {integrity: sha512-C4z+3kGWNFJ303FC+FxAd4KkHvxpNFYAFN8iMIgBwJdpIl25KZ8Q/VdGn0MLLUEHNLvjob0+wvwlcRBBNLXOow==}
-    engines: {node: '>=8'}
-
-  '@sentry/utils@7.120.3':
-    resolution: {integrity: sha512-UDAOQJtJDxZHQ5Nm1olycBIsz2wdGX8SdzyGVHmD8EOQYAeDZQyIlQYohDe9nazdIOQLZCIc3fU0G9gqVLkaGQ==}
-    engines: {node: '>=8'}
-
-  '@sentry/vue@7.120.3':
-    resolution: {integrity: sha512-YKKLGx6VNk5OTz5JqIsjIqOgaU8u88Q1OBfLZgOpm55vhrvpZGGc+rHyh8XtXxh4DfC+6vTRTrAngvdPOG9Oxw==}
-    engines: {node: '>=8'}
+  '@sentry/vue@10.25.0':
+    resolution: {integrity: sha512-kvVaa0zBlxAGVfSzYNZCNcpHFp574sTIuMd9HWhms1JuseUCWAoH8VPRcOH7A3atn/tSPTuYQcsZaEACLt7KBA==}
+    engines: {node: '>=18'}
     peerDependencies:
+      pinia: 2.x || 3.x
       vue: 2.x || 3.x
+    peerDependenciesMeta:
+      pinia:
+        optional: true
 
   '@sindresorhus/is@5.6.0':
     resolution: {integrity: sha512-TV7t8GKYaJWsn00tFDqBw8+Uqmr8A0fRU1tvTQhyZzGv0sJCGRQL3JGMI3ucuKo3XIZdUP+Lx7/gh2t3lewy7g==}
@@ -1702,9 +1694,6 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
-  immediate@3.0.6:
-    resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
-
   immutable@5.0.3:
     resolution: {integrity: sha512-P8IdPQHq3lA1xVeBRi5VPqUm5HDgKnx0Ru51wZz5mjxHr5n3RWhjIpOFU7ybkUxfB+5IToy+OLaHYDBIWsv+uw==}
 
@@ -1902,12 +1891,6 @@ packages:
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
-
-  lie@3.1.1:
-    resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
-
-  localforage@1.10.0:
-    resolution: {integrity: sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==}
 
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
@@ -3218,68 +3201,41 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.34.4':
     optional: true
 
-  '@sentry-internal/feedback@7.120.3':
+  '@sentry-internal/browser-utils@10.25.0':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/core': 10.25.0
 
-  '@sentry-internal/replay-canvas@7.120.3':
+  '@sentry-internal/feedback@10.25.0':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/replay': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/core': 10.25.0
 
-  '@sentry-internal/tracing@7.120.3':
+  '@sentry-internal/replay-canvas@10.25.0':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry-internal/replay': 10.25.0
+      '@sentry/core': 10.25.0
 
-  '@sentry/browser@7.120.3':
+  '@sentry-internal/replay@10.25.0':
     dependencies:
-      '@sentry-internal/feedback': 7.120.3
-      '@sentry-internal/replay-canvas': 7.120.3
-      '@sentry-internal/tracing': 7.120.3
-      '@sentry/core': 7.120.3
-      '@sentry/integrations': 7.120.3
-      '@sentry/replay': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry-internal/browser-utils': 10.25.0
+      '@sentry/core': 10.25.0
 
-  '@sentry/core@7.120.3':
+  '@sentry/browser@10.25.0':
     dependencies:
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry-internal/browser-utils': 10.25.0
+      '@sentry-internal/feedback': 10.25.0
+      '@sentry-internal/replay': 10.25.0
+      '@sentry-internal/replay-canvas': 10.25.0
+      '@sentry/core': 10.25.0
 
-  '@sentry/integrations@7.120.3':
+  '@sentry/core@10.25.0': {}
+
+  '@sentry/vue@10.25.0(pinia@2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2)))(vue@3.5.13(typescript@5.9.2))':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
-      localforage: 1.10.0
-
-  '@sentry/replay@7.120.3':
-    dependencies:
-      '@sentry-internal/tracing': 7.120.3
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
-
-  '@sentry/types@7.120.3': {}
-
-  '@sentry/utils@7.120.3':
-    dependencies:
-      '@sentry/types': 7.120.3
-
-  '@sentry/vue@7.120.3(vue@3.5.13(typescript@5.9.2))':
-    dependencies:
-      '@sentry/browser': 7.120.3
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/browser': 10.25.0
+      '@sentry/core': 10.25.0
       vue: 3.5.13(typescript@5.9.2)
+    optionalDependencies:
+      pinia: 2.3.1(typescript@5.9.2)(vue@3.5.13(typescript@5.9.2))
 
   '@sindresorhus/is@5.6.0': {}
 
@@ -4668,8 +4624,6 @@ snapshots:
 
   ignore@5.3.2: {}
 
-  immediate@3.0.6: {}
-
   immutable@5.0.3: {}
 
   import-fresh@3.3.1:
@@ -4837,14 +4791,6 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
-
-  lie@3.1.1:
-    dependencies:
-      immediate: 3.0.6
-
-  localforage@1.10.0:
-    dependencies:
-      lie: 3.1.1
 
   locate-path@6.0.0:
     dependencies:

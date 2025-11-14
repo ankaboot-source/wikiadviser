@@ -16,6 +16,7 @@ const allowedRequests = [
   "/wiki/en/api.php?action=query&format=json&formatversion=2&prop=info%7Cpageprops%7Cdescription&generator=prefixsearch&gpssearch=tes&gpslimit=10&ppprop=disambiguation&redirects=true",
   "/wiki/en/index.php/Simple_Redirectable_Article",
   "/wiki/en/extensions/VisualEditor/lib/ve/src/ui/styles/images/speechBubbleNotice-ltr.svg?6e681",
+  "/wiki/en/images/5/55/random-image.png",
 ];
 allowedRequests.forEach((request, index) => {
   Deno.test(
@@ -23,6 +24,6 @@ allowedRequests.forEach((request, index) => {
     () => {
       const result = Boolean(request.match(allowedPrefixRegEx));
       assertEquals(result, true);
-    }
+    },
   );
 });

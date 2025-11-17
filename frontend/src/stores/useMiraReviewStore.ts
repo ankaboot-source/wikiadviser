@@ -11,11 +11,8 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     newRevid: number;
   } | null>(null);
 
-  const error = ref<string | null>(null);
-
   function startReview() {
     isReviewInProgress.value = true;
-    error.value = null;
   }
 
   function completeReview(data: {
@@ -35,19 +32,11 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     isDiffUpdatePending.value = false;
   }
 
-  function setError(errorMessage: string) {
-    error.value = errorMessage;
-    isReviewInProgress.value = false;
-    isDiffUpdatePending.value = false;
-    currentMiraBotId.value = null;
-  }
-
   function $reset() {
     isReviewInProgress.value = false;
     isDiffUpdatePending.value = false;
     currentMiraBotId.value = null;
     reviewData.value = null;
-    error.value = null;
   }
 
   return {
@@ -55,11 +44,9 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     isDiffUpdatePending,
     currentMiraBotId,
     reviewData,
-    error,
     startReview,
     completeReview,
     completeDiffUpdate,
-    setError,
     $reset,
   };
 });

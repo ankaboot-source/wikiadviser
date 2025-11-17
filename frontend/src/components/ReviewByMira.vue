@@ -64,12 +64,6 @@ async function triggerReview() {
     } else {
       miraStore.$reset();
     }
-  } catch (err: unknown) {
-    if (err instanceof Error) {
-      miraStore.setError(err.message);
-    } else {
-      miraStore.setError(String(err));
-    }
   } finally {
     loading.value = false;
   }

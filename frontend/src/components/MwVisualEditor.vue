@@ -145,7 +145,7 @@ watch(
   (pending) => {
     if (pending) {
       isProcessingChanges.value = true;
-      loading.value = { value: true, message: miraStore.loadingMessage };
+      loading.value = { value: true, message: loaderPresets.changes.message };
       nextTick().then(() => gotoDiffLink());
     }
   },

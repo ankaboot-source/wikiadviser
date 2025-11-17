@@ -30,12 +30,10 @@ interface ReviewItem {
 
 const miraStore = useMiraReviewStore();
 const loading = ref(false);
-const error = ref<string | null>(null);
 const reviews = ref<ReviewItem[]>([]);
 
 async function triggerReview() {
   loading.value = true;
-  error.value = null;
   reviews.value = [];
 
   miraStore.startReview();
@@ -68,10 +66,8 @@ async function triggerReview() {
     }
   } catch (err: unknown) {
     if (err instanceof Error) {
-      error.value = err.message;
       miraStore.setError(err.message);
     } else {
-      error.value = String(err) || 'Something went wrong';
       miraStore.setError(String(err));
     }
   } finally {

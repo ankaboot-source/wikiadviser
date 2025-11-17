@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance } from "npm:axios@^1.8.4";
 import mediawikiApiInstances from "./mediawikiApiInstances.ts";
 
 export default class Parsoid {

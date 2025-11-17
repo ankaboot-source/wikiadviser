@@ -40,8 +40,9 @@ import { QSpinner, useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import ENV from 'src/schema/env.schema';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { Article } from 'src/types';
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
   article: { type: Object as () => Article, required: true },
@@ -50,6 +51,7 @@ const props = defineProps({
 const $q = useQuasar();
 
 const activeViewStore = useActiveViewStore();
+const miraStore = useMiraReviewStore();
 
 const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
 const articleLink = ref(
@@ -80,10 +82,20 @@ async function handleDiffChange(data: {
 }) {
   const functionName = `/article/${data.articleId}/changes`;
 
+  const body: { diffHtml: string; miraBotId?: string } = {
+    diffHtml: data.diffHtml,
+  };
+
+  if (miraStore.currentMiraBotId) {
+    body.miraBotId = miraStore.currentMiraBotId;
+  }
+
   await supabaseClient.functions.invoke(functionName, {
     method: 'PUT',
-    body: JSON.stringify({ diffHtml: data.diffHtml }),
+    body: JSON.stringify(body),
   });
+
+  miraStore.completeDiffUpdate();
 
   $q.notify({
     message: 'Changes successfully updated',
@@ -128,6 +140,17 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 }
 
+watch(
+  () => miraStore.isDiffUpdatePending,
+  (pending) => {
+    if (pending) {
+      isProcessingChanges.value = true;
+      loading.value = { value: true, message: loaderPresets.changes.message };
+      nextTick().then(() => gotoDiffLink());
+    }
+  },
+);
+
 async function onIframeLoad() {
   if (!isProcessingChanges.value) {
     loading.value.value = false;
@@ -140,5 +163,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
+  miraStore.$reset();
 });
 </script>

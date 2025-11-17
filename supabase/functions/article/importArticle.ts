@@ -1,18 +1,18 @@
-import { Context } from "hono";
+import { Context } from 'hono';
 import {
   deleteArticleDB,
   getUserArticlesCount,
   insertArticle,
-} from "../_shared/helpers/supabaseHelper.ts";
-import createSupabaseClient from "../_shared/supabaseClient.ts";
-import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
-import MediawikiClient from "./MediawikiClient.ts";
+} from '../_shared/helpers/supabaseHelper.ts';
+import createSupabaseClient from '../_shared/supabaseClient.ts';
+import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
+import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 
 export async function importArticle(context: Context) {
   const { title, language, description } = await context.req.json();
   let articleId: string | null = null;
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization")
+    context.req.header('Authorization')
   );
 
   const {
@@ -20,7 +20,7 @@ export async function importArticle(context: Context) {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return new Response("Unauthorized", {
+    return new Response('Unauthorized', {
       status: 401,
     });
   }
@@ -29,15 +29,15 @@ export async function importArticle(context: Context) {
     const totalUserArticles = await getUserArticlesCount(user.id);
     const { allowed_articles: allowedArticles } = (
       await supabaseClient
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
         .single()
     ).data;
 
     if (totalUserArticles >= allowedArticles) {
       return context.json(
-        { message: "You have reached the maximum number of articles allowed." },
+        { message: 'You have reached the maximum number of articles allowed.' },
         402
       );
     }
@@ -55,7 +55,7 @@ export async function importArticle(context: Context) {
 
     return context.json(
       {
-        message: "Importing new article succeeded.",
+        message: 'Importing new article succeeded.',
         articleId,
       },
       201
@@ -67,7 +67,7 @@ export async function importArticle(context: Context) {
     }
     return context.json(
       {
-        message: "An error occurred while processing your request",
+        message: 'An error occurred while processing your request',
         error: error instanceof Error ? error.message : String(error),
       },
       500

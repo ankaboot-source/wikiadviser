@@ -1,11 +1,11 @@
-import { Context } from "hono";
+import { Context } from 'hono';
 import {
   deleteArticleDB,
   getArticle,
-} from "../_shared/helpers/supabaseHelper.ts";
-import createSupabaseClient from "../_shared/supabaseClient.ts";
-import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
-import MediawikiClient from "./MediawikiClient.ts";
+} from '../_shared/helpers/supabaseHelper.ts';
+import createSupabaseClient from '../_shared/supabaseClient.ts';
+import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
+import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 /**
  * Retrieves Wikipedia articles based on the provided search term and language.
  * @param {Context} context - The Hono context object.
@@ -14,7 +14,7 @@ export async function deleteArticle(context: Context) {
   const { id: articleId } = context.req.param();
 
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization"),
+    context.req.header('Authorization')
   );
 
   const {
@@ -22,7 +22,7 @@ export async function deleteArticle(context: Context) {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return new Response("", {
+    return new Response('', {
       status: 401,
     });
   }
@@ -35,15 +35,18 @@ export async function deleteArticle(context: Context) {
     if (error instanceof Error) {
       return context.json({ error: error.message }, 500);
     }
-    return context.json({
-      error: "An unexpected error occurred while deleting the article",
-    }, 500);
+    return context.json(
+      {
+        error: 'An unexpected error occurred while deleting the article',
+      },
+      500
+    );
   }
 }
 
 export async function deleteArticleByArticleId(
   articleId: string,
-  language?: string,
+  language?: string
 ) {
   if (!language) ({ language } = await getArticle(articleId));
 

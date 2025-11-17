@@ -1,12 +1,12 @@
-import { Context } from "hono";
+import { Context } from 'hono';
 import {
   deleteArticleDB,
   getUserArticlesCount,
   insertArticle,
-} from "../_shared/helpers/supabaseHelper.ts";
-import createSupabaseClient from "../_shared/supabaseClient.ts";
-import wikipediaApi from "../_shared/wikipedia/WikipediaApi.ts";
-import MediawikiClient from "./MediawikiClient.ts";
+} from '../_shared/helpers/supabaseHelper.ts';
+import createSupabaseClient from '../_shared/supabaseClient.ts';
+import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
+import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 /**
  * Retrieves Wikipedia articles based on the provided search term and language.
  * @param {Context} context - The Hono context object.
@@ -16,7 +16,7 @@ export async function createArticle(context: Context) {
   const { title, language, description } = await context.req.json();
 
   const supabaseClient = createSupabaseClient(
-    context.req.header("Authorization")
+    context.req.header('Authorization')
   );
 
   const {
@@ -24,24 +24,24 @@ export async function createArticle(context: Context) {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return new Response("Unauthorized", {
+    return new Response('Unauthorized', {
       status: 401,
     });
   }
 
-  if (typeof title !== "string" || !title.length) {
+  if (typeof title !== 'string' || !title.length) {
     return context.json(
       {
-        message: "Title is required and must be a string.",
+        message: 'Title is required and must be a string.',
       },
       400
     );
   }
 
-  if (typeof language !== "string" || !language.length) {
+  if (typeof language !== 'string' || !language.length) {
     return context.json(
       {
-        message: "Language is required and must be a string.",
+        message: 'Language is required and must be a string.',
       },
       400
     );
@@ -50,9 +50,9 @@ export async function createArticle(context: Context) {
   try {
     const totalUserArticles = await getUserArticlesCount(user.id);
     const { data, error } = await supabaseClient
-      .from("profiles")
-      .select("allowed_articles")
-      .eq("id", user.id)
+      .from('profiles')
+      .select('allowed_articles')
+      .eq('id', user.id)
       .single();
 
     if (error) {
@@ -60,7 +60,7 @@ export async function createArticle(context: Context) {
     }
 
     if (!data) {
-      return context.json({ message: "User profile not found" }, 404);
+      return context.json({ message: 'User profile not found' }, 404);
     }
 
     const { allowed_articles: allowedArticles } = data;
@@ -68,7 +68,7 @@ export async function createArticle(context: Context) {
     if (totalUserArticles >= allowedArticles) {
       return context.json(
         {
-          message: "You have reached the maximum number of articles allowed.",
+          message: 'You have reached the maximum number of articles allowed.',
         },
         402
       );
@@ -87,7 +87,7 @@ export async function createArticle(context: Context) {
 
     return context.json(
       {
-        message: "Creating new article succeeded.",
+        message: 'Creating new article succeeded.',
         articleId,
       },
       201
@@ -99,7 +99,7 @@ export async function createArticle(context: Context) {
     }
     return context.json(
       {
-        message: "An error occurred while processing your request",
+        message: 'An error occurred while processing your request',
         error: error instanceof Error ? error.message : String(error),
       },
       500

@@ -36,8 +36,6 @@ async function triggerReview() {
   loading.value = true;
   reviews.value = [];
 
-  miraStore.startReview();
-
   try {
     const { data, error: fnError } = await supabaseClient.functions.invoke(
       'ai-review',

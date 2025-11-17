@@ -22,11 +22,14 @@
       </q-toolbar-title>
       <q-space />
       <q-toggle
-        v-if="article && focusModeStore.isEditing && !$q.screen.lt.md"
+        v-if="article && !$q.screen.lt.md"
         v-model="focusModeStore.isFocusMode"
-        icon="visibility"
-        checked-icon="fullscreen"
-      />
+        icon="center_focus_weak"
+        size="lg"
+      >
+        <q-tooltip> distraction-free editing mode </q-tooltip>
+      </q-toggle>
+
       <NotificationsBell v-if="user && !$q.screen.lt.md" />
       <q-btn
         v-if="user && !$q.screen.lt.md"

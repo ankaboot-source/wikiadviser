@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosRequestConfig } from "npm:axios@^1.8.4";
 import { processExportedArticle } from "../helpers/parsingHelper.ts";
 import ENV from "../schema/env.schema.ts";
 import { WikipediaSearchResult } from "../types/index.ts";

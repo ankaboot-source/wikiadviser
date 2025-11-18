@@ -104,7 +104,7 @@ async function handleDiffChange(data: {
   });
   isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
-  if (activeViewStore.isFocusMode) {
+  if (activeViewStore.isFocusMode || $q.screen.lt.md) {
     activeViewStore.isFocusMode = false;
     activeViewStore.modeToggle = 'view';
   }

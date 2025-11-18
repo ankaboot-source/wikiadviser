@@ -104,6 +104,10 @@ async function handleDiffChange(data: {
   });
   isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
+  if (activeViewStore.isFocusMode) {
+    activeViewStore.isFocusMode = false;
+    activeViewStore.modeToggle = 'view';
+  }
   reloadIframe();
 }
 

@@ -893,4 +893,22 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
 
 })(); // Fermeture de la IIFE globale
 
+// WikiAdviser: Classic editor save → notify parent
+mw.loader.using(['mediawiki.util'], () => {
+    if (window.top === window.self) return; // only inside iframe
+
+    $(document).ready(() => {
+        // detect the Save button inside #editform
+        const saveBtn = $('#editform [name="wpSave"], #editform [id="wpSave"]');
+
+        saveBtn.off('click.wikiadviser').on('click.wikiadviser', function () {
+            const page = mw.config.get('wgPageName');
+
+            setTimeout(() => {
+                window.parent.postMessage({ type: 'saved-changes', articleId: page }, '*');
+            }, 100);
+        });
+    });
+});
+
 // </nowiki> /!\ Ne pas retirer cette balise

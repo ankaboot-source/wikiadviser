@@ -342,19 +342,20 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
 } );
 
 // WikiAdviser: Classic editor save → notify parent
-mw.loader.using(['mediawiki.util'], () => {
+mw.loader.using(['mediawiki.util'], function () {
     if (window.top === window.self) return; // only inside iframe
 
-    $(document).ready(() => {
-        // detect the Save button inside #editform
-        const saveBtn = $('#editform [name="wpSave"], #editform [id="wpSave"]');
-
-        saveBtn.off('click.wikiadviser').on('click.wikiadviser', function () {
+    $(document).ready(function () {
+        $('#editform').off('submit.wikiadviser').on('submit.wikiadviser', function () {
             const page = mw.config.get('wgPageName');
 
-            setTimeout(() => {
-                window.parent.postMessage({ type: 'saved-changes', articleId: page }, '*');
-            }, 100);
+            // Delay ensures postMessage is sent before navigation
+            setTimeout(function () {
+                window.parent.postMessage({
+                    type: 'saved-changes',
+                    articleId: page
+                }, '*');
+            }, 50);
         });
     });
 });

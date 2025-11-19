@@ -1,15 +1,21 @@
 <template>
   <div>
     <q-btn
-      icon="img:/icons/logo.svg"
-      :label="$q.screen.lt.md ? '' : 'Review by Mira'"
+      :icon="loading ? undefined : 'img:/icons/logo.svg'"
+      :label="loading ? '' : $q.screen.lt.md ? '' : 'Review by Mira'"
       outline
       no-caps
       class="q-mr-xs q-px-md"
-      :loading="loading"
       :disable="loading"
       @click="triggerReview"
-    />
+    >
+      <template v-if="loading" #default>
+        <q-spinner size="1em" />
+        <span v-if="!$q.screen.lt.md" class="q-ml-sm q-pl-xs"
+          >Review by Mira</span
+        >
+      </template>
+    </q-btn>
   </div>
 </template>
 

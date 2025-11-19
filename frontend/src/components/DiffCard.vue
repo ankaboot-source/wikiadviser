@@ -13,7 +13,7 @@
         <div v-html="props.changesContent" />
       </q-scroll-area>
       <div
-        v-else
+        v-else-if="!$q.screen.lt.md"
         class="col-grow rounded-borders borders bg-secondary q-py-md q-pl-md"
       >
         <div class="q-py-sm text-body1 text-weight-medium">

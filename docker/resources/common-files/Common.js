@@ -171,15 +171,14 @@ mw.hook("ve.activationComplete").add(function () {
   };
 });
 
-// WikiAdviser: Classic editor save → notify parent
+// WikiAdviser source editor save event listener
 mw.loader.using(['mediawiki.util'], function () {
-    if (window.top === window.self) return; // only inside iframe
+    if (window.top === window.self) return;
 
     $(document).ready(function () {
         $('#editform').off('submit.wikiadviser').on('submit.wikiadviser', function () {
             const page = mw.config.get('wgPageName');
 
-            // Delay ensures postMessage is sent before navigation
             setTimeout(function () {
                 window.parent.postMessage({
                     type: 'saved-changes',

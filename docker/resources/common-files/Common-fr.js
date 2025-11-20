@@ -893,7 +893,7 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
 
 })(); // Fermeture de la IIFE globale
 
-// WikiAdviser source editor save event listener
+// handle source editor save
 mw.loader.using(['mediawiki.util'], function () {
     if (window.top === window.self) return;
 

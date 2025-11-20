@@ -341,7 +341,7 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
       
 } );
 
-// WikiAdviser source editor save event listener
+// handle source editor save
 mw.loader.using(['mediawiki.util'], function () {
     if (window.top === window.self) return;
 

@@ -171,7 +171,7 @@ mw.hook("ve.activationComplete").add(function () {
   };
 });
 
-// WikiAdviser source editor save event listener
+// handle source editor save
 mw.loader.using(['mediawiki.util'], function () {
     if (window.top === window.self) return;
 

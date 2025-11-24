@@ -11,8 +11,73 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="ellipsis">
-              {{ article.title }}
+            <div class="title-wrapper">
+              <template v-if="!isEditingTitle && !isEditingDescription">
+                <div class="title-row">
+                  <span class="text-content">
+                    {{ article.title }}
+                  </span>
+
+                  <q-icon
+                    v-if="user"
+                    name="edit"
+                    size="16px"
+                    class="cursor-pointer hover-visible q-ml-xs"
+                    @click="enableTitleEdit"
+                  />
+                </div>
+
+                <div class="description-row description-container">
+                  <span
+                    v-if="article.description"
+                    class="text-caption text-grey-7 text-content"
+                  >
+                    {{ article.description }}
+                  </span>
+                  <span
+                    v-else
+                    class="text-caption text-grey-5 text-italic text-content"
+                  >
+                    Add a description
+                  </span>
+
+                  <q-icon
+                    v-if="user"
+                    name="edit"
+                    size="14px"
+                    class="cursor-pointer hover-visible q-ml-xs"
+                    @click="enableDescriptionEdit"
+                  />
+                </div>
+              </template>
+
+              <template v-else-if="isEditingTitle">
+                <q-input
+                  v-model="editedTitle"
+                  dense
+                  input-class="text-h6 text-weight-medium"
+                  class="edit-field"
+                  autofocus
+                  @keyup.enter="saveTitle"
+                  @keyup.esc="cancelEdit"
+                  @blur="saveTitle"
+                />
+              </template>
+
+              <template v-else-if="isEditingDescription">
+                <q-input
+                  v-model="editedDescription"
+                  type="textarea"
+                  autogrow
+                  dense
+                  input-class="text-caption"
+                  class="edit-field"
+                  autofocus
+                  @keydown.enter.prevent="saveDescription"
+                  @keyup.esc="cancelEdit"
+                  @blur="saveDescription"
+                />
+              </template>
             </div>
           </q-breadcrumbs-el>
           <q-icon v-if="article?.web_publication" name="public">
@@ -150,6 +215,15 @@ const avatarURL = computed(() => user.value?.avatar_url);
 
 const name = computed(() => userStore.name);
 
+const isEditingTitle = ref(false);
+const isEditingDescription = ref(false);
+const editedTitle = ref('');
+const editedDescription = ref('');
+
+watch(article, (newArticle) => {
+  editedTitle.value = newArticle?.title || '';
+});
+
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
   if (newRoute.params?.articleId) {
@@ -159,6 +233,61 @@ watch([useRoute(), articles], ([newRoute]) => {
     focusModeStore.isFocusMode = false;
   }
 });
+
+function enableTitleEdit() {
+  editedTitle.value = article.value?.title || '';
+  isEditingTitle.value = true;
+}
+
+function enableDescriptionEdit() {
+  editedDescription.value = article.value?.description || '';
+  isEditingDescription.value = true;
+}
+
+async function saveTitle() {
+  if (!article.value || editedTitle.value === article.value.title) {
+    isEditingTitle.value = false;
+    return;
+  }
+
+  const success = await articlesStore.renameArticle(
+    article.value.article_id,
+    editedTitle.value,
+  );
+
+  if (success) {
+    $q.notify({ message: 'Article renamed', color: 'positive', icon: 'edit' });
+  }
+
+  isEditingTitle.value = false;
+}
+
+async function saveDescription() {
+  if (!article.value || editedDescription.value === article.value.description) {
+    isEditingDescription.value = false;
+    return;
+  }
+
+  const success = await articlesStore.renameDescription(
+    article.value.article_id,
+    editedDescription.value,
+  );
+
+  if (success) {
+    $q.notify({
+      message: 'Description updated',
+      color: 'positive',
+      icon: 'edit',
+    });
+  }
+
+  isEditingDescription.value = false;
+}
+
+function cancelEdit() {
+  isEditingTitle.value = false;
+  isEditingDescription.value = false;
+}
 
 async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -181,7 +310,7 @@ function goToAccount() {
 }
 </script>
 
-<style>
+<style scoped>
 .q-breadcrumbs__el {
   text-decoration: none !important;
   color: black !important;
@@ -193,9 +322,120 @@ function goToAccount() {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .q-breadcrumbs > div {
   flex-wrap: nowrap;
+}
+
+.title-wrapper {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+  max-width: 45vw;
+  width: 100%;
+  overflow: hidden;
+}
+
+.title-row {
+  position: relative;
+  font-size: 1.25rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: font-size 0.15s ease;
+}
+
+.title-row:hover,
+.description-row:hover ~ .title-row,
+.title-wrapper:hover .title-row {
+  font-size: 1.5rem;
+}
+
+.description-row {
+  position: relative;
+  font-size: 0.8rem;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: font-size 0.15s ease;
+}
+
+.title-text,
+.description-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-row .q-icon,
+.description-row .q-icon {
+  flex-shrink: 0;
+}
+
+.hover-visible {
+  opacity: 0;
+  transition: opacity 0.2s;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.title-row:hover .hover-visible,
+.description-row:hover .hover-visible {
+  opacity: 1;
+}
+
+.description-container {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.15s,
+    max-height 0.15s;
+}
+
+.title-wrapper:hover .description-container {
+  opacity: 1;
+  max-height: 30px;
+}
+
+.edit-field {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+  line-height: 1.2;
+}
+
+.edit-field :deep(.q-field__control) {
+  padding: 0 !important;
+  min-height: auto !important;
+  height: auto !important;
+}
+
+.edit-field :deep(.q-field__marginal) {
+  height: auto !important;
+}
+
+.edit-field :deep(.q-field__native) {
+  padding: 0px 0 !important;
+  min-height: auto !important;
+}
+
+.edit-field :deep(.q-field__control:before) {
+  border-color: #999 !important;
+}
+
+.edit-field :deep(.q-field__control:hover:before) {
+  border-color: #000 !important;
+}
+
+.edit-field :deep(.q-field__control:after) {
+  border-color: var(--q-primary) !important;
 }
 </style>

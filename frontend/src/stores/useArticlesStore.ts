@@ -1,5 +1,9 @@
 import { defineStore } from 'pinia';
-import { getArticles } from 'src/api/supabaseHelper';
+import {
+  getArticles,
+  updateArticleTitle,
+  updateArticleDescription,
+} from 'src/api/supabaseHelper';
 import ENV from 'src/schema/env.schema';
 import { Article } from 'src/types';
 import { computed, ref } from 'vue';
@@ -11,7 +15,7 @@ export const useArticlesStore = defineStore('articles', () => {
   // Getters
   const getArticleById = computed(
     () => (articleId: string) =>
-      articles.value.find((article) => article.article_id === articleId),
+      articles.value.find((article: { article_id: string; }) => article.article_id === articleId),
   );
 
   // Actions
@@ -32,12 +36,46 @@ export const useArticlesStore = defineStore('articles', () => {
     );
   }
 
+  async function renameArticle(articleId: string, newTitle: string) {
+    const articleIndex = articles.value.findIndex(
+      (a: { article_id: string }) => a.article_id === articleId,
+    );
+    if (articleIndex === -1) return false;
+
+    articles.value[articleIndex].title = newTitle;
+
+    try {
+      await updateArticleTitle(articleId, newTitle);
+      return true;
+    } catch (error) {
+      console.error('Failed to rename article:', error);
+      return false;
+    }
+  }
+  async function renameDescription(articleId: string, newDescription: string) {
+    const articleIndex = articles.value.findIndex(
+      (a: { article_id: string }) => a.article_id === articleId,
+    );
+    if (articleIndex === -1) return false;
+
+    articles.value[articleIndex].description = newDescription;
+
+    try {
+      await updateArticleDescription(articleId, newDescription);
+      return true;
+    } catch (error) {
+      console.error('Failed to rename description:', error);
+      return false;
+    }
+  }
   return {
     articles,
     fetchArticles,
     getArticleById,
     resetArticles,
     viewArticleInNewTab,
+    renameArticle,
+    renameDescription,
   };
 });
 

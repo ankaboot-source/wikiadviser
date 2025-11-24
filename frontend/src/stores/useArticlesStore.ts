@@ -15,7 +15,9 @@ export const useArticlesStore = defineStore('articles', () => {
   // Getters
   const getArticleById = computed(
     () => (articleId: string) =>
-      articles.value.find((article: { article_id: string; }) => article.article_id === articleId),
+      articles.value.find(
+        (article: { article_id: string }) => article.article_id === articleId,
+      ),
   );
 
   // Actions

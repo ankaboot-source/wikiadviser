@@ -12,69 +12,73 @@
           />
           <q-breadcrumbs-el v-if="article?.title">
             <div class="column" style="max-width: 45vw">
-              <template v-if="!isEditingTitle && !isEditingDescription">
-                <div class="row items-center no-wrap title-row">
-                  <span class="text-h6 text-weight-medium ellipsis">
-                    {{ article.title }}
-                  </span>
-                  <q-icon
-                    v-if="user"
-                    name="edit"
-                    size="16px"
-                    class="cursor-pointer hover-visible q-ml-xs"
-                    @click="enableTitleEdit"
-                  />
-                </div>
-                <div class="row items-center no-wrap description-container">
-                  <span
-                    v-if="article.description"
-                    class="text-caption text-grey-7 ellipsis"
-                  >
-                    {{ article.description }}
-                  </span>
-                  <span
-                    v-else
-                    class="text-caption text-grey-5 text-italic ellipsis"
-                  >
-                    Add a description
-                  </span>
-                  <q-icon
-                    v-if="user"
-                    name="edit"
-                    size="14px"
-                    class="cursor-pointer hover-visible q-ml-xs"
-                    @click="enableDescriptionEdit"
-                  />
-                </div>
-              </template>
-
-              <template v-else-if="isEditingTitle">
+              <div class="row items-center no-wrap title-row">
+                <span
+                  v-if="!isEditingTitle"
+                  class="text-h6 text-semi-bold ellipsis"
+                  style="line-height: 1.2"
+                >
+                  {{ article.title }}
+                </span>
                 <q-input
+                  v-else
                   v-model="editedTitle"
                   dense
+                  borderless
                   hide-bottom-space
-                  input-class="text-h6 text-weight-medium"
+                  input-class="text-h6 text-semi-bold"
+                  input-style="line-height: 1.2;"
+                  class="col-grow"
                   autofocus
                   @keyup.enter="saveTitle"
                   @keyup.esc="cancelEdit"
                   @blur="saveTitle"
                 />
-              </template>
-
-              <template v-else-if="isEditingDescription">
+                <q-icon
+                  v-if="user && !isEditingTitle && !isEditingDescription"
+                  name="edit"
+                  size="16px"
+                  class="cursor-pointer hover-visible q-ml-xs"
+                  @click="enableTitleEdit"
+                />
+              </div>
+              <div class="row items-center no-wrap description-container">
+                <span
+                  v-if="!isEditingDescription && article.description"
+                  class="text-caption text-grey-7 ellipsis"
+                  style="line-height: 1.2"
+                >
+                  {{ article.description }}
+                </span>
+                <span
+                  v-else-if="!isEditingDescription"
+                  class="text-caption text-grey-5 text-italic ellipsis"
+                  style="line-height: 1.2"
+                >
+                  Add a description
+                </span>
                 <q-input
+                  v-else
                   v-model="editedDescription"
-                  type="textarea"
-                  autogrow
                   dense
+                  borderless
                   hide-bottom-space
-                  input-class="text-caption"
+                  input-class="text-caption text-grey-7"
+                  input-style="line-height: 1.2;"
+                  class="col-grow"
                   autofocus
-                  @keydown.enter.prevent="saveDescription"
+                  @keyup.enter="saveDescription"
                   @keyup.esc="cancelEdit"
                   @blur="saveDescription"
                 />
-              </template>
+                <q-icon
+                  v-if="user && !isEditingTitle && !isEditingDescription"
+                  name="edit"
+                  size="14px"
+                  class="cursor-pointer hover-visible q-ml-xs"
+                  @click="enableDescriptionEdit"
+                />
+              </div>
             </div>
           </q-breadcrumbs-el>
           <q-icon v-if="article?.web_publication" name="public">
@@ -358,5 +362,18 @@ function goToAccount() {
 .title-row:hover .hover-visible,
 .description-container:hover .hover-visible {
   opacity: 1;
+}
+
+:deep(.q-field__control),
+:deep(.q-field__native),
+:deep(.q-field__marginal) {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.q-field__control-container) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 </style>

@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-import {
-  getArticles,
-} from 'src/api/supabaseHelper';
+import { getArticles } from 'src/api/supabaseHelper';
 import ENV from 'src/schema/env.schema';
 import { Article } from 'src/types';
 import { computed, ref } from 'vue';

@@ -42,33 +42,23 @@ export const useArticlesStore = defineStore('articles', () => {
     const articleIndex = articles.value.findIndex(
       (a: { article_id: string }) => a.article_id === articleId,
     );
-    if (articleIndex === -1) return false;
+    if (articleIndex === -1) {
+      throw new Error(`Article with ID ${articleId} not found`);
+    }
 
     articles.value[articleIndex].title = newTitle;
-
-    try {
-      await updateArticleTitle(articleId, newTitle);
-      return true;
-    } catch (error) {
-      console.error('Failed to rename article:', error);
-      return false;
-    }
+    await updateArticleTitle(articleId, newTitle);
   }
   async function renameDescription(articleId: string, newDescription: string) {
     const articleIndex = articles.value.findIndex(
       (a: { article_id: string }) => a.article_id === articleId,
     );
-    if (articleIndex === -1) return false;
+    if (articleIndex === -1) {
+      throw new Error(`Article with ID ${articleId} not found`);
+    }
 
     articles.value[articleIndex].description = newDescription;
-
-    try {
-      await updateArticleDescription(articleId, newDescription);
-      return true;
-    } catch (error) {
-      console.error('Failed to rename description:', error);
-      return false;
-    }
+    await updateArticleDescription(articleId, newDescription);
   }
   return {
     articles,

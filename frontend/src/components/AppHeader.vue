@@ -11,13 +11,12 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="title-wrapper">
+            <div class="column" style="max-width: 45vw; line-height: 1.2">
               <template v-if="!isEditingTitle && !isEditingDescription">
-                <div class="title-row">
-                  <span class="text-content">
+                <div class="row items-center no-wrap title-row">
+                  <span class="text-h6 text-weight-medium ellipsis">
                     {{ article.title }}
                   </span>
-
                   <q-icon
                     v-if="user"
                     name="edit"
@@ -26,21 +25,19 @@
                     @click="enableTitleEdit"
                   />
                 </div>
-
-                <div class="description-row description-container">
+                <div class="row items-center no-wrap description-container">
                   <span
                     v-if="article.description"
-                    class="text-caption text-grey-7 text-content"
+                    class="text-caption text-grey-7 ellipsis"
                   >
                     {{ article.description }}
                   </span>
                   <span
                     v-else
-                    class="text-caption text-grey-5 text-italic text-content"
+                    class="text-caption text-grey-5 text-italic ellipsis"
                   >
                     Add a description
                   </span>
-
                   <q-icon
                     v-if="user"
                     name="edit"
@@ -250,16 +247,21 @@ async function saveTitle() {
     return;
   }
 
-  const success = await articlesStore.renameArticle(
-    article.value.article_id,
-    editedTitle.value,
-  );
-
-  if (success) {
-    $q.notify({ message: 'Article renamed', color: 'positive', icon: 'edit' });
+  try {
+    await articlesStore.renameArticle(
+      article.value.article_id,
+      editedTitle.value,
+    );
+    $q.notify({
+      message: 'Article renamed',
+      color: 'positive',
+      icon: 'edit',
+    });
+  } catch (error) {
+    console.error('Failed to rename article:', error);
+  } finally {
+    isEditingTitle.value = false;
   }
-
-  isEditingTitle.value = false;
 }
 
 async function saveDescription() {
@@ -268,20 +270,21 @@ async function saveDescription() {
     return;
   }
 
-  const success = await articlesStore.renameDescription(
-    article.value.article_id,
-    editedDescription.value,
-  );
-
-  if (success) {
+  try {
+    await articlesStore.renameDescription(
+      article.value.article_id,
+      editedDescription.value,
+    );
     $q.notify({
       message: 'Description updated',
       color: 'positive',
       icon: 'edit',
     });
+  } catch (error) {
+    console.error('Failed to update description:', error);
+  } finally {
+    isEditingDescription.value = false;
   }
-
-  isEditingDescription.value = false;
 }
 
 function cancelEdit() {
@@ -330,81 +333,6 @@ function goToAccount() {
   flex-wrap: nowrap;
 }
 
-.title-wrapper {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  max-width: 45vw;
-  width: 100%;
-  overflow: hidden;
-}
-
-.title-row {
-  position: relative;
-  font-size: 1.25rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: font-size 0.15s ease;
-}
-
-.title-row:hover,
-.description-row:hover ~ .title-row,
-.title-wrapper:hover .title-row {
-  font-size: 1.5rem;
-}
-
-.description-row {
-  position: relative;
-  font-size: 0.8rem;
-  color: #666;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: font-size 0.15s ease;
-}
-
-.title-text,
-.description-text {
-  flex: 1;
-  min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.title-row .q-icon,
-.description-row .q-icon {
-  flex-shrink: 0;
-}
-
-.hover-visible {
-  opacity: 0;
-  transition: opacity 0.2s;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.title-row:hover .hover-visible,
-.description-row:hover .hover-visible {
-  opacity: 1;
-}
-
-.description-container {
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition:
-    opacity 0.15s,
-    max-height 0.15s;
-}
-
-.title-wrapper:hover .description-container {
-  opacity: 1;
-  max-height: 30px;
-}
-
 .edit-field {
   margin: 0 !important;
   padding: 0 !important;
@@ -427,15 +355,36 @@ function goToAccount() {
   min-height: auto !important;
 }
 
-.edit-field :deep(.q-field__control:before) {
-  border-color: #999 !important;
+.title-row {
+  transition: font-size 0.15s ease;
 }
 
-.edit-field :deep(.q-field__control:hover:before) {
-  border-color: #000 !important;
+.title-row:hover .text-h6,
+.column:hover .title-row .text-h6 {
+  font-size: 1.5rem;
 }
 
-.edit-field :deep(.q-field__control:after) {
-  border-color: var(--q-primary) !important;
+.description-container {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.15s,
+    max-height 0.15s;
+}
+
+.column:hover .description-container {
+  opacity: 1;
+  max-height: 30px;
+}
+
+.hover-visible {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.title-row:hover .hover-visible,
+.description-container:hover .hover-visible {
+  opacity: 1;
 }
 </style>

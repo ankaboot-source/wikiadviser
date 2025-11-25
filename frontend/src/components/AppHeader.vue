@@ -11,7 +11,7 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="column" style="max-width: 45vw; line-height: 1.2">
+            <div class="column" style="max-width: 45vw">
               <template v-if="!isEditingTitle && !isEditingDescription">
                 <div class="row items-center no-wrap title-row">
                   <span class="text-h6 text-weight-medium ellipsis">
@@ -52,8 +52,8 @@
                 <q-input
                   v-model="editedTitle"
                   dense
+                  hide-bottom-space
                   input-class="text-h6 text-weight-medium"
-                  class="edit-field"
                   autofocus
                   @keyup.enter="saveTitle"
                   @keyup.esc="cancelEdit"
@@ -67,8 +67,8 @@
                   type="textarea"
                   autogrow
                   dense
+                  hide-bottom-space
                   input-class="text-caption"
-                  class="edit-field"
                   autofocus
                   @keydown.enter.prevent="saveDescription"
                   @keyup.esc="cancelEdit"
@@ -193,6 +193,10 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import NotificationsBell from './NotificationsBell.vue';
 import UserComponent from './UserComponent.vue';
+import {
+  updateArticleDescription,
+  updateArticleTitle,
+} from 'src/api/supabaseHelper';
 
 const router = useRouter();
 const $q = useQuasar();
@@ -248,10 +252,8 @@ async function saveTitle() {
   }
 
   try {
-    await articlesStore.renameArticle(
-      article.value.article_id,
-      editedTitle.value,
-    );
+    await updateArticleTitle(article.value.article_id, editedTitle.value);
+    article.value.title = editedTitle.value;
     $q.notify({
       message: 'Article renamed',
       color: 'positive',
@@ -271,10 +273,11 @@ async function saveDescription() {
   }
 
   try {
-    await articlesStore.renameDescription(
+    await updateArticleDescription(
       article.value.article_id,
       editedDescription.value,
     );
+    article.value.description = editedDescription.value;
     $q.notify({
       message: 'Description updated',
       color: 'positive',
@@ -331,37 +334,6 @@ function goToAccount() {
 
 .q-breadcrumbs > div {
   flex-wrap: nowrap;
-}
-
-.edit-field {
-  margin: 0 !important;
-  padding: 0 !important;
-  min-height: 0 !important;
-  line-height: 1.2;
-}
-
-.edit-field :deep(.q-field__control) {
-  padding: 0 !important;
-  min-height: auto !important;
-  height: auto !important;
-}
-
-.edit-field :deep(.q-field__marginal) {
-  height: auto !important;
-}
-
-.edit-field :deep(.q-field__native) {
-  padding: 0px 0 !important;
-  min-height: auto !important;
-}
-
-.title-row {
-  transition: font-size 0.15s ease;
-}
-
-.title-row:hover .text-h6,
-.column:hover .title-row .text-h6 {
-  font-size: 1.5rem;
 }
 
 .description-container {

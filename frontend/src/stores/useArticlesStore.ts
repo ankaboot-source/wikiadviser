@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia';
 import {
   getArticles,
-  updateArticleTitle,
-  updateArticleDescription,
 } from 'src/api/supabaseHelper';
 import ENV from 'src/schema/env.schema';
 import { Article } from 'src/types';
@@ -37,37 +35,12 @@ export const useArticlesStore = defineStore('articles', () => {
       '_blank',
     );
   }
-
-  async function renameArticle(articleId: string, newTitle: string) {
-    const articleIndex = articles.value.findIndex(
-      (a: { article_id: string }) => a.article_id === articleId,
-    );
-    if (articleIndex === -1) {
-      throw new Error(`Article with ID ${articleId} not found`);
-    }
-
-    articles.value[articleIndex].title = newTitle;
-    await updateArticleTitle(articleId, newTitle);
-  }
-  async function renameDescription(articleId: string, newDescription: string) {
-    const articleIndex = articles.value.findIndex(
-      (a: { article_id: string }) => a.article_id === articleId,
-    );
-    if (articleIndex === -1) {
-      throw new Error(`Article with ID ${articleId} not found`);
-    }
-
-    articles.value[articleIndex].description = newDescription;
-    await updateArticleDescription(articleId, newDescription);
-  }
   return {
     articles,
     fetchArticles,
     getArticleById,
     resetArticles,
     viewArticleInNewTab,
-    renameArticle,
-    renameDescription,
   };
 });
 

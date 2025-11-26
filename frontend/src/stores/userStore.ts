@@ -20,6 +20,15 @@ export const useUserStore = defineStore('session', () => {
     await getSession();
     if (!session.value) return;
 
+    user.value = session.value
+      ? ((
+          await supabase
+            .from('profiles_view')
+            .select('*')
+            .eq('id', session.value.user.id)
+            .single()
+        ).data as Profile)
+      : null;
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('llm_reviewer_config')
@@ -29,10 +38,12 @@ export const useUserStore = defineStore('session', () => {
     if (profileError) {
       console.error('Error fetching profile data:', profileError);
     }
-    user.value = {
-      ...(session.value.user as Profile),
-      llm_reviewer_config: profileData?.llm_reviewer_config || null,
-    };
+    if (user.value) {
+      user.value = {
+        ...user.value,
+        llm_reviewer_config: profileData?.llm_reviewer_config || null,
+      };
+    }
 
     name.value = user.value?.display_name || user.value?.email;
   }

@@ -336,6 +336,11 @@ export type Database = {
           default_avatar: boolean | null;
           email: string | null;
           id: string;
+          llm_reviewer_config?: {
+            prompt?: string | null;
+            model?: string | null;
+            has_api_key?: boolean;
+          } | null;
         };
         Insert: {
           allowed_articles: number;
@@ -343,6 +348,11 @@ export type Database = {
           default_avatar?: boolean | null;
           email?: string | null;
           id: string;
+          llm_reviewer_config?: {
+            prompt?: string | null;
+            model?: string | null;
+            has_api_key?: boolean;
+          } | null;
         };
         Update: {
           allowed_articles?: number;
@@ -350,6 +360,11 @@ export type Database = {
           default_avatar?: boolean | null;
           email?: string | null;
           id?: string;
+          llm_reviewer_config?: {
+            prompt?: string | null;
+            model?: string | null;
+            has_api_key?: boolean;
+          } | null;
         };
         Relationships: [];
       };
@@ -439,6 +454,31 @@ export type Database = {
       is_article_exists: {
         Args: { article_id: string };
         Returns: string;
+      };
+      upsert_user_api_key: {
+        Args: {
+          user_id_param: string;
+          api_key_value: string;
+        };
+        Returns: string;
+      };
+      get_user_api_key: {
+        Args: {
+          user_id_param: string;
+        };
+        Returns: string;
+      };
+      delete_user_api_key: {
+        Args: {
+          user_id_param: string;
+        };
+        Returns: boolean;
+      };
+      has_user_api_key: {
+        Args: {
+          user_id_param: string;
+        };
+        Returns: boolean;
       };
     };
     Enums: {

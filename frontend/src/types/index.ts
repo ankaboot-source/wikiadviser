@@ -78,6 +78,11 @@ export interface Profile {
   email_verified?: boolean | null;
   email_change?: string | null;
   has_email_provider: boolean;
+  llm_reviewer_config?: {
+    prompt?: string;
+    model?: string;
+    has_api_key?: boolean;
+  };
 }
 
 export type {

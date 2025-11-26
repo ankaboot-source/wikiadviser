@@ -5,16 +5,16 @@ declare module '@supabase/supabase-js' {
     rpc(
       fn: 'upsert_user_api_key',
       args: { user_id_param: string; api_key_value: string },
-    ): Promise<{ data: string | null; error: any }>;
+    ): Promise<{ data: string | null; error: Error }>;
 
     rpc(
       fn: 'get_user_api_key',
       args: { user_id_param: string },
-    ): Promise<{ data: string | null; error: any }>;
+    ): Promise<{ data: string | null; error: Error }>;
 
     rpc(
       fn: 'delete_user_api_key',
       args: { user_id_param: string },
-    ): Promise<{ data: boolean | null; error: any }>;
+    ): Promise<{ data: boolean | null; error: Error }>;
   }
 }

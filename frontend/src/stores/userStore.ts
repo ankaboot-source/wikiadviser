@@ -29,6 +29,7 @@ export const useUserStore = defineStore('session', () => {
             .single()
         ).data as Profile)
       : null;
+    name.value = user.value?.display_name || user.value?.email;
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('llm_reviewer_config')
@@ -44,8 +45,6 @@ export const useUserStore = defineStore('session', () => {
         llm_reviewer_config: profileData?.llm_reviewer_config || null,
       };
     }
-
-    name.value = user.value?.display_name || user.value?.email;
   }
 
   function $resetUser() {

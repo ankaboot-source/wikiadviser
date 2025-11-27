@@ -207,7 +207,7 @@
               <template #avatar>
                 <q-icon name="lock" />
               </template>
-              Your API Key is safely stored encrypted in our secrets vault
+              Your API Key is safely stored and encrypted in our secrets vault
               <template #action>
                 <q-btn
                   flat
@@ -655,12 +655,8 @@ async function updateLLMConfigInDB(updates: {
     .update({
       llm_reviewer_config: {
         prompt: llmConfig.value.prompt || null,
-        model:
-          updates.model !== undefined ? updates.model : llmConfig.value.model,
-        has_api_key:
-          updates.has_api_key !== undefined
-            ? updates.has_api_key
-            : apiKey.value.hasKey,
+        model: updates.model ?? llmConfig.value.model,
+        has_api_key: updates.has_api_key ?? apiKey.value.hasKey,
       },
     })
     .eq('id', userId);
@@ -680,11 +676,6 @@ const apiKeyActions = {
 
     const userId = userStore.user?.id;
     if (!userId) {
-      $q.notify({
-        message: 'User not authenticated',
-        icon: 'error',
-        color: 'negative',
-      });
       return;
     }
 
@@ -725,11 +716,6 @@ const apiKeyActions = {
   async remove() {
     const userId = userStore.user?.id;
     if (!userId) {
-      $q.notify({
-        message: 'User not authenticated',
-        icon: 'error',
-        color: 'negative',
-      });
       return;
     }
 

@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION upsert_user_api_key(
   user_id_param UUID,
   api_key_value TEXT
 )
-RETURNS UUID
+RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -24,10 +24,8 @@ BEGIN
 
   IF existing_secret_id IS NOT NULL THEN
     PERFORM vault.update_secret(existing_secret_id, api_key_value, secret_name);
-    RETURN existing_secret_id;
   ELSE
     new_secret_id := vault.create_secret(api_key_value, secret_name);
-    RETURN new_secret_id;
   END IF;
 END;
 $$;
@@ -57,7 +55,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION delete_user_api_key(user_id_param UUID)
-RETURNS BOOLEAN
+RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
@@ -78,10 +76,7 @@ BEGIN
 
   IF secret_id IS NOT NULL THEN
     DELETE FROM vault.secrets WHERE id = secret_id;
-    RETURN TRUE;
   END IF;
-
-  RETURN FALSE;
 END;
 $$;
 

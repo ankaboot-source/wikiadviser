@@ -236,9 +236,6 @@
             hint="Your API Key is safely stored encrypted in our secrets vault"
             class="q-mb-sm"
           >
-            <template #append>
-              <q-icon name="key" />
-            </template>
           </q-input>
           <!-- Action Buttons -->
           <div
@@ -648,7 +645,7 @@ async function updateLLMConfigInDB(updates: {
   model?: string | null;
 }) {
   const userId = userStore.user?.id;
-  if (!userId) throw new Error('User not authenticated');
+  if (!userId) return;
 
   const { error } = await supabaseClient
     .from('profiles')
@@ -675,9 +672,7 @@ const apiKeyActions = {
     }
 
     const userId = userStore.user?.id;
-    if (!userId) {
-      return;
-    }
+    if (!userId) return;
 
     apiKey.value.saving = true;
     try {
@@ -715,9 +710,7 @@ const apiKeyActions = {
 
   async remove() {
     const userId = userStore.user?.id;
-    if (!userId) {
-      return;
-    }
+    if (!userId) return;
 
     apiKey.value.removing = true;
     try {
@@ -833,11 +826,6 @@ function filterModels(val: string, update: (fn: () => void) => void) {
 async function saveLLMConfig() {
   const userId = userStore.user?.id;
   if (!userId) {
-    $q.notify({
-      message: 'User not authenticated',
-      icon: 'error',
-      color: 'negative',
-    });
     return;
   }
 

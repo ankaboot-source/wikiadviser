@@ -79,27 +79,3 @@ BEGIN
   END IF;
 END;
 $$;
-
-CREATE OR REPLACE FUNCTION has_user_api_key(user_id_param UUID)
-RETURNS BOOLEAN
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  secret_name TEXT;
-  key_exists BOOLEAN;
-BEGIN
-  IF auth.uid() != user_id_param THEN
-    RAISE EXCEPTION 'Unauthorized access';
-  END IF;
-
-  secret_name := 'llm_api_key_' || user_id_param::TEXT;
-
-  SELECT EXISTS(
-    SELECT 1 FROM vault.decrypted_secrets WHERE name = secret_name
-  ) INTO key_exists;
-
-  RETURN key_exists;
-END;
-$$;

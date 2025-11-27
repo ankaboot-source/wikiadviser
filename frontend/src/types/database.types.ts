@@ -474,12 +474,6 @@ export type Database = {
         };
         Returns: boolean;
       };
-      has_user_api_key: {
-        Args: {
-          user_id_param: string;
-        };
-        Returns: boolean;
-      };
     };
     Enums: {
       role: 'owner' | 'editor' | 'reviewer' | 'viewer';

@@ -1,5 +1,5 @@
-import createSupabaseAdmin from "../supabaseAdmin.ts";
-import { Enums, Tables } from "../types/index.ts";
+import createSupabaseAdmin from '../supabaseAdmin.ts';
+import { Enums, Tables } from '../types/index.ts';
 
 const supabase = createSupabaseAdmin();
 
@@ -8,11 +8,11 @@ export async function insertArticle(
   userId: string,
   language: string,
   description?: string,
-  imported?: boolean,
+  imported?: boolean
 ): Promise<string> {
   // Insert into supabase: Articles, Permissions.
   const { data: articlesData, error: articlesError } = await supabase
-    .from("articles")
+    .from('articles')
     .insert({ title, description, language, imported })
     .select();
   if (articlesError) {
@@ -21,31 +21,31 @@ export async function insertArticle(
   const articleId = articlesData[0].id;
 
   const { error: permissionsError } = await supabase
-    .from("permissions")
-    .insert({ role: "owner", user_id: userId, article_id: articleId });
+    .from('permissions')
+    .insert({ role: 'owner', user_id: userId, article_id: articleId });
   if (permissionsError) {
     throw new Error(permissionsError.message);
   }
   return articleId;
 }
 
-export async function updateChange(toChange: Tables<"changes">): Promise<void> {
+export async function updateChange(toChange: Tables<'changes'>): Promise<void> {
   const { id, ...updateData } = toChange;
   const { error: changeError } = await supabase
-    .from("changes")
+    .from('changes')
     .update(updateData)
-    .eq("id", id);
+    .eq('id', id);
   if (changeError) {
     throw new Error(changeError.message);
   }
 }
 
 export async function upsertChanges(
-  changesToUpsert: Tables<"changes">[],
+  changesToUpsert: Tables<'changes'>[]
 ): Promise<void> {
-  const { error } = await supabase.from("changes").upsert(changesToUpsert, {
+  const { error } = await supabase.from('changes').upsert(changesToUpsert, {
     defaultToNull: false,
-    onConflict: "id",
+    onConflict: 'id',
   });
 
   if (error) {
@@ -55,12 +55,12 @@ export async function upsertChanges(
 
 export async function updateCurrentHtmlContent(
   articleId: string,
-  current_html_content: string,
+  current_html_content: string
 ) {
   const { error: articleError } = await supabase
-    .from("articles")
+    .from('articles')
     .update({ current_html_content })
-    .eq("id", articleId);
+    .eq('id', articleId);
   if (articleError) {
     throw new Error(articleError.message);
   }
@@ -68,9 +68,9 @@ export async function updateCurrentHtmlContent(
 
 export async function getArticle(articleId: string) {
   const { data: articleData, error: articleError } = await supabase
-    .from("articles")
-    .select("*")
-    .eq("id", articleId)
+    .from('articles')
+    .select('*')
+    .eq('id', articleId)
     .maybeSingle();
   if (articleError) {
     throw new Error(articleError.message);
@@ -80,16 +80,16 @@ export async function getArticle(articleId: string) {
 
 export async function getOwnedArticles(userId: string) {
   const { data: articlesData, error: articlesError } = await supabase
-    .from("permissions")
+    .from('permissions')
     .select(
       `
     article_id,
     role,
     articles(language)
-    `,
+    `
     )
-    .eq("user_id", userId)
-    .eq("role", "owner");
+    .eq('user_id', userId)
+    .eq('role', 'owner');
 
   if (articlesError) {
     throw new Error(articlesError.message);
@@ -105,7 +105,7 @@ export async function getOwnedArticles(userId: string) {
 
 export async function getChanges(articleId: string) {
   const { data: changesData, error: changesError } = await supabase
-    .from("changes")
+    .from('changes')
     .select(
       `
       id,
@@ -123,10 +123,10 @@ export async function getChanges(articleId: string) {
       user: profiles(id, email, avatar_url, default_avatar, allowed_articles), 
       comments(content,created_at, user: profiles(id, email, avatar_url, default_avatar, allowed_articles)),
       revision: revisions(summary, revid)
-      `,
+      `
     )
-    .order("index")
-    .eq("article_id", articleId);
+    .order('index')
+    .eq('article_id', articleId);
 
   if (changesError) {
     throw new Error(changesError.message);
@@ -136,9 +136,9 @@ export async function getChanges(articleId: string) {
 
 export async function deleteArticleDB(articleId: string) {
   const { error: supabaseDeleteError } = await supabase
-    .from("articles")
+    .from('articles')
     .delete()
-    .eq("id", articleId);
+    .eq('id', articleId);
 
   if (supabaseDeleteError) {
     throw new Error(supabaseDeleteError.message);
@@ -147,13 +147,13 @@ export async function deleteArticleDB(articleId: string) {
 
 export async function getUserPermission(
   articleId: string,
-  userId: string,
-): Promise<Enums<"role"> | null> {
+  userId: string
+): Promise<Enums<'role'> | null> {
   const { data } = await supabase
-    .from("permissions")
+    .from('permissions')
     .select()
-    .eq("user_id", userId)
-    .eq("article_id", articleId)
+    .eq('user_id', userId)
+    .eq('article_id', articleId)
     .maybeSingle();
 
   return data?.role;
@@ -162,10 +162,10 @@ export async function getUserPermission(
 export async function insertRevision(
   article_id: string,
   revid: string,
-  summary: string,
+  summary: string
 ) {
   const { data: revisionsData, error: revisionsError } = await supabase
-    .from("revisions")
+    .from('revisions')
     .insert({ article_id, revid, summary })
     .select();
   if (revisionsError) {
@@ -177,13 +177,50 @@ export async function insertRevision(
 
 export async function getUserArticlesCount(userId: string) {
   const { data: articlesData, error: articlesError } = await supabase
-    .from("permissions")
-    .select("id")
-    .eq("user_id", userId);
+    .from('permissions')
+    .select('id')
+    .eq('user_id', userId);
 
   if (articlesError) {
     throw new Error(articlesError.message);
   }
 
   return articlesData ? articlesData.length : 0;
+}
+export async function addMiraBotPermission(articleId: string) {
+  const MIRA_BOT_EMAIL = Deno.env.get('AI_BOT_EMAIL');
+
+  const { data: miraProfile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('email', MIRA_BOT_EMAIL)
+    .maybeSingle();
+
+  if (profileError || !miraProfile) {
+    throw new Error('Mira bot account not found');
+  }
+
+  const { data: existingPermission } = await supabase
+    .from('permissions')
+    .select('id')
+    .eq('article_id', articleId)
+    .eq('user_id', miraProfile.id)
+    .maybeSingle();
+
+  if (existingPermission) {
+    console.log('Mira already has permission for this article');
+    return;
+  }
+
+  const { error } = await supabase.from('permissions').insert({
+    article_id: articleId,
+    user_id: miraProfile.id,
+    role: 'editor',
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  console.log('Mira bot added as editor to article');
 }

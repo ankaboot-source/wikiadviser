@@ -11,8 +11,74 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="ellipsis">
-              {{ article.title }}
+            <div class="column" style="max-width: 45vw">
+              <div class="row items-center no-wrap title-row">
+                <span
+                  v-if="!isEditingTitle"
+                  class="text-h6 text-semi-bold ellipsis"
+                  style="line-height: 1.2"
+                >
+                  {{ article.title }}
+                </span>
+                <q-input
+                  v-else
+                  v-model="editedTitle"
+                  dense
+                  borderless
+                  hide-bottom-space
+                  input-class="text-h6 text-semi-bold"
+                  input-style="line-height: 1.2;"
+                  class="col-grow"
+                  autofocus
+                  @keyup.enter="saveTitle"
+                  @keyup.esc="cancelEdit"
+                  @blur="saveTitle"
+                />
+                <q-icon
+                  v-if="user && !isEditingTitle && !isEditingDescription"
+                  name="edit"
+                  size="16px"
+                  class="cursor-pointer hover-visible q-ml-xs"
+                  @click="enableTitleEdit"
+                />
+              </div>
+              <div class="row items-center no-wrap description-container">
+                <span
+                  v-if="!isEditingDescription && article.description"
+                  class="text-caption text-grey-7 ellipsis"
+                  style="line-height: 1.2"
+                >
+                  {{ article.description }}
+                </span>
+                <span
+                  v-else-if="!isEditingDescription"
+                  class="text-caption text-grey-5 text-italic ellipsis"
+                  style="line-height: 1.2"
+                >
+                  Add a description
+                </span>
+                <q-input
+                  v-else
+                  v-model="editedDescription"
+                  dense
+                  borderless
+                  hide-bottom-space
+                  input-class="text-caption text-grey-7"
+                  input-style="line-height: 1.2;"
+                  class="col-grow"
+                  autofocus
+                  @keyup.enter="saveDescription"
+                  @keyup.esc="cancelEdit"
+                  @blur="saveDescription"
+                />
+                <q-icon
+                  v-if="user && !isEditingTitle && !isEditingDescription"
+                  name="edit"
+                  size="14px"
+                  class="cursor-pointer hover-visible q-ml-xs"
+                  @click="enableDescriptionEdit"
+                />
+              </div>
             </div>
           </q-breadcrumbs-el>
           <q-icon v-if="article?.web_publication" name="public">
@@ -131,6 +197,10 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import NotificationsBell from './NotificationsBell.vue';
 import UserComponent from './UserComponent.vue';
+import {
+  updateArticleDescription,
+  updateArticleTitle,
+} from 'src/api/supabaseHelper';
 
 const router = useRouter();
 const $q = useQuasar();
@@ -150,6 +220,15 @@ const avatarURL = computed(() => user.value?.avatar_url);
 
 const name = computed(() => userStore.name);
 
+const isEditingTitle = ref(false);
+const isEditingDescription = ref(false);
+const editedTitle = ref('');
+const editedDescription = ref('');
+
+watch(article, (newArticle) => {
+  editedTitle.value = newArticle?.title || '';
+});
+
 watch([useRoute(), articles], ([newRoute]) => {
   const articleId = newRoute.params?.articleId;
   if (newRoute.params?.articleId) {
@@ -159,6 +238,66 @@ watch([useRoute(), articles], ([newRoute]) => {
     focusModeStore.isFocusMode = false;
   }
 });
+
+function enableTitleEdit() {
+  editedTitle.value = article.value?.title || '';
+  isEditingTitle.value = true;
+}
+
+function enableDescriptionEdit() {
+  editedDescription.value = article.value?.description || '';
+  isEditingDescription.value = true;
+}
+
+async function saveTitle() {
+  if (!article.value || editedTitle.value === article.value.title) {
+    isEditingTitle.value = false;
+    return;
+  }
+
+  try {
+    await updateArticleTitle(article.value.article_id, editedTitle.value);
+    article.value.title = editedTitle.value;
+    $q.notify({
+      message: 'Article renamed',
+      color: 'positive',
+      icon: 'edit',
+    });
+  } catch (error) {
+    console.error('Failed to rename article:', error);
+  } finally {
+    isEditingTitle.value = false;
+  }
+}
+
+async function saveDescription() {
+  if (!article.value || editedDescription.value === article.value.description) {
+    isEditingDescription.value = false;
+    return;
+  }
+
+  try {
+    await updateArticleDescription(
+      article.value.article_id,
+      editedDescription.value,
+    );
+    article.value.description = editedDescription.value;
+    $q.notify({
+      message: 'Description updated',
+      color: 'positive',
+      icon: 'edit',
+    });
+  } catch (error) {
+    console.error('Failed to update description:', error);
+  } finally {
+    isEditingDescription.value = false;
+  }
+}
+
+function cancelEdit() {
+  isEditingTitle.value = false;
+  isEditingDescription.value = false;
+}
 
 async function signOut() {
   const { error } = await supabase.auth.signOut();
@@ -181,7 +320,7 @@ function goToAccount() {
 }
 </script>
 
-<style>
+<style scoped>
 .q-breadcrumbs__el {
   text-decoration: none !important;
   color: black !important;
@@ -193,9 +332,48 @@ function goToAccount() {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .q-breadcrumbs > div {
   flex-wrap: nowrap;
+}
+
+.description-container {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    opacity 0.15s,
+    max-height 0.15s;
+}
+
+.column:hover .description-container {
+  opacity: 1;
+  max-height: 30px;
+}
+
+.hover-visible {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.title-row:hover .hover-visible,
+.description-container:hover .hover-visible {
+  opacity: 1;
+}
+
+:deep(.q-field__control),
+:deep(.q-field__native),
+:deep(.q-field__marginal) {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+:deep(.q-field__control-container) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 </style>

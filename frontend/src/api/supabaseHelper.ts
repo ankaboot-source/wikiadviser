@@ -382,3 +382,25 @@ export async function hideChanges(changeId: string) {
     throw new Error(hideError.message);
   }
 }
+export async function updateArticleTitle(articleId: string, newTitle: string) {
+  const { data, error } = await supabase
+    .from('articles')
+    .update({ title: newTitle })
+    .eq('id', articleId);
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updateArticleDescription(
+  articleId: string,
+  newDescription: string,
+) {
+  const { data, error } = await supabase
+    .from('articles')
+    .update({ description: newDescription })
+    .eq('id', articleId);
+
+  if (error) throw new Error(error.message);
+  return data;
+}

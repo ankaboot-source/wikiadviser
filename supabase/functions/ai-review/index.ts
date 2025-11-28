@@ -1,7 +1,10 @@
 import { Hono } from 'hono';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
-import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
+import {
+  addMiraBotPermission,
+  getArticle,
+} from '../_shared/helpers/supabaseHelper.ts';
 import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
 
@@ -147,7 +150,7 @@ app.post('/', async (c) => {
     if (user.id === MIRA_BOT_ID) {
       return c.json({ error: 'Mira cannot review her own changes' }, 403);
     }
-
+    await addMiraBotPermission(article_id);
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
 

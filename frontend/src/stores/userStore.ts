@@ -29,8 +29,22 @@ export const useUserStore = defineStore('session', () => {
             .single()
         ).data as Profile)
       : null;
-
     name.value = user.value?.display_name || user.value?.email;
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('llm_reviewer_config')
+      .eq('id', session.value.user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Error fetching profile data:', profileError);
+    }
+    if (user.value) {
+      user.value = {
+        ...user.value,
+        llm_reviewer_config: profileData?.llm_reviewer_config || null,
+      };
+    }
   }
 
   function $resetUser() {

@@ -192,7 +192,183 @@
           <q-icon name="open_in_new" style="top: -2px" />
         </a>
       </div>
+      <!-- LLM Reviewer Agent Section -->
+      <div class="q-my-lg">
+        <h2 class="text-h6 merriweather q-mb-xs">LLM Reviewer Agent</h2>
+        <p class="text-body1 q-mb-md">
+          Configure your AI reviewer with OpenRouter API.
+        </p>
+        <!-- API Key Status & Input -->
+        <div class="q-mb-md">
+          <label class="text-subtitle2 q-mb-xs block">OpenRouter API Key</label>
+          <!-- Key Status Banner -->
+          <div v-if="!apiKey.showInput && apiKey.hasKey" class="q-mb-sm">
+            <q-banner rounded class="bg-primary text-white">
+              <template #avatar>
+                <q-icon name="lock" />
+              </template>
+              Your API Key is safely stored and encrypted in our secrets vault
+              <template #action>
+                <q-btn
+                  flat
+                  dense
+                  label="Update"
+                  @click="apiKey.showInput = true"
+                />
+                <q-btn
+                  flat
+                  dense
+                  label="Remove"
+                  @click="apiKeyActions.confirmRemove"
+                />
+              </template>
+            </q-banner>
+          </div>
+          <!-- Key Input -->
+          <q-input
+            v-if="apiKey.showInput || !apiKey.hasKey"
+            v-model="apiKey.input"
+            bg-color="white"
+            dense
+            outlined
+            type="password"
+            placeholder="sk-or-v1-..."
+            hint="Your API Key is safely stored encrypted in our secrets vault"
+            class="q-mb-sm"
+          >
+          </q-input>
+          <!-- Action Buttons -->
+          <div
+            v-if="apiKey.showInput || !apiKey.hasKey"
+            class="flex q-gutter-sm"
+          >
+            <q-btn
+              v-if="apiKey.showInput && apiKey.hasKey"
+              flat
+              size="sm"
+              color="primary"
+              label="Cancel"
+              @click="apiKeyActions.cancel"
+            />
+            <LoadingButton
+              :show="true"
+              :loading="apiKey.saving"
+              size="sm"
+              color="primary"
+              label="Save API Key"
+              :disable="!apiKey.input"
+              :on-click="apiKeyActions.save"
+            >
+              Saving
+            </LoadingButton>
+          </div>
+        </div>
+        <!-- Remove API Key Confirmation Dialog -->
+        <q-dialog v-model="apiKey.showRemoveDialog">
+          <q-card>
+            <q-toolbar class="borders">
+              <q-toolbar-title class="merriweather">
+                Remove API Key
+              </q-toolbar-title>
+              <q-btn v-close-popup flat round dense icon="close" size="sm" />
+            </q-toolbar>
+            <q-card-section>
+              Are you sure you want to remove your API key? You'll need to enter
+              it again to use AI features.
+            </q-card-section>
+            <q-card-actions class="borders">
+              <q-space />
+              <q-btn
+                v-close-popup
+                no-caps
+                outline
+                color="primary"
+                label="Cancel"
+              />
+              <LoadingButton
+                show
+                close-popup
+                color="negative"
+                label="Remove"
+                :loading="apiKey.removing"
+                :on-click="apiKeyActions.remove"
+              >
+                Removing
+              </LoadingButton>
+            </q-card-actions>
+          </q-card>
+        </q-dialog>
 
+        <!-- Model Search -->
+        <div class="q-mb-md">
+          <label class="text-subtitle2 q-mb-xs block">AI Model</label>
+          <q-select
+            v-model="llmConfig.model"
+            :options="filteredModelOptions"
+            bg-color="white"
+            dense
+            outlined
+            use-input
+            hide-selected
+            fill-input
+            input-debounce="300"
+            option-value="id"
+            option-label="name"
+            emit-value
+            map-options
+            placeholder="Search for a model..."
+            :loading="loadingModels"
+            :disable="!apiKey.hasKey"
+            :hint="
+              apiKey.hasKey
+                ? 'Start typing to search models'
+                : 'Save API key first to enable model selection'
+            "
+            @filter="filterModels"
+          >
+            <template #no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  {{
+                    !apiKey.hasKey ? 'Save API key first' : 'No models found'
+                  }}
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+        </div>
+        <!-- Prompt Input -->
+        <div class="q-mb-md">
+          <label class="text-subtitle2 q-mb-xs block">Review Prompt</label>
+          <q-input
+            v-model="llmConfig.prompt"
+            bg-color="white"
+            dense
+            outlined
+            type="textarea"
+            rows="4"
+            placeholder="Enter your review prompt template..."
+            hint="Instructions for the AI reviewer"
+            counter
+            maxlength="2000"
+            :disable="!apiKey.hasKey"
+          />
+        </div>
+
+        <!-- Save Button -->
+        <div class="flex justify-end">
+          <LoadingButton
+            :show="true"
+            :loading="savingLLMConfig"
+            color="primary"
+            label="Save AI Settings"
+            :disable="!apiKey.hasKey"
+            :on-click="saveLLMConfig"
+          >
+            Saving
+          </LoadingButton>
+        </div>
+      </div>
       <!-- Delete Account Section -->
       <div class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">Delete Account</h2>
@@ -261,6 +437,17 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { computed, onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
+
+interface ModelOption {
+  id: string;
+  name: string;
+  context: number;
+}
+
+interface OpenRouterModel {
+  id: string;
+  context_length: number;
+}
 
 const $q = useQuasar();
 const $router = useRouter();
@@ -434,10 +621,256 @@ async function prepareNewAccount() {
   await userStore.fetchProfile();
 }
 
+const llmConfig = ref({
+  prompt: '',
+  model: '',
+});
+
+const apiKey = ref({
+  input: '',
+  hasKey: false,
+  showInput: false,
+  saving: false,
+  removing: false,
+  showRemoveDialog: false,
+});
+
+const allModelOptions = ref<ModelOption[]>([]);
+const filteredModelOptions = ref<ModelOption[]>([]);
+const loadingModels = ref(false);
+const savingLLMConfig = ref(false);
+
+async function updateLLMConfigInDB(updates: {
+  has_api_key?: boolean;
+  model?: string | null;
+}) {
+  const userId = userStore.user?.id;
+  if (!userId) return;
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update({
+      llm_reviewer_config: {
+        prompt: llmConfig.value.prompt || null,
+        model: updates.model ?? llmConfig.value.model,
+        has_api_key: updates.has_api_key ?? apiKey.value.hasKey,
+      },
+    })
+    .eq('id', userId);
+
+  if (error) throw error;
+}
+const apiKeyActions = {
+  async save() {
+    if (!apiKey.value.input) {
+      $q.notify({
+        message: 'Please enter an API key',
+        icon: 'warning',
+        color: 'warning',
+      });
+      return;
+    }
+
+    const userId = userStore.user?.id;
+    if (!userId) return;
+
+    apiKey.value.saving = true;
+    try {
+      const { error } = await supabaseClient.rpc('upsert_user_api_key', {
+        user_id_param: userId,
+        api_key_value: apiKey.value.input,
+      });
+      if (error) throw error;
+
+      await updateLLMConfigInDB({ has_api_key: true });
+
+      apiKey.value.hasKey = true;
+      apiKey.value.showInput = false;
+      apiKey.value.input = '';
+
+      $q.notify({
+        message: 'API key saved securely',
+        icon: 'check',
+        color: 'positive',
+      });
+
+      await userStore.fetchProfile();
+      await loadModelsFromAPI();
+    } catch (error) {
+      console.error('Error saving API key:', error);
+      $q.notify({
+        message: 'Error saving API key',
+        icon: 'error',
+        color: 'negative',
+      });
+    } finally {
+      apiKey.value.saving = false;
+    }
+  },
+
+  async remove() {
+    const userId = userStore.user?.id;
+    if (!userId) return;
+
+    apiKey.value.removing = true;
+    try {
+      const { error: vaultError } = await supabaseClient.rpc(
+        'delete_user_api_key',
+        {
+          user_id_param: userId,
+        },
+      );
+      if (vaultError) throw vaultError;
+
+      await updateLLMConfigInDB({ has_api_key: false, model: null });
+
+      apiKey.value.hasKey = false;
+      apiKey.value.showInput = false;
+      apiKey.value.showRemoveDialog = false;
+      llmConfig.value.model = '';
+      allModelOptions.value = [];
+      filteredModelOptions.value = [];
+
+      $q.notify({
+        message: 'API key removed successfully',
+        icon: 'check',
+        color: 'positive',
+      });
+
+      await userStore.fetchProfile();
+    } catch (error) {
+      console.error('Error removing API key:', error);
+      $q.notify({
+        message: 'Error removing API key',
+        icon: 'error',
+        color: 'negative',
+      });
+    } finally {
+      apiKey.value.removing = false;
+    }
+  },
+
+  cancel() {
+    apiKey.value.showInput = false;
+    apiKey.value.input = '';
+  },
+
+  confirmRemove() {
+    apiKey.value.showRemoveDialog = true;
+  },
+};
+
+async function loadModelsFromAPI() {
+  if (!apiKey.value.hasKey) return;
+
+  const userId = userStore.user?.id;
+  if (!userId) {
+    console.error('User ID not found');
+    return;
+  }
+
+  loadingModels.value = true;
+  try {
+    const { data: apiKeyValue, error: keyError } = await supabaseClient.rpc(
+      'get_user_api_key',
+      { user_id_param: userId },
+    );
+
+    if (keyError) throw keyError;
+    if (!apiKeyValue) throw new Error('No API key found');
+
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        Authorization: `Bearer ${apiKeyValue}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch models');
+
+    const data = await response.json();
+
+    allModelOptions.value = data.data
+      .map((model: OpenRouterModel) => ({
+        id: model.id,
+        name: `${model.id} (${model.context_length} tokens)`,
+        context: model.context_length,
+      }))
+      .sort((a: ModelOption, b: ModelOption) => b.context - a.context);
+
+    filteredModelOptions.value = allModelOptions.value.slice(0, 50);
+  } catch (error) {
+    console.error('Error fetching models:', error);
+    $q.notify({
+      message: 'Failed to load models',
+      icon: 'warning',
+      color: 'warning',
+    });
+  } finally {
+    loadingModels.value = false;
+  }
+}
+
+function filterModels(val: string, update: (fn: () => void) => void) {
+  update(() => {
+    if (val === '') {
+      filteredModelOptions.value = allModelOptions.value.slice(0, 50);
+    } else {
+      const needle = val.toLowerCase();
+      filteredModelOptions.value = allModelOptions.value
+        .filter((model: ModelOption) => model.id.toLowerCase().includes(needle))
+        .slice(0, 50);
+    }
+  });
+}
+
+async function saveLLMConfig() {
+  const userId = userStore.user?.id;
+  if (!userId) {
+    return;
+  }
+
+  savingLLMConfig.value = true;
+  try {
+    await updateLLMConfigInDB({});
+
+    $q.notify({
+      message: 'AI settings saved successfully',
+      icon: 'check',
+      color: 'positive',
+    });
+
+    await userStore.fetchProfile();
+  } catch (error) {
+    console.error('Error saving AI settings:', error);
+    $q.notify({
+      message: 'Error saving AI settings',
+      icon: 'error',
+      color: 'negative',
+    });
+  } finally {
+    savingLLMConfig.value = false;
+  }
+}
+async function loadLLMConfig() {
+  const config = userStore.user?.llm_reviewer_config;
+  if (config) {
+    llmConfig.value = {
+      prompt: config.prompt || '',
+      model: config.model || '',
+    };
+    apiKey.value.hasKey = config.has_api_key || false;
+
+    if (apiKey.value.hasKey) {
+      await loadModelsFromAPI();
+    }
+  }
+}
+
 onBeforeMount(async () => {
   await userStore.fetchProfile();
   updateStepper();
   emailInput.value = userStore.user?.email_change || '';
+  await loadLLMConfig();
 });
 </script>
 

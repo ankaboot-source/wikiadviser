@@ -188,7 +188,7 @@ export async function getUserArticlesCount(userId: string) {
   return articlesData ? articlesData.length : 0;
 }
 export async function addMiraBotPermission(articleId: string) {
-  const MIRA_BOT_EMAIL = 'mira@wikiadviser.io';
+  const MIRA_BOT_EMAIL = Deno.env.get('AI_BOT_EMAIL');
 
   const { data: miraProfile, error: profileError } = await supabase
     .from('profiles')

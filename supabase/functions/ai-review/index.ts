@@ -28,7 +28,7 @@ async function getMiraBotId(
   return data?.id ?? null;
 }
 
-const aiPrompt = `You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the content only, focusing on three aspects:
+const defaultAiPrompt = `You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the content only, focusing on three aspects:
 
 1. Readability – clarity, grammar, logical flow.
 2. Eloquence – concise, neutral, and smooth phrasing.
@@ -62,6 +62,12 @@ interface OpenRouterChoice {
 
 interface OpenRouterResponse {
   choices?: OpenRouterChoice[];
+}
+
+interface OwnerLLMConfig {
+  apiKey: string;
+  prompt: string;
+  model: string;
 }
 
 function parseAIResponse(
@@ -126,6 +132,74 @@ function getChangeWikitext(
   }
 }
 
+async function getOwnerLLMConfig(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  ownerId: string
+): Promise<OwnerLLMConfig | null> {
+  try {
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('llm_reviewer_config')
+      .eq('id', ownerId)
+      .single();
+
+    if (profileError || !profileData?.llm_reviewer_config) {
+      console.log('Owner has no LLM config');
+      return null;
+    }
+
+    const config = profileData.llm_reviewer_config;
+
+    if (!config.has_api_key || !config.model) {
+      console.log('Owner LLM config incomplete');
+      return null;
+    }
+
+    const { data: apiKey, error: keyError } = await supabase.rpc(
+      'get_user_api_key',
+      { user_id_param: ownerId }
+    );
+
+    if (keyError || !apiKey) {
+      console.error('Error fetching owner API key:', keyError);
+      return null;
+    }
+
+    return {
+      apiKey: apiKey,
+      prompt: config.prompt || defaultAiPrompt,
+      model: config.model,
+    };
+  } catch (error) {
+    console.error('Error getting owner LLM config:', error);
+    return null;
+  }
+}
+
+async function getArticleOwner(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  articleId: string
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase
+      .from('permissions')
+      .select('user_id')
+      .eq('article_id', articleId)
+      .eq('role', 'owner')
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching article owner:', error);
+      return null;
+    }
+
+    return data.user_id;
+  } catch (error) {
+    console.error('Error getting article owner:', error);
+    return null;
+  }
+}
+
 app.post('/', async (c) => {
   try {
     console.log('AI Review started');
@@ -154,10 +228,23 @@ app.post('/', async (c) => {
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
 
-    const apiKey = Deno.env.get('OPENROUTER_API_KEY');
-    if (!apiKey) return c.json({ error: 'No AI API key configured' }, 500);
+    const ownerId = await getArticleOwner(supabase, article_id);
+    if (!ownerId) {
+      return c.json({ error: 'Article owner not found' }, 404);
+    }
 
-    const aiModel = Deno.env.get('AI_MODEL');
+    const ownerLLMConfig = await getOwnerLLMConfig(supabase, ownerId);
+    if (!ownerLLMConfig) {
+      return c.json(
+        {
+          error:
+            'Article owner has not configured LLM Reviewer Agent. Please set up API key, model, and prompt in Account Settings.',
+        },
+        400
+      );
+    }
+
+    console.log(`Using owner's LLM config - Model: ${ownerLLMConfig.model}`);
 
     const { data: latestRevision } = await supabase
       .from('revisions')
@@ -222,13 +309,13 @@ app.post('/', async (c) => {
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${apiKey}`,
+              Authorization: `Bearer ${ownerLLMConfig.apiKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: aiModel,
+              model: ownerLLMConfig.model,
               messages: [
-                { role: 'system', content: aiPrompt },
+                { role: 'system', content: ownerLLMConfig.prompt },
                 { role: 'user', content: prompt },
               ],
               max_tokens: 600,
@@ -372,7 +459,7 @@ app.post('/', async (c) => {
     console.log(`  New revision: ${editResult.newrevid}`);
 
     return c.json({
-      summary: `Mira applied ${appliedCount} improvement(s)`,
+      summary: `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`,
       total_reviewed: changes.length,
       total_improvements: appliedCount,
       mira_bot_id: MIRA_BOT_ID,

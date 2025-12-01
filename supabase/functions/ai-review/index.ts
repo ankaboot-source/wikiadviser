@@ -166,7 +166,7 @@ async function getLLMConfigOwner(
     }
 
     return {
-      apiKey: apiKey,
+      apiKey,
       prompt: config.prompt || defaultAiPrompt,
       model: config.model,
     };

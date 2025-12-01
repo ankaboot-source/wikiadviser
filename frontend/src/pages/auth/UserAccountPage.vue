@@ -742,8 +742,6 @@ const apiKeyActions = {
 };
 
 async function loadModelsFromAPI() {
-  if (allModelOptions.value.length > 0 && !apiKey.value.input) return;
-
   const userId = userStore.user?.id;
   if (!userId) return;
 
@@ -759,10 +757,6 @@ async function loadModelsFromAPI() {
       );
       if (keyError) throw keyError;
       apiKeyValue = data as string;
-    }
-
-    if (!apiKeyValue) {
-      return;
     }
 
     const response = await fetch('https://openrouter.ai/api/v1/models', {

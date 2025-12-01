@@ -132,7 +132,7 @@ function getChangeWikitext(
   }
 }
 
-async function getOwnerLLMConfig(
+async function getLLMConfigOwner(
   supabase: ReturnType<typeof createSupabaseClient>,
   ownerId: string
 ): Promise<OwnerLLMConfig | null> {
@@ -233,7 +233,7 @@ app.post('/', async (c) => {
       return c.json({ error: 'Article owner not found' }, 404);
     }
 
-    const ownerLLMConfig = await getOwnerLLMConfig(supabase, ownerId);
+    const ownerLLMConfig = await getLLMConfigOwner(supabase, ownerId);
     if (!ownerLLMConfig) {
       return c.json(
         {

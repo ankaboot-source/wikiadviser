@@ -233,10 +233,12 @@
             outlined
             type="password"
             placeholder="sk-or-v1-..."
-            hint="Your API Key is safely stored encrypted in our secrets vault"
             class="q-mb-sm"
             @blur="loadModelsFromAPI"
           >
+            <template #prepend>
+              <q-icon name="lock" />
+            </template>
           </q-input>
           <!-- Action Buttons -->
           <div
@@ -307,7 +309,6 @@
             map-options
             placeholder="Search for a model..."
             :loading="loadingModels"
-            hint="Start typing to search models"
             @filter="filterModels"
             @popup-show="loadModelsFromAPI"
           >
@@ -332,7 +333,6 @@
             type="textarea"
             rows="4"
             placeholder="Enter your review prompt template..."
-            hint="Instructions for the AI reviewer"
             counter
             maxlength="4000"
           />

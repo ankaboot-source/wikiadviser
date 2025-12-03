@@ -77,7 +77,7 @@ interface OwnerLLMConfig {
   apiKey: string;
   prompt: string;
   model: string;
-  isLLMOwner: boolean;
+  hasUserConfig: boolean;
 }
 
 function parseAIResponse(
@@ -182,7 +182,7 @@ async function getLLMConfigOwner(
       apiKey,
       prompt: config.prompt || defaultAiPrompt,
       model: config.model || Deno.env.get('AI_MODEL'),
-      isLLMOwner: true,
+      hasUserConfig: true,
     };
   } catch (error) {
     console.error(
@@ -206,7 +206,7 @@ function getEnvironmentLLMConfig(): OwnerLLMConfig | null {
     apiKey,
     prompt: defaultAiPrompt,
     model,
-    isLLMOwner: false,
+    hasUserConfig: false,
   };
 }
 
@@ -278,7 +278,7 @@ app.post('/', async (c) => {
       );
     }
 
-    const configSource = ownerLLMConfig.isLLMOwner ? 'user' : 'environment';
+    const configSource = ownerLLMConfig.hasUserConfig ? 'user' : 'environment';
     console.log(
       `Using ${configSource} LLM config - Model: ${ownerLLMConfig.model}`
     );
@@ -495,7 +495,7 @@ app.post('/', async (c) => {
     console.log(`  Old revision: ${editResult.oldrevid}`);
     console.log(`  New revision: ${editResult.newrevid}`);
 
-    const summaryMessage = ownerLLMConfig.isLLMOwner
+    const summaryMessage = ownerLLMConfig.hasUserConfig
       ? `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`
       : `Mira applied ${appliedCount} improvement(s) using default settings`;
 

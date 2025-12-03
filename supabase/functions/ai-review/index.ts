@@ -73,7 +73,7 @@ interface OpenRouterResponse {
   choices?: OpenRouterChoice[];
 }
 
-interface OwnerLLMConfig {
+interface LLMConfig {
   apiKey: string;
   prompt: string;
   model: string;
@@ -145,7 +145,7 @@ function getChangeWikitext(
 async function getLLMConfigOwner(
   supabase: ReturnType<typeof createSupabaseClient>,
   ownerId: string
-): Promise<OwnerLLMConfig | null> {
+): Promise<LLMConfig | null> {
   try {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -193,7 +193,7 @@ async function getLLMConfigOwner(
   }
 }
 
-function getEnvironmentLLMConfig(): OwnerLLMConfig | null {
+function getEnvironmentLLMConfig(): LLMConfig | null {
   const apiKey = Deno.env.get('OPENROUTER_API_KEY');
   if (!apiKey) {
     console.error('No environment API key configured');
@@ -267,8 +267,8 @@ app.post('/', async (c) => {
       return c.json({ error: 'Article owner not found' }, 404);
     }
 
-    const ownerLLMConfig = await getLLMConfigOwner(supabase, ownerId);
-    if (!ownerLLMConfig) {
+    const LLMConfig = await getLLMConfigOwner(supabase, ownerId);
+    if (!LLMConfig) {
       return c.json(
         {
           error:
@@ -278,10 +278,8 @@ app.post('/', async (c) => {
       );
     }
 
-    const configSource = ownerLLMConfig.hasUserConfig ? 'user' : 'environment';
-    console.log(
-      `Using ${configSource} LLM config - Model: ${ownerLLMConfig.model}`
-    );
+    const configSource = LLMConfig.hasUserConfig ? 'user' : 'environment';
+    console.log(`Using ${configSource} LLM config - Model: ${LLMConfig.model}`);
 
     const { data: latestRevision } = await supabase
       .from('revisions')
@@ -346,13 +344,13 @@ app.post('/', async (c) => {
           {
             method: 'POST',
             headers: {
-              Authorization: `Bearer ${ownerLLMConfig.apiKey}`,
+              Authorization: `Bearer ${LLMConfig.apiKey}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              model: ownerLLMConfig.model,
+              model: LLMConfig.model,
               messages: [
-                { role: 'system', content: ownerLLMConfig.prompt },
+                { role: 'system', content: LLMConfig.prompt },
                 { role: 'user', content: prompt },
               ],
               max_tokens: 600,
@@ -495,7 +493,7 @@ app.post('/', async (c) => {
     console.log(`  Old revision: ${editResult.oldrevid}`);
     console.log(`  New revision: ${editResult.newrevid}`);
 
-    const summaryMessage = ownerLLMConfig.hasUserConfig
+    const summaryMessage = LLMConfig.hasUserConfig
       ? `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`
       : `Mira applied ${appliedCount} improvement(s) using default settings`;
 

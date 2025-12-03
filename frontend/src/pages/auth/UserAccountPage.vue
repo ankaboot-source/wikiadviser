@@ -233,34 +233,25 @@
             outlined
             type="password"
             placeholder="sk-or-v1-..."
-            hint="Your API Key is safely stored encrypted in our secrets vault"
             class="q-mb-sm"
+            @blur="loadModelsFromAPI"
           >
+            <template #prepend>
+              <q-icon name="lock" />
+            </template>
           </q-input>
           <!-- Action Buttons -->
           <div
-            v-if="apiKey.showInput || !apiKey.hasKey"
+            v-if="apiKey.showInput && apiKey.hasKey"
             class="flex q-gutter-sm"
           >
             <q-btn
-              v-if="apiKey.showInput && apiKey.hasKey"
               flat
               size="sm"
               color="primary"
               label="Cancel"
               @click="apiKeyActions.cancel"
             />
-            <LoadingButton
-              :show="true"
-              :loading="apiKey.saving"
-              size="sm"
-              color="primary"
-              label="Save API Key"
-              :disable="!apiKey.input"
-              :on-click="apiKeyActions.save"
-            >
-              Saving
-            </LoadingButton>
           </div>
         </div>
         <!-- Remove API Key Confirmation Dialog -->
@@ -318,20 +309,13 @@
             map-options
             placeholder="Search for a model..."
             :loading="loadingModels"
-            :disable="!apiKey.hasKey"
-            :hint="
-              apiKey.hasKey
-                ? 'Start typing to search models'
-                : 'Save API key first to enable model selection'
-            "
             @filter="filterModels"
+            @popup-show="loadModelsFromAPI"
           >
             <template #no-option>
               <q-item>
                 <q-item-section class="text-grey">
-                  {{
-                    !apiKey.hasKey ? 'Save API key first' : 'No models found'
-                  }}
+                  No models found
                 </q-item-section>
               </q-item>
             </template>
@@ -345,13 +329,12 @@
             bg-color="white"
             dense
             outlined
+            autogrow
             type="textarea"
             rows="4"
             placeholder="Enter your review prompt template..."
-            hint="Instructions for the AI reviewer"
             counter
-            maxlength="2000"
-            :disable="!apiKey.hasKey"
+            maxlength="4000"
           />
         </div>
 
@@ -362,7 +345,6 @@
             :loading="savingLLMConfig"
             color="primary"
             label="Save AI Settings"
-            :disable="!apiKey.hasKey"
             :on-click="saveLLMConfig"
           >
             Saving
@@ -448,6 +430,36 @@ interface OpenRouterModel {
   id: string;
   context_length: number;
 }
+
+const DEFAULT_PROMPT = `**Prompt for Mira (Wikipedia Editing Assistant):**
+
+You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the **content only**, focusing on three aspects:
+
+1. **Readability** - clarity, grammar, logical flow.
+2. **Eloquence** - concise, neutral, and smooth phrasing.
+3. **Wikipedia Eligibility Criteria** -
+
+   * **Neutral Point of View (NPOV):** No bias, promotion, or subjective judgments.
+   * **Verifiability:** Wording must allow support by reliable, published sources.
+   * **Encyclopedic Style:** Formal, factual, impersonal tone.
+
+**Response format:** Always reply in JSON with two fields:
+
+\`\`\`json
+{
+  "comment": "A brief and kind note on whether a change helps or not.",
+  "proposed_change": "The smallest necessary modification to the paragraph, or 'No changes needed.'"
+}
+\`\`\`
+
+Guidelines:
+
+* Keep comments **very short and supportive**.
+* Always suggest the **minimalist change** needed, never over-edit.
+* If the paragraph is fine, still return JSON with a positive comment and "No changes needed."
+* **Less is more. Stay concise. Focus on meaning, not formatting.**
+
+If no change is needed, Mira must still return this JSON format with a positive comment and "No changes needed." Less is more, be as concise as possible`;
 
 const $q = useQuasar();
 const $router = useRouter();
@@ -630,7 +642,6 @@ const apiKey = ref({
   input: '',
   hasKey: false,
   showInput: false,
-  saving: false,
   removing: false,
   showRemoveDialog: false,
 });
@@ -661,51 +672,21 @@ async function updateLLMConfigInDB(updates: {
   if (error) throw error;
 }
 const apiKeyActions = {
-  async save() {
-    if (!apiKey.value.input) {
-      $q.notify({
-        message: 'Please enter an API key',
-        icon: 'warning',
-        color: 'warning',
-      });
-      return;
-    }
+  async saveToVault() {
+    if (!apiKey.value.input) return;
 
     const userId = userStore.user?.id;
     if (!userId) return;
 
-    apiKey.value.saving = true;
-    try {
-      const { error } = await supabaseClient.rpc('upsert_user_api_key', {
-        user_id_param: userId,
-        api_key_value: apiKey.value.input,
-      });
-      if (error) throw error;
+    const { error } = await supabaseClient.rpc('upsert_user_api_key', {
+      user_id_param: userId,
+      api_key_value: apiKey.value.input,
+    });
+    if (error) throw error;
 
-      await updateLLMConfigInDB({ has_api_key: true });
-
-      apiKey.value.hasKey = true;
-      apiKey.value.showInput = false;
-      apiKey.value.input = '';
-
-      $q.notify({
-        message: 'API key saved securely',
-        icon: 'check',
-        color: 'positive',
-      });
-
-      await userStore.fetchProfile();
-      await loadModelsFromAPI();
-    } catch (error) {
-      console.error('Error saving API key:', error);
-      $q.notify({
-        message: 'Error saving API key',
-        icon: 'error',
-        color: 'negative',
-      });
-    } finally {
-      apiKey.value.saving = false;
-    }
+    apiKey.value.hasKey = true;
+    apiKey.value.showInput = false;
+    apiKey.value.input = '';
   },
 
   async remove() {
@@ -761,23 +742,22 @@ const apiKeyActions = {
 };
 
 async function loadModelsFromAPI() {
-  if (!apiKey.value.hasKey) return;
-
   const userId = userStore.user?.id;
-  if (!userId) {
-    console.error('User ID not found');
-    return;
-  }
+  if (!userId) return;
 
   loadingModels.value = true;
   try {
-    const { data: apiKeyValue, error: keyError } = await supabaseClient.rpc(
-      'get_user_api_key',
-      { user_id_param: userId },
-    );
-
-    if (keyError) throw keyError;
-    if (!apiKeyValue) throw new Error('No API key found');
+    let apiKeyValue = '';
+    if (apiKey.value.input) {
+      apiKeyValue = apiKey.value.input;
+    } else if (apiKey.value.hasKey) {
+      const { data, error: keyError } = await supabaseClient.rpc(
+        'get_user_api_key',
+        { user_id_param: userId },
+      );
+      if (keyError) throw keyError;
+      apiKeyValue = data as string;
+    }
 
     const response = await fetch('https://openrouter.ai/api/v1/models', {
       headers: {
@@ -800,17 +780,16 @@ async function loadModelsFromAPI() {
     filteredModelOptions.value = allModelOptions.value.slice(0, 50);
   } catch (error) {
     console.error('Error fetching models:', error);
-    $q.notify({
-      message: 'Failed to load models',
-      icon: 'warning',
-      color: 'warning',
-    });
   } finally {
     loadingModels.value = false;
   }
 }
 
 function filterModels(val: string, update: (fn: () => void) => void) {
+  if (allModelOptions.value.length === 0) {
+    loadModelsFromAPI();
+  }
+
   update(() => {
     if (val === '') {
       filteredModelOptions.value = allModelOptions.value.slice(0, 50);
@@ -825,13 +804,16 @@ function filterModels(val: string, update: (fn: () => void) => void) {
 
 async function saveLLMConfig() {
   const userId = userStore.user?.id;
-  if (!userId) {
-    return;
-  }
+  if (!userId) return;
 
   savingLLMConfig.value = true;
   try {
-    await updateLLMConfigInDB({});
+    if (apiKey.value.input) {
+      await apiKeyActions.saveToVault();
+      await updateLLMConfigInDB({ has_api_key: true });
+    } else {
+      await updateLLMConfigInDB({});
+    }
 
     $q.notify({
       message: 'AI settings saved successfully',
@@ -840,6 +822,7 @@ async function saveLLMConfig() {
     });
 
     await userStore.fetchProfile();
+    if (apiKey.value.hasKey) await loadModelsFromAPI();
   } catch (error) {
     console.error('Error saving AI settings:', error);
     $q.notify({
@@ -855,7 +838,7 @@ async function loadLLMConfig() {
   const config = userStore.user?.llm_reviewer_config;
   if (config) {
     llmConfig.value = {
-      prompt: config.prompt || '',
+      prompt: config.prompt || DEFAULT_PROMPT,
       model: config.model || '',
     };
     apiKey.value.hasKey = config.has_api_key || false;
@@ -863,6 +846,8 @@ async function loadLLMConfig() {
     if (apiKey.value.hasKey) {
       await loadModelsFromAPI();
     }
+  } else {
+    llmConfig.value.prompt = DEFAULT_PROMPT;
   }
 }
 

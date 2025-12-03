@@ -25,8 +25,8 @@ jobs:
       SMTP_HOST: ${{ vars.SMTP_HOST }}
       SITE_URL: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
       OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-      AI_BOT_EMAIL=${{ secrets.AI_BOT_EMAIL_PROD }}
-      AI_MODEL=${{ vars.AI_MODEL_PROD }}
+      AI_BOT_EMAIL: ${{ vars.AI_BOT_EMAIL_PROD }}
+      AI_MODEL: ${{ vars.AI_MODEL_PROD }}
 
     permissions:
       contents: read

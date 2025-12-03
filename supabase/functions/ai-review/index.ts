@@ -28,25 +28,34 @@ async function getMiraBotId(
   return data?.id ?? null;
 }
 
-const defaultAiPrompt = `You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the content only, focusing on three aspects:
+const defaultAiPrompt = `**Prompt for Mira (Wikipedia Editing Assistant):**
 
-1. Readability – clarity, grammar, logical flow.
-2. Eloquence – concise, neutral, and smooth phrasing.
-3. Wikipedia Eligibility Criteria – NPOV, verifiability, encyclopedic style.
+You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the **content only**, focusing on three aspects:
 
-Response format: Always reply in JSON with two fields:
+1. **Readability** - clarity, grammar, logical flow.
+2. **Eloquence** - concise, neutral, and smooth phrasing.
+3. **Wikipedia Eligibility Criteria** -
+
+   * **Neutral Point of View (NPOV):** No bias, promotion, or subjective judgments.
+   * **Verifiability:** Wording must allow support by reliable, published sources.
+   * **Encyclopedic Style:** Formal, factual, impersonal tone.
+
+**Response format:** Always reply in JSON with two fields:
+
+json
 {
   "comment": "A brief and kind note on whether a change helps or not.",
   "proposed_change": "The smallest necessary modification to the paragraph, or 'No changes needed.'"
 }
 
 Guidelines:
-* Keep comments very short and supportive.
-* Always suggest the minimalist change needed, never over-edit.
+
+* Keep comments **very short and supportive**.
+* Always suggest the **minimalist change** needed, never over-edit.
 * If the paragraph is fine, still return JSON with a positive comment and "No changes needed."
-* DO NOT use HTML tags. Use only MediaWiki markup.
-* Make the SMALLEST possible changes - only fix what's necessary.
-* Return the COMPLETE improved paragraph, not just the changed part.`;
+* **Less is more. Stay concise. Focus on meaning, not formatting.**
+
+If no change is needed, Mira must still return this JSON format with a positive comment and "No changes needed." Less is more, be as concise as possible`;
 
 app.use('*', corsMiddleware);
 
@@ -68,6 +77,7 @@ interface OwnerLLMConfig {
   apiKey: string;
   prompt: string;
   model: string;
+  isLLMOwner: boolean;
 }
 
 function parseAIResponse(
@@ -144,15 +154,15 @@ async function getLLMConfigOwner(
       .single();
 
     if (profileError || !profileData?.llm_reviewer_config) {
-      console.log('Owner has no LLM config');
-      return null;
+      console.log('Owner has no LLM config, checking environment fallback');
+      return getEnvironmentLLMConfig();
     }
 
     const config = profileData.llm_reviewer_config;
 
-    if (!config.has_api_key || !config.model) {
-      console.log('Owner LLM config incomplete');
-      return null;
+    if (!config.has_api_key) {
+      console.log('Owner has no API key, using environment fallback');
+      return getEnvironmentLLMConfig();
     }
 
     const { data: apiKey, error: keyError } = await supabase.rpc(
@@ -161,19 +171,43 @@ async function getLLMConfigOwner(
     );
 
     if (keyError || !apiKey) {
-      console.error('Error fetching owner API key:', keyError);
-      return null;
+      console.error(
+        'Error fetching owner API key, using environment fallback:',
+        keyError
+      );
+      return getEnvironmentLLMConfig();
     }
 
     return {
       apiKey,
       prompt: config.prompt || defaultAiPrompt,
-      model: config.model,
+      model: config.model || Deno.env.get('AI_MODEL'),
+      isLLMOwner: true,
     };
   } catch (error) {
-    console.error('Error getting owner LLM config:', error);
+    console.error(
+      'Error getting owner LLM config, using environment fallback:',
+      error
+    );
+    return getEnvironmentLLMConfig();
+  }
+}
+
+function getEnvironmentLLMConfig(): OwnerLLMConfig | null {
+  const apiKey = Deno.env.get('OPENROUTER_API_KEY');
+  if (!apiKey) {
+    console.error('No environment API key configured');
     return null;
   }
+
+  const model = Deno.env.get('AI_MODEL') as string;
+
+  return {
+    apiKey,
+    prompt: defaultAiPrompt,
+    model,
+    isLLMOwner: false,
+  };
 }
 
 async function getArticleOwner(
@@ -238,13 +272,16 @@ app.post('/', async (c) => {
       return c.json(
         {
           error:
-            'Article owner has not configured LLM Reviewer Agent. Please set up API key, model, and prompt in Account Settings.',
+            'No AI API key configured. Please configure environment variables or set up your API key in Account Settings.',
         },
         400
       );
     }
 
-    console.log(`Using owner's LLM config - Model: ${ownerLLMConfig.model}`);
+    const configSource = ownerLLMConfig.isLLMOwner ? 'user' : 'environment';
+    console.log(
+      `Using ${configSource} LLM config - Model: ${ownerLLMConfig.model}`
+    );
 
     const { data: latestRevision } = await supabase
       .from('revisions')
@@ -458,8 +495,12 @@ app.post('/', async (c) => {
     console.log(`  Old revision: ${editResult.oldrevid}`);
     console.log(`  New revision: ${editResult.newrevid}`);
 
+    const summaryMessage = ownerLLMConfig.isLLMOwner
+      ? `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`
+      : `Mira applied ${appliedCount} improvement(s) using default settings`;
+
     return c.json({
-      summary: `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`,
+      summary: summaryMessage,
       total_reviewed: changes.length,
       total_improvements: appliedCount,
       mira_bot_id: MIRA_BOT_ID,
@@ -467,6 +508,7 @@ app.post('/', async (c) => {
       new_revision: editResult.newrevid,
       reviews,
       trigger_diff_update: true,
+      config_source: configSource,
     });
   } catch (err) {
     console.error('Unexpected error during AI review:', err);

@@ -208,7 +208,7 @@
                 <q-icon name="lock" />
               </template>
               <span v-if="apiKey.hasPersonalKey">
-                Your personal API Key is safely stored and encrypted in our
+                Your  API Key is safely stored and encrypted in our
                 secrets vault
               </span>
               <span v-else>
@@ -259,7 +259,7 @@
               <q-btn v-close-popup flat round dense icon="close" size="sm" />
             </q-toolbar>
             <q-card-section>
-              Are you sure you want to remove your personal API key? The system
+              Are you sure you want to remove your API key? The system
               will revert to using the global API key.
             </q-card-section>
             <q-card-actions class="borders">
@@ -709,7 +709,7 @@ const apiKeyActions = {
       filteredModelOptions.value = [];
 
       $q.notify({
-        message: 'Personal API key removed. Now using global API key.',
+        message: 'API key removed. Now using global API key.',
         icon: 'check',
         color: 'positive',
       });

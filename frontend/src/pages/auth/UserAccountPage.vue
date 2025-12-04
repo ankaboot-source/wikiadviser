@@ -242,7 +242,6 @@
             type="password"
             placeholder="sk-or-v1-..."
             class="q-mb-sm"
-            hint="Your personal key will override the global configuration"
           >
             <template #prepend>
               <q-icon name="lock" />

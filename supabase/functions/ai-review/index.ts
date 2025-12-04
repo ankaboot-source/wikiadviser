@@ -142,37 +142,37 @@ function getChangeWikitext(
   }
 }
 
-async function getLLMConfigOwner(
+async function getLLMConfigUser(
   supabase: ReturnType<typeof createSupabaseClient>,
-  ownerId: string
+  userId: string
 ): Promise<LLMConfig | null> {
   try {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('llm_reviewer_config')
-      .eq('id', ownerId)
+      .eq('id', userId)
       .single();
 
     if (profileError || !profileData?.llm_reviewer_config) {
-      console.log('Owner has no LLM config, checking environment fallback');
+      console.log('User has no LLM config, checking environment fallback');
       return getEnvironmentLLMConfig();
     }
 
     const config = profileData.llm_reviewer_config;
 
     if (!config.has_api_key) {
-      console.log('Owner has no API key, using environment fallback');
+      console.log('User has no API key, using environment fallback');
       return getEnvironmentLLMConfig();
     }
 
     const { data: apiKey, error: keyError } = await supabase.rpc(
       'get_user_api_key',
-      { user_id_param: ownerId }
+      { user_id_param: userId }
     );
 
     if (keyError || !apiKey) {
       console.error(
-        'Error fetching owner API key, using environment fallback:',
+        'Error fetching user API key, using environment fallback:',
         keyError
       );
       return getEnvironmentLLMConfig();
@@ -186,7 +186,7 @@ async function getLLMConfigOwner(
     };
   } catch (error) {
     console.error(
-      'Error getting owner LLM config, using environment fallback:',
+      'Error getting  LLM config, using environment fallback:',
       error
     );
     return getEnvironmentLLMConfig();
@@ -208,30 +208,6 @@ function getEnvironmentLLMConfig(): LLMConfig | null {
     model,
     hasUserConfig: false,
   };
-}
-
-async function getArticleOwner(
-  supabase: ReturnType<typeof createSupabaseClient>,
-  articleId: string
-): Promise<string | null> {
-  try {
-    const { data, error } = await supabase
-      .from('permissions')
-      .select('user_id')
-      .eq('article_id', articleId)
-      .eq('role', 'owner')
-      .single();
-
-    if (error || !data) {
-      console.error('Error fetching article owner:', error);
-      return null;
-    }
-
-    return data.user_id;
-  } catch (error) {
-    console.error('Error getting article owner:', error);
-    return null;
-  }
 }
 
 app.post('/', async (c) => {
@@ -262,12 +238,8 @@ app.post('/', async (c) => {
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
 
-    const ownerId = await getArticleOwner(supabase, article_id);
-    if (!ownerId) {
-      return c.json({ error: 'Article owner not found' }, 404);
-    }
-
-    const LLMConfig = await getLLMConfigOwner(supabase, ownerId);
+    const userId = user.id;
+    const LLMConfig = await getLLMConfigUser(supabase, userId);
     if (!LLMConfig) {
       return c.json(
         {
@@ -494,7 +466,7 @@ app.post('/', async (c) => {
     console.log(`  New revision: ${editResult.newrevid}`);
 
     const summaryMessage = LLMConfig.hasUserConfig
-      ? `Mira applied ${appliedCount} improvement(s) using owner's LLM settings`
+      ? `Mira applied ${appliedCount} improvement(s) using user's LLM settings`
       : `Mira applied ${appliedCount} improvement(s) using default settings`;
 
     return c.json({

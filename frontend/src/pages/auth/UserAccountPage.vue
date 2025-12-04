@@ -208,8 +208,7 @@
                 <q-icon name="lock" />
               </template>
               <span v-if="apiKey.hasPersonalKey">
-                Your  API Key is safely stored and encrypted in our
-                secrets vault
+                Your API Key is safely stored and encrypted in our secrets vault
               </span>
               <span v-else>
                 Using global API key. Add your own OpenRouter API key to
@@ -259,8 +258,8 @@
               <q-btn v-close-popup flat round dense icon="close" size="sm" />
             </q-toolbar>
             <q-card-section>
-              Are you sure you want to remove your API key? The system
-              will revert to using the global API key.
+              Are you sure you want to remove your API key? The system will
+              revert to using the global API key.
             </q-card-section>
             <q-card-actions class="borders">
               <q-space />
@@ -746,9 +745,9 @@ async function loadModelsFromAPI() {
   try {
     let apiKeyValue = '';
 
-    if (apiKey.value.input && apiKey.value.input.trim()) {
+    if (apiKey.value?.input?.trim()) {
       apiKeyValue = apiKey.value.input;
-    } else if (apiKey.value.hasPersonalKey) {
+    } else if (apiKey.value?.hasPersonalKey) {
       const { data, error: keyError } = await supabaseClient.rpc(
         'get_user_api_key',
         { user_id_param: userId },
@@ -808,7 +807,7 @@ async function saveLLMConfig() {
 
   savingLLMConfig.value = true;
   try {
-    if (apiKey.value.input && apiKey.value.input.trim()) {
+    if (apiKey.value?.input?.trim()) {
       await apiKeyActions.saveToVault();
       await updateLLMConfigInDB({ has_api_key: true });
     } else {

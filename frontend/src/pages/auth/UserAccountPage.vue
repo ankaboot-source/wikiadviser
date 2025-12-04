@@ -247,16 +247,6 @@
               <q-icon name="lock" />
             </template>
           </q-input>
-          <!-- Action Buttons -->
-          <div v-if="apiKey.showInput" class="flex q-gutter-sm q-mb-md">
-            <q-btn
-              flat
-              size="sm"
-              color="primary"
-              label="Cancel"
-              @click="apiKeyActions.cancel"
-            />
-          </div>
         </div>
         <!-- Remove API Key Confirmation Dialog -->
         <q-dialog v-model="apiKey.showRemoveDialog">
@@ -715,6 +705,7 @@ const apiKeyActions = {
       });
 
       await userStore.fetchProfile();
+      await loadLLMConfig();
     } catch (error) {
       console.error('Error removing API key:', error);
       $q.notify({
@@ -756,20 +747,26 @@ async function saveLLMConfig() {
 
   savingLLMConfig.value = true;
   try {
-    if (apiKey.value.input) {
+    if (apiKey.value.input && apiKey.value.input.trim()) {
       await apiKeyActions.saveToVault();
       await updateLLMConfigInDB({ has_api_key: true });
     } else {
       await updateLLMConfigInDB({});
+      apiKey.value.showInput = false;
+      apiKey.value.input = '';
     }
 
     $q.notify({
-      message: 'AI settings saved successfully',
+      message:
+        apiKey.value.input && apiKey.value.input.trim()
+          ? 'AI settings saved successfully'
+          : 'AI settings saved. Using global API key.',
       icon: 'check',
       color: 'positive',
     });
 
     await userStore.fetchProfile();
+    await loadLLMConfig();
   } catch (error) {
     console.error('Error saving AI settings:', error);
     $q.notify({

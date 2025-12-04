@@ -242,6 +242,7 @@
             type="password"
             placeholder="sk-or-v1-..."
             class="q-mb-sm"
+            @blur="loadModelsFromAPI"
           >
             <template #prepend>
               <q-icon name="lock" />
@@ -304,6 +305,7 @@
             placeholder="Search for a model..."
             :loading="loadingModels"
             @filter="filterModels"
+            @popup-show="loadModelsFromAPI"
           >
             <template #no-option>
               <q-item>
@@ -417,6 +419,11 @@ interface ModelOption {
   id: string;
   name: string;
   context: number;
+}
+
+interface OpenRouterModel {
+  id: string;
+  context_length: number;
 }
 
 const DEFAULT_PROMPT = `**Prompt for Mira (Wikipedia Editing Assistant):**
@@ -692,11 +699,14 @@ const apiKeyActions = {
       );
       if (vaultError) throw vaultError;
 
-      await updateLLMConfigInDB({ has_api_key: false });
+      await updateLLMConfigInDB({ has_api_key: false, model: null });
 
       apiKey.value.hasPersonalKey = false;
       apiKey.value.showInput = false;
       apiKey.value.showRemoveDialog = false;
+      llmConfig.value.model = '';
+      allModelOptions.value = [];
+      filteredModelOptions.value = [];
 
       $q.notify({
         message: 'Personal API key removed. Now using global API key.',
@@ -728,7 +738,58 @@ const apiKeyActions = {
   },
 };
 
+async function loadModelsFromAPI() {
+  const userId = userStore.user?.id;
+  if (!userId) return;
+
+  loadingModels.value = true;
+  try {
+    let apiKeyValue = '';
+
+    if (apiKey.value.input && apiKey.value.input.trim()) {
+      apiKeyValue = apiKey.value.input;
+    } else if (apiKey.value.hasPersonalKey) {
+      const { data, error: keyError } = await supabaseClient.rpc(
+        'get_user_api_key',
+        { user_id_param: userId },
+      );
+      if (keyError) throw keyError;
+      apiKeyValue = data as string;
+    } else {
+      apiKeyValue = 'global_key_placeholder';
+    }
+
+    const response = await fetch('https://openrouter.ai/api/v1/models', {
+      headers: {
+        Authorization: `Bearer ${apiKeyValue}`,
+      },
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch models');
+
+    const data = await response.json();
+
+    allModelOptions.value = data.data
+      .map((model: OpenRouterModel) => ({
+        id: model.id,
+        name: `${model.id} (${model.context_length} tokens)`,
+        context: model.context_length,
+      }))
+      .sort((a: ModelOption, b: ModelOption) => b.context - a.context);
+
+    filteredModelOptions.value = allModelOptions.value.slice(0, 50);
+  } catch (error) {
+    console.error('Error fetching models:', error);
+  } finally {
+    loadingModels.value = false;
+  }
+}
+
 function filterModels(val: string, update: (fn: () => void) => void) {
+  if (allModelOptions.value.length === 0) {
+    loadModelsFromAPI();
+  }
+
   update(() => {
     if (val === '') {
       filteredModelOptions.value = allModelOptions.value.slice(0, 50);
@@ -757,10 +818,7 @@ async function saveLLMConfig() {
     }
 
     $q.notify({
-      message:
-        apiKey.value.input && apiKey.value.input.trim()
-          ? 'AI settings saved successfully'
-          : 'AI settings saved. Using global API key.',
+      message: 'AI settings saved successfully',
       icon: 'check',
       color: 'positive',
     });
@@ -789,6 +847,7 @@ async function loadLLMConfig() {
   } else {
     llmConfig.value.prompt = DEFAULT_PROMPT;
   }
+  await loadModelsFromAPI();
 }
 
 onBeforeMount(async () => {

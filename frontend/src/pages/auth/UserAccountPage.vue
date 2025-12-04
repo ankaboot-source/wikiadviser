@@ -202,20 +202,28 @@
         <div class="q-mb-md">
           <label class="text-subtitle2 q-mb-xs block">OpenRouter API Key</label>
           <!-- Key Status Banner -->
-          <div v-if="!apiKey.showInput && apiKey.hasKey" class="q-mb-sm">
+          <div v-if="!apiKey.showInput" class="q-mb-sm">
             <q-banner rounded class="bg-primary text-white">
               <template #avatar>
                 <q-icon name="lock" />
               </template>
-              Your API Key is safely stored and encrypted in our secrets vault
+              <span v-if="apiKey.hasPersonalKey">
+                Your personal API Key is safely stored and encrypted in our
+                secrets vault
+              </span>
+              <span v-else>
+                Using global API key. Add your own OpenRouter API key to
+                customize.
+              </span>
               <template #action>
                 <q-btn
                   flat
                   dense
-                  label="Update"
+                  :label="apiKey.hasPersonalKey ? 'Update' : 'Add Your Key'"
                   @click="apiKey.showInput = true"
                 />
                 <q-btn
+                  v-if="apiKey.hasPersonalKey"
                   flat
                   dense
                   label="Remove"
@@ -226,7 +234,7 @@
           </div>
           <!-- Key Input -->
           <q-input
-            v-if="apiKey.showInput || !apiKey.hasKey"
+            v-if="apiKey.showInput"
             v-model="apiKey.input"
             bg-color="white"
             dense
@@ -234,17 +242,14 @@
             type="password"
             placeholder="sk-or-v1-..."
             class="q-mb-sm"
-            @blur="loadModelsFromAPI"
+            hint="Your personal key will override the global configuration"
           >
             <template #prepend>
               <q-icon name="lock" />
             </template>
           </q-input>
           <!-- Action Buttons -->
-          <div
-            v-if="apiKey.showInput && apiKey.hasKey"
-            class="flex q-gutter-sm"
-          >
+          <div v-if="apiKey.showInput" class="flex q-gutter-sm q-mb-md">
             <q-btn
               flat
               size="sm"
@@ -259,13 +264,13 @@
           <q-card>
             <q-toolbar class="borders">
               <q-toolbar-title class="merriweather">
-                Remove API Key
+                Remove Personal API Key
               </q-toolbar-title>
               <q-btn v-close-popup flat round dense icon="close" size="sm" />
             </q-toolbar>
             <q-card-section>
-              Are you sure you want to remove your API key? You'll need to enter
-              it again to use AI features.
+              Are you sure you want to remove your personal API key? The system
+              will revert to using the global API key.
             </q-card-section>
             <q-card-actions class="borders">
               <q-space />
@@ -310,7 +315,6 @@
             placeholder="Search for a model..."
             :loading="loadingModels"
             @filter="filterModels"
-            @popup-show="loadModelsFromAPI"
           >
             <template #no-option>
               <q-item>
@@ -424,11 +428,6 @@ interface ModelOption {
   id: string;
   name: string;
   context: number;
-}
-
-interface OpenRouterModel {
-  id: string;
-  context_length: number;
 }
 
 const DEFAULT_PROMPT = `**Prompt for Mira (Wikipedia Editing Assistant):**
@@ -605,6 +604,7 @@ async function verifyOTP() {
   await userStore.fetchProfile();
   updateStepper();
 }
+
 async function setDisplayName(remove?: boolean) {
   const { error } = await supabaseClient.auth.updateUser({
     data: { display_name: remove ? null : nameInput.value },
@@ -640,7 +640,7 @@ const llmConfig = ref({
 
 const apiKey = ref({
   input: '',
-  hasKey: false,
+  hasPersonalKey: false,
   showInput: false,
   removing: false,
   showRemoveDialog: false,
@@ -664,7 +664,7 @@ async function updateLLMConfigInDB(updates: {
       llm_reviewer_config: {
         prompt: llmConfig.value.prompt || null,
         model: updates.model ?? llmConfig.value.model,
-        has_api_key: updates.has_api_key ?? apiKey.value.hasKey,
+        has_api_key: updates.has_api_key ?? apiKey.value.hasPersonalKey,
       },
     })
     .eq('id', userId);
@@ -684,7 +684,7 @@ const apiKeyActions = {
     });
     if (error) throw error;
 
-    apiKey.value.hasKey = true;
+    apiKey.value.hasPersonalKey = true;
     apiKey.value.showInput = false;
     apiKey.value.input = '';
   },
@@ -703,17 +703,14 @@ const apiKeyActions = {
       );
       if (vaultError) throw vaultError;
 
-      await updateLLMConfigInDB({ has_api_key: false, model: null });
+      await updateLLMConfigInDB({ has_api_key: false });
 
-      apiKey.value.hasKey = false;
+      apiKey.value.hasPersonalKey = false;
       apiKey.value.showInput = false;
       apiKey.value.showRemoveDialog = false;
-      llmConfig.value.model = '';
-      allModelOptions.value = [];
-      filteredModelOptions.value = [];
 
       $q.notify({
-        message: 'API key removed successfully',
+        message: 'Personal API key removed. Now using global API key.',
         icon: 'check',
         color: 'positive',
       });
@@ -741,55 +738,7 @@ const apiKeyActions = {
   },
 };
 
-async function loadModelsFromAPI() {
-  const userId = userStore.user?.id;
-  if (!userId) return;
-
-  loadingModels.value = true;
-  try {
-    let apiKeyValue = '';
-    if (apiKey.value.input) {
-      apiKeyValue = apiKey.value.input;
-    } else if (apiKey.value.hasKey) {
-      const { data, error: keyError } = await supabaseClient.rpc(
-        'get_user_api_key',
-        { user_id_param: userId },
-      );
-      if (keyError) throw keyError;
-      apiKeyValue = data as string;
-    }
-
-    const response = await fetch('https://openrouter.ai/api/v1/models', {
-      headers: {
-        Authorization: `Bearer ${apiKeyValue}`,
-      },
-    });
-
-    if (!response.ok) throw new Error('Failed to fetch models');
-
-    const data = await response.json();
-
-    allModelOptions.value = data.data
-      .map((model: OpenRouterModel) => ({
-        id: model.id,
-        name: `${model.id} (${model.context_length} tokens)`,
-        context: model.context_length,
-      }))
-      .sort((a: ModelOption, b: ModelOption) => b.context - a.context);
-
-    filteredModelOptions.value = allModelOptions.value.slice(0, 50);
-  } catch (error) {
-    console.error('Error fetching models:', error);
-  } finally {
-    loadingModels.value = false;
-  }
-}
-
 function filterModels(val: string, update: (fn: () => void) => void) {
-  if (allModelOptions.value.length === 0) {
-    loadModelsFromAPI();
-  }
-
   update(() => {
     if (val === '') {
       filteredModelOptions.value = allModelOptions.value.slice(0, 50);
@@ -822,7 +771,6 @@ async function saveLLMConfig() {
     });
 
     await userStore.fetchProfile();
-    if (apiKey.value.hasKey) await loadModelsFromAPI();
   } catch (error) {
     console.error('Error saving AI settings:', error);
     $q.notify({
@@ -841,11 +789,7 @@ async function loadLLMConfig() {
       prompt: config.prompt || DEFAULT_PROMPT,
       model: config.model || '',
     };
-    apiKey.value.hasKey = config.has_api_key || false;
-
-    if (apiKey.value.hasKey) {
-      await loadModelsFromAPI();
-    }
+    apiKey.value.hasPersonalKey = config.has_api_key || false;
   } else {
     llmConfig.value.prompt = DEFAULT_PROMPT;
   }

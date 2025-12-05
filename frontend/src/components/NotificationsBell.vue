@@ -36,6 +36,7 @@
       anchor="bottom middle"
       self="top middle"
       :offset="[0, 8]"
+      @show="markAllRead"
     >
       <q-card
         style="min-width: 320px; border: 1px solid #aaa4a4ff"
@@ -109,21 +110,6 @@
             <div class="text-body1 text-grey-7 q-mt-sm">No notifications</div>
           </div>
         </q-card-section>
-
-        <q-btn
-          v-if="unreadCount > 0"
-          flat
-          no-caps
-          class="full-width text-weight-medium"
-          style="
-            border-top: 1px solid #aaa4a4ff;
-            height: 44px;
-            border-radius: 0 0 8px 8px;
-          "
-          color="grey-8"
-          label="Mark all as read"
-          @click="markAllRead"
-        />
       </q-card>
     </q-menu>
   </q-btn>
@@ -426,6 +412,7 @@ async function navigateAndMarkRead(notification: NotificationData) {
 }
 
 async function markAllRead() {
+  if (!unread.value.length) return;
   try {
     const ids = unread.value.map((n) => n.id).filter(Boolean);
     if (ids.length) {
@@ -435,10 +422,6 @@ async function markAllRead() {
         .in('id', ids);
     }
     unread.value = [];
-    Notify.create({
-      message: 'All notifications marked as read',
-      color: 'positive',
-    });
   } catch (err) {
     console.error('Failed markAllRead', err);
   }

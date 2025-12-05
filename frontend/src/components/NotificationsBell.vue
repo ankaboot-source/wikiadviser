@@ -31,13 +31,12 @@
     </q-tooltip>
 
     <q-menu
-      v-model="isNotificationMenuOpen"
       ref="notificationMenu"
       class="no-shadow notification-menu"
       anchor="bottom middle"
       self="top middle"
       :offset="[0, 8]"
-      @hide="onMenuClose"
+      @show="markAllRead"
     >
       <q-card
         style="min-width: 320px; border: 1px solid #aaa4a4ff"
@@ -117,7 +116,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
 import { useRouter } from 'vue-router';
 import supabase from 'src/api/supabase';
@@ -141,25 +140,6 @@ const unreadCount = computed(() => unread.value.length);
 const currentUser = ref<{ id?: string; email?: string }>({});
 const router = useRouter();
 const store = useSelectedChangeStore();
-const isNotificationMenuOpen = ref(false);
-const hasSeenNotifications = ref(false);
-
-function onMenuOpen() {
-  hasSeenNotifications.value = true;
-}
-
-function onMenuClose() {
-  if (hasSeenNotifications.value && unread.value.length > 0) {
-    markAllRead();
-    hasSeenNotifications.value = false;
-  }
-}
-
-watch(isNotificationMenuOpen, (isOpen) => {
-  if (isOpen) {
-    onMenuOpen();
-  }
-});
 
 function formatTime(timestamp: string | null): string {
   if (!timestamp) return 'Unknown';
@@ -432,6 +412,7 @@ async function navigateAndMarkRead(notification: NotificationData) {
 }
 
 async function markAllRead() {
+  if (!unread.value.length) return;
   try {
     const ids = unread.value.map((n) => n.id).filter(Boolean);
     if (ids.length) {

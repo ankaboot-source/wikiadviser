@@ -142,7 +142,7 @@ function getChangeWikitext(
   }
 }
 
-async function getLLMConfigUser(
+async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string
 ): Promise<LLMConfig | null> {
@@ -239,7 +239,7 @@ app.post('/', async (c) => {
     if (!article) return c.json({ error: 'Article not found' }, 404);
 
     const userId = user.id;
-    const LLMConfig = await getLLMConfigUser(supabase, userId);
+    const LLMConfig = await getLLMConfig(supabase, userId);
     if (!LLMConfig) {
       return c.json(
         {

@@ -170,3 +170,21 @@ mw.hook("ve.activationComplete").add(function () {
       });
   };
 });
+
+// handle source editor save
+mw.loader.using(['mediawiki.util'], function () {
+    if (window.top === window.self) return;
+
+    $(document).ready(function () {
+        $('#editform').off('submit.wikiadviser').on('submit.wikiadviser', function () {
+            const page = mw.config.get('wgPageName');
+
+            setTimeout(function () {
+                window.parent.postMessage({
+                    type: 'saved-changes',
+                    articleId: page
+                }, '*');
+            }, 50);
+        });
+    });
+});

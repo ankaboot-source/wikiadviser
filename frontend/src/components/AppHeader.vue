@@ -250,7 +250,22 @@ function enableDescriptionEdit() {
 }
 
 async function saveTitle() {
-  if (!article.value || editedTitle.value === article.value.title) {
+  if (!article.value) {
+    isEditingTitle.value = false;
+    return;
+  }
+
+  if (!editedTitle.value.trim()) {
+    editedTitle.value = article.value.title;
+    isEditingTitle.value = false;
+    $q.notify({
+      message: 'Title cannot be empty',
+      color: 'negative',
+      icon: 'warning',
+    });
+    return;
+  }
+  if (editedTitle.value === article.value.title) {
     isEditingTitle.value = false;
     return;
   }

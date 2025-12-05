@@ -30,6 +30,7 @@
                   input-style="line-height: 1.2;"
                   class="col-grow"
                   autofocus
+                  :rules="[(val) => val && val.trim().length > 0]"
                   @keyup.enter="saveTitle"
                   @keyup.esc="cancelEdit"
                   @blur="saveTitle"
@@ -250,19 +251,8 @@ function enableDescriptionEdit() {
 }
 
 async function saveTitle() {
-  if (!article.value) {
+  if (!article.value || !editedTitle.value.trim()) {
     isEditingTitle.value = false;
-    return;
-  }
-
-  if (!editedTitle.value.trim()) {
-    editedTitle.value = article.value.title;
-    isEditingTitle.value = false;
-    $q.notify({
-      message: 'Title cannot be empty',
-      color: 'negative',
-      icon: 'warning',
-    });
     return;
   }
   if (editedTitle.value === article.value.title) {

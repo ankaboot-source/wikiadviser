@@ -251,11 +251,11 @@ function enableDescriptionEdit() {
 }
 
 async function saveTitle() {
-  if (!article.value || !editedTitle.value.trim()) {
-    isEditingTitle.value = false;
-    return;
-  }
-  if (editedTitle.value === article.value.title) {
+  if (
+    !article.value ||
+    !editedTitle.value.trim() ||
+    editedTitle.value === article.value.title
+  ) {
     isEditingTitle.value = false;
     return;
   }

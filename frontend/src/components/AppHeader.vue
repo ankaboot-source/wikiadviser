@@ -1,7 +1,7 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title class="col-9 col-shrink">
+      <q-toolbar-title class="col-10 col-shrink">
         <q-breadcrumbs class="merriweather">
           <q-breadcrumbs-el
             v-if="!article?.title || !$q.screen.lt.md"
@@ -11,8 +11,8 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="column" style="max-width: 45vw">
-              <div class="row items-center no-wrap title-row">
+            <div class="column" style="max-width: 65vw">
+              <div class="row items-center no-wrap title-row full-width">
                 <span
                   v-if="!isEditingTitle"
                   class="text-h6 text-semi-bold ellipsis"
@@ -29,6 +29,7 @@
                   input-class="text-h6 text-semi-bold"
                   input-style="line-height: 1.2;"
                   class="col-grow"
+                  style="min-width: 65vw"
                   autofocus
                   :rules="[(val) => val && val.trim().length > 0]"
                   @keyup.enter="saveTitle"
@@ -43,10 +44,13 @@
                   @click="enableTitleEdit"
                 />
               </div>
-              <div class="row items-center no-wrap description-container">
+
+              <div
+                class="row items-center no-wrap description-container full-width"
+              >
                 <span
                   v-if="!isEditingDescription && article.description"
-                  class="text-caption text-grey-7 ellipsis"
+                  class="text-caption text-grey-7 ellipsis full-width"
                   style="line-height: 1.2"
                 >
                   {{ article.description }}
@@ -67,6 +71,7 @@
                   input-class="text-caption text-grey-7"
                   input-style="line-height: 1.2;"
                   class="col-grow"
+                  style="min-width: 65vw"
                   autofocus
                   @keyup.enter="saveDescription"
                   @keyup.esc="cancelEdit"
@@ -337,6 +342,11 @@ function goToAccount() {
   min-width: 0;
 }
 
+:deep(.q-breadcrumbs__el-inner) {
+  display: flex;
+  min-width: 0;
+}
+
 .q-breadcrumbs > div {
   flex-wrap: nowrap;
 }
@@ -350,7 +360,8 @@ function goToAccount() {
     max-height 0.15s;
 }
 
-.column:hover .description-container {
+.column:hover .description-container,
+.description-container.visible-editing {
   opacity: 1;
   max-height: 30px;
 }

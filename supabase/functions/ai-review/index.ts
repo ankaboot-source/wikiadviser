@@ -210,16 +210,19 @@ function getEnvironmentLLMConfig(): LLMConfig | null {
   };
 }
 
-function buildArticleContext(title: string, description: string | null): string {
-  let context = `Here is the article title and description:\n\n`;
+function buildArticleContext(
+  title: string,
+  description: string | null
+): string {
+  let context = 'Here is the article title and description:\n\n';
   context += `Title: ${title}\n`;
-  
-  if (description && description.trim()) {
+
+  if (description?.trim()) {
     context += `Description: ${description}\n`;
   } else {
-    context += `Description: (No description provided)\n`;
+    context += 'Description: (No description provided)\n';
   }
-  
+
   return context;
 }
 
@@ -266,7 +269,10 @@ app.post('/', async (c) => {
     const configSource = LLMConfig.hasUserConfig ? 'user' : 'environment';
     console.log(`Using ${configSource} LLM config - Model: ${LLMConfig.model}`);
 
-    const articleContext = buildArticleContext(article.title, article.description);
+    const articleContext = buildArticleContext(
+      article.title,
+      article.description
+    );
     console.log('Article context prepared:', articleContext);
 
     const { data: latestRevision } = await supabase

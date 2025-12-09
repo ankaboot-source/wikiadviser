@@ -14,7 +14,7 @@ const app = new Hono().basePath(`/${functionName}`);
 async function getMiraBotId(
   supabaseClient: ReturnType<typeof createSupabaseClient>
 ) {
-  const botEmail = 'mira@wikiadviser.io';
+  const botEmail = Deno.env.get('AI_BOT_EMAIL');
   const { data, error } = await supabaseClient
     .from('profiles')
     .select('id')
@@ -210,6 +210,19 @@ function getEnvironmentLLMConfig(): LLMConfig | null {
   };
 }
 
+function buildArticleContext(title: string, description: string | null): string {
+  let context = `Here is the article title and description:\n\n`;
+  context += `Title: ${title}\n`;
+  
+  if (description && description.trim()) {
+    context += `Description: ${description}\n`;
+  } else {
+    context += `Description: (No description provided)\n`;
+  }
+  
+  return context;
+}
+
 app.post('/', async (c) => {
   try {
     console.log('AI Review started');
@@ -252,6 +265,9 @@ app.post('/', async (c) => {
 
     const configSource = LLMConfig.hasUserConfig ? 'user' : 'environment';
     console.log(`Using ${configSource} LLM config - Model: ${LLMConfig.model}`);
+
+    const articleContext = buildArticleContext(article.title, article.description);
+    console.log('Article context prepared:', articleContext);
 
     const { data: latestRevision } = await supabase
       .from('revisions')
@@ -308,7 +324,7 @@ app.post('/', async (c) => {
 
       console.log(`Processing change ${i + 1}/${changes.length} (${editType})`);
 
-      const prompt = `Edit Type: ${editType}\n\nContent to review:\n${changeWikitext}`;
+      const prompt = `${articleContext}\n\nEdit Type: ${editType}\n\nContent to review:\n${changeWikitext}`;
 
       try {
         const resp = await fetch(

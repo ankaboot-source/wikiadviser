@@ -35,7 +35,7 @@ const envSchema = z.object({
   SENTRY_ENV_FRONTEND: z.string().optional(),
   POSTHOG_API_KEY: z.string().optional(),
   POSTHOG_API_HOST: z.string().optional(),
-  MIRA_AI_ASSISTANT: z.boolean().default(false),
+  USE_MIRA: z.boolean().default(false),
 });
 
 const envServer = envSchema.safeParse({
@@ -48,10 +48,7 @@ const envServer = envSchema.safeParse({
   SENTRY_ENV_FRONTEND: process.env.SENTRY_ENV_FRONTEND,
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
-  MIRA_AI_ASSISTANT:
-    process.env.MIRA_AI_ASSISTANT?.toLocaleLowerCase() === 'true'
-      ? true
-      : false,
+  USE_MIRA: process.env.USE_MIRA?.toLocaleLowerCase() === 'true' ? true : false,
 });
 
 if (!envServer.success) {

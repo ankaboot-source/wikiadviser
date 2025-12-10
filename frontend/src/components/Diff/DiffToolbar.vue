@@ -59,7 +59,7 @@ const articlesStore = useArticlesStore();
 const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
-const AI_ASSISTANT = ENV.MIRA_AI_ASSISTANT;
+const AI_ASSISTANT = ENV.USE_MIRA;
 console.log('AI_ASSISTANT in DiffToolbar:', AI_ASSISTANT);
 
 const props = defineProps<{

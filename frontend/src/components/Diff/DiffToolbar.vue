@@ -25,7 +25,7 @@
       <div class="q-ml-xs">View article</div>
     </q-btn>
     <ReviewByMira
-      v-if="AI_ASSISTANT"
+      v-if="USE_MIRA"
       :article="article"
       :hide-label="$q.screen.lt.sm"
     />
@@ -59,8 +59,8 @@ const articlesStore = useArticlesStore();
 const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
-const AI_ASSISTANT = ENV.USE_MIRA;
-console.log('AI_ASSISTANT in DiffToolbar:', AI_ASSISTANT);
+const USE_MIRA = ENV.USE_MIRA;
+console.log('USE_MIRA in DiffToolbar:', USE_MIRA);
 
 const props = defineProps<{
   article: Article;

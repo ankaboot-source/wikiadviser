@@ -339,8 +339,6 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
         };
       });
       
-} );
-
 // Source Editor Save Handling
 $(function() {
   if (!isIframe) return;
@@ -388,4 +386,7 @@ $(function() {
     }
   }
 });
+
+});
+
 /* DO NOT ADD CODE BELOW THIS LINE */

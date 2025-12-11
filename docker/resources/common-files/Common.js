@@ -171,20 +171,50 @@ mw.hook("ve.activationComplete").add(function () {
   };
 });
 
-// handle source editor save
-mw.loader.using(['mediawiki.util'], function () {
-    if (window.top === window.self) return;
-
-    $(document).ready(function () {
-        $('#editform').off('submit.wikiadviser').on('submit.wikiadviser', function () {
-            const page = mw.config.get('wgPageName');
-
-            setTimeout(function () {
-                window.parent.postMessage({
-                    type: 'saved-changes',
-                    articleId: page
-                }, '*');
-            }, 50);
+// Source Editor: Intercept form submission and detect save
+$(function() {
+  if (!isIframe) return;
+  
+  const wgAction = mw.config.get('wgAction');
+  
+  if (wgAction === 'edit' || wgAction === 'submit') {
+    var editForm = document.getElementById('editform');
+    if (editForm) {
+      editForm.addEventListener('submit', function() {
+        try {
+          sessionStorage.setItem('wikiadviser_source_saved', 'true');
+          sessionStorage.setItem('wikiadviser_article_id', mw.config.get('wgPageName'));
+        } catch (error) {
+          console.error('Failed to set session storage items:', error);
+        }
+      });
+    }
+  }
+  
+  if (wgAction === 'view') {
+    try {
+      var savedFlag = sessionStorage.getItem('wikiadviser_source_saved');
+      var savedArticleId = sessionStorage.getItem('wikiadviser_article_id');
+      
+      if (savedFlag === 'true' && savedArticleId) {
+        sessionStorage.removeItem('wikiadviser_source_saved');
+        sessionStorage.removeItem('wikiadviser_article_id');
+        
+        if (isIframe) {
+          window.parent.postMessage(
+            {
+              type: 'saved-changes',
+              articleId: savedArticleId,
+            },
+            '*'
+          );
+        }
+        mw.wikiadviser.getDiffUrl(savedArticleId).then(function(diffUrl) {
+          window.location.replace(diffUrl);
         });
-    });
+      }
+    } catch (error) {
+      console.error('Error handling source editor save redirection:', error);
+    }
+  }
 });

@@ -60,7 +60,6 @@ const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
 
 const USE_MIRA = ENV.USE_MIRA;
-console.log('USE_MIRA in DiffToolbar:', USE_MIRA);
 
 const props = defineProps<{
   article: Article;

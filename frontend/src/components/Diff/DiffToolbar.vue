@@ -24,7 +24,11 @@
     >
       <div class="q-ml-xs">View article</div>
     </q-btn>
-    <ReviewByMira :article="article" :hide-label="$q.screen.lt.sm" />
+    <ReviewByMira
+      v-if="USE_MIRA"
+      :article="article"
+      :hide-label="$q.screen.lt.sm"
+    />
     <q-btn
       v-if="role != 'viewer'"
       icon="o_group"
@@ -49,10 +53,13 @@ import { Article, Enums, User } from 'src/types';
 import { computed, ref } from 'vue';
 import ReviewByMira from 'src/components/ReviewByMira.vue';
 import { useQuasar } from 'quasar';
+import ENV from 'src/schema/env.schema';
 
 const articlesStore = useArticlesStore();
 const activeViewStore = useActiveViewStore();
 const $q = useQuasar();
+
+const USE_MIRA = ENV.USE_MIRA;
 
 const props = defineProps<{
   article: Article;

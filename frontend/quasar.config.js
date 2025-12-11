@@ -84,6 +84,7 @@ module.exports = configure(function (/* ctx */) {
         SENTRY_ENV_FRONTEND: process.env.SENTRY_ENV_FRONTEND,
         POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
         POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
+        USE_MIRA: process.env.USE_MIRA,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

@@ -84,7 +84,7 @@ jobs:
             echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env
             echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
             echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env
-            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env"
+            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env
 
             docker compose --env-file .env -f docker-compose.prod.yml up -d \
               --build \

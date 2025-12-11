@@ -68,7 +68,8 @@ jobs:
             echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
             echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env
             echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env
-            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env" 
+            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env
+
             docker compose --env-file .env -f docker-compose.demo.yml up -d \
               --build \
               --force-recreate

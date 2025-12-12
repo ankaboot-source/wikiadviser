@@ -891,13 +891,13 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
         };
       });
 
-				// Source Editor Save Handling
-	$(function() {
+// Source Editor Save Handling
+$(function() {
   if (!isIframe) return;
   
   const wgAction = mw.config.get('wgAction');
   
-  if (wgAction === 'edit' || wgAction === 'submit') {
+  if (wgAction === 'submit') {
     var editForm = document.getElementById('editform');
     if (editForm) {
       editForm.addEventListener('submit', function() {
@@ -937,6 +937,7 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
       console.error('Error handling source editor save redirection:', error);
     }
   }
+});
 
 
 })(); // Fermeture de la IIFE globale

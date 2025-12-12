@@ -171,13 +171,13 @@ mw.hook("ve.activationComplete").add(function () {
   };
 });
 
-// Source Editor: Intercept form submission and detect save
+// Source Editor Save Handling
 $(function() {
   if (!isIframe) return;
   
   const wgAction = mw.config.get('wgAction');
   
-  if (wgAction === 'edit' || wgAction === 'submit') {
+  if (wgAction === 'submit') {
     var editForm = document.getElementById('editform');
     if (editForm) {
       editForm.addEventListener('submit', function() {

@@ -36,7 +36,7 @@
       anchor="bottom middle"
       self="top middle"
       :offset="[0, 8]"
-      @show="markAllRead"
+      @hide="markAllRead"
     >
       <q-card
         style="min-width: 320px; border: 1px solid #aaa4a4ff"

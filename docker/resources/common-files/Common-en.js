@@ -339,5 +339,54 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
         };
       });
       
-} );
+// Source Editor Save Handling
+$(function() {
+  if (!isIframe) return;
+  
+  const wgAction = mw.config.get('wgAction');
+  
+  if (wgAction === 'submit') {
+    var editForm = document.getElementById('editform');
+    if (editForm) {
+      editForm.addEventListener('submit', function() {
+        try {
+          sessionStorage.setItem('wikiadviser_source_saved', 'true');
+          sessionStorage.setItem('wikiadviser_article_id', mw.config.get('wgPageName'));
+        } catch (error) {
+          console.error('Failed to set session storage items:', error);
+        }
+      });
+    }
+  }
+  
+  if (wgAction === 'view') {
+    try {
+      var savedFlag = sessionStorage.getItem('wikiadviser_source_saved');
+      var savedArticleId = sessionStorage.getItem('wikiadviser_article_id');
+      
+      if (savedFlag === 'true' && savedArticleId) {
+        sessionStorage.removeItem('wikiadviser_source_saved');
+        sessionStorage.removeItem('wikiadviser_article_id');
+        
+        if (isIframe) {
+          window.parent.postMessage(
+            {
+              type: 'saved-changes',
+              articleId: savedArticleId,
+            },
+            '*'
+          );
+        }
+        mw.wikiadviser.getDiffUrl(savedArticleId).then(function(diffUrl) {
+          window.location.replace(diffUrl);
+        });
+      }
+    } catch (error) {
+      console.error('Error handling source editor save redirection:', error);
+    }
+  }
+});
+
+});
+
 /* DO NOT ADD CODE BELOW THIS LINE */

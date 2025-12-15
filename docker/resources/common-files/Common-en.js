@@ -345,7 +345,7 @@ $(function() {
   
   const wgAction = mw.config.get('wgAction');
   
-  if (wgAction === 'submit') {
+  if (wgAction === 'edit') {
     var editForm = document.getElementById('editform');
     if (editForm) {
       editForm.addEventListener('submit', function() {

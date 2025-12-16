@@ -7,6 +7,9 @@ const USER_AGENT = "WikiAdviser/1.0";
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy = ENV.WIKIPEDIA_PROXY;
   private static searchResultsLimit = 10;
+  private headers = {
+    "User-Agent": USER_AGENT,
+  };
 
   getDomain(language: string): string {
     return this.wpProxy
@@ -36,9 +39,7 @@ export class WikipediaApi implements WikipediaInteractor {
     console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
 
     const response = await fetch(`${domain}/w/api.php?${params.toString()}`, {
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
+      headers: this.headers,
     });
 
     const data = await response.json();
@@ -89,9 +90,7 @@ export class WikipediaApi implements WikipediaInteractor {
     console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
 
     const response = await fetch(`${domain}/w/api.php?${params.toString()}`, {
-      headers: {
-        "User-Agent": USER_AGENT,
-      },
+      headers: this.headers,
     });
 
     const data = await response.json();
@@ -122,9 +121,7 @@ export class WikipediaApi implements WikipediaInteractor {
     const exportResponse = await fetch(
       `${domain}/w/index.php?${params.toString()}`,
       {
-        headers: {
-          "User-Agent": USER_AGENT,
-        },
+        headers: this.headers,
       },
     );
 

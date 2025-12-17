@@ -7,9 +7,23 @@ const USER_AGENT = "WikiAdviser/1.0";
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy = ENV.WIKIPEDIA_PROXY;
   private static searchResultsLimit = 10;
-  private headers = {
-    "User-Agent": USER_AGENT,
-  };
+
+  constructor() {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (input: RequestInfo | URL, initial?: RequestInit) => {
+      const headers = {
+        "User-Agent": USER_AGENT,
+        ...(initial?.headers || {}),
+      };
+      
+      console.info("Request URL:", input.toString());
+      
+      return originalFetch(input, {
+        ...initial,
+        headers,
+      });
+    };
+  }
 
   getDomain(language: string): string {
     return this.wpProxy
@@ -37,11 +51,7 @@ export class WikipediaApi implements WikipediaInteractor {
     });
 
     console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
-
-    const response = await fetch(`${domain}/w/api.php?${params.toString()}`, {
-      headers: this.headers,
-    });
-
+    const response = await fetch(`${domain}/w/api.php?${params.toString()}`);
     const data = await response.json();
     const wpSearchedArticles = data?.query?.pages;
     const results: WikipediaSearchResult[] = [];
@@ -88,11 +98,7 @@ export class WikipediaApi implements WikipediaInteractor {
     });
 
     console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
-
-    const response = await fetch(`${domain}/w/api.php?${params.toString()}`, {
-      headers: this.headers,
-    });
-
+    const response = await fetch(`${domain}/w/api.php?${params.toString()}`);
     const data = await response.json();
     const htmlString = data.parse.text["*"];
     if (!htmlString) {
@@ -117,14 +123,7 @@ export class WikipediaApi implements WikipediaInteractor {
     });
 
     console.info("Request URL:", `${domain}/w/index.php?${params.toString()}`);
-
-    const exportResponse = await fetch(
-      `${domain}/w/index.php?${params.toString()}`,
-      {
-        headers: this.headers,
-      },
-    );
-
+    const exportResponse = await fetch(`${domain}/w/index.php?${params.toString()}`);
     const exportData = await exportResponse.text();
 
     const processedData = await processExportedArticle(

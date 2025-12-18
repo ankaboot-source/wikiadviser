@@ -1,4 +1,4 @@
-import { Hash, encode } from "md5";
+import { Hash, encode } from "https://deno.land/x/checksum@1.2.0/mod.ts";
 
 /**
  * Encodes the given string using MD5 algorithm.

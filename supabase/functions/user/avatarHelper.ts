@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import { Context } from "npm:hono@4.7.4";
 import ENV from "../_shared/schema/env.schema.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import buildAvatar from "./avatar-generator/avatarPlaceholder.ts";

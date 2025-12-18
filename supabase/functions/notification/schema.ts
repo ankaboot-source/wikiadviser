@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'npm:zod@3.24.2';
 
 export const TriggerPayloadSchema = z.object({
   type: z.enum(['INSERT', 'UPDATE', 'DELETE']),

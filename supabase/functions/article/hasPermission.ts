@@ -1,5 +1,5 @@
 import { getUserPermission } from '../_shared/helpers/supabaseHelper.ts';
-import { Context, Next } from 'hono';
+import { Context, Next } from 'npm:hono@4.7.4';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
 
 export const hasPermissions = (permissions: string[]) => {

@@ -1,4 +1,4 @@
-import { Context } from "hono";
+import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../_shared/supabaseAdmin.ts";
 import createSupabaseClient from "../_shared/supabaseClient.ts";
 import { generateName } from "./nameGenerator.ts";

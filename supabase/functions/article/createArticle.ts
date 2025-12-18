@@ -1,4 +1,4 @@
-import { Context } from 'hono';
+import { Context } from 'npm:hono@4.7.4';
 import {
   deleteArticleDB,
   getUserArticlesCount,

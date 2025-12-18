@@ -1,4 +1,4 @@
-import { Context } from 'hono';
+import { Context } from 'npm:hono@4.7.4';
 import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
 import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';

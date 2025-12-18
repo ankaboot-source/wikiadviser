@@ -1,5 +1,5 @@
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
-import { Hono } from 'hono';
+import { Hono } from 'npm:hono@4.7.4';
 import { createShareLink } from './createShareLink.ts';
 import { verifyShareLink } from './verifyShareLink.ts';
 

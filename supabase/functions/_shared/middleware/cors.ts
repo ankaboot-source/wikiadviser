@@ -1,4 +1,4 @@
-import { MiddlewareHandler } from "hono";
+import { MiddlewareHandler } from "npm:hono@4.7.4";
 import ENV from "../schema/env.schema.ts";
 
 const rootDomain = ENV.ROOT_DOMAIN;

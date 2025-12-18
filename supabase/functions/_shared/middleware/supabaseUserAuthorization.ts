@@ -1,8 +1,8 @@
-import { createServerClient } from "@supabase/ssr";
-import { type SerializeOptions } from "cookie"; // Import the type expected by @supabase/ssr
-import { type Context } from "hono";
-import { getCookie, setCookie } from "hono/cookie";
-import { type CookieOptions } from "hono/utils/cookie";
+import { createServerClient } from "npm:@supabase/ssr@0.6.1";
+import { type SerializeOptions } from "npm:cookie@0.6.0"; // Import the type expected by @supabase/ssr
+import { type Context } from "npm:hono@4.7.4";
+import { getCookie, setCookie } from "npm:hono@4.7.4/cookie";
+import { type CookieOptions } from "npm:hono@4.7.4/utils/cookie";
 import supabaseClient from "../supabaseClient.ts";
 
 // Type expected by @supabase/ssr setAll's parameter

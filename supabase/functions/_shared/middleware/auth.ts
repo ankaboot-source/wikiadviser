@@ -1,4 +1,4 @@
-import { Context, Next } from "hono";
+import { Context, Next } from "npm:hono@4.7.4";
 import SupabaseAuthorization from "./supabaseUserAuthorization.ts"; // Adjust path
 
 async function honoAuthorizationMiddleware(c: Context, next: Next) {

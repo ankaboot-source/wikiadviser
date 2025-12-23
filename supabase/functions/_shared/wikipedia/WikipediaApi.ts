@@ -100,7 +100,7 @@ export class WikipediaApi implements WikipediaInteractor {
     console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
     const response = await fetch(`${domain}/w/api.php?${params.toString()}`);
     const data = await response.json();
-    const htmlString = data.parse.text["*"];
+    const htmlString = data?.parse?.text?.["*"];
     if (!htmlString) {
       throw Error("Could not get article HTML");
     }

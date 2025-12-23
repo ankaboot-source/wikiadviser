@@ -13,6 +13,7 @@ export class WikipediaApi implements WikipediaInteractor {
     globalThis.fetch = (input: RequestInfo | URL, initial?: RequestInit) => {
       const headers = {
         "User-Agent": USER_AGENT,
+        "Accept": "application/json",
         ...(initial?.headers || {}),
       };
 

@@ -8,21 +8,9 @@ export class WikipediaApi implements WikipediaInteractor {
   private wpProxy = ENV.WIKIPEDIA_PROXY;
   private static searchResultsLimit = 10;
 
-  constructor() {
-    const originalFetch = globalThis.fetch;
-    globalThis.fetch = (input: RequestInfo | URL, initial?: RequestInit) => {
-      const headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json",
-        ...(initial?.headers || {}),
-      };
-
-      console.info("Request URL:", input.toString());
-
-      return originalFetch(input, {
-        ...initial,
-        headers,
-      });
+  private get headers() {
+    return {
+      "User-Agent": USER_AGENT,
     };
   }
 
@@ -51,8 +39,9 @@ export class WikipediaApi implements WikipediaInteractor {
       ...(this.wpProxy && { lang: language }),
     });
 
-    console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
-    const response = await fetch(`${domain}/w/api.php?${params.toString()}`);
+    const url = `${domain}/w/api.php?${params.toString()}`;
+    console.info("Request URL:", url);
+    const response = await fetch(url, { headers: this.headers });
     const data = await response.json();
     const wpSearchedArticles = data?.query?.pages;
     const results: WikipediaSearchResult[] = [];
@@ -98,8 +87,9 @@ export class WikipediaApi implements WikipediaInteractor {
       ...(this.wpProxy && { lang: language }),
     });
 
-    console.info("Request URL:", `${domain}/w/api.php?${params.toString()}`);
-    const response = await fetch(`${domain}/w/api.php?${params.toString()}`);
+    const url = `${domain}/w/api.php?${params.toString()}`;
+    console.info("Request URL:", url);
+    const response = await fetch(url, { headers: this.headers });
     const data = await response.json();
     const htmlString = data?.parse?.text?.["*"];
     if (!htmlString) {
@@ -123,10 +113,9 @@ export class WikipediaApi implements WikipediaInteractor {
       ...(this.wpProxy && { lang: language }),
     });
 
-    console.info("Request URL:", `${domain}/w/index.php?${params.toString()}`);
-    const exportResponse = await fetch(
-      `${domain}/w/index.php?${params.toString()}`,
-    );
+    const url = `${domain}/w/index.php?${params.toString()}`;
+    console.info("Request URL:", url);
+    const exportResponse = await fetch(url, { headers: this.headers });
     const exportData = await exportResponse.text();
 
     const processedData = await processExportedArticle(

@@ -124,7 +124,30 @@ function validateAIResponse(data: OpenRouterResponse): AIResponse | null {
   }
 }
 
-function getChangeWikitext(
+function getWikitextContext(
+  currentWikitext: string,
+  changeIndex: number
+): string {
+  try {
+    const sections = currentWikitext.split(/\n\n+/);
+
+    const startIdx = Math.max(0, changeIndex - 1);
+    const endIdx = Math.min(sections.length - 1, changeIndex + 1);
+
+    const contextSections = [];
+    for (let i = startIdx; i <= endIdx; i++) {
+      if (sections[i]) {
+        contextSections.push(sections[i].trim());
+      }
+    }
+    return contextSections.join('\n\n');
+  } catch (error) {
+    console.error('Error extracting wikitext context:', error);
+    return '';
+  }
+}
+
+function getWikitextSegment(
   currentWikitext: string,
   changeIndex: number
 ): string {
@@ -134,10 +157,9 @@ function getChangeWikitext(
     if (changeIndex >= 0 && changeIndex < sections.length) {
       return sections[changeIndex].trim();
     }
-
-    return currentWikitext.slice(0, 4000);
+    return '';
   } catch (error) {
-    console.error('Error extracting change wikitext:', error);
+    console.error('Error extracting wikitext segment:', error);
     return '';
   }
 }
@@ -226,6 +248,16 @@ function buildArticleContext(
   return context;
 }
 
+function getEditTypeName(typeOfEdit: number | null | undefined): string {
+  const types: Record<number, string> = {
+    0: 'CHANGE',
+    1: 'INSERT',
+    2: 'DELETE',
+    4: 'DELETE-INSERT',
+  };
+  return types[typeOfEdit ?? -1] || 'UNKNOWN';
+}
+
 app.post('/', async (c) => {
   try {
     console.log('AI Review started');
@@ -287,7 +319,7 @@ app.post('/', async (c) => {
 
     const { data: changes } = await supabase
       .from('changes')
-      .select('id, content, type_of_edit, index')
+      .select('id, type_of_edit, index')
       .eq('revision_id', latestRevision.id)
       .neq('contributor_id', MIRA_BOT_ID)
       .eq('archived', false)
@@ -302,6 +334,23 @@ app.post('/', async (c) => {
       article_id
     );
 
+    const wikitextSegments = new Map<string, string>();
+    console.log('Extracting wikitext segments from latest revision...');
+
+    for (const ch of changes) {
+      const segment = getWikitextSegment(currentWikitext, ch.index);
+      if (segment) {
+        wikitextSegments.set(ch.id, segment);
+        console.log(
+          `  Change at index ${ch.index}: extracted ${segment.length} chars`
+        );
+      } else {
+        console.warn(
+          `  Change at index ${ch.index}: could not extract segment`
+        );
+      }
+    }
+
     const reviews = [];
     const changesToApply: Array<{
       original: string;
@@ -310,7 +359,20 @@ app.post('/', async (c) => {
     }> = [];
 
     const reviewPromises = changes.map(async (ch, i) => {
-      const changeWikitext = getChangeWikitext(currentWikitext, ch.index);
+      const wikitextSegment = wikitextSegments.get(ch.id);
+
+      if (!wikitextSegment) {
+        console.warn(
+          `No wikitext segment found for change ${ch.id} at index ${ch.index}`
+        );
+        return {
+          change_id: ch.id,
+          comment: 'Could not locate change in wikitext',
+          proposed_change: 'No changes needed.',
+          has_improvement: false,
+        };
+      }
+      const changeWikitext = wikitextSegment.slice(0, 4000);
 
       if (!changeWikitext) {
         return {
@@ -321,16 +383,18 @@ app.post('/', async (c) => {
         };
       }
 
-      const editType =
-        ch.type_of_edit === 0
-          ? 'DELETION'
-          : ch.type_of_edit === 1
-          ? 'ADDITION'
-          : 'MODIFICATION';
+      const wikitextContext = getWikitextContext(currentWikitext, ch.index);
+      console.log(`  Context length: ${wikitextContext.length}`);
 
-      console.log(`Processing change ${i + 1}/${changes.length} (${editType})`);
+      const editType = getEditTypeName(ch.type_of_edit);
 
-      const prompt = `${articleContext}\n\nEdit Type: ${editType}\n\nContent to review:\n${changeWikitext}`;
+      let prompt = `${articleContext}\n\nEdit Type: ${editType}\n\n`;
+
+      if (wikitextContext && wikitextContext.length > 0) {
+        prompt += `Context from article:\n---\n${wikitextContext}\n---\n\n`;
+      }
+
+      prompt += `Content to review:\n${changeWikitext}`;
 
       try {
         const resp = await fetch(
@@ -379,8 +443,8 @@ app.post('/', async (c) => {
 
         const hasImprovement =
           proposed_change !== 'No changes needed.' &&
-          proposed_change !== changeWikitext &&
-          proposed_change.trim() !== changeWikitext.trim() &&
+          proposed_change !== wikitextSegment &&
+          proposed_change.trim() !== wikitextSegment.trim() &&
           proposed_change.length > 0;
 
         if (hasImprovement) {
@@ -392,7 +456,7 @@ app.post('/', async (c) => {
           comment,
           proposed_change,
           has_improvement: hasImprovement,
-          original: changeWikitext,
+          original: wikitextSegment,
           improved: proposed_change,
         };
       } catch (error) {
@@ -452,29 +516,15 @@ app.post('/', async (c) => {
           change.improved
         );
         appliedCount++;
-      } else {
-        console.warn(
-          `Could not find original text in wikitext for change: ${change.comment}`
-        );
       }
-    }
-
-    if (appliedCount === 0) {
-      console.log('Could not apply any improvements to wikitext');
-      return c.json({
-        summary: 'Mira could not apply improvements to article.',
-        total_reviewed: changes.length,
-        total_improvements: 0,
-        reviews,
-        trigger_diff_update: false,
-      });
+        //improvedWikitext += `\n\n${change.improved}`;
     }
 
     console.log(
       `Successfully applied ${appliedCount}/${changesToApply.length} improvements`
     );
 
-    const summaryText = `Mira: ${appliedCount} improvement(s)`;
+    const summaryText = `Mira: ${changesToApply.length} improvement(s)`;
 
     console.log('Creating NEW revision in MediaWiki as AI bot');
     const editResult = await mediawiki.editArticleAsBot(
@@ -488,13 +538,13 @@ app.post('/', async (c) => {
     console.log(`  New revision: ${editResult.newrevid}`);
 
     const summaryMessage = LLMConfig.hasUserConfig
-      ? `Mira applied ${appliedCount} improvement(s) using user's LLM settings`
-      : `Mira applied ${appliedCount} improvement(s) using default settings`;
+      ? `Mira applied ${changesToApply.length} improvement(s) using user's LLM settings`
+      : `Mira applied ${changesToApply.length} improvement(s)`;
 
     return c.json({
       summary: summaryMessage,
       total_reviewed: changes.length,
-      total_improvements: appliedCount,
+      total_improvements: changesToApply.length,
       mira_bot_id: MIRA_BOT_ID,
       old_revision: editResult.oldrevid,
       new_revision: editResult.newrevid,

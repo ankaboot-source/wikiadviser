@@ -6,11 +6,12 @@ import WikipediaInteractor from "./WikipediaInteractor.ts";
 const USER_AGENT = "WikiAdviser/1.0 (ops@ankaboot.io)";
 export class WikipediaApi implements WikipediaInteractor {
   private wpProxy = ENV.WIKIPEDIA_PROXY;
+  private userAgent = USER_AGENT;
   private static searchResultsLimit = 10;
 
   private get headers() {
     return {
-      "User-Agent": USER_AGENT,
+      "User-Agent": this.userAgent,
     };
   }
 

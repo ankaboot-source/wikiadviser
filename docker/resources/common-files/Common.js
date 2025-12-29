@@ -177,44 +177,26 @@ $(function() {
   
   const wgAction = mw.config.get('wgAction');
   
-  if (wgAction === 'edit') {
-    var editForm = document.getElementById('editform');
-    if (editForm) {
-      editForm.addEventListener('submit', function() {
-        try {
-          sessionStorage.setItem('wikiadviser_source_saved', 'true');
-          sessionStorage.setItem('wikiadviser_article_id', mw.config.get('wgPageName'));
-        } catch (error) {
-          console.error('Failed to set session storage items:', error);
-        }
-      });
-    }
-  }
-  
   if (wgAction === 'view') {
-    try {
-      var savedFlag = sessionStorage.getItem('wikiadviser_source_saved');
-      var savedArticleId = sessionStorage.getItem('wikiadviser_article_id');
-      
-      if (savedFlag === 'true' && savedArticleId) {
-        sessionStorage.removeItem('wikiadviser_source_saved');
-        sessionStorage.removeItem('wikiadviser_article_id');
-        
-        if (isIframe) {
-          window.parent.postMessage(
-            {
-              type: 'saved-changes',
-              articleId: savedArticleId,
-            },
-            '*'
-          );
-        }
-        mw.wikiadviser.getDiffUrl(savedArticleId).then(function(diffUrl) {
-          window.location.replace(diffUrl);
-        });
+    const referrer = document.referrer;
+    const articleId = mw.config.get('wgPageName');
+    const isFromEdit = referrer.includes('action=edit') || referrer.includes('action=submit');
+    const isFromSameArticle = referrer.includes(articleId);
+    
+    if (isFromEdit && isFromSameArticle) {
+      if (isIframe) {
+        window.parent.postMessage(
+          {
+            type: 'saved-changes',
+            articleId: articleId,
+          },
+          '*'
+        );
       }
-    } catch (error) {
-      console.error('Error handling source editor save redirection:', error);
+      
+      mw.wikiadviser.getDiffUrl(articleId).then(function(diffUrl) {
+        window.location.replace(diffUrl);
+      });
     }
   }
 });

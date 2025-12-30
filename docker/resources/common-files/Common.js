@@ -170,3 +170,33 @@ mw.hook("ve.activationComplete").add(function () {
       });
   };
 });
+
+// Source Editor Save Handling
+$(function() {
+  if (!isIframe) return;
+  
+  const wgAction = mw.config.get('wgAction');
+  
+  if (wgAction === 'view') {
+    const referrer = document.referrer;
+    const articleId = mw.config.get('wgPageName');
+    const isFromEdit = referrer.includes('action=edit') || referrer.includes('action=submit');
+    const isFromSameArticle = referrer.includes(articleId);
+    
+    if (isFromEdit && isFromSameArticle) {
+      if (isIframe) {
+        window.parent.postMessage(
+          {
+            type: 'saved-changes',
+            articleId: articleId,
+          },
+          '*'
+        );
+      }
+      
+      mw.wikiadviser.getDiffUrl(articleId).then(function(diffUrl) {
+        window.location.replace(diffUrl);
+      });
+    }
+  }
+});

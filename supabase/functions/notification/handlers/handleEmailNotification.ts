@@ -104,16 +104,21 @@ export async function sendEmailNotification(notification: Notification) {
         return;
     }
 
+    const AI_BOT_EMAIL = Deno.env.get('AI_BOT_EMAIL');
     const html = buildHtmlEmail(subject, text, redirectUrl);
-
-    await transporter.sendMail({
-      from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
-      replyTo: triggeredByEmail,
-      to: toEmail,
-      subject,
-      html,
-    });
-
+    if (
+      toEmail != null &&
+      triggeredByEmail != null &&
+      toEmail !== AI_BOT_EMAIL
+    ) {
+      await transporter.sendMail({
+        from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
+        replyTo: triggeredByEmail,
+        to: toEmail,
+        subject,
+        html,
+      });
+    }
     console.log(`Email sent to ${toEmail}`);
   } catch (err) {
     console.error('Failed to send email:', err);

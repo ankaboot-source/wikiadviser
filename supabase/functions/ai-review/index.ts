@@ -40,6 +40,12 @@ You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a
    * **Verifiability:** Wording must allow support by reliable, published sources.
    * **Encyclopedic Style:** Formal, factual, impersonal tone.
 
+**Language rules (very important):**
+- **Do NOT translate the text.**
+- **Always keep the original language exactly as provided.**
+- Fix grammar, spelling, or clarity **only within the same language**.
+- **No translation.**
+
 **Response format:** Always reply in JSON with two fields:
 
 json
@@ -253,6 +259,7 @@ function getEditTypeName(typeOfEdit: number | null | undefined): string {
     0: 'CHANGE',
     1: 'INSERT',
     2: 'DELETE',
+    3: 'STRUCTURAL-CHANGE',
     4: 'DELETE-INSERT',
   };
   return types[typeOfEdit ?? -1] || 'UNKNOWN';

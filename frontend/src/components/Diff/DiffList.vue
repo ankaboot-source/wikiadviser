@@ -105,6 +105,7 @@ const props = defineProps<{
   articleId: string;
   role: Enums<'role'>;
   changesList: ChangeItem[];
+  isImported?: boolean;
 }>();
 
 const groupedChanges = computed(() => {
@@ -135,13 +136,18 @@ const groupedChanges = computed(() => {
     (a, b) => b.revid - a.revid,
   );
 
-  const allRevisionIds = sortedGrouped
-    .map((g) => g.revid)
-    .sort((a, b) => a - b);
-  const firstRevisionId = allRevisionIds.length > 0 ? allRevisionIds[0] : null;
-  const filteredGrouped = sortedGrouped.filter(
-    (item) => item.revid !== firstRevisionId,
-  );
+  let filteredGrouped = sortedGrouped;
+
+  if (!props.isImported && sortedGrouped.length > 0) {
+    const allRevisionIds = sortedGrouped
+      .map((g) => g.revid)
+      .sort((a, b) => a - b);
+    const firstRevisionId =
+      allRevisionIds.length > 0 ? allRevisionIds[0] : null;
+    filteredGrouped = sortedGrouped.filter(
+      (item) => item.revid !== firstRevisionId,
+    );
+  }
   return filteredGrouped.map((item, index) => ({
     isRecent: index === 0,
     index: filteredGrouped.length - index,

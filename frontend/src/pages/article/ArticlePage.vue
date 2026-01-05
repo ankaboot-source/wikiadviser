@@ -22,6 +22,7 @@
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
+        :is-imported="article.imported"
         class="rounded-borders bg-secondary borders list-area"
       />
 

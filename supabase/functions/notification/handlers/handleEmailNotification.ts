@@ -21,6 +21,16 @@ export async function sendEmailNotification(notification: Notification) {
     }
 
     const triggeredByEmail = await getUserEmail(notification.triggered_by);
+    if (!triggeredByEmail) {
+      console.warn('No email found for triggerer:', notification.triggered_by);
+      return;
+    }
+
+    const AI_BOT_EMAIL = Deno.env.get('AI_BOT_EMAIL');
+    if (toEmail === AI_BOT_EMAIL) {
+      console.log('Skipping email to AI bot');
+      return;
+    }
     const triggeredOnEmail = notification.triggered_on
       ? await getUserEmail(notification.triggered_on)
       : null;
@@ -104,21 +114,23 @@ export async function sendEmailNotification(notification: Notification) {
         return;
     }
 
-    const AI_BOT_EMAIL = Deno.env.get('AI_BOT_EMAIL');
-    const html = buildHtmlEmail(subject, text, redirectUrl);
-    if (
-      toEmail != null &&
-      triggeredByEmail != null &&
-      toEmail !== AI_BOT_EMAIL
-    ) {
-      await transporter.sendMail({
-        from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
-        replyTo: triggeredByEmail,
-        to: toEmail,
-        subject,
-        html,
-      });
+    if (!subject || !text) {
+      console.warn(
+        'No email content generated for notification:',
+        notification
+      );
+      return;
     }
+
+    const html = buildHtmlEmail(subject, text, redirectUrl);
+    await transporter.sendMail({
+      from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
+      replyTo: triggeredByEmail,
+      to: toEmail,
+      subject,
+      html,
+    });
+
     console.log(`Email sent to ${toEmail}`);
   } catch (err) {
     console.error('Failed to send email:', err);

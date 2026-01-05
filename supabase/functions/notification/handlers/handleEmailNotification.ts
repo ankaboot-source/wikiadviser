@@ -12,6 +12,78 @@ import {
   getChangeIdForNotification,
 } from '../utils/helpers.ts';
 
+function getEmailContent(
+  notification: Notification,
+  context: {
+    articleTitle: string;
+    triggeredByEmail: string;
+    triggeredOnEmail: string | null;
+    role: string | null;
+    recipientIsTarget: boolean;
+    recipientIsChangeOwner: boolean;
+    baseUrl: string;
+    changeId: string | null;
+  }
+) {
+  const {
+    articleTitle,
+    triggeredByEmail,
+    triggeredOnEmail,
+    role,
+    recipientIsTarget,
+    recipientIsChangeOwner,
+    baseUrl,
+    changeId,
+  } = context;
+
+  let subject = '';
+  let text = '';
+  let redirectUrl = changeId ? `${baseUrl}?change=${changeId}` : baseUrl;
+
+  switch (notification.type) {
+    case NotificationType.Revision:
+      if (notification.action === NotificationAction.Insert) {
+        subject = `New revision on « ${articleTitle} »`;
+        text = `A new revision to « ${articleTitle} » has been made by ${triggeredByEmail}.`;
+      }
+      break;
+
+    case NotificationType.Comment:
+      if (notification.action === NotificationAction.Insert) {
+        subject = `New comment on « ${articleTitle} »`;
+        text = recipientIsChangeOwner
+          ? `${triggeredByEmail} has replied to your change on article « ${articleTitle} ».`
+          : `A new comment has been made to a change on « ${articleTitle} ».`;
+      }
+      break;
+
+    case NotificationType.Role:
+      if (notification.action === NotificationAction.Insert) {
+        subject = `Access granted to « ${articleTitle} »`;
+        text = recipientIsTarget
+          ? `You have been granted « ${
+              role ?? 'a role'
+            } » permission to « ${articleTitle} ».`
+          : `${triggeredOnEmail || 'Someone'} has been granted ${
+              role ?? 'a role'
+            } permission to « ${articleTitle} ».`;
+        redirectUrl = baseUrl;
+      } else if (
+        notification.action === NotificationAction.Update &&
+        recipientIsTarget
+      ) {
+        subject = `Your role updated on «${articleTitle}»`;
+        text = `Your permission for « ${articleTitle} » has been changed to ${
+          role ?? 'a role'
+        }.`;
+        redirectUrl = baseUrl;
+      }
+      break;
+  }
+
+  return subject && text ? { subject, text, redirectUrl } : null;
+}
+
 export async function sendEmailNotification(notification: Notification) {
   try {
     const toEmail = await getUserEmail(notification.user_id);
@@ -48,73 +120,32 @@ export async function sendEmailNotification(notification: Notification) {
       );
     }
 
-    const recipientIsTarget =
+    const recipientIsTarget = Boolean(
       notification.triggered_on &&
-      notification.user_id === notification.triggered_on;
+        notification.user_id === notification.triggered_on
+    );
 
-    const recipientIsChangeOwner =
+    const recipientIsChangeOwner = Boolean(
       notification.type === NotificationType.Comment &&
-      notification.triggered_on &&
-      notification.user_id === notification.triggered_on;
-
-    let subject = '';
-    let text = '';
-    let redirectUrl = '';
+        notification.triggered_on &&
+        notification.user_id === notification.triggered_on
+    );
 
     const changeId = await getChangeIdForNotification(notification);
-
     const baseUrl = `/articles/${notification.article_id}`;
-    redirectUrl = changeId ? `${baseUrl}?change=${changeId}` : baseUrl;
 
-    switch (notification.type) {
-      case NotificationType.Revision:
-        if (notification.action === NotificationAction.Insert) {
-          subject = `New revision on « ${articleTitle} »`;
-          text = `A new revision to « ${articleTitle} » has been made by ${
-            triggeredByEmail || 'Someone'
-          }.`;
-        }
-        break;
+    const emailContent = getEmailContent(notification, {
+      articleTitle,
+      triggeredByEmail,
+      triggeredOnEmail,
+      role,
+      recipientIsTarget,
+      recipientIsChangeOwner,
+      baseUrl,
+      changeId,
+    });
 
-      case NotificationType.Comment:
-        if (notification.action === NotificationAction.Insert) {
-          subject = `New comment on « ${articleTitle} »`;
-          text = recipientIsChangeOwner
-            ? `${
-                triggeredByEmail || 'Someone'
-              } has replied to your change on article « ${articleTitle} ».`
-            : `A new comment has been made to a change on « ${articleTitle} ».`;
-        }
-        break;
-
-      case NotificationType.Role:
-        if (notification.action === NotificationAction.Insert) {
-          subject = `Access granted to « ${articleTitle} »`;
-          text = recipientIsTarget
-            ? `You have been granted « ${
-                role ?? 'a role'
-              } » permission to « ${articleTitle} ».`
-            : `${triggeredOnEmail || 'Someone'} has been granted ${
-                role ?? 'a role'
-              } permission to « ${articleTitle} ».`;
-          redirectUrl = baseUrl;
-        } else if (notification.action === NotificationAction.Update) {
-          if (recipientIsTarget) {
-            subject = `Your role updated on «${articleTitle}»`;
-            text = `Your permission for « ${articleTitle} » has been changed to ${
-              role ?? 'a role'
-            }.`;
-            redirectUrl = baseUrl;
-          }
-        }
-        break;
-
-      default:
-        console.warn('Unhandled email type or action:', notification);
-        return;
-    }
-
-    if (!subject || !text) {
+    if (!emailContent) {
       console.warn(
         'No email content generated for notification:',
         notification
@@ -122,12 +153,16 @@ export async function sendEmailNotification(notification: Notification) {
       return;
     }
 
-    const html = buildHtmlEmail(subject, text, redirectUrl);
+    const html = buildHtmlEmail(
+      emailContent.subject,
+      emailContent.text,
+      emailContent.redirectUrl
+    );
     await transporter.sendMail({
       from: `"${triggeredByEmail}" <${Deno.env.get('SMTP_USER')}>`,
       replyTo: triggeredByEmail,
       to: toEmail,
-      subject,
+      subject: emailContent.subject,
       html,
     });
 

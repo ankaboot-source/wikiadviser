@@ -79,6 +79,10 @@ function getEmailContent(
         redirectUrl = baseUrl;
       }
       break;
+
+    default:
+      console.warn('Unhandled email type or action:', notification);
+      return null;
   }
 
   return subject && text ? { subject, text, redirectUrl } : null;

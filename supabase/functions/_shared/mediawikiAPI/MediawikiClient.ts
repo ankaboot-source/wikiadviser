@@ -238,7 +238,7 @@ export default class MediawikiClient {
     articleId: string,
     userId: string,
     diff: string,
-    hideChanges: boolean = false
+    hideChanges = false
   ) {
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');

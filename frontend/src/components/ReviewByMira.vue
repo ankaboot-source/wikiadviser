@@ -99,7 +99,12 @@ async function triggerReview() {
       reviews.value = data.reviews;
     }
 
-    if (data?.trigger_diff_update && data?.mira_bot_id && data?.old_revision && data?.new_revision) {
+    if (
+      data?.trigger_diff_update &&
+      data?.mira_bot_id &&
+      data?.old_revision &&
+      data?.new_revision
+    ) {
       miraStore.completeReview({
         miraBotId: data.mira_bot_id,
         oldRevid: data.old_revision,

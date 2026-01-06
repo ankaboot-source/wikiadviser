@@ -69,7 +69,7 @@ function showNotification(type: 'success' | 'info' | 'error', message: string) {
 
   $q.notify({
     type: colors[type],
-    message: message,
+    message,
     icon: icons[type],
     position: 'bottom',
     timeout: 5000,
@@ -99,11 +99,11 @@ async function triggerReview() {
       reviews.value = data.reviews;
     }
 
-    if (data?.trigger_diff_update && data?.mira_bot_id) {
+    if (data?.trigger_diff_update && data?.mira_bot_id && data?.old_revision && data?.new_revision) {
       miraStore.completeReview({
         miraBotId: data.mira_bot_id,
-        oldRevid: data.old_revision!,
-        newRevid: data.new_revision!,
+        oldRevid: data.old_revision,
+        newRevid: data.new_revision,
       });
 
       showNotification(

@@ -234,7 +234,7 @@ export default class MediawikiClient {
     return data;
   }
 
-  async updateChanges(articleId: string, userId: string, diff: string) {
+  async updateChanges(articleId: string, userId: string, diff: string, hideChanges: boolean = false) {
     const { revid: latestRevid, comment: latestRevSummary } =
       await this.getRevisionData(articleId, 'older');
 
@@ -254,6 +254,12 @@ export default class MediawikiClient {
       userId,
       revisionId
     );
+    if (hideChanges && changesToUpsert.length > 0) {
+      changesToUpsert.forEach(change => {
+        change.archived = true;
+        change.hidden = true;
+      });
+    }
 
     await upsertChanges(changesToUpsert);
     await updateCurrentHtmlContent(articleId, htmlContent);

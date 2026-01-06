@@ -45,7 +45,6 @@ interface ReviewResponse {
   mira_bot_id?: string;
   old_revision?: number;
   new_revision?: number;
-  notification_type?: 'success' | 'info' | 'error';
   error?: string;
 }
 
@@ -118,7 +117,7 @@ async function triggerReview() {
     } else {
       miraStore.$reset();
 
-      const notifType = data?.notification_type || 'info';
+      const notifType = 'info';
       const message = 'No improvements needed.';
       showNotification(notifType, message);
     }

@@ -109,6 +109,11 @@ async function handleDiffChange(data: {
 
 function gotoDiffLink() {
   activeViewStore.modeToggle = 'edit';
+
+  if (!iframeRef.value || !iframeRef.value.contentWindow) {
+    return;
+  }
+
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {
@@ -129,6 +134,16 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 
   switch (data.type) {
+    case 'first-revision-saved':
+      $q.notify({
+        message: 'Article changes created successfully',
+        icon: 'check',
+        color: 'positive',
+      });
+      isProcessingChanges.value = false;
+      loading.value = { ...loaderPresets.editor };
+      await reloadIframe();
+      break;
     case 'saved-changes':
     case 'deleted-revision':
       isProcessingChanges.value = true;

@@ -136,7 +136,7 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   switch (data.type) {
     case 'first-revision-saved':
       $q.notify({
-        message: 'Article changes created successfully',
+        message: 'Changes successfully updated',
         icon: 'check',
         color: 'positive',
       });
@@ -161,7 +161,11 @@ watch(
     if (pending) {
       isProcessingChanges.value = true;
       loading.value = { value: true, message: loaderPresets.changes.message };
-      nextTick().then(() => gotoDiffLink());
+      nextTick().then(() => {
+        if (iframeRef.value && iframeRef.value.contentWindow) {
+          gotoDiffLink();
+        } 
+      });
     }
   },
 );

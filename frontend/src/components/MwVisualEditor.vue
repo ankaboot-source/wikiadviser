@@ -164,7 +164,7 @@ watch(
       nextTick().then(() => {
         if (iframeRef.value && iframeRef.value.contentWindow) {
           gotoDiffLink();
-        } 
+        }
       });
     }
   },

@@ -28,27 +28,10 @@ export async function updateArticleChanges(c: Context) {
   const contributorId = miraBotId || user.id;
 
   try {
-    const article = await getArticle(articleId);
-    const { language, imported } = article;
-    const { data: existingRevisions, error: revisionError } =
-      await supabaseClient
-        .from('revisions')
-        .select('id')
-        .eq('article_id', articleId);
-
-    if (revisionError) {
-      throw new Error(revisionError.message);
-    }
-    const hideChanges =
-      (!imported && !existingRevisions) || existingRevisions.length === 0;
+    const { language } = await getArticle(articleId);
     const mediawiki = new MediawikiClient(language, wikipediaApi);
 
-    await mediawiki.updateChanges(
-      articleId,
-      contributorId,
-      diffHtml,
-      hideChanges
-    );
+    await mediawiki.updateChanges(articleId, contributorId, diffHtml);
     return c.json({ message: 'Updating changes succeeded.' }, 200);
   } catch (error) {
     console.error(error);

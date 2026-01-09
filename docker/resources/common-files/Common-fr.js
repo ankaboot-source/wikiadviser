@@ -828,7 +828,6 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
                   const originalRevid = results[0].revid;
                   const latestRevid = results[1].revid;
                   
-                  // Check if first revision is DISPLAYTITLE only
                   const api = new mw.Api();
                   return api.get({
                       action: 'query',
@@ -842,7 +841,6 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
                       const firstRevContent = data.query.pages[0].revisions[0].content;
                       const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
                       
-                      // If first rev is DISPLAYTITLE only, get second revision as base
                       if (isOnlyDisplayTitle && originalRevid !== latestRevid) {
                           return api.get({
                               action: 'query',
@@ -887,6 +885,7 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
 
       mw.hook('ve.activationStart').add(function () {
         try {
+					// Make inner page full width and hide left bar (TOC)
           var elements = document.querySelectorAll('.mw-page-container-inner, .mw-body');
           for (var i = 0; i < elements.length; i++) {
             elements[i].removeAttribute('class');
@@ -905,7 +904,6 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
 
           const articleId = this.getPageName();
 
-          // Check revision count to detect first edit
           const api = new mw.Api();
           api.get({
               action: 'query',
@@ -919,7 +917,6 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
               const revisions = apiData.query.pages[0].revisions;
               const revisionCount = revisions.length;
               
-              // First edit detection
               if (revisionCount === 1) {
                   window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
                   return;
@@ -935,7 +932,6 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
                   }
               }
               
-              // Subsequent edits - go to diff
               window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
               mw.wikiadviser.getDiffUrl(articleId).then(function (diffUrl) {
                   window.location.replace(diffUrl);
@@ -957,7 +953,6 @@ $(function() {
     const isFromSameArticle = referrer.includes(articleId);
     
     if (isFromEdit && isFromSameArticle) {
-      // Check revision count to detect first edit
       const api = new mw.Api();
       api.get({
           action: 'query',
@@ -971,7 +966,6 @@ $(function() {
           const revisions = apiData.query.pages[0].revisions;
           const revisionCount = revisions.length;
           
-          // First edit detection
           if (revisionCount === 1) {
               window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
               return;
@@ -987,7 +981,6 @@ $(function() {
               }
           }
           
-          // Subsequent edits - go to diff
           window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
           mw.wikiadviser.getDiffUrl(articleId).then(function(diffUrl) {
               window.location.replace(diffUrl);

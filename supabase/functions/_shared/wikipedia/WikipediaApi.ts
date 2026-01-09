@@ -43,7 +43,7 @@ export class WikipediaApi implements WikipediaInteractor {
     const url = `${domain}/w/api.php?${params.toString()}`;
     console.info("Request URL:", url);
     const response = await fetch(url, { headers: this.headers });
-    console.info(JSON.stringify(response));
+    console.info(response);
     const data = await response.json();
     const wpSearchedArticles = data?.query?.pages;
     const results: WikipediaSearchResult[] = [];

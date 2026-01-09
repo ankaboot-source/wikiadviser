@@ -270,49 +270,43 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
               const mediawikiBaseURL = mw.config.get("wgServer") + mw.config.get("wgScriptPath");
               
               return Promise.all([
-              self.getRevisionData(articleId, 'older'),
-              self.getFirstRealRevision(articleId)
+                  self.getRevisionData(articleId, 'newer'),
+                  self.getRevisionData(articleId, 'older')
               ]).then(function(results) {
-              const latestRevid = results[0].revid;
-              const firstRealRevid = results[1];
-              return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${firstRealRevid}&diffmode=visual&diffonly=1&wikiadviser`;
-            });
-          },
-
-          /**
-          * Get the first real revision ID (skipping DISPLAYTITLE-only revision)
-          * @param {string} articleId Page title
-          * @returns {Promise<number>} Promise resolving to first real revision ID
-          */
-          getFirstRealRevision: function(articleId) {
-              const api = new mw.Api();
-              return api.get({
-                  action: 'query',
-                  prop: 'revisions',
-                  titles: articleId,
-                  rvlimit: 2,
-                  rvdir: 'newer',
-                  rvprop: 'content|ids',
-                  formatversion: 2
-              }).then(function(data) {
-                  const revisions = data.query.pages[0].revisions;
+                  const originalRevid = results[0].revid;
+                  const latestRevid = results[1].revid;
                   
-                  if (revisions.length === 1) {
-                      return revisions[0].revid;
-                  }
-                  
-                  if (revisions.length >= 2) {
-                      const firstRevContent = revisions[0].content;
+                  const api = new mw.Api();
+                  return api.get({
+                      action: 'query',
+                      prop: 'revisions',
+                      titles: articleId,
+                      rvlimit: 1,
+                      rvdir: 'newer',
+                      rvprop: 'content',
+                      formatversion: 2
+                  }).then(function(data) {
+                      const firstRevContent = data.query.pages[0].revisions[0].content;
                       const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
                       
-                      if (isOnlyDisplayTitle) {
-                          return revisions[1].revid;
-                      } else {
-                          return revisions[0].revid;
+                      if (isOnlyDisplayTitle && originalRevid !== latestRevid) {
+                          return api.get({
+                              action: 'query',
+                              prop: 'revisions',
+                              titles: articleId,
+                              rvlimit: 2,
+                              rvdir: 'newer',
+                              rvprop: 'ids',
+                              formatversion: 2
+                          }).then(function(data2) {
+                              const revisions = data2.query.pages[0].revisions;
+                              const baseRevid = revisions.length > 1 ? revisions[1].revid : originalRevid;
+                              return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${baseRevid}&diffmode=visual&diffonly=1&wikiadviser`;
+                          });
                       }
-                  }
-                  
-                  return revisions[0].revid;
+                      
+                      return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1&wikiadviser`;
+                  });
               });
           },
 
@@ -396,45 +390,38 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
           originalSaveComplete.apply(this, arguments);
 
           const articleId = this.getPageName();
-          
-          mw.wikiadviser.isFirstRealEdit(articleId).then(function(isFirst) {
-            if (isFirst) {
-              window.parent.postMessage(
-                {
-                  type: 'first-revision-saved',
-                  articleId: articleId,
-                },
-                '*'
-              );
-            } else {
-              window.parent.postMessage(
-                {
-                  type: 'saved-changes',
-                  articleId: articleId,
-                },
-                '*'
-              );
-              mw.wikiadviser
-                .getDiffUrl(articleId)
-                .then(function (diffUrl) {
-                  console.log('Redirecting to diff:', diffUrl);
+
+          const api = new mw.Api();
+          api.get({
+              action: 'query',
+              prop: 'revisions',
+              titles: articleId,
+              rvlimit: 3,
+              rvdir: 'newer',
+              rvprop: 'content',
+              formatversion: 2
+          }).then(function(apiData) {
+              const revisions = apiData.query.pages[0].revisions;
+              const revisionCount = revisions.length;
+              
+              if (revisionCount === 1) {
+                  window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                  return;
+              }
+              
+              if (revisionCount === 2) {
+                  const firstRevContent = revisions[0].content;
+                  const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
+                  
+                  if (isOnlyDisplayTitle) {
+                      window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                      return;
+                  }
+              }
+              window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
+              mw.wikiadviser.getDiffUrl(articleId).then(function (diffUrl) {
                   window.location.replace(diffUrl);
-                })
-                .catch(function (error) {
-                });
-            }
-          }).catch(function(error) {
-              console.error('Failed to redirect to diff:', error);
-            window.parent.postMessage(
-              {
-                type: 'saved-changes',
-                articleId: articleId,
-              },
-              '*'
-            );
-            mw.wikiadviser.getDiffUrl(articleId).then(function (diffUrl) {
-              window.location.replace(diffUrl);
-            });
+              });
           });
         };
       });
@@ -452,46 +439,38 @@ $(function() {
     const isFromSameArticle = referrer.includes(articleId);
     
     if (isFromEdit && isFromSameArticle) {
-      mw.wikiadviser.isFirstRealEdit(articleId).then(function(isFirst) {
-        
-        if (isFirst) {
-          if (isIframe) {
-            window.parent.postMessage(
-              {
-                type: 'first-revision-saved',
-                articleId: articleId,
-              },
-              '*'
-            );
-          }
-        } else {
-          if (isIframe) {
-            window.parent.postMessage(
-              {
-                type: 'saved-changes',
-                articleId: articleId,
-              },
-              '*'
-            );
+      const api = new mw.Api();
+      api.get({
+          action: 'query',
+          prop: 'revisions',
+          titles: articleId,
+          rvlimit: 3,
+          rvdir: 'newer',
+          rvprop: 'content',
+          formatversion: 2
+      }).then(function(apiData) {
+          const revisions = apiData.query.pages[0].revisions;
+          const revisionCount = revisions.length;
+          
+          if (revisionCount === 1) {
+              window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+              return;
           }
           
+          if (revisionCount === 2) {
+              const firstRevContent = revisions[0].content;
+              const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
+              
+              if (isOnlyDisplayTitle) {
+                  window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                  return;
+              }
+          }
+          
+          window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
           mw.wikiadviser.getDiffUrl(articleId).then(function(diffUrl) {
-            window.location.replace(diffUrl);
+              window.location.replace(diffUrl);
           });
-        }
-      }).catch(function(error) {
-        if (isIframe) {
-          window.parent.postMessage(
-            {
-              type: 'saved-changes',
-              articleId: articleId,
-            },
-            '*'
-          );
-        }
-        mw.wikiadviser.getDiffUrl(articleId).then(function(diffUrl) {
-          window.location.replace(diffUrl);
-        });
       });
     }
   }

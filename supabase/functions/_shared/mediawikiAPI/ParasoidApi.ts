@@ -60,6 +60,7 @@ export default class Parsoid {
           },
         },
       );
+      console.info(response);
 
       if (response.status !== 200) {
         const error = response.data.error ??

@@ -43,7 +43,7 @@ export class WikipediaApi implements WikipediaInteractor {
     const url = `${domain}/w/api.php?${params.toString()}`;
     console.info("Request URL:", url);
     const response = await fetch(url, { headers: this.headers });
-    console.info(response);
+    console.info(JSON.stringify(response));
     const data = await response.json();
     const wpSearchedArticles = data?.query?.pages;
     const results: WikipediaSearchResult[] = [];
@@ -105,30 +105,38 @@ export class WikipediaApi implements WikipediaInteractor {
     articleId: string,
     language: string,
   ): Promise<string> {
-    const domain = this.getDomain(language);
+    try {
+      console.info('exportArticleData');
+      const domain = this.getDomain(language);
+      console.log('domain', domain)
 
-    const params = new URLSearchParams({
-      title: "Special:Export",
-      pages: title,
-      templates: "true",
-      curonly: "true",
-      ...(this.wpProxy && { lang: language }),
-    });
+      const params = new URLSearchParams({
+        title: "Special:Export",
+        pages: title,
+        templates: "true",
+        curonly: "true",
+        ...(this.wpProxy && { lang: language }),
+      });
+      console.log('params', params)
+      const url = `${domain}/w/index.php?${params.toString()}`;
+      console.info("Request exportArticleData URL:", url);
+      const exportResponse = await fetch(url, { headers: this.headers });
+      console.info(exportResponse);
+      const exportData = await exportResponse.text();
 
-    const url = `${domain}/w/index.php?${params.toString()}`;
-    console.info("Request URL:", url);
-    const exportResponse = await fetch(url, { headers: this.headers });
-    const exportData = await exportResponse.text();
+      const processedData = await processExportedArticle(
+        exportData,
+        language,
+        articleId,
+        title,
+        await this.getWikipediaHTML(title, language),
+      );
 
-    const processedData = await processExportedArticle(
-      exportData,
-      language,
-      articleId,
-      title,
-      await this.getWikipediaHTML(title, language),
-    );
-
-    return processedData;
+      return processedData;
+    } catch (error) {
+      console.error(error)
+      throw error;
+    }
   }
 }
 

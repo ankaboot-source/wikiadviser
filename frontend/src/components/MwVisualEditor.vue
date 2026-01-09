@@ -162,7 +162,7 @@ watch(
       isProcessingChanges.value = true;
       loading.value = { value: true, message: loaderPresets.changes.message };
       nextTick().then(() => {
-        if (iframeRef.value && iframeRef.value.contentWindow) {
+        if (iframeRef.value?.contentWindow) {
           gotoDiffLink();
         }
       });

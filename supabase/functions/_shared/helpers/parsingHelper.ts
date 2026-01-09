@@ -206,6 +206,7 @@ export async function refineArticleChanges(
 
   const changesToUpsert: Tables<"changes">[] = [];
   const changesToInsert: Tables<"changes">[] = [];
+  const usedChangeIds = new Set<string>();
   let changeIndex = 0;
 
   for (const element of changeElements) {
@@ -222,6 +223,9 @@ export async function refineArticleChanges(
       | "comment-insert";
 
     for (const change of changes) {
+      if (usedChangeIds.has(change.id)) {
+        continue;
+      }
       const $changeContent = load(change.content, null, false);
       const changeContentInnerHTML = $changeContent("span:first").html();
       if (
@@ -230,7 +234,7 @@ export async function refineArticleChanges(
       ) {
         // Update the change INDEX
         changeId = change.id;
-
+        usedChangeIds.add(change.id);
         changesToUpsert.push({
           id: change.id,
           archived: change.archived,

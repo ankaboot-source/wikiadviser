@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "npm:axios@^1.8.4";
+import ENV from "../schema/env.schema.ts";
 import mediawikiApiInstances from "./mediawikiApiInstances.ts";
 
 export default class Parsoid {
@@ -35,6 +36,7 @@ export default class Parsoid {
       baseURL: `https://${domain}/wiki/${language}/rest.php/${domain}`,
       headers: {
         "Content-Type": "application/json",
+        "X-Api-Key": ENV.X_API_KEY,
       },
     });
   }

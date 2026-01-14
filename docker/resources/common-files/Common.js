@@ -107,33 +107,23 @@ mw.wikiadviser = {
         action: "query",
         prop: "revisions",
         titles: articleId,
-        rvlimit: 1,
+        rvlimit: 2,
         rvdir: "newer",
-        rvprop: "content",
+        rvprop: "content|ids",
         formatversion: 2,
       }).then(function (data) {
-        const firstRevContent = data.query.pages[0].revisions[0].content;
+        const revisions = data.query.pages[0].revisions;
+
+        // Check if first revision is DISPLAYTITLE and use second as base if needed
         const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(
-          firstRevContent
+          revisions[0].content
         );
+        const baseRevid =
+          isOnlyDisplayTitle && revisions.length > 1
+            ? revisions[1].revid
+            : originalRevid;
 
-        if (isOnlyDisplayTitle && originalRevid !== latestRevid) {
-          return api.get({
-            action: "query",
-            prop: "revisions",
-            titles: articleId,
-            rvlimit: 2,
-            rvdir: "newer",
-            rvprop: "ids",
-            formatversion: 2,
-          }).then(function (data2) {
-            const revisions = data2.query.pages[0].revisions;
-            const baseRevid = revisions.length > 1 ? revisions[1].revid : originalRevid;
-            return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${baseRevid}&diffmode=visual&diffonly=1&wikiadviser`;
-          });
-        }
-
-        return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${originalRevid}&diffmode=visual&diffonly=1&wikiadviser`;
+        return `${mediawikiBaseURL}/index.php?title=${articleId}&diff=${latestRevid}&oldid=${baseRevid}&diffmode=visual&diffonly=1&wikiadviser`;
       });
     });
   },

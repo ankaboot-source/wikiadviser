@@ -134,16 +134,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 
   switch (data.type) {
-    case 'first-revision-saved':
-      $q.notify({
-        message: 'Changes successfully updated',
-        icon: 'check',
-        color: 'positive',
-      });
-      isProcessingChanges.value = false;
-      loading.value = { ...loaderPresets.editor };
-      await reloadIframe();
-      break;
     case 'saved-changes':
     case 'deleted-revision':
       isProcessingChanges.value = true;

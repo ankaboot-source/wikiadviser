@@ -321,7 +321,6 @@ export default class MediawikiClient {
         importForm,
         {
           headers,
-          timeout: 60000,
         },
       );
       if (importResponse.data.error) {

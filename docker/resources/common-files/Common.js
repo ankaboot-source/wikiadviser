@@ -188,11 +188,6 @@ mw.hook("ve.activationComplete").add(function () {
       const revisions = apiData.query.pages[0].revisions;
       const revisionCount = revisions.length;
 
-      if (revisionCount === 1) {
-        window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
-        return;
-      }
-
       if (revisionCount === 2) {
         const firstRevContent = revisions[0].content;
         const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
@@ -236,11 +231,6 @@ $(function () {
       }).then(function (apiData) {
         const revisions = apiData.query.pages[0].revisions;
         const revisionCount = revisions.length;
-
-        if (revisionCount === 1) {
-          window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
-          return;
-        }
 
         if (revisionCount === 2) {
           const firstRevContent = revisions[0].content;

@@ -189,7 +189,7 @@ mw.hook("ve.activationComplete").add(function () {
       const revisionCount = revisions.length;
 
       if (revisionCount === 1) {
-        window.parent.postMessage({ type: "first-revision-saved", articleId: articleId }, "*");
+        window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
         return;
       }
 
@@ -198,7 +198,7 @@ mw.hook("ve.activationComplete").add(function () {
         const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
 
         if (isOnlyDisplayTitle) {
-          window.parent.postMessage({ type: "first-revision-saved", articleId: articleId }, "*");
+          window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
           return;
         }
       }
@@ -238,7 +238,7 @@ $(function () {
         const revisionCount = revisions.length;
 
         if (revisionCount === 1) {
-          window.parent.postMessage({ type: "first-revision-saved", articleId: articleId }, "*");
+          window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
           return;
         }
 
@@ -247,7 +247,7 @@ $(function () {
           const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
 
           if (isOnlyDisplayTitle) {
-            window.parent.postMessage({ type: "first-revision-saved", articleId: articleId }, "*");
+            window.parent.postMessage({ type: "saved-changes", articleId: articleId }, "*");
             return;
           }
         }

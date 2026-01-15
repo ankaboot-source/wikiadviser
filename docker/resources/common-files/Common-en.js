@@ -352,7 +352,7 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
               const revisionCount = revisions.length;
               
               if (revisionCount === 1) {
-                  window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                  window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
                   return;
               }
               
@@ -361,7 +361,7 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
                   const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
                   
                   if (isOnlyDisplayTitle) {
-                      window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                      window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
                       return;
                   }
               }
@@ -400,7 +400,7 @@ $(function() {
           const revisionCount = revisions.length;
           
           if (revisionCount === 1) {
-              window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+              window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
               return;
           }
           
@@ -409,7 +409,7 @@ $(function() {
               const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
               
               if (isOnlyDisplayTitle) {
-                  window.parent.postMessage({ type: 'first-revision-saved', articleId: articleId }, '*');
+                  window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
                   return;
               }
           }

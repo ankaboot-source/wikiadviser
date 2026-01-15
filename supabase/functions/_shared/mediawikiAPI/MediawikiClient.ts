@@ -6,10 +6,10 @@ import {
   updateCurrentHtmlContent,
   upsertChanges,
 } from '../helpers/supabaseHelper.ts';
-import mediawikiApiInstances from './mediawikiApiInstances.ts';
 import ENV from '../schema/env.schema.ts';
 import { Account } from '../types/index.ts';
 import { WikipediaApi } from '../wikipedia/WikipediaApi.ts';
+import mediawikiApiInstances from './mediawikiApiInstances.ts';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
@@ -314,7 +314,6 @@ export default class MediawikiClient {
       const headers = {
         ...importForm.getHeaders(),
         connection: 'close',
-        timeout: 60000,
       };
 
       const importResponse = await this.mediawikiApiInstance.post(
@@ -322,7 +321,8 @@ export default class MediawikiClient {
         importForm,
         {
           headers,
-        }
+          timeout: 60000,
+        },
       );
       if (importResponse.data.error) {
         const errorText = `Error while importing article ${articleId} ${title}: ${JSON.stringify(

@@ -908,7 +908,7 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
                   const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
                   
                   if (isOnlyDisplayTitle) {
-                      window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
+                      window.parent.postMessage({ type: 'first-saved-revision', articleId: articleId }, '*');
                       return;
                   }
               }
@@ -952,7 +952,7 @@ $(function() {
               const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
               
               if (isOnlyDisplayTitle) {
-                  window.parent.postMessage({ type: 'saved-changes', articleId: articleId }, '*');
+                  window.parent.postMessage({ type: 'first-saved-revision', articleId: articleId }, '*');
                   return;
               }
           }

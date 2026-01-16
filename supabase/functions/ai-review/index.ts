@@ -28,40 +28,37 @@ async function getMiraBotId(
   return data?.id ?? null;
 }
 
-const defaultAiPrompt = `**Prompt for Mira (Wikipedia Editing Assistant):**
+const defaultAiPrompt = `You are Mira, a Wikipedia editing assistant.
 
-You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the **content only**, focusing on three aspects:
+**CRITICAL: You MUST respond with ONLY a JSON object. No explanations, no preamble, no markdown code blocks. Just the JSON.**
 
-1. **Readability** - clarity, grammar, logical flow.
-2. **Eloquence** - concise, neutral, and smooth phrasing.
-3. **Wikipedia Eligibility Criteria** -
+Example valid response:
+{"comment": "Fixed grammar", "proposed_change": "The corrected text here"}
 
-   * **Neutral Point of View (NPOV):** No bias, promotion, or subjective judgments.
-   * **Verifiability:** Wording must allow support by reliable, published sources.
-   * **Encyclopedic Style:** Formal, factual, impersonal tone.
+You will receive MediaWiki markup. Review for:
+1. **Readability** - clarity, grammar, logical flow
+2. **Eloquence** - concise, neutral, and smooth phrasing
+3. **Wikipedia Eligibility Criteria** - NPOV, verifiability, encyclopedic style
 
-**Language rules (very important):**
-- **Do NOT translate the text.**
-- **Always keep the original language exactly as provided.**
-- Fix grammar, spelling, or clarity **only within the same language**.
-- **No translation.**
+**Language rules (CRITICAL):**
+- **NEVER translate the text**
+- **Keep original language exactly as provided**
+- Fix only grammar/spelling/clarity within the same language
+- **No translation under any circumstances**
 
-**Response format:** Always reply in JSON with two fields:
-
-json
+**Response format - ONLY JSON (no markdown, no code blocks):**
 {
-  "comment": "A brief and kind note on whether a change helps or not.",
-  "proposed_change": "The smallest necessary modification to the paragraph, or 'No changes needed.'"
+  "comment": "Brief supportive note on improvements (max 100 characters)",
+  "proposed_change": "Modified text in original language OR 'No changes needed.'"
 }
 
-Guidelines:
-
-* Keep comments **very short and supportive**.
-* Always suggest the **minimalist change** needed, never over-edit.
-* If the paragraph is fine, still return JSON with a positive comment and "No changes needed."
-* **Less is more. Stay concise. Focus on meaning, not formatting.**
-
-If no change is needed, Mira must still return this JSON format with a positive comment and "No changes needed." Less is more, be as concise as possible`;
+**Rules:**
+- Return ONLY the JSON object, nothing else
+- No markdown blocks like \`\`\`json
+- No preamble or explanations
+- If no changes needed: {"comment": "Looks good", "proposed_change": "No changes needed."}
+- Make minimal necessary changes only
+- Keep concise and focused`;
 
 app.use('*', corsMiddleware);
 
@@ -91,19 +88,50 @@ function parseAIResponse(
 ): AIResponse | null {
   if (!content || typeof content !== 'string') return null;
 
-  try {
-    return JSON.parse(content);
-  } catch {
-    const match = content.match(/{[\s\S]*}/);
-    if (match) {
-      try {
-        return JSON.parse(match[0]);
-      } catch {
-        return null;
-      }
-    }
-    return null;
+  let cleaned = content.trim();
+
+  cleaned = cleaned
+    .replace(/```json\s*/g, '')
+    .replace(/```\s*/g, '')
+    .trim();
+
+  const parsed = JSON.parse(cleaned);
+  if (parsed.comment && parsed.proposed_change) {
+    return {
+      comment: String(parsed.comment).trim(),
+      proposed_change: String(parsed.proposed_change).trim(),
+    };
   }
+
+  const jsonMatch = cleaned.match(
+    /\{[\s\S]*"comment"[\s\S]*"proposed_change"[\s\S]*\}/
+  );
+  if (jsonMatch) {
+    const parsed = JSON.parse(jsonMatch[0]);
+    if (parsed.comment && parsed.proposed_change) {
+      return {
+        comment: String(parsed.comment).trim(),
+        proposed_change: String(parsed.proposed_change).trim(),
+      };
+    }
+  }
+
+  const commentMatch = cleaned.match(/"comment"\s*:\s*"([^"]+)"/);
+  const changeMatch = cleaned.match(
+    /"proposed_change"\s*:\s*"([^"]*(?:\\"[^"]*)*?)"/
+  );
+
+  if (commentMatch && changeMatch) {
+    return {
+      comment: commentMatch[1].trim(),
+      proposed_change: changeMatch[1].trim(),
+    };
+  }
+
+  return {
+    comment: cleaned.substring(0, 500),
+    proposed_change: 'No changes needed.',
+  };
 }
 
 function validateAIResponse(data: OpenRouterResponse): AIResponse | null {
@@ -111,21 +139,37 @@ function validateAIResponse(data: OpenRouterResponse): AIResponse | null {
     const choice = data?.choices?.[0];
     const content = choice?.message?.content ?? choice?.text ?? null;
 
+    if (!content) {
+      console.error('No content in AI response:', JSON.stringify(data));
+      return null;
+    }
+
     const parsed = parseAIResponse(content);
 
+    if (!parsed) {
+      console.error('Failed to parse AI response. Raw content:', content);
+      return null;
+    }
+
     if (
-      !parsed ||
       typeof parsed.comment !== 'string' ||
       typeof parsed.proposed_change !== 'string'
     ) {
+      console.error('Invalid field types in parsed response:', parsed);
       return null;
     }
+
+    console.log('Successfully parsed AI response:', {
+      comment_length: parsed.comment.length,
+      has_changes: parsed.proposed_change !== 'No changes needed.',
+    });
 
     return {
       comment: parsed.comment.trim(),
       proposed_change: parsed.proposed_change.trim(),
     };
-  } catch {
+  } catch (error) {
+    console.error('Error in validateAIResponse:', error);
     return null;
   }
 }
@@ -524,7 +568,7 @@ app.post('/', async (c) => {
         );
         appliedCount++;
       }
-        //improvedWikitext += `\n\n${change.improved}`;
+      //improvedWikitext += `\n\n${change.improved}`;
     }
 
     console.log(

@@ -121,6 +121,17 @@ function gotoDiffLink() {
   );
 }
 
+async function handleIgnoredInitialEdit() {
+  $q.notify({
+    message: 'Changes successfully updated',
+    icon: 'check',
+    color: 'positive',
+  });
+  isProcessingChanges.value = false;
+  loading.value = { ...loaderPresets.editor };
+  await reloadIframe();
+}
+
 async function EventHandler(event: MessageEvent): Promise<void> {
   const { data } = event;
 
@@ -131,14 +142,7 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
   switch (data.type) {
     case 'ignored-initial-edit':
-      $q.notify({
-        message: 'Changes successfully updated',
-        icon: 'check',
-        color: 'positive',
-      });
-      isProcessingChanges.value = false;
-      loading.value = { ...loaderPresets.editor };
-      await reloadIframe();
+      await handleIgnoredInitialEdit();
       break;
     case 'saved-changes':
     case 'deleted-revision':

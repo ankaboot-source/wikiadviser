@@ -110,10 +110,6 @@ async function handleDiffChange(data: {
 function gotoDiffLink() {
   activeViewStore.modeToggle = 'edit';
 
-  if (!iframeRef.value || !iframeRef.value.contentWindow) {
-    return;
-  }
-
   // tell mediawiki to goto difflink (which automatically initiates diff-change)
   iframeRef.value.contentWindow.postMessage(
     {
@@ -134,7 +130,7 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 
   switch (data.type) {
-    case 'first-saved-revision':
+    case 'ignored-initial-edit':
       $q.notify({
         message: 'Changes successfully updated',
         icon: 'check',

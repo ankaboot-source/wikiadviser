@@ -356,7 +356,7 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
                   const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
                   
                   if (isOnlyDisplayTitle) {
-                      window.parent.postMessage({ type: 'first-saved-revision', articleId: articleId }, '*');
+                      window.parent.postMessage({ type: 'ignored-initial-edit', articleId: articleId }, '*');
                       return;
                   }
               }
@@ -399,7 +399,7 @@ $(function() {
               const isOnlyDisplayTitle = /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(firstRevContent);
               
               if (isOnlyDisplayTitle) {
-                  window.parent.postMessage({ type: 'first-saved-revision', articleId: articleId }, '*');
+                  window.parent.postMessage({ type: 'ignored-initial-edit', articleId: articleId }, '*');
                   return;
               }
           }

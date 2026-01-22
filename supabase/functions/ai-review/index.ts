@@ -174,46 +174,6 @@ function validateAIResponse(data: OpenRouterResponse): AIResponse | null {
   }
 }
 
-function getWikitextContext(
-  currentWikitext: string,
-  changeIndex: number
-): string {
-  try {
-    const sections = currentWikitext.split(/\n\n+/);
-
-    const startIdx = Math.max(0, changeIndex - 1);
-    const endIdx = Math.min(sections.length - 1, changeIndex + 1);
-
-    const contextSections = [];
-    for (let i = startIdx; i <= endIdx; i++) {
-      if (sections[i]) {
-        contextSections.push(sections[i].trim());
-      }
-    }
-    return contextSections.join('\n\n');
-  } catch (error) {
-    console.error('Error extracting wikitext context:', error);
-    return '';
-  }
-}
-
-function getWikitextSegment(
-  currentWikitext: string,
-  changeIndex: number
-): string {
-  try {
-    const sections = currentWikitext.split(/\n\n+/);
-
-    if (changeIndex >= 0 && changeIndex < sections.length) {
-      return sections[changeIndex].trim();
-    }
-    return '';
-  } catch (error) {
-    console.error('Error extracting wikitext segment:', error);
-    return '';
-  }
-}
-
 async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string
@@ -298,15 +258,13 @@ function buildArticleContext(
   return context;
 }
 
-function getEditTypeName(typeOfEdit: number | null | undefined): string {
-  const types: Record<number, string> = {
-    0: 'CHANGE',
-    1: 'INSERT',
-    2: 'DELETE',
-    3: 'STRUCTURAL-CHANGE',
-    4: 'DELETE-INSERT',
+function getEditTypeName(changeType: 'insert' | 'delete' | 'change'): string {
+  const types: Record<string, string> = {
+    insert: 'INSERT',
+    delete: 'DELETE',
+    change: 'CHANGE',
   };
-  return types[typeOfEdit ?? -1] || 'UNKNOWN';
+  return types[changeType] || 'UNKNOWN';
 }
 
 app.post('/', async (c) => {
@@ -356,51 +314,56 @@ app.post('/', async (c) => {
       article.title,
       article.description
     );
-    console.log('Article context prepared:', articleContext);
+    console.log('Article context prepared');
 
-    const { data: latestRevision } = await supabase
-      .from('revisions')
-      .select('id, revid')
-      .eq('article_id', article_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!latestRevision) return c.json({ error: 'No revision found' }, 500);
-
-    const { data: changes } = await supabase
-      .from('changes')
-      .select('id, type_of_edit, index')
-      .eq('revision_id', latestRevision.id)
-      .neq('contributor_id', MIRA_BOT_ID)
-      .eq('archived', false)
-      .order('index', { ascending: true });
-
-    if (!changes?.length) return c.json({ summary: 'No changes to review' });
-
-    console.log(`Reviewing ${changes.length} changes`);
-
+    // CHANGED: Fetch revisions directly from MediaWiki instead of PostgreSQL
     const mediawiki = new MediawikiClient(article.language, wikipediaApi);
-    const currentWikitext = await mediawiki.getCurrentArticleWikitext(
-      article_id
+
+    console.log('Fetching recent revisions from MediaWiki...');
+    const revisions = await mediawiki.getRecentRevisions(article_id, 2);
+
+    if (revisions.length === 0) {
+      return c.json({ error: 'No revisions found' }, 404);
+    }
+
+    const latestRevision = revisions[0];
+    const parentRevision = revisions[1] || revisions[0]; 
+
+    console.log(
+      `Latest revision: ${latestRevision.revid}`
+    );
+    console.log(`Parent revision: ${parentRevision.revid}`);
+
+    if (latestRevision.revid === parentRevision.revid) {
+      console.log(
+        'This is the first revision, using it as both context and content'
+      );
+    }
+
+    console.log('Fetching wikitext for both revisions...');
+    const [parentWikitext, latestWikitext] = await Promise.all([
+      mediawiki.getArticleWikitextAtRevision(article_id, parentRevision.revid),
+      mediawiki.getArticleWikitextAtRevision(article_id, latestRevision.revid),
+    ]);
+
+    console.log(`Parent wikitext: ${parentWikitext.length} chars`);
+    console.log(`Latest wikitext: ${latestWikitext.length} chars`);
+
+    console.log('Computing diff between revisions...');
+    const changes = await mediawiki.getRevisionDiff(
+      article_id,
+      parentRevision.revid,
+      latestRevision.revid
     );
 
-    const wikitextSegments = new Map<string, string>();
-    console.log('Extracting wikitext segments from latest revision...');
-
-    for (const ch of changes) {
-      const segment = getWikitextSegment(currentWikitext, ch.index);
-      if (segment) {
-        wikitextSegments.set(ch.id, segment);
-        console.log(
-          `  Change at index ${ch.index}: extracted ${segment.length} chars`
-        );
-      } else {
-        console.warn(
-          `  Change at index ${ch.index}: could not extract segment`
-        );
-      }
+    if (!changes || changes.length === 0) {
+      return c.json({
+        summary: 'No changes to review between revisions',
+        trigger_diff_update: false,
+      });
     }
+
+    console.log(`Found ${changes.length} changes to review`);
 
     const reviews = [];
     const changesToApply: Array<{
@@ -409,45 +372,35 @@ app.post('/', async (c) => {
       comment: string;
     }> = [];
 
-    const reviewPromises = changes.map(async (ch, i) => {
-      const wikitextSegment = wikitextSegments.get(ch.id);
-
-      if (!wikitextSegment) {
-        console.warn(
-          `No wikitext segment found for change ${ch.id} at index ${ch.index}`
-        );
-        return {
-          change_id: ch.id,
-          comment: 'Could not locate change in wikitext',
-          proposed_change: 'No changes needed.',
-          has_improvement: false,
-        };
-      }
-      const changeWikitext = wikitextSegment.slice(0, 4000);
-
-      if (!changeWikitext) {
-        return {
-          change_id: ch.id,
-          comment: 'Empty content',
-          proposed_change: 'No changes needed.',
-          has_improvement: false,
-        };
-      }
-
-      const wikitextContext = getWikitextContext(currentWikitext, ch.index);
-      console.log(`  Context length: ${wikitextContext.length}`);
-
-      const editType = getEditTypeName(ch.type_of_edit);
+    const reviewPromises = changes.map(async (change, i) => {
+      const editType = getEditTypeName(change.type);
 
       let prompt = `${articleContext}\n\nEdit Type: ${editType}\n\n`;
 
-      if (wikitextContext && wikitextContext.length > 0) {
-        prompt += `Context from article:\n---\n${wikitextContext}\n---\n\n`;
+      // Add context if available
+      if (change.context && change.context.trim()) {
+        prompt += `Article context (surrounding paragraphs):\n---\n${change.context}\n---\n\n`;
       }
 
-      prompt += `Content to review:\n${changeWikitext}`;
+      // Build prompt based on change type
+      if (change.type === 'delete') {
+        prompt += `User deleted this content:\n${change.oldText}\n\n`;
+        prompt += `Should this deletion be kept, or should some content be restored?`;
+      } else if (change.type === 'insert') {
+        prompt += `User added this new content:\n${change.newText}\n\n`;
+        prompt += `Review this addition for quality and suggest improvements if needed.`;
+      } else if (change.type === 'change') {
+        prompt += `User made this change:\n`;
+        prompt += `BEFORE: ${change.oldText}\n\n`;
+        prompt += `AFTER: ${change.newText}\n\n`;
+        prompt += `Review this change and suggest improvements if needed.`;
+      }
 
       try {
+        console.log(
+          `Reviewing change ${i + 1}/${changes.length} (type: ${change.type})`
+        );
+
         const resp = await fetch(
           'https://openrouter.ai/api/v1/chat/completions',
           {
@@ -469,11 +422,13 @@ app.post('/', async (c) => {
         );
 
         if (!resp.ok) {
+          console.error(`LLM API error for change ${i + 1}: ${resp.status}`);
           return {
-            change_id: ch.id,
+            index: i,
             comment: `API error ${resp.status}`,
             proposed_change: 'No changes needed.',
             has_improvement: false,
+            change_type: change.type,
           };
         }
 
@@ -481,42 +436,50 @@ app.post('/', async (c) => {
         const validated = validateAIResponse(data);
 
         if (!validated) {
-          console.error(`Invalid AI response for change ${ch.id}`);
+          console.error(`Invalid AI response for change ${i + 1}`);
           return {
-            change_id: ch.id,
+            index: i,
             comment: 'Invalid AI response',
             proposed_change: 'No changes needed.',
             has_improvement: false,
+            change_type: change.type,
           };
         }
 
         const { comment, proposed_change } = validated;
 
+        const contentToCompare =
+          change.type === 'delete' ? change.oldText : change.newText;
+
         const hasImprovement =
           proposed_change !== 'No changes needed.' &&
-          proposed_change !== wikitextSegment &&
-          proposed_change.trim() !== wikitextSegment.trim() &&
+          proposed_change !== contentToCompare &&
+          proposed_change.trim() !== contentToCompare.trim() &&
           proposed_change.length > 0;
 
         if (hasImprovement) {
-          console.log(`Improvement found for change ${i + 1}`);
+          console.log(`  ✓ Improvement found for change ${i + 1}`);
+        } else {
+          console.log(`  - No improvement needed for change ${i + 1}`);
         }
 
         return {
-          change_id: ch.id,
+          index: i,
           comment,
           proposed_change,
           has_improvement: hasImprovement,
-          original: wikitextSegment,
+          original: contentToCompare,
           improved: proposed_change,
+          change_type: change.type,
         };
       } catch (error) {
-        console.error(`Error processing change ${ch.id}:`, error);
+        console.error(`Error processing change ${i + 1}:`, error);
         return {
-          change_id: ch.id,
+          index: i,
           comment: 'Processing error',
           proposed_change: 'No changes needed.',
           has_improvement: false,
+          change_type: change.type,
         };
       }
     });
@@ -525,12 +488,13 @@ app.post('/', async (c) => {
 
     for (const result of reviewResults) {
       reviews.push({
-        change_id: result.change_id,
+        index: result.index,
         comment: result.comment,
         proposed_change: result.has_improvement
           ? result.proposed_change
           : 'No changes needed.',
         has_improvement: result.has_improvement,
+        change_type: result.change_type,
       });
 
       if (result.has_improvement && result.original && result.improved) {
@@ -554,10 +518,10 @@ app.post('/', async (c) => {
     }
 
     console.log(
-      `Applying ${changesToApply.length} improvements to current wikitext`
+      `Applying ${changesToApply.length} improvements to latest wikitext`
     );
 
-    let improvedWikitext = currentWikitext;
+    let improvedWikitext = latestWikitext;
     let appliedCount = 0;
 
     for (const change of changesToApply) {
@@ -567,6 +531,8 @@ app.post('/', async (c) => {
           change.improved
         );
         appliedCount++;
+      } else {
+        console.warn('Could not find original text in wikitext to replace');
       }
       //improvedWikitext += `\n\n${change.improved}`;
     }
@@ -575,9 +541,20 @@ app.post('/', async (c) => {
       `Successfully applied ${appliedCount}/${changesToApply.length} improvements`
     );
 
-    const summaryText = `Mira: ${changesToApply.length} improvement(s)`;
+    if (appliedCount === 0) {
+      console.log('No improvements could be applied (text not found)');
+      return c.json({
+        summary: `Mira reviewed ${changes.length} changes but could not apply improvements`,
+        total_reviewed: changes.length,
+        total_improvements: 0,
+        reviews,
+        trigger_diff_update: false,
+      });
+    }
 
-    console.log('Creating NEW revision in MediaWiki as AI bot');
+    const summaryText = `Mira: improved ${appliedCount} change(s)`;
+
+    console.log('Creating new revision in MediaWiki as AI bot');
     const editResult = await mediawiki.editArticleAsBot(
       article_id,
       improvedWikitext,
@@ -589,13 +566,13 @@ app.post('/', async (c) => {
     console.log(`  New revision: ${editResult.newrevid}`);
 
     const summaryMessage = LLMConfig.hasUserConfig
-      ? `Mira applied ${changesToApply.length} improvement(s) using user's LLM settings`
-      : `Mira applied ${changesToApply.length} improvement(s)`;
+      ? `Mira applied ${appliedCount} improvement(s) using user's LLM settings`
+      : `Mira applied ${appliedCount} improvement(s)`;
 
     return c.json({
       summary: summaryMessage,
       total_reviewed: changes.length,
-      total_improvements: changesToApply.length,
+      total_improvements: appliedCount,
       mira_bot_id: MIRA_BOT_ID,
       old_revision: editResult.oldrevid,
       new_revision: editResult.newrevid,

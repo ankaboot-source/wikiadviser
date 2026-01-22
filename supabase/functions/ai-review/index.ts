@@ -378,22 +378,22 @@ app.post('/', async (c) => {
       let prompt = `${articleContext}\n\nEdit Type: ${editType}\n\n`;
 
       // Add context if available
-      if (change.context && change.context.trim()) {
+      if (change.context?.trim()) {
         prompt += `Article context (surrounding paragraphs):\n---\n${change.context}\n---\n\n`;
       }
 
       // Build prompt based on change type
       if (change.type === 'delete') {
         prompt += `User deleted this content:\n${change.oldText}\n\n`;
-        prompt += `Should this deletion be kept, or should some content be restored?`;
+        prompt += 'Should this deletion be kept, or should some content be restored?';
       } else if (change.type === 'insert') {
         prompt += `User added this new content:\n${change.newText}\n\n`;
-        prompt += `Review this addition for quality and suggest improvements if needed.`;
+        prompt += 'Review this addition for quality and suggest improvements if needed.';
       } else if (change.type === 'change') {
         prompt += `User made this change:\n`;
         prompt += `BEFORE: ${change.oldText}\n\n`;
         prompt += `AFTER: ${change.newText}\n\n`;
-        prompt += `Review this change and suggest improvements if needed.`;
+        prompt += 'Review this change and suggest improvements if needed.';
       }
 
       try {
@@ -422,7 +422,6 @@ app.post('/', async (c) => {
         );
 
         if (!resp.ok) {
-          console.error(`LLM API error for change ${i + 1}: ${resp.status}`);
           return {
             index: i,
             comment: `API error ${resp.status}`,

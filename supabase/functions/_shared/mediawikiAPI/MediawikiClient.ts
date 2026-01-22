@@ -45,6 +45,41 @@ type RevisionDeleted = {
     watched: string;
   };
 };
+function splitIntoParagraphs(text: string): string[] {
+  return text
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+}
+
+function normalizeParagraph(para: string): string {
+  return para
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^\w\s]/g, '')
+    .trim();
+}
+function getContextForParagraph(
+  paragraphs: string[],
+  index: number,
+  contextSize = 1
+): string {
+  const contextParts = [];
+
+  for (let i = Math.max(0, index - contextSize); i < index; i++) {
+    contextParts.push(paragraphs[i]);
+  }
+
+  for (
+    let i = index + 1;
+    i <= Math.min(paragraphs.length - 1, index + contextSize);
+    i++
+  ) {
+    contextParts.push(paragraphs[i]);
+  }
+
+  return contextParts.join('\n\n');
+}
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
@@ -449,7 +484,7 @@ export default class MediawikiClient {
    */
   async getRecentRevisions(
     articleId: string,
-    limit: number = 2
+    limit = 2
   ): Promise<RevisionInfo[]> {
     const { data } = await this.mediawikiApiInstance.get('', {
       params: {
@@ -540,16 +575,19 @@ export default class MediawikiClient {
   private compareWikitexts(oldText: string, newText: string): DiffChange[] {
     const changes: DiffChange[] = [];
 
-    const oldParagraphs = this.splitIntoParagraphs(oldText);
-    const newParagraphs = this.splitIntoParagraphs(newText);
+    const oldParagraphs = splitIntoParagraphs(oldText);
+    const newParagraphs = splitIntoParagraphs(newText);
 
     const oldParagraphMap = new Map<string, number[]>();
     oldParagraphs.forEach((para, index) => {
-      const normalized = this.normalizeParagraph(para);
-      if (!oldParagraphMap.has(normalized)) {
-        oldParagraphMap.set(normalized, []);
+      const normalized = normalizeParagraph(para);
+
+      const list = oldParagraphMap.get(normalized);
+      if (list) {
+        list.push(index);
+      } else {
+        oldParagraphMap.set(normalized, [index]);
       }
-      oldParagraphMap.get(normalized)!.push(index);
     });
 
     const usedOldIndices = new Set<number>();
@@ -557,7 +595,7 @@ export default class MediawikiClient {
 
     for (let newIdx = 0; newIdx < newParagraphs.length; newIdx++) {
       const newPara = newParagraphs[newIdx];
-      const normalized = this.normalizeParagraph(newPara);
+      const normalized = normalizeParagraph(newPara);
 
       const oldIndices = oldParagraphMap.get(normalized) || [];
       const availableOldIndex = oldIndices.find(
@@ -587,7 +625,7 @@ export default class MediawikiClient {
           type: 'change',
           oldText: oldParagraphs[bestMatch.index],
           newText: newPara,
-          context: this.getContextForParagraph(newParagraphs, newIdx),
+          context: getContextForParagraph(newParagraphs, newIdx),
           oldPosition: bestMatch.index,
           newPosition: newIdx,
         });
@@ -597,7 +635,7 @@ export default class MediawikiClient {
           type: 'insert',
           oldText: '',
           newText: newPara,
-          context: this.getContextForParagraph(newParagraphs, newIdx),
+          context: getContextForParagraph(newParagraphs, newIdx),
           newPosition: newIdx,
         });
       }
@@ -609,7 +647,7 @@ export default class MediawikiClient {
           type: 'delete',
           oldText: oldParagraphs[oldIdx],
           newText: '',
-          context: this.getContextForParagraph(oldParagraphs, oldIdx),
+          context: getContextForParagraph(oldParagraphs, oldIdx),
           oldPosition: oldIdx,
         });
       }
@@ -622,21 +660,6 @@ export default class MediawikiClient {
     });
 
     return changes;
-  }
-
-  private splitIntoParagraphs(text: string): string[] {
-    return text
-      .split(/\n\n+/)
-      .map((p) => p.trim())
-      .filter((p) => p.length > 0);
-  }
-
-  private normalizeParagraph(para: string): string {
-    return para
-      .toLowerCase()
-      .replace(/\s+/g, ' ')
-      .replace(/[^\w\s]/g, '')
-      .trim();
   }
 
   private findBestMatch(
@@ -661,35 +684,13 @@ export default class MediawikiClient {
   }
 
   private calculateSimilarity(text1: string, text2: string): number {
-    const words1 = new Set(this.normalizeParagraph(text1).split(/\s+/));
-    const words2 = new Set(this.normalizeParagraph(text2).split(/\s+/));
+    const words1 = new Set(normalizeParagraph(text1).split(/\s+/));
+    const words2 = new Set(normalizeParagraph(text2).split(/\s+/));
 
     const intersection = new Set([...words1].filter((x) => words2.has(x)));
     const union = new Set([...words1, ...words2]);
 
     if (union.size === 0) return 0;
     return intersection.size / union.size;
-  }
-
-  private getContextForParagraph(
-    paragraphs: string[],
-    index: number,
-    contextSize: number = 1
-  ): string {
-    const contextParts = [];
-
-    for (let i = Math.max(0, index - contextSize); i < index; i++) {
-      contextParts.push(paragraphs[i]);
-    }
-
-    for (
-      let i = index + 1;
-      i <= Math.min(paragraphs.length - 1, index + contextSize);
-      i++
-    ) {
-      contextParts.push(paragraphs[i]);
-    }
-
-    return contextParts.join('\n\n');
   }
 }

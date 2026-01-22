@@ -90,6 +90,26 @@ function calculateSimilarity(text1: string, text2: string): number {
   if (union.size === 0) return 0;
   return intersection.size / union.size;
 }
+function findBestMatch(
+  newPara: string,
+  oldParagraphs: string[],
+  usedIndices: Set<number>
+): { index: number; similarity: number } {
+  let bestMatch = { index: -1, similarity: 0 };
+
+  for (let i = 0; i < oldParagraphs.length; i++) {
+    if (usedIndices.has(i)) {
+      continue;
+    }
+
+    const similarity = calculateSimilarity(newPara, oldParagraphs[i]);
+    if (similarity > bestMatch.similarity) {
+      bestMatch = { index: i, similarity };
+    }
+  }
+
+  return bestMatch;
+}
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
@@ -624,11 +644,7 @@ export default class MediawikiClient {
       }
 
       const newPara = newParagraphs[newIdx];
-      const bestMatch = this.findBestMatch(
-        newPara,
-        oldParagraphs,
-        usedOldIndices
-      );
+      const bestMatch = findBestMatch(newPara, oldParagraphs, usedOldIndices);
 
       if (bestMatch.index !== -1 && bestMatch.similarity > 0.5) {
         changes.push({
@@ -670,26 +686,5 @@ export default class MediawikiClient {
     });
 
     return changes;
-  }
-
-  private findBestMatch(
-    newPara: string,
-    oldParagraphs: string[],
-    usedIndices: Set<number>
-  ): { index: number; similarity: number } {
-    let bestMatch = { index: -1, similarity: 0 };
-
-    for (let i = 0; i < oldParagraphs.length; i++) {
-      if (usedIndices.has(i)) {
-        continue;
-      }
-
-      const similarity = calculateSimilarity(newPara, oldParagraphs[i]);
-      if (similarity > bestMatch.similarity) {
-        bestMatch = { index: i, similarity };
-      }
-    }
-
-    return bestMatch;
   }
 }

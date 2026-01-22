@@ -591,7 +591,7 @@ export default class MediawikiClient {
         this.getArticleWikitextAtRevision(articleId, toRevid),
       ]);
 
-      return this.compareWikitexts(fromWikitext, toWikitext);
+      return MediawikiClient.compareWikitexts(fromWikitext, toWikitext);
     } catch (error) {
       console.error('Error getting revision diff:', error);
       throw error;
@@ -602,7 +602,10 @@ export default class MediawikiClient {
    * Compares two wikitext versions and returns structured changes
    * Uses paragraph-level comparison with similarity matching
    */
-  private compareWikitexts(oldText: string, newText: string): DiffChange[] {
+  private static compareWikitexts(
+    oldText: string,
+    newText: string
+  ): DiffChange[] {
     const changes: DiffChange[] = [];
 
     const oldParagraphs = splitIntoParagraphs(oldText);

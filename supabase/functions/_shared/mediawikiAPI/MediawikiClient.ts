@@ -80,6 +80,16 @@ function getContextForParagraph(
 
   return contextParts.join('\n\n');
 }
+function calculateSimilarity(text1: string, text2: string): number {
+  const words1 = new Set(normalizeParagraph(text1).split(/\s+/));
+  const words2 = new Set(normalizeParagraph(text2).split(/\s+/));
+
+  const intersection = new Set([...words1].filter((x) => words2.has(x)));
+  const union = new Set([...words1, ...words2]);
+
+  if (union.size === 0) return 0;
+  return intersection.size / union.size;
+}
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
@@ -674,23 +684,12 @@ export default class MediawikiClient {
         continue;
       }
 
-      const similarity = this.calculateSimilarity(newPara, oldParagraphs[i]);
+      const similarity = calculateSimilarity(newPara, oldParagraphs[i]);
       if (similarity > bestMatch.similarity) {
         bestMatch = { index: i, similarity };
       }
     }
 
     return bestMatch;
-  }
-
-  private calculateSimilarity(text1: string, text2: string): number {
-    const words1 = new Set(normalizeParagraph(text1).split(/\s+/));
-    const words2 = new Set(normalizeParagraph(text2).split(/\s+/));
-
-    const intersection = new Set([...words1].filter((x) => words2.has(x)));
-    const union = new Set([...words1, ...words2]);
-
-    if (union.size === 0) return 0;
-    return intersection.size / union.size;
   }
 }

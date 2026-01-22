@@ -327,11 +327,9 @@ app.post('/', async (c) => {
     }
 
     const latestRevision = revisions[0];
-    const parentRevision = revisions[1] || revisions[0]; 
+    const parentRevision = revisions[1] || revisions[0];
 
-    console.log(
-      `Latest revision: ${latestRevision.revid}`
-    );
+    console.log(`Latest revision: ${latestRevision.revid}`);
     console.log(`Parent revision: ${parentRevision.revid}`);
 
     if (latestRevision.revid === parentRevision.revid) {
@@ -385,12 +383,14 @@ app.post('/', async (c) => {
       // Build prompt based on change type
       if (change.type === 'delete') {
         prompt += `User deleted this content:\n${change.oldText}\n\n`;
-        prompt += 'Should this deletion be kept, or should some content be restored?';
+        prompt +=
+          'Should this deletion be kept, or should some content be restored?';
       } else if (change.type === 'insert') {
         prompt += `User added this new content:\n${change.newText}\n\n`;
-        prompt += 'Review this addition for quality and suggest improvements if needed.';
+        prompt +=
+          'Review this addition for quality and suggest improvements if needed.';
       } else if (change.type === 'change') {
-        prompt += `User made this change:\n`;
+        prompt += 'User made this change:\n';
         prompt += `BEFORE: ${change.oldText}\n\n`;
         prompt += `AFTER: ${change.newText}\n\n`;
         prompt += 'Review this change and suggest improvements if needed.';

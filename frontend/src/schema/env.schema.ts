@@ -8,7 +8,7 @@ const envSchema = z.object({
     .url(),
   SUPABASE_ANON_KEY: z
     .string({
-      required_error: '😱 You forgot to add a Supabase secret token!',
+      required_error: '😱 You forgot to add a Supabase anon token!',
     })
     .trim()
     .min(1),

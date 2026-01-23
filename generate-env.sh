@@ -57,12 +57,14 @@ if [[ "$1" == "--supabase-creds" ]]; then
   # Extract Supabase variables from log file
   SUPABASE_PROJECT_URL=$(awk '/API URL:/ { print $NF }' "$LOGFILE")
   SUPABASE_SECRET_PROJECT_TOKEN=$(awk '/service_role key:/ { print $NF }' "$LOGFILE")
+  SUPABASE_ANON_KEY=$(awk '/anon key:/ { print $NF }' "$LOGFILE")
 
 
   # Replace Supabase variables within .env files
   for env in "${ENV_PATH[@]}"; do
     sed -i "s|^SUPABASE_PROJECT_URL=.*|SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL|" $env
     sed -i "s|^SUPABASE_SECRET_PROJECT_TOKEN=.*|SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_SECRET_PROJECT_TOKEN|" $env
+    sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY|" $env
   done
 
   echo "✅ ./docker/.env, ./frontend/.env successfully generated from $LOGFILE"

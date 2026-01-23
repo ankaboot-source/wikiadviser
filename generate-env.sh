@@ -63,7 +63,6 @@ if [[ "$1" == "--supabase-creds" ]]; then
   # Replace Supabase variables within .env files
   for env in "${ENV_PATH[@]}"; do
     sed -i "s|^SUPABASE_PROJECT_URL=.*|SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL|" $env
-    sed -i "s|^SUPABASE_SECRET_PROJECT_TOKEN=.*|SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_SECRET_PROJECT_TOKEN|" $env
     sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY|" $env
   done
 

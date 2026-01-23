@@ -7,6 +7,14 @@ CONTAINER_NAME="mediawiki"
 
 export LANG=C
 
+if [[ -z "$1" ]]; then
+  echo "❌ No argument provided."
+  echo "Usage:"
+  echo "  $0 --bot-creds"
+  echo "  $0 --supabase-creds <supabase.log>"
+  exit 1
+fi
+
 if [[ "$1" == "--bot-creds" ]]; then
   # Function to check container health
   wait_for_container_healthy() {

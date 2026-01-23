@@ -7,6 +7,14 @@ CONTAINER_NAME="mediawiki"
 
 export LANG=C
 
+if [[ -z "$1" ]]; then
+  echo "❌ No argument provided."
+  echo "Usage:"
+  echo "  $0 --bot-creds"
+  echo "  $0 --supabase-creds <supabase.log>"
+  exit 1
+fi
+
 if [[ "$1" == "--bot-creds" ]]; then
   # Function to check container health
   wait_for_container_healthy() {
@@ -19,7 +27,7 @@ if [[ "$1" == "--bot-creds" ]]; then
               return 0
           fi
           sleep 2
-       done
+      done
   }
 
   # Wait for container to be healthy
@@ -57,12 +65,13 @@ if [[ "$1" == "--supabase-creds" ]]; then
   # Extract Supabase variables from log file
   SUPABASE_PROJECT_URL=$(awk '/API URL:/ { print $NF }' "$LOGFILE")
   SUPABASE_SECRET_PROJECT_TOKEN=$(awk '/service_role key:/ { print $NF }' "$LOGFILE")
+  SUPABASE_ANON_KEY=$(awk '/anon key:/ { print $NF }' "$LOGFILE")
 
 
   # Replace Supabase variables within .env files
   for env in "${ENV_PATH[@]}"; do
     sed -i "s|^SUPABASE_PROJECT_URL=.*|SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL|" $env
-    sed -i "s|^SUPABASE_SECRET_PROJECT_TOKEN=.*|SUPABASE_SECRET_PROJECT_TOKEN=$SUPABASE_SECRET_PROJECT_TOKEN|" $env
+    sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY|" $env
   done
 
   echo "✅ ./docker/.env, ./frontend/.env successfully generated from $LOGFILE"

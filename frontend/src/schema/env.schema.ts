@@ -6,9 +6,9 @@ const envSchema = z.object({
       required_error: '😱 You forgot to add a Supabase URL!',
     })
     .url(),
-  SUPABASE_SECRET_PROJECT_TOKEN: z
+  SUPABASE_ANON_KEY: z
     .string({
-      required_error: '😱 You forgot to add a Supabase secret token!',
+      required_error: '😱 You forgot to add a Supabase anon token!',
     })
     .trim()
     .min(1),
@@ -40,7 +40,7 @@ const envSchema = z.object({
 
 const envServer = envSchema.safeParse({
   SUPABASE_PROJECT_URL: process.env.SUPABASE_PROJECT_URL,
-  SUPABASE_SECRET_PROJECT_TOKEN: process.env.SUPABASE_SECRET_PROJECT_TOKEN,
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
   WIKIADVISER_LANGUAGES: process.env.WIKIADVISER_LANGUAGES,
   MEDIAWIKI_ENDPOINT: process.env.MEDIAWIKI_ENDPOINT,
   SHARE_LINK_DAY_LIMIT: process.env.SHARE_LINK_DAY_LIMIT || undefined,

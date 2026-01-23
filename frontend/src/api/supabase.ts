@@ -5,7 +5,7 @@ import { Database } from 'src/types';
 
 const supabaseClient = createBrowserClient<Database>(
   ENV.SUPABASE_PROJECT_URL,
-  ENV.SUPABASE_SECRET_PROJECT_TOKEN,
+  ENV.SUPABASE_ANON_KEY,
   {
     cookies: {
       get(name: string) {

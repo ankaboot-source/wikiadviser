@@ -13,6 +13,23 @@ import mediawikiApiInstances from './mediawikiApiInstances.ts';
 
 const { MW_BOT_USERNAME, MW_BOT_PASSWORD } = ENV;
 
+export interface RevisionInfo {
+  revid: number;
+  parentid: number;
+  user: string;
+  timestamp: string;
+  comment: string;
+}
+
+export interface DiffChange {
+  type: 'insert' | 'delete' | 'change';
+  oldText: string;
+  newText: string;
+  context: string;
+  oldPosition?: number;
+  newPosition?: number;
+}
+
 type RevisionDeleted = {
   error?: {
     info: string;
@@ -28,6 +45,71 @@ type RevisionDeleted = {
     watched: string;
   };
 };
+function splitIntoParagraphs(text: string): string[] {
+  return text
+    .split(/\n\n+/)
+    .map((p) => p.trim())
+    .filter((p) => p.length > 0);
+}
+
+function normalizeParagraph(para: string): string {
+  return para
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[^\w\s]/g, '')
+    .trim();
+}
+function getContextForParagraph(
+  paragraphs: string[],
+  index: number,
+  contextSize = 1
+): string {
+  const contextParts = [];
+
+  for (let i = Math.max(0, index - contextSize); i < index; i++) {
+    contextParts.push(paragraphs[i]);
+  }
+
+  for (
+    let i = index + 1;
+    i <= Math.min(paragraphs.length - 1, index + contextSize);
+    i++
+  ) {
+    contextParts.push(paragraphs[i]);
+  }
+
+  return contextParts.join('\n\n');
+}
+function calculateSimilarity(text1: string, text2: string): number {
+  const words1 = new Set(normalizeParagraph(text1).split(/\s+/));
+  const words2 = new Set(normalizeParagraph(text2).split(/\s+/));
+
+  const intersection = new Set([...words1].filter((x) => words2.has(x)));
+  const union = new Set([...words1, ...words2]);
+
+  if (union.size === 0) return 0;
+  return intersection.size / union.size;
+}
+function findBestMatch(
+  newPara: string,
+  oldParagraphs: string[],
+  usedIndices: Set<number>
+): { index: number; similarity: number } {
+  let bestMatch = { index: -1, similarity: 0 };
+
+  for (let i = 0; i < oldParagraphs.length; i++) {
+    if (usedIndices.has(i)) {
+      continue;
+    }
+
+    const similarity = calculateSimilarity(newPara, oldParagraphs[i]);
+    if (similarity > bestMatch.similarity) {
+      bestMatch = { index: i, similarity };
+    }
+  }
+
+  return bestMatch;
+}
 export default class MediawikiClient {
   private readonly mediawikiApiInstance: AxiosInstance;
 
@@ -322,7 +404,7 @@ export default class MediawikiClient {
         {
           headers,
           timeout: 60000 * 5, // 5 minutes
-        },
+        }
       );
       if (importResponse.data.error) {
         const errorText = `Error while importing article ${articleId} ${title}: ${JSON.stringify(
@@ -425,7 +507,41 @@ export default class MediawikiClient {
   }
 
   /**
-   * Gets wikitext for a specific revision (used for comparison)
+   * Gets recent revisions for an article (used by AI review)
+   * @param articleId - The article identifier
+   * @param limit - Number of revisions to fetch (default: 2)
+   * @returns Array of revision information
+   */
+  async getRecentRevisions(
+    articleId: string,
+    limit = 2
+  ): Promise<RevisionInfo[]> {
+    const { data } = await this.mediawikiApiInstance.get('', {
+      params: {
+        action: 'query',
+        prop: 'revisions',
+        titles: articleId,
+        rvlimit: limit,
+        rvprop: 'ids|timestamp|user|comment',
+        rvdir: 'older',
+        format: 'json',
+        formatversion: 2,
+      },
+    });
+
+    const page = data?.query?.pages?.[0];
+    if (!page || page.missing) {
+      throw new Error(`Article ${articleId} not found`);
+    }
+
+    return page.revisions || [];
+  }
+
+  /**
+   * Gets wikitext for a specific revision (used for comparison in AI review)
+   * @param articleId - The article identifier
+   * @param revid - The revision ID to fetch
+   * @returns The wikitext content at that revision
    */
   async getArticleWikitextAtRevision(
     articleId: string,
@@ -434,23 +550,144 @@ export default class MediawikiClient {
     const response = await this.mediawikiApiInstance.get('', {
       params: {
         action: 'query',
+        revids: revid,
         prop: 'revisions',
-        titles: articleId,
         rvprop: 'content',
-        rvstartid: revid,
-        rvlimit: 1,
+        rvslots: 'main',
         format: 'json',
         formatversion: 2,
       },
     });
 
-    const page = response.data.query.pages[0];
+    const page = response.data?.query?.pages?.[0];
     if (!page || !page.revisions || !page.revisions[0]) {
       throw new Error(
         `Could not fetch wikitext for article ${articleId} at revision ${revid}`
       );
     }
 
-    return page.revisions[0].content || '';
+    const wikitext = page.revisions[0].slots?.main?.content || '';
+    console.log(
+      `Fetched wikitext at revision ${revid}, length: ${wikitext.length}`
+    );
+    return wikitext;
+  }
+
+  /**
+   * Gets structured diff between two revisions for AI review
+   * @param articleId - The article identifier
+   * @param fromRevid - The older revision ID
+   * @param toRevid - The newer revision ID
+   * @returns Array of changes with context
+   */
+  async getRevisionDiff(
+    articleId: string,
+    fromRevid: number,
+    toRevid: number
+  ): Promise<DiffChange[]> {
+    try {
+      const [fromWikitext, toWikitext] = await Promise.all([
+        this.getArticleWikitextAtRevision(articleId, fromRevid),
+        this.getArticleWikitextAtRevision(articleId, toRevid),
+      ]);
+
+      return MediawikiClient.compareWikitexts(fromWikitext, toWikitext);
+    } catch (error) {
+      console.error('Error getting revision diff:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Compares two wikitext versions and returns structured changes
+   * Uses paragraph-level comparison with similarity matching
+   */
+  private static compareWikitexts(
+    oldText: string,
+    newText: string
+  ): DiffChange[] {
+    const changes: DiffChange[] = [];
+
+    const oldParagraphs = splitIntoParagraphs(oldText);
+    const newParagraphs = splitIntoParagraphs(newText);
+
+    const oldParagraphMap = new Map<string, number[]>();
+    oldParagraphs.forEach((para, index) => {
+      const normalized = normalizeParagraph(para);
+
+      const list = oldParagraphMap.get(normalized);
+      if (list) {
+        list.push(index);
+      } else {
+        oldParagraphMap.set(normalized, [index]);
+      }
+    });
+
+    const usedOldIndices = new Set<number>();
+    const matchedNewIndices = new Set<number>();
+
+    for (let newIdx = 0; newIdx < newParagraphs.length; newIdx++) {
+      const newPara = newParagraphs[newIdx];
+      const normalized = normalizeParagraph(newPara);
+
+      const oldIndices = oldParagraphMap.get(normalized) || [];
+      const availableOldIndex = oldIndices.find(
+        (idx) => !usedOldIndices.has(idx)
+      );
+
+      if (availableOldIndex !== undefined) {
+        usedOldIndices.add(availableOldIndex);
+        matchedNewIndices.add(newIdx);
+      }
+    }
+
+    for (let newIdx = 0; newIdx < newParagraphs.length; newIdx++) {
+      if (matchedNewIndices.has(newIdx)) {
+        continue;
+      }
+
+      const newPara = newParagraphs[newIdx];
+      const bestMatch = findBestMatch(newPara, oldParagraphs, usedOldIndices);
+
+      if (bestMatch.index !== -1 && bestMatch.similarity > 0.5) {
+        changes.push({
+          type: 'change',
+          oldText: oldParagraphs[bestMatch.index],
+          newText: newPara,
+          context: getContextForParagraph(newParagraphs, newIdx),
+          oldPosition: bestMatch.index,
+          newPosition: newIdx,
+        });
+        usedOldIndices.add(bestMatch.index);
+      } else {
+        changes.push({
+          type: 'insert',
+          oldText: '',
+          newText: newPara,
+          context: getContextForParagraph(newParagraphs, newIdx),
+          newPosition: newIdx,
+        });
+      }
+    }
+
+    for (let oldIdx = 0; oldIdx < oldParagraphs.length; oldIdx++) {
+      if (!usedOldIndices.has(oldIdx)) {
+        changes.push({
+          type: 'delete',
+          oldText: oldParagraphs[oldIdx],
+          newText: '',
+          context: getContextForParagraph(oldParagraphs, oldIdx),
+          oldPosition: oldIdx,
+        });
+      }
+    }
+
+    changes.sort((a, b) => {
+      const aPos = a.newPosition ?? a.oldPosition ?? 0;
+      const bPos = b.newPosition ?? b.oldPosition ?? 0;
+      return aPos - bPos;
+    });
+
+    return changes;
   }
 }

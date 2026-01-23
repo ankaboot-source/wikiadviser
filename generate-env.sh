@@ -27,7 +27,7 @@ if [[ "$1" == "--bot-creds" ]]; then
               return 0
           fi
           sleep 2
-       done
+      done
   }
 
   # Wait for container to be healthy

@@ -89,7 +89,7 @@ app.post('/', async (c) => {
 
     if (appliedCount === 0) {
       return c.json({
-        summary: `Could not apply improvements`,
+        summary: 'Could not apply improvements',
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,

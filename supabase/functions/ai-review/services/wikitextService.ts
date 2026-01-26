@@ -36,7 +36,7 @@ export function processResponses(
       changesToApply.push({
         original: contentToCompare,
         improved: proposed_change,
-        comment: comment,
+        comment,
       });
     }
   });

@@ -44,7 +44,7 @@ export async function processBatch(
     );
 
     const finishReason = data?.choices?.[0]?.finish_reason;
-    console.log(`  Finish reason:`, finishReason);
+    console.log('  Finish reason:', finishReason);
 
     if (finishReason === 'length') {
       return {
@@ -80,7 +80,7 @@ export async function processBatch(
 export async function processAllBatches(
   changes: DiffChange[],
   config: LLMConfig,
-  batchSize: number = 10
+  batchSize = 10
 ): Promise<AIResponse[]> {
   const batches = splitIntoBatches(changes, batchSize);
   console.log(

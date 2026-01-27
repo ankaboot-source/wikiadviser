@@ -1,7 +1,7 @@
 import { DiffChange } from '../utils/types.ts';
 
 export function getEditTypeName(
-  changeType: 'insert' | 'delete' | 'change'
+  changeType: 'insert' | 'delete' | 'change',
 ): string {
   const types: Record<string, string> = {
     insert: 'INSERT',
@@ -13,7 +13,7 @@ export function getEditTypeName(
 
 export function buildBatchPrompt(
   changes: DiffChange[],
-  startIndex: number
+  startIndex: number,
 ): string {
   let prompt = `Review the following ${changes.length} changes:\n\n`;
 
@@ -39,13 +39,13 @@ export function buildBatchPrompt(
 
 export function calculateTokens(
   promptLength: number,
-  numChanges: number
+  numChanges: number,
 ): {
   estimatedInput: number;
   maxResponse: number;
 } {
   const estimatedInput = Math.ceil(promptLength / 4);
-  const maxResponse = Math.max(2000, numChanges * 400 + 1000);
+  const maxResponse = Math.max(2000, numChanges * 600 + 1000);
 
   return { estimatedInput, maxResponse };
 }

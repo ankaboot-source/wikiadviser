@@ -9,7 +9,7 @@ import { callOpenRouter, validateResponse } from './aiService.ts';
 
 export function splitIntoBatches(
   changes: DiffChange[],
-  batchSize: number
+  batchSize: number,
 ): DiffChange[][] {
   const batches: DiffChange[][] = [];
   for (let i = 0; i < changes.length; i += batchSize) {
@@ -21,17 +21,17 @@ export function splitIntoBatches(
 export async function processBatch(
   batch: DiffChange[],
   startIndex: number,
-  config: LLMConfig
+  config: LLMConfig,
 ): Promise<BatchResult> {
   try {
     const batchedPrompt = buildBatchPrompt(batch, startIndex);
     const { estimatedInput, maxResponse } = calculateTokens(
       batchedPrompt.length,
-      batch.length
+      batch.length,
     );
 
     console.log(
-      `  Prompt: ${batchedPrompt.length} chars (~${estimatedInput} tokens)`
+      `  Prompt: ${batchedPrompt.length} chars (~${estimatedInput} tokens)`,
     );
     console.log(`  Max response: ${maxResponse} tokens`);
 
@@ -40,7 +40,7 @@ export async function processBatch(
       config.model,
       config.prompt,
       batchedPrompt,
-      maxResponse
+      maxResponse,
     );
 
     const finishReason = data?.choices?.[0]?.finish_reason;
@@ -80,11 +80,11 @@ export async function processBatch(
 export async function processAllBatches(
   changes: DiffChange[],
   config: LLMConfig,
-  batchSize = 10
+  batchSize = 10,
 ): Promise<AIResponse[]> {
   const batches = splitIntoBatches(changes, batchSize);
   console.log(
-    `Split ${changes.length} changes into ${batches.length} batch(es)`
+    `Split ${changes.length} changes into ${batches.length} batch(es)`,
   );
 
   const allResponses: AIResponse[] = [];
@@ -94,7 +94,7 @@ export async function processAllBatches(
     const startIndex = batchIndex * batchSize;
 
     console.log(
-      `\n=== Batch ${batchIndex + 1}/${batches.length} (${batch.length} changes) ===`
+      `\n=== Batch ${batchIndex + 1}/${batches.length} (${batch.length} changes) ===`,
     );
 
     const result = await processBatch(batch, startIndex, config);
@@ -104,7 +104,6 @@ export async function processAllBatches(
       allResponses.push(...result.responses);
     } else {
       console.error(`  ✗ Failed: ${result.error}`);
-      // Add placeholder responses
       for (let i = 0; i < batch.length; i++) {
         allResponses.push({
           change_index: startIndex + i,

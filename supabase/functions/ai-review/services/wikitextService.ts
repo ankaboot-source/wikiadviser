@@ -2,7 +2,7 @@ import { DiffChange, AIResponse, ReviewResult } from '../utils/types.ts';
 
 export function processResponses(
   aiResponses: AIResponse[],
-  changes: DiffChange[]
+  changes: DiffChange[],
 ): {
   reviews: ReviewResult[];
   changesToApply: Array<{
@@ -46,7 +46,7 @@ export function processResponses(
 
 export function applyChanges(
   wikitext: string,
-  changes: Array<{ original: string; improved: string; comment: string }>
+  changes: Array<{ original: string; improved: string; comment: string }>,
 ): { improvedWikitext: string; appliedCount: number } {
   let improvedWikitext = wikitext;
   let appliedCount = 0;
@@ -55,7 +55,7 @@ export function applyChanges(
     if (improvedWikitext.includes(change.original)) {
       improvedWikitext = improvedWikitext.replace(
         change.original,
-        change.improved
+        change.improved,
       );
       appliedCount++;
     } else {

@@ -48,16 +48,32 @@ app.post('/', async (c) => {
       return c.json({ error: 'No revisions found' }, 404);
 
     const [latest, parent] = [revisions[0], revisions[1] || revisions[0]];
+
+    const latestComment = latest.comment || '';
+    if (
+      latestComment.includes('Mira:') ||
+      latestComment.toLowerCase().includes('mira applied')
+    ) {
+      console.log('Latest revision was made by Mira - skipping review');
+      return c.json({
+        summary: 'Mira does not review her own revisions',
+        trigger_diff_update: false,
+      });
+    }
+    console.log(`Latest revision: ${latest.revid} by ${latest.user}`);
+    console.log(`Parent revision: ${parent.revid}`);
+
     const [parentWikitext, latestWikitext] = await Promise.all([
       mediawiki.getArticleWikitextAtRevision(article_id, parent.revid),
       mediawiki.getArticleWikitextAtRevision(article_id, latest.revid),
     ]);
     console.log(`Parent wikitext: ${parentWikitext.length} chars`);
+    console.log(`Latest wikitext: ${latestWikitext.length} chars`);
 
     const changes = await mediawiki.getRevisionDiff(
       article_id,
       parent.revid,
-      latest.revid
+      latest.revid,
     );
     if (!changes || changes.length === 0) {
       return c.json({
@@ -84,7 +100,7 @@ app.post('/', async (c) => {
 
     const { improvedWikitext, appliedCount } = applyChanges(
       latestWikitext,
-      changesToApply
+      changesToApply,
     );
 
     if (appliedCount === 0) {
@@ -100,8 +116,12 @@ app.post('/', async (c) => {
     const editResult = await mediawiki.editArticleAsBot(
       article_id,
       improvedWikitext,
-      `Mira: improved ${appliedCount} change(s)`
+      `Mira: improved ${appliedCount} change(s)`,
     );
+
+    console.log('Revision created successfully');
+    console.log(`  Old revision: ${editResult.oldrevid}`);
+    console.log(`  New revision: ${editResult.newrevid}`);
 
     return c.json({
       summary: `Mira applied ${appliedCount} improvement(s)`,

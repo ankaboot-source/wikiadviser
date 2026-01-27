@@ -3,7 +3,7 @@ import { LLMConfig } from '../utils/types.ts';
 import { defaultAiPrompt, buildJsonEnforcement } from '../config/prompts.ts';
 
 export async function getMiraBotId(
-  supabaseClient: ReturnType<typeof createSupabaseClient>
+  supabaseClient: ReturnType<typeof createSupabaseClient>,
 ): Promise<string | null> {
   const botEmail = Deno.env.get('AI_BOT_EMAIL');
   const { data, error } = await supabaseClient
@@ -21,7 +21,7 @@ export async function getMiraBotId(
 
 export async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
-  userId: string
+  userId: string,
 ): Promise<LLMConfig | null> {
   try {
     const { data: profileData, error: profileError } = await supabase
@@ -41,7 +41,7 @@ export async function getLLMConfig(
       if (config.has_api_key) {
         const { data: userApiKey, error: keyError } = await supabase.rpc(
           'get_user_api_key',
-          { user_id_param: userId }
+          { user_id_param: userId },
         );
 
         if (!keyError && userApiKey) {

@@ -14,7 +14,7 @@ export async function callOpenRouter(
   model: string,
   systemPrompt: string,
   userPrompt: string,
-  maxTokens: number
+  maxTokens: number,
 ): Promise<OpenRouterResponse> {
   const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -44,7 +44,7 @@ export async function callOpenRouter(
 
 export function validateResponse(
   data: OpenRouterResponse,
-  expectedCount: number
+  expectedCount: number,
 ): AIResponse[] | null {
   const choice = data?.choices?.[0];
   const content = choice?.message?.content ?? choice?.text ?? null;
@@ -56,14 +56,14 @@ export function validateResponse(
 
   console.log(
     'Raw AI response (first 1000 chars):',
-    content.substring(0, 1000)
+    content.substring(0, 1000),
   );
 
   const parsed = parseAIResponseArray(content);
 
   if (!parsed || parsed.length !== expectedCount) {
     console.error(
-      `Expected ${expectedCount} responses, got ${parsed?.length || 0}`
+      `Expected ${expectedCount} responses, got ${parsed?.length || 0}`,
     );
     return null;
   }

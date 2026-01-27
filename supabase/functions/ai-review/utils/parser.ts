@@ -1,7 +1,7 @@
 import { AIResponse } from './types.ts';
 
 export function parseAIResponseArray(
-  content: string | null | undefined
+  content: string | null | undefined,
 ): AIResponse[] | null {
   if (!content || typeof content !== 'string') return null;
 

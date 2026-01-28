@@ -62,7 +62,7 @@ function normalizeParagraph(para: string): string {
 function getContextForParagraph(
   paragraphs: string[],
   index: number,
-  contextSize = 1
+  contextSize = 1,
 ): string {
   const contextParts = [];
 
@@ -93,7 +93,7 @@ function calculateSimilarity(text1: string, text2: string): number {
 function findBestMatch(
   newPara: string,
   oldParagraphs: string[],
-  usedIndices: Set<number>
+  usedIndices: Set<number>,
 ): { index: number; similarity: number } {
   let bestMatch = { index: -1, similarity: 0 };
 
@@ -115,10 +115,10 @@ export default class MediawikiClient {
 
   constructor(
     private readonly language: string,
-    private readonly wikipediaApi: WikipediaApi
+    private readonly wikipediaApi: WikipediaApi,
   ) {
     this.mediawikiApiInstance = mediawikiApiInstances.get(
-      this.language
+      this.language,
     ) as AxiosInstance;
   }
 
@@ -136,7 +136,7 @@ export default class MediawikiClient {
   private setCookies(response: AxiosResponse) {
     const setCookieHeaders = response.headers['set-cookie'];
     const cookies = MediawikiClient.extractCookies(
-      setCookieHeaders as string[]
+      setCookieHeaders as string[],
     );
     const cookieHeader = Object.entries(cookies)
       .map(([key, value]) => `${key}=${value}`)
@@ -175,7 +175,7 @@ export default class MediawikiClient {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
 
     const { login: loginstatus } = loginResponse.data;
@@ -183,7 +183,7 @@ export default class MediawikiClient {
     if (loginstatus.result !== 'Success') {
       throw new Error(
         loginstatus.reason ??
-          `Failed to login to mediawiki as Bot:${MW_BOT_USERNAME}`
+          `Failed to login to mediawiki as Bot:${MW_BOT_USERNAME}`,
       );
     }
     this.setCookies(loginResponse);
@@ -217,7 +217,7 @@ export default class MediawikiClient {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
 
     const { error } = data;
@@ -242,7 +242,7 @@ export default class MediawikiClient {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
     if (data.error) {
       if (data.error.code === 'missingtitle') {
@@ -251,12 +251,12 @@ export default class MediawikiClient {
          * article deletion. Skips error code 'missingtitle' to continue with the deletion process.
          */
         console.error(
-          `Article '${articleId}' does not exist. The error is skipped,likely due to synchronization issues.`
+          `Article '${articleId}' does not exist. The error is skipped,likely due to synchronization issues.`,
         );
       } else {
         await this.logout(csrftoken);
         throw new Error(
-          `Failed to delete article with id ${articleId}: ${data.error.info}`
+          `Failed to delete article with id ${articleId}: ${data.error.info}`,
         );
       }
     }
@@ -301,7 +301,7 @@ export default class MediawikiClient {
           headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
           },
-        }
+        },
       );
 
     this.logout(csrftoken);
@@ -309,7 +309,7 @@ export default class MediawikiClient {
 
     if (error) {
       throw new Error(
-        `Failed to delete revision with id ${revisionId}: ${error}`
+        `Failed to delete revision with id ${revisionId}: ${error}`,
       );
     }
 
@@ -327,14 +327,14 @@ export default class MediawikiClient {
     const revisionId = await insertRevision(
       articleId,
       latestRevid,
-      revisionSummary
+      revisionSummary,
     );
 
     const { changesToUpsert, htmlContent } = await refineArticleChanges(
       articleId,
       diff,
       userId,
-      revisionId
+      revisionId,
     );
 
     await upsertChanges(changesToUpsert);
@@ -357,7 +357,7 @@ export default class MediawikiClient {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
 
     this.logout(csrftoken);
@@ -376,7 +376,7 @@ export default class MediawikiClient {
       const exportData = await this.wikipediaApi.exportArticleData(
         title,
         articleId,
-        this.language
+        this.language,
       );
       console.info(`Successfully exported file ${title}`);
 
@@ -404,16 +404,16 @@ export default class MediawikiClient {
         {
           headers,
           timeout: 60000 * 5, // 5 minutes
-        }
+        },
       );
       if (importResponse.data.error) {
         const errorText = `Error while importing article ${articleId} ${title}: ${JSON.stringify(
-          importResponse.data.error
+          importResponse.data.error,
         )}`;
 
         if (
           importResponse.data.error.info.includes(
-            'XML error' // Blocking error
+            'XML error', // Blocking error
           )
         ) {
           this.logout(csrftoken);
@@ -464,7 +464,7 @@ export default class MediawikiClient {
   async editArticleAsBot(
     articleId: string,
     wikitext: string,
-    summary: string
+    summary: string,
   ): Promise<{ oldrevid: number; newrevid: number }> {
     const csrftoken = await this.loginAndGetCsrf();
 
@@ -483,7 +483,7 @@ export default class MediawikiClient {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-      }
+      },
     );
 
     await this.logout(csrftoken);
@@ -497,7 +497,7 @@ export default class MediawikiClient {
     }
 
     console.log(
-      `Article edited successfully. Old rev: ${data.edit.oldrevid}, New rev: ${data.edit.newrevid}`
+      `Article edited successfully. Old rev: ${data.edit.oldrevid}, New rev: ${data.edit.newrevid}`,
     );
 
     return {
@@ -514,7 +514,7 @@ export default class MediawikiClient {
    */
   async getRecentRevisions(
     articleId: string,
-    limit = 2
+    limit = 2,
   ): Promise<RevisionInfo[]> {
     const { data } = await this.mediawikiApiInstance.get('', {
       params: {
@@ -545,7 +545,7 @@ export default class MediawikiClient {
    */
   async getArticleWikitextAtRevision(
     articleId: string,
-    revid: number
+    revid: number,
   ): Promise<string> {
     const response = await this.mediawikiApiInstance.get('', {
       params: {
@@ -562,14 +562,11 @@ export default class MediawikiClient {
     const page = response.data?.query?.pages?.[0];
     if (!page || !page.revisions || !page.revisions[0]) {
       throw new Error(
-        `Could not fetch wikitext for article ${articleId} at revision ${revid}`
+        `Could not fetch wikitext for article ${articleId} at revision ${revid}`,
       );
     }
 
     const wikitext = page.revisions[0].slots?.main?.content || '';
-    console.log(
-      `Fetched wikitext at revision ${revid}, length: ${wikitext.length}`
-    );
     return wikitext;
   }
 
@@ -583,7 +580,7 @@ export default class MediawikiClient {
   async getRevisionDiff(
     articleId: string,
     fromRevid: number,
-    toRevid: number
+    toRevid: number,
   ): Promise<DiffChange[]> {
     try {
       const [fromWikitext, toWikitext] = await Promise.all([
@@ -604,7 +601,7 @@ export default class MediawikiClient {
    */
   private static compareWikitexts(
     oldText: string,
-    newText: string
+    newText: string,
   ): DiffChange[] {
     const changes: DiffChange[] = [];
 
@@ -632,7 +629,7 @@ export default class MediawikiClient {
 
       const oldIndices = oldParagraphMap.get(normalized) || [];
       const availableOldIndex = oldIndices.find(
-        (idx) => !usedOldIndices.has(idx)
+        (idx) => !usedOldIndices.has(idx),
       );
 
       if (availableOldIndex !== undefined) {

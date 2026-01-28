@@ -30,9 +30,6 @@ app.post('/', async (c) => {
 
     const MIRA_BOT_ID = await getMiraBotId(supabase);
     if (!MIRA_BOT_ID) return c.json({ error: 'Mira bot not configured' }, 500);
-    if (user.id === MIRA_BOT_ID) {
-      return c.json({ error: 'Mira cannot review her own changes' }, 403);
-    }
     await addMiraBotPermission(article_id);
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
@@ -48,20 +45,6 @@ app.post('/', async (c) => {
       return c.json({ error: 'No revisions found' }, 404);
 
     const [latest, parent] = [revisions[0], revisions[1] || revisions[0]];
-
-    const latestComment = latest.comment || '';
-    if (
-      latestComment.includes('Mira:') ||
-      latestComment.toLowerCase().includes('mira applied')
-    ) {
-      console.log('Latest revision was made by Mira - skipping review');
-      return c.json({
-        summary: 'Mira does not review her own revisions',
-        trigger_diff_update: false,
-      });
-    }
-    console.log(`Latest revision: ${latest.revid} by ${latest.user}`);
-    console.log(`Parent revision: ${parent.revid}`);
 
     const [parentWikitext, latestWikitext] = await Promise.all([
       mediawiki.getArticleWikitextAtRevision(article_id, parent.revid),

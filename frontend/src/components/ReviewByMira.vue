@@ -98,28 +98,16 @@ async function triggerReview() {
       reviews.value = data.reviews;
     }
 
-    if (
-      data?.trigger_diff_update &&
-      data?.mira_bot_id &&
-      data?.old_revision &&
-      data?.new_revision
-    ) {
+    if (data?.trigger_diff_update && data?.mira_bot_id) {
       miraStore.completeReview({
         miraBotId: data.mira_bot_id,
-        oldRevid: data.old_revision,
-        newRevid: data.new_revision,
+        oldRevid: data.old_revision!,
+        newRevid: data.new_revision!,
       });
-
-      showNotification(
-        'success',
-        `Mira applied ${data.total_improvements} improvement(s)`,
-      );
+      showNotification('success', data.summary);
     } else {
       miraStore.$reset();
-
-      const notifType = 'info';
-      const message = 'No improvements needed.';
-      showNotification(notifType, message);
+      showNotification('info', data?.summary || 'No improvements needed.');
     }
   } catch (error) {
     if (!error) {

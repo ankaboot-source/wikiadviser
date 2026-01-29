@@ -73,7 +73,7 @@ app.post('/', async (c) => {
 
     if (changesToApply.length === 0) {
       return c.json({
-        summary: `Mira reviewed ${changes.length} change(s). No improvements needed.`,
+        summary: `No improvements needed.`,
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,
@@ -87,8 +87,9 @@ app.post('/', async (c) => {
     );
 
     if (appliedCount === 0) {
+      console.log('No improvements could be applied');
       return c.json({
-        summary: 'Could not apply improvements',
+        summary: 'No improvements could be applied',
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,
@@ -96,6 +97,20 @@ app.post('/', async (c) => {
       });
     }
 
+    if (improvedWikitext.trim() === latestWikitext.trim()) {
+      console.log('Improved wikitext is identical to current version');
+      return c.json({
+        summary: `The suggested improvements are already present.`,
+        total_reviewed: changes.length,
+        total_improvements: 0,
+        reviews,
+        trigger_diff_update: false,
+      });
+    }
+
+    console.log(
+      `Wikitext changed: ${latestWikitext.length} → ${improvedWikitext.length} chars`,
+    );
     const editResult = await mediawiki.editArticleAsBot(
       article_id,
       improvedWikitext,

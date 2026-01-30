@@ -109,17 +109,10 @@ async function triggerReview() {
         oldRevid: data.old_revision,
         newRevid: data.new_revision,
       });
-
-      showNotification(
-        'success',
-        `Mira applied ${data.total_improvements} improvement(s)`,
-      );
+      showNotification('success', data.summary);
     } else {
       miraStore.$reset();
-
-      const notifType = 'info';
-      const message = 'No improvements needed.';
-      showNotification(notifType, message);
+      showNotification('info', data?.summary as string);
     }
   } catch (error) {
     if (!error) {

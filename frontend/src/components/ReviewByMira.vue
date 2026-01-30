@@ -112,7 +112,7 @@ async function triggerReview() {
       showNotification('success', data.summary);
     } else {
       miraStore.$reset();
-      showNotification('info', data?.summary || 'No improvements needed.');
+      showNotification('info','No improvements needed.');
     }
   } catch (error) {
     if (!error) {

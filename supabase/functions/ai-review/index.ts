@@ -73,7 +73,7 @@ app.post('/', async (c) => {
 
     if (changesToApply.length === 0) {
       return c.json({
-        summary: `No improvements needed.`,
+        summary: 'No improvements needed.',
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,
@@ -100,7 +100,7 @@ app.post('/', async (c) => {
     if (improvedWikitext.trim() === latestWikitext.trim()) {
       console.log('Improved wikitext is identical to current version');
       return c.json({
-        summary: `The suggested improvements are already present.`,
+        summary: 'The suggested improvements are already present.',
         total_reviewed: changes.length,
         total_improvements: 0,
         reviews,

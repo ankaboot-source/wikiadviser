@@ -33,6 +33,12 @@ onMounted(async () => {
   await userStore.getSession();
   await userStore.fetchProfile();
 
+  if (userStore.session && !userStore.user) {
+    await supabaseClient.auth.signOut();
+    router.push('/auth');
+    return;
+  }
+
   if (userStore.session) {
     if (!userStore.user?.avatar_url) {
       await supabaseClient.functions.invoke('user/avatar', { method: 'POST' });

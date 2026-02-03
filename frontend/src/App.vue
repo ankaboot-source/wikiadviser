@@ -50,11 +50,35 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password && userStore.user?.has_email_provider) {
+    const isAnon = !userStore.user?.email;
+    const changeEmail = userStore.user?.email_change;
+    const isUninitializedUser = isAnon && !changeEmail;
+    const hasPassword = Boolean(userStore.user?.has_password);
+    const hasEmailProvider = Boolean(userStore.user?.has_email_provider);
+
+    let computedStep = 0;
+    if (isUninitializedUser) computedStep = 1;
+    else if (isAnon) computedStep = 2;
+    else if (!hasPassword && hasEmailProvider) computedStep = 3;
+
+    let message = '';
+    let caption = '';
+
+    if (computedStep === 1) {
+      message = 'Link your email to secure your account';
+      caption = 'Step 1 of 3: Link your email address';
+    } else if (computedStep === 2) {
+      message = 'Verify your email to continue';
+      caption = 'Step 2 of 3: Check your inbox for verification code';
+    } else if (computedStep === 3) {
+      message = 'Set a password to complete your account';
+      caption = 'Step 3 of 3: Create a secure password';
+    }
+
+    if (computedStep > 0) {
       Notify.create({
-        message:
-          'You will lose all your progress if you dont link your account.',
-        caption: 'Please link your account at settings.',
+        message,
+        caption,
         color: 'warning',
         icon: 'warning',
         textColor: 'black',

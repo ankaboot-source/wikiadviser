@@ -22,6 +22,7 @@ export async function processBatch(
   batch: DiffChange[],
   startIndex: number,
   config: LLMConfig,
+  retryCount = 0,
 ): Promise<BatchResult> {
   try {
     const batchedPrompt = buildBatchPrompt(batch, startIndex);
@@ -46,8 +47,31 @@ export async function processBatch(
     const finishReason = data?.choices?.[0]?.finish_reason;
     console.log('  Finish reason:', finishReason);
 
-    if (finishReason === 'length') {
-      console.warn('Response truncated');
+    if (finishReason === 'length' && retryCount < 2 && batch.length > 1) {
+      console.warn('Response truncated, retrying with smaller batch');
+      const halfSize = Math.ceil(batch.length / 2);
+
+      const firstHalf = await processBatch(
+        batch.slice(0, halfSize),
+        startIndex,
+        config,
+        retryCount + 1,
+      );
+
+      const secondHalf = await processBatch(
+        batch.slice(halfSize),
+        startIndex + halfSize,
+        config,
+        retryCount + 1,
+      );
+
+      if (firstHalf.success && secondHalf.success) {
+        return {
+          success: true,
+          responses: [...firstHalf.responses, ...secondHalf.responses],
+          isFallback: firstHalf.isFallback || secondHalf.isFallback,
+        };
+      }
     }
 
     const { responses, isFallback } = validateResponse(
@@ -58,6 +82,12 @@ export async function processBatch(
 
     if (isFallback) {
       console.log('Using text-based fallback for this batch');
+    }
+
+    if (finishReason === 'length') {
+      console.warn(
+        `Truncation resulted in incomplete responses: ${responses.length}/${batch.length}`,
+      );
     }
 
     return {

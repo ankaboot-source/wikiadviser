@@ -65,8 +65,9 @@ onMounted(async () => {
     let caption = '';
 
     if (computedStep === 1) {
-      message = 'Link your email to secure your account';
-      caption = 'Step 1 of 3: Link your email address';
+      message =
+        'You will lose all your progress if you dont link your account.';
+      caption = 'Please link your account at settings.';
     } else if (computedStep === 2) {
       message = 'Verify your email to continue';
       caption = 'Step 2 of 3: Check your inbox for verification code';

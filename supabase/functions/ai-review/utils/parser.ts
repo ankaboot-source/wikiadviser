@@ -47,7 +47,6 @@ export function parseAIResponseArray(
 
 export function parseResponse(
   content: string | null | undefined,
-  expectedCount: number,
 ): ParsedResponse {
   if (!content || typeof content !== 'string') {
     return {
@@ -58,7 +57,7 @@ export function parseResponse(
 
   const jsonResponses = parseAIResponseArray(content);
 
-  if (jsonResponses && jsonResponses.length === expectedCount) {
+  if (jsonResponses && jsonResponses.length > 0) {
     console.log('Successfully parsed as JSON array');
     return {
       type: 'json',
@@ -96,10 +95,24 @@ export function convertTextToBatchResponses(
 ): AIResponse[] {
   const responses: AIResponse[] = [];
 
-  const sections = rawText
+  let sections = rawText
     .split(/\n\n+/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+
+  if (sections.length === 0) {
+    sections = rawText
+      .split(/---+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+
+  if (sections.length === 0) {
+    sections = rawText
+      .split(/CHANGE \d+:?/i)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
 
   if (sections.length === expectedCount) {
     console.log(
@@ -134,22 +147,26 @@ export function convertTextToBatchResponses(
     console.log(
       `Text sections (${sections.length}) don't match changes (${expectedCount})`,
     );
-    for (let i = 0; i < expectedCount; i++) {
-      if (i < sections.length) {
-        responses.push({
-          change_index: startIndex + i,
-          has_changes: true,
-          comment: 'AI provided text-based improvement',
-          proposed_change: sections[i],
-        });
-      } else {
-        responses.push({
-          change_index: startIndex + i,
-          has_changes: false,
-          comment: 'No changes needed',
-          proposed_change: '',
-        });
-      }
+
+    const minCount = Math.min(sections.length, expectedCount);
+
+    for (let i = 0; i < minCount; i++) {
+      responses.push({
+        change_index: startIndex + i,
+        has_changes: true,
+        comment: 'AI provided text-based improvement',
+        proposed_change: sections[i],
+      });
+    }
+
+    for (let i = minCount; i < expectedCount; i++) {
+      responses.push({
+        change_index: startIndex + i,
+        has_changes: false,
+        comment:
+          i < sections.length ? 'Section parsing issue' : 'No changes needed',
+        proposed_change: '',
+      });
     }
   }
 

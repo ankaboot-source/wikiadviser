@@ -45,7 +45,14 @@ export function calculateTokens(
   maxResponse: number;
 } {
   const estimatedInput = Math.ceil(promptLength / 4);
-  const maxResponse = Math.max(2000, numChanges * 600 + 1000);
+  const baseResponse = 2000;
+  const perChangeTokens = 1500;
+  const safetyBuffer = 1000;
+
+  const maxResponse = Math.max(
+    baseResponse,
+    numChanges * perChangeTokens + safetyBuffer,
+  );
 
   return { estimatedInput, maxResponse };
 }

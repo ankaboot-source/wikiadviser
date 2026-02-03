@@ -66,5 +66,7 @@ Format (MANDATORY):
 IMPORTANT:
 - Set has_changes to true only if you have improvements
 - Set has_changes to false if content is fine as-is
-- Leave proposed_change as empty string "" when has_changes is false`;
+- Leave proposed_change as empty string "" when has_changes is false
+
+NOTE: If you cannot follow this JSON format, you may provide plain text improvements instead.`;
 }

@@ -11,6 +11,7 @@ export interface ReviewResult {
   proposed_change: string;
   has_improvement: boolean;
   change_type: 'insert' | 'delete' | 'change';
+  is_fallback?: boolean;
 }
 
 export interface AIResponse {
@@ -31,4 +32,12 @@ export interface BatchResult {
   success: boolean;
   responses: AIResponse[];
   error?: string;
+  isFallback?: boolean;
+  rawContent?: string;
+}
+
+export interface ParsedResponse {
+  type: 'json' | 'text';
+  responses?: AIResponse[];
+  rawText?: string;
 }

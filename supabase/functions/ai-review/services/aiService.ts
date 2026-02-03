@@ -1,5 +1,5 @@
-import { AIResponse } from '../utils/types.ts';
-import { parseAIResponseArray } from '../utils/parser.ts';
+import { AIResponse, ParsedResponse } from '../utils/types.ts';
+import { parseResponse, convertTextToBatchResponses } from '../utils/parser.ts';
 
 export interface OpenRouterResponse {
   choices?: Array<{
@@ -30,7 +30,6 @@ export async function callOpenRouter(
       ],
       max_tokens: maxTokens,
       temperature: 0.2,
-      response_format: { type: 'json_object' },
     }),
   });
 
@@ -45,13 +44,23 @@ export async function callOpenRouter(
 export function validateResponse(
   data: OpenRouterResponse,
   expectedCount: number,
-): AIResponse[] | null {
+  startIndex: number,
+): { responses: AIResponse[]; isFallback: boolean } {
   const choice = data?.choices?.[0];
   const content = choice?.message?.content ?? choice?.text ?? null;
 
   if (!content) {
     console.error('No content in AI response');
-    return null;
+    const fallbackResponses: AIResponse[] = [];
+    for (let i = 0; i < expectedCount; i++) {
+      fallbackResponses.push({
+        change_index: startIndex + i,
+        has_changes: false,
+        comment: 'No content in AI response',
+        proposed_change: '',
+      });
+    }
+    return { responses: fallbackResponses, isFallback: true };
   }
 
   console.log(
@@ -59,14 +68,19 @@ export function validateResponse(
     content.substring(0, 1000),
   );
 
-  const parsed = parseAIResponseArray(content);
+  const parsed: ParsedResponse = parseResponse(content, expectedCount);
 
-  if (!parsed || parsed.length !== expectedCount) {
-    console.error(
-      `Expected ${expectedCount} responses, got ${parsed?.length || 0}`,
-    );
-    return null;
+  if (parsed.type === 'json' && parsed.responses) {
+    console.log(`Parsed as JSON array: ${parsed.responses.length} items`);
+    return { responses: parsed.responses, isFallback: false };
   }
 
-  return parsed;
+  console.log('Using plain text response as fallback');
+  const textResponses = convertTextToBatchResponses(
+    parsed.rawText || '',
+    expectedCount,
+    startIndex,
+  );
+
+  return { responses: textResponses, isFallback: true };
 }

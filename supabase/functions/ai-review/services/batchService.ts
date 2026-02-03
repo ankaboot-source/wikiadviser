@@ -47,32 +47,40 @@ export async function processBatch(
     console.log('  Finish reason:', finishReason);
 
     if (finishReason === 'length') {
-      return {
-        success: false,
-        responses: [],
-        error: 'Response truncated',
-      };
+      console.warn('Response truncated');
     }
 
-    const responses = validateResponse(data, batch.length);
+    const { responses, isFallback } = validateResponse(
+      data,
+      batch.length,
+      startIndex,
+    );
 
-    if (!responses) {
-      return {
-        success: false,
-        responses: [],
-        error: 'Invalid response format',
-      };
+    if (isFallback) {
+      console.log('Using text-based fallback for this batch');
     }
 
     return {
       success: true,
       responses,
+      isFallback,
     };
   } catch (error) {
+    console.error('Batch processing error:', error);
+    const fallbackResponses: AIResponse[] = [];
+    for (let i = 0; i < batch.length; i++) {
+      fallbackResponses.push({
+        change_index: startIndex + i,
+        has_changes: false,
+        comment: error instanceof Error ? error.message : 'Processing error',
+        proposed_change: '',
+      });
+    }
     return {
       success: false,
-      responses: [],
+      responses: fallbackResponses,
       error: error instanceof Error ? error.message : String(error),
+      isFallback: true,
     };
   }
 }
@@ -88,6 +96,7 @@ export async function processAllBatches(
   );
 
   const allResponses: AIResponse[] = [];
+  let fallbackCount = 0;
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
@@ -101,18 +110,20 @@ export async function processAllBatches(
 
     if (result.success) {
       console.log(`  ✓ Success: ${result.responses.length} responses`);
+      if (result.isFallback) {
+        fallbackCount++;
+      }
       allResponses.push(...result.responses);
     } else {
       console.error(`  ✗ Failed: ${result.error}`);
-      for (let i = 0; i < batch.length; i++) {
-        allResponses.push({
-          change_index: startIndex + i,
-          has_changes: false,
-          comment: result.error || 'Processing error',
-          proposed_change: '',
-        });
-      }
+      allResponses.push(...result.responses);
     }
+  }
+
+  if (fallbackCount > 0) {
+    console.log(
+      `\n${fallbackCount}/${batches.length} batches used text-based fallback`,
+    );
   }
 
   return allResponses;

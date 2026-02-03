@@ -33,11 +33,18 @@ export function processResponses(
     if (has_changes && proposed_change.trim()) {
       const contentToCompare =
         change.type === 'delete' ? change.oldText : change.newText;
-      changesToApply.push({
-        original: contentToCompare,
-        improved: proposed_change,
-        comment,
-      });
+
+      if (proposed_change.trim() === contentToCompare.trim()) {
+        console.log(
+          `Change ${i}: proposed_change identical to original, skipping`,
+        );
+      } else {
+        changesToApply.push({
+          original: contentToCompare,
+          improved: proposed_change,
+          comment,
+        });
+      }
     }
   });
 

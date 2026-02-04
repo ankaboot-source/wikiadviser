@@ -58,15 +58,14 @@ onMounted(async () => {
     let caption = '';
 
     if (isUninitializedUser) {
-      message =
-        'You will lose all your progress if you dont link your account.';
-      caption = 'Please link your account at settings.';
+      message = 'You will lose all your progress if you dont link your account';
+      caption = 'Please link your account at settings';
     } else if (isAnon) {
-      message = 'A confirmation email has been sent to your email address';
-      caption = 'Check your inbox for verification code';
+      message = 'Verify your account';
+      caption = 'Awaiting verification, Please verify your email';
     } else if (!hasPassword && userStore.user?.has_email_provider) {
-      message = 'Email successfully verified';
-      caption = 'Please set your password';
+      message = 'Please set your password';
+      caption = 'Email successfully verified, set your password at settings';
     }
 
     if (message) {

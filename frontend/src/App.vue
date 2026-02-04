@@ -50,11 +50,29 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
-    if (!userStore.user?.has_password && userStore.user?.has_email_provider) {
+    const isAnon = !userStore.user?.email;
+    const isUninitializedUser = isAnon && !userStore.user?.email_change;
+    const hasPassword = Boolean(userStore.user?.has_password);
+
+    let message = '';
+    let caption = '';
+
+    if (isUninitializedUser) {
+      message =
+        'You will lose all your progress if you dont link your account.';
+      caption = 'Please link your account at settings.';
+    } else if (isAnon) {
+      message = 'A confirmation email has been sent to your email address';
+      caption = 'Check your inbox for verification code';
+    } else if (!hasPassword && userStore.user?.has_email_provider) {
+      message = 'Email successfully verified';
+      caption = 'Please set your password';
+    }
+
+    if (message) {
       Notify.create({
-        message:
-          'You will lose all your progress if you dont link your account.',
-        caption: 'Please link your account at settings.',
+        message,
+        caption,
         color: 'warning',
         icon: 'warning',
         textColor: 'black',

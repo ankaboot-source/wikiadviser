@@ -315,23 +315,6 @@
             </template>
           </q-select>
         </div>
-        <!-- Prompt Input -->
-        <div class="q-mb-md">
-          <label class="text-subtitle2 q-mb-xs block">Review Prompt</label>
-          <q-input
-            v-model="llmConfig.prompt"
-            bg-color="white"
-            dense
-            outlined
-            autogrow
-            type="textarea"
-            rows="4"
-            placeholder="Enter your review prompt template..."
-            counter
-            maxlength="4000"
-          />
-        </div>
-
         <!-- Save Button -->
         <div class="flex justify-end">
           <LoadingButton
@@ -424,36 +407,6 @@ interface OpenRouterModel {
   id: string;
   context_length: number;
 }
-
-const DEFAULT_PROMPT = `**Prompt for Mira (Wikipedia Editing Assistant):**
-
-You are Mira, a Wikipedia editing assistant. You will receive one paragraph at a time (in MediaWiki markup). Your role is to review the **content only**, focusing on three aspects:
-
-1. **Readability** - clarity, grammar, logical flow.
-2. **Eloquence** - concise, neutral, and smooth phrasing.
-3. **Wikipedia Eligibility Criteria** -
-
-   * **Neutral Point of View (NPOV):** No bias, promotion, or subjective judgments.
-   * **Verifiability:** Wording must allow support by reliable, published sources.
-   * **Encyclopedic Style:** Formal, factual, impersonal tone.
-
-**Response format:** Always reply in JSON with two fields:
-
-\`\`\`json
-{
-  "comment": "A brief and kind note on whether a change helps or not.",
-  "proposed_change": "The smallest necessary modification to the paragraph, or 'No changes needed.'"
-}
-\`\`\`
-
-Guidelines:
-
-* Keep comments **very short and supportive**.
-* Always suggest the **minimalist change** needed, never over-edit.
-* If the paragraph is fine, still return JSON with a positive comment and "No changes needed."
-* **Less is more. Stay concise. Focus on meaning, not formatting.**
-
-If no change is needed, Mira must still return this JSON format with a positive comment and "No changes needed." Less is more, be as concise as possible`;
 
 const $q = useQuasar();
 const $router = useRouter();
@@ -629,7 +582,6 @@ async function prepareNewAccount() {
 }
 
 const llmConfig = ref({
-  prompt: '',
   model: '',
 });
 
@@ -657,7 +609,6 @@ async function updateLLMConfigInDB(updates: {
     .from('profiles')
     .update({
       llm_reviewer_config: {
-        prompt: llmConfig.value.prompt || null,
         model: updates.model ?? llmConfig.value.model,
         has_api_key: updates.has_api_key ?? apiKey.value.hasPersonalKey,
       },
@@ -839,12 +790,9 @@ async function loadLLMConfig() {
   const config = userStore.user?.llm_reviewer_config;
   if (config) {
     llmConfig.value = {
-      prompt: config.prompt || DEFAULT_PROMPT,
       model: config.model || '',
     };
     apiKey.value.hasPersonalKey = config.has_api_key || false;
-  } else {
-    llmConfig.value.prompt = DEFAULT_PROMPT;
   }
   await loadModelsFromAPI();
 }

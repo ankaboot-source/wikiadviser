@@ -17,7 +17,7 @@ app.use('*', corsMiddleware);
 app.post('/', async (c) => {
   try {
     console.log('AI Review started');
-    const { article_id } = await c.req.json();
+    const { article_id, prompt } = await c.req.json();
     if (!article_id) return c.json({ error: 'Missing article_id' }, 400);
     const authHeader = c.req.header('Authorization');
     if (!authHeader) return c.json({ error: 'Unauthorized' }, 401);
@@ -34,7 +34,7 @@ app.post('/', async (c) => {
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
 
-    const config = await getLLMConfig(supabase, user.id);
+    const config = await getLLMConfig(supabase, user.id, prompt);
     if (!config) {
       return c.json({ error: 'No AI API key configured' }, 400);
     }

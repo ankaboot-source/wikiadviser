@@ -22,6 +22,7 @@ export async function getMiraBotId(
 export async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string,
+  promptText?: string,
 ): Promise<LLMConfig | null> {
   try {
     const { data: profileData, error: profileError } = await supabase
@@ -51,15 +52,20 @@ export async function getLLMConfig(
         }
       }
 
-      if (config.prompt?.trim()) {
-        const jsonEnforcementSuffix = buildJsonEnforcement();
-        prompt = config.prompt + jsonEnforcementSuffix;
-        console.log('Using user custom prompt with JSON array enforcement');
-      }
-
       if (config.model) {
         model = config.model;
       }
+    }
+
+    if (promptText) {
+      const jsonEnforcementSuffix = buildJsonEnforcement();
+      prompt = promptText + jsonEnforcementSuffix;
+      console.log('Using custom prompt with JSON array enforcement');
+      console.log('Custom prompt:', prompt);
+    } else {
+      const jsonEnforcementSuffix = buildJsonEnforcement();
+      prompt = defaultAiPrompt + jsonEnforcementSuffix;
+      console.log('Using default prompt with JSON array enforcement');
     }
 
     if (!apiKey) {

@@ -13,7 +13,7 @@
       <q-card-section class="q-pt-none">
         <q-input
           v-model="form.name"
-          :placeholder="'Title'"
+          placeholder="Title"
           outlined
           dense
           bg-color="white"
@@ -26,7 +26,7 @@
         />
         <q-input
           v-model="form.prompt"
-          :placeholder="'Prompt (300 words maximum)'"
+          placeholder="Prompt (300 words maximum)"
           type="textarea"
           outlined
           bg-color="white"

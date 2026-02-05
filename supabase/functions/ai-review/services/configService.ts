@@ -1,6 +1,6 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
 import { LLMConfig } from '../utils/types.ts';
-import { defaultAiPrompt, buildJsonEnforcement } from '../config/prompts.ts';
+import { defaultAiPrompt } from '../config/prompts.ts';
 
 export async function getMiraBotId(
   supabaseClient: ReturnType<typeof createSupabaseClient>,
@@ -22,7 +22,7 @@ export async function getMiraBotId(
 export async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string,
-  promptText?: string,
+  customPromptText?: string,
 ): Promise<LLMConfig | null> {
   try {
     const { data: profileData, error: profileError } = await supabase
@@ -32,7 +32,7 @@ export async function getLLMConfig(
       .single();
 
     let apiKey: string | null = null;
-    let prompt: string = defaultAiPrompt;
+    const basePrompt: string = defaultAiPrompt;
     let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-3.5-turbo';
     let hasUserConfig = false;
 
@@ -54,20 +54,9 @@ export async function getLLMConfig(
 
       if (config.model) {
         model = config.model;
+        console.log(`Using user model: ${model}`);
       }
     }
-
-    if (promptText) {
-      const jsonEnforcementSuffix = buildJsonEnforcement();
-      prompt = promptText + jsonEnforcementSuffix;
-      console.log('Using custom prompt with JSON array enforcement');
-      console.log('Custom prompt:', prompt);
-    } else {
-      const jsonEnforcementSuffix = buildJsonEnforcement();
-      prompt = defaultAiPrompt + jsonEnforcementSuffix;
-      console.log('Using default prompt with JSON array enforcement');
-    }
-
     if (!apiKey) {
       apiKey = Deno.env.get('OPENROUTER_API_KEY') ?? null;
       console.log('Using environment API key');
@@ -78,9 +67,51 @@ export async function getLLMConfig(
       return null;
     }
 
+    let finalPrompt: string;
+
+    if (customPromptText && customPromptText.trim()) {
+      console.log('Applying custom prompt instructions');
+      console.log('Custom prompt:', customPromptText);
+      finalPrompt = `You are Mira, a Wikipedia editing assistant.
+
+**CRITICAL: You MUST respond with ONLY a JSON array. No explanations, no preamble, no markdown code blocks. Just the JSON array.**
+
+You will receive multiple changes to review. For EACH change, you must follow these instructions:
+
+**YOUR PRIMARY TASK:**
+${customPromptText}
+
+**IMPORTANT:** When following the above instructions:
+- If the instruction asks you to translate, modify, add, or change content, you MUST set has_changes to TRUE
+- If the instruction asks you to improve, rewrite, or transform content, you MUST set has_changes to TRUE
+- Put the result of following the instruction in proposed_change
+- Only set has_changes to FALSE if you genuinely cannot improve or modify the content as instructed
+
+**Response format - ONLY JSON ARRAY:**
+Return an array of objects, one per change:
+[
+  {
+    "change_index": 0,
+    "has_changes": true or false,
+    "comment": "Brief explanation of what you did",
+    "proposed_change": "The modified/translated/improved text (empty string only if has_changes is false)"
+  }
+]
+
+**Rules:**
+- Return ONLY the JSON array, nothing else
+- No markdown blocks like \`\`\`json
+- Include ALL changes in order (use change_index to match)
+- Set has_changes to TRUE when you apply your instructions
+- Leave proposed_change as empty string ONLY when has_changes is false`;
+    } else {
+      console.log('Using default prompt (no custom instructions)');
+      finalPrompt = basePrompt;
+    }
+
     return {
       apiKey,
-      prompt,
+      prompt: finalPrompt,
       model,
       hasUserConfig,
     };

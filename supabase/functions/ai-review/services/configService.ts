@@ -69,7 +69,7 @@ export async function getLLMConfig(
 
     let finalPrompt: string;
 
-    if (customPromptText && customPromptText.trim()) {
+    if (customPromptText?.trim()) {
       console.log('Applying custom prompt instructions');
       console.log('Custom prompt:', customPromptText);
       finalPrompt = `You are Mira, a Wikipedia editing assistant.

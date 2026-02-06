@@ -6,6 +6,7 @@
       outline
       no-caps
       class="q-mr-xs q-px-md"
+      content-class="no-shadow"
       :disable="loading"
       split
       @click="triggerReview"
@@ -17,7 +18,7 @@
         </span>
       </template>
 
-      <q-list>
+      <q-list bordered>
         <q-item
           v-for="prompt in sortedPrompts"
           :key="prompt.id"
@@ -27,42 +28,34 @@
         >
           <q-item-section>
             <q-item-label
+              class="flex items-center"
               :style="
                 selectedPrompt?.id === prompt.id
-                  ? 'text-decoration: underline dotted;'
-                  : ''
+                  ? 'text-decoration: underline dotted; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
+                  : 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
               "
             >
-              {{ prompt.name }}
+              <span>{{ prompt.name }}</span>
             </q-item-label>
           </q-item-section>
           <q-item-section v-if="prompt.isCustom" side>
-            <div class="row no-wrap items-center">
-              <q-btn
-                flat
-                dense
-                round
-                icon="edit"
-                size="sm"
-                @click.stop="openEditDialog(prompt)"
-              />
-              <q-btn
-                flat
-                dense
-                round
-                icon="delete"
-                size="sm"
-                @click.stop="confirmDeletePrompt(prompt)"
-              />
-            </div>
+            <q-icon
+              name="edit"
+              size="xs"
+              color="black"
+              class="cursor-pointer"
+              @click.stop="openEditDialog(prompt)"
+            />
           </q-item-section>
         </q-item>
 
         <q-separator />
-
         <q-item v-close-popup clickable @click="openAddDialog">
           <q-item-section>
-            <q-item-label>Add a custom prompt</q-item-label>
+            <q-item-label class="flex items-center">
+              <q-icon name="add" class="q-mr-xs" size="xs" />
+              <span>Add a custom prompt</span>
+            </q-item-label>
           </q-item-section>
         </q-item>
       </q-list>
@@ -72,14 +65,9 @@
       v-model="promptDialog"
       :editing-prompt="editingPrompt"
       :loading="savingPrompt"
+      :deleting-prompt="deletingPrompt"
       @save="savePrompt"
       @cancel="cancelPromptDialog"
-    />
-
-    <PromptDeleteDialog
-      v-model="deleteDialog"
-      :prompt="promptToDelete"
-      :loading="deletingPrompt"
       @delete="deletePrompt"
     />
   </div>
@@ -93,7 +81,6 @@ import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
 import PromptFormDialog from 'src/components/PromptFormDialog.vue';
-import PromptDeleteDialog from 'src/components/PromptDeleteDialog.vue';
 
 const props = defineProps<{
   article: Article;
@@ -150,9 +137,7 @@ const reviews = ref<ReviewItem[]>([]);
 const prompts = ref<Prompt[]>([...defaultPrompts]);
 const selectedPrompt = ref<Prompt | null>(null);
 const promptDialog = ref(false);
-const deleteDialog = ref(false);
 const editingPrompt = ref<Prompt | null>(null);
-const promptToDelete = ref<Prompt | null>(null);
 const savingPrompt = ref(false);
 const deletingPrompt = ref(false);
 
@@ -185,11 +170,14 @@ async function loadPromptsFromDB() {
       return;
     }
 
-    const config = (profileData?.llm_reviewer_config || {}) as {
-      prompts?: StoredPrompt[];
-      selected_prompt_id?: string;
-    };
-    const customPrompts: StoredPrompt[] = config.prompts || [];
+    const config =
+      typeof profileData?.llm_reviewer_config === 'object' &&
+      profileData?.llm_reviewer_config !== null &&
+      !Array.isArray(profileData?.llm_reviewer_config)
+        ? (profileData.llm_reviewer_config as Record<string, unknown>)
+        : {};
+    const customPrompts: StoredPrompt[] =
+      (config.prompts as StoredPrompt[]) || [];
     const customPromptObjects = customPrompts.map((cp) => ({
       id: cp.id,
       name: cp.name,
@@ -199,7 +187,7 @@ async function loadPromptsFromDB() {
 
     prompts.value = [...defaultPrompts, ...customPromptObjects];
 
-    const savedSelectedId = config.selected_prompt_id;
+    const savedSelectedId = config.selected_prompt_id as string | undefined;
     if (savedSelectedId) {
       selectedPrompt.value =
         prompts.value.find((p) => p.id === savedSelectedId) || prompts.value[0];
@@ -222,10 +210,12 @@ async function savePromptsToDB() {
       .eq('id', userId)
       .single();
 
-    const existingConfig = (profileData?.llm_reviewer_config || {}) as Record<
-      string,
-      unknown
-    >;
+    const existingConfig =
+      typeof profileData?.llm_reviewer_config === 'object' &&
+      profileData?.llm_reviewer_config !== null &&
+      !Array.isArray(profileData?.llm_reviewer_config)
+        ? (profileData.llm_reviewer_config as Record<string, unknown>)
+        : {};
 
     const customPrompts = prompts.value
       .filter((p) => p.isCustom)
@@ -279,7 +269,7 @@ async function savePrompt(data: { name: string; prompt: string }) {
   try {
     if (editingPrompt.value) {
       const index = prompts.value.findIndex(
-        (p) => p.id === editingPrompt.value?.id,
+        (p) => p.id === editingPrompt.value!.id,
       );
       if (index !== -1) {
         prompts.value[index] = {
@@ -323,17 +313,12 @@ async function savePrompt(data: { name: string; prompt: string }) {
   }
 }
 
-function confirmDeletePrompt(prompt: Prompt) {
-  promptToDelete.value = prompt;
-  deleteDialog.value = true;
-}
-
 async function deletePrompt() {
-  if (!promptToDelete.value) return;
+  if (!editingPrompt.value) return;
 
   deletingPrompt.value = true;
   try {
-    const promptId = promptToDelete.value.id;
+    const promptId = editingPrompt.value.id;
     prompts.value = prompts.value.filter((p) => p.id !== promptId);
 
     if (selectedPrompt.value?.id === promptId) {
@@ -348,8 +333,8 @@ async function deletePrompt() {
       color: 'positive',
     });
 
-    deleteDialog.value = false;
-    promptToDelete.value = null;
+    promptDialog.value = false;
+    editingPrompt.value = null;
   } catch (error) {
     console.error('Error deleting prompt:', error);
     $q.notify({

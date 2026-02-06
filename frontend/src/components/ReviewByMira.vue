@@ -269,7 +269,7 @@ async function savePrompt(data: { name: string; prompt: string }) {
   try {
     if (editingPrompt.value) {
       const index = prompts.value.findIndex(
-        (p) => p.id === editingPrompt.value!.id,
+        (p) => p.id === editingPrompt.value?.id,
       );
       if (index !== -1) {
         prompts.value[index] = {

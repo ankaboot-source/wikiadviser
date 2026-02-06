@@ -111,8 +111,7 @@ interface Props {
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;
   (e: 'save', data: { name: string; prompt: string }): void;
-  (e: 'cancel'): void;
-  (e: 'delete'): void;
+  (e: 'cancel' | 'delete'): void;
 }
 
 const props = defineProps<Props>();

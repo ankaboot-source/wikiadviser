@@ -3,21 +3,30 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
   >
-    <q-card style="min-width: 400px; box-shadow: none" flat>
-      <q-card-section>
-        <div class="text-h6">
+    <q-card
+      class="column"
+      :style="
+        $q.screen.lt.md
+          ? 'width: 95vw; max-height: 60vh'
+          : 'width: 60vw; max-height: 60vh'
+      "
+      flat
+    >
+      <q-toolbar class="borders">
+        <q-toolbar-title class="merriweather">
           {{ editingPrompt ? 'Edit Prompt' : 'Add a custom prompt' }}
-        </div>
-      </q-card-section>
+        </q-toolbar-title>
+        <q-btn v-close-popup flat round dense icon="close" size="sm" />
+      </q-toolbar>
 
-      <q-card-section class="q-pt-none">
+      <q-card-section class="col-grow scroll">
         <q-input
           v-model="form.name"
           placeholder="Title"
           outlined
           dense
           bg-color="white"
-          class="q-mb-md"
+          class="q-mb-sm"
           :rules="[
             (val) => !!val || 'Title is required',
             (val) =>
@@ -26,28 +35,56 @@
         />
         <q-input
           v-model="form.prompt"
-          placeholder="Prompt (300 words maximum)"
+          placeholder="Prompt"
           type="textarea"
           outlined
+          dense
           bg-color="white"
           rows="4"
+          counter
+          maxlength="2000"
           :rules="[
             (val) => !!val || 'Prompt is required',
-            (val) =>
-              val.length <= 4000 || 'Prompt must be less than 4000 characters',
+            (val) => val.length <= 2000 || 'Prompt must be less than 300 words',
           ]"
         />
       </q-card-section>
 
-      <q-card-actions align="right" class="borders">
-        <q-btn flat label="Cancel" color="primary" @click="handleCancel" />
+      <q-card-actions class="borders">
+        <q-btn
+          v-if="editingPrompt"
+          color="negative"
+          no-caps
+          outline
+          class="text-sm"
+          :loading="deletingPrompt"
+          @click="$emit('delete')"
+        >
+          <q-icon name="delete" class="q-mr-none" />
+          <span>Delete</span>
+        </q-btn>
+        <q-space />
+        <q-btn
+          v-if="!loading"
+          flat
+          label="Cancel"
+          no-caps
+          @click="handleCancel"
+        />
         <q-btn
           :label="editingPrompt ? 'Save' : 'Create'"
           color="primary"
+          unelevated
+          no-caps
           :loading="loading"
           :disable="!isFormValid"
           @click="handleSave"
-        />
+        >
+          <template v-if="loading" #loading>
+            <q-spinner class="on-left" />
+            {{ editingPrompt ? 'Saving' : 'Creating' }}
+          </template>
+        </q-btn>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -55,6 +92,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { useQuasar } from 'quasar';
 
 interface Prompt {
   id: string;
@@ -67,16 +105,19 @@ interface Props {
   modelValue: boolean;
   editingPrompt: Prompt | null;
   loading?: boolean;
+  deletingPrompt?: boolean;
 }
 
 interface Emits {
   (e: 'update:modelValue', value: boolean): void;
   (e: 'save', data: { name: string; prompt: string }): void;
   (e: 'cancel'): void;
+  (e: 'delete'): void;
 }
 
 const props = defineProps<Props>();
 const emit = defineEmits<Emits>();
+const $q = useQuasar();
 
 const form = ref({
   name: '',
@@ -88,7 +129,7 @@ const isFormValid = computed(() => {
     form.value.name.trim().length > 0 &&
     form.value.name.length <= 100 &&
     form.value.prompt.trim().length > 0 &&
-    form.value.prompt.length <= 4000
+    form.value.prompt.length <= 2000
   );
 });
 

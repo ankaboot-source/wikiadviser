@@ -68,10 +68,38 @@ export function validateResponse(
     content.substring(0, 1000),
   );
 
-  const parsed: ParsedResponse = parseResponse(content, expectedCount);
+  const parsed: ParsedResponse = parseResponse(content);
 
   if (parsed.type === 'json' && parsed.responses) {
     console.log(`Parsed as JSON array: ${parsed.responses.length} items`);
+
+    if (parsed.responses.length < expectedCount) {
+      console.warn(
+        `Partial JSON array: got ${parsed.responses.length}, expected ${expectedCount}`,
+      );
+
+      for (let i = parsed.responses.length; i < expectedCount; i++) {
+        parsed.responses.push({
+          change_index: startIndex + i,
+          has_changes: false,
+          comment: 'Response truncated - no review available',
+          proposed_change: '',
+        });
+      }
+
+      return { responses: parsed.responses, isFallback: true };
+    }
+
+    if (parsed.responses.length > expectedCount) {
+      console.warn(
+        `More responses than expected: got ${parsed.responses.length}, expected ${expectedCount}`,
+      );
+      return {
+        responses: parsed.responses.slice(0, expectedCount),
+        isFallback: false,
+      };
+    }
+
     return { responses: parsed.responses, isFallback: false };
   }
 

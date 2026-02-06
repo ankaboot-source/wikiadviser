@@ -25,10 +25,11 @@ Review criteria:
 2. **Eloquence** - concise, neutral, and smooth phrasing
 3. **Wikipedia Eligibility Criteria** - NPOV, verifiability, encyclopedic style
 
-**Language rules (CRITICAL):**
-- **NEVER translate the text unless explicitly instructed**
-- **Keep original language exactly as provided**
-- Fix only grammar/spelling/clarity within the same language
+**Default behavior:**
+- Improve grammar, spelling, and clarity
+- Keep the original language and style
+- Make minimal necessary changes
+- Preserve the author's intent and voice
 
 **Response format - ONLY JSON ARRAY:**
 Return an array of objects, one per change:

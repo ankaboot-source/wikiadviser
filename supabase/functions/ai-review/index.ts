@@ -34,7 +34,19 @@ app.post('/', async (c) => {
     const article = await getArticle(article_id);
     if (!article) return c.json({ error: 'Article not found' }, 404);
 
-    const config = await getLLMConfig(supabase, user.id, prompt);
+    const articleContext = {
+      title: article.title as string,
+      description: article.description as string | null,
+    };
+
+    console.log('Article context created:', articleContext);
+
+    const config = await getLLMConfig(
+      supabase,
+      user.id,
+      articleContext,
+      prompt,
+    );
     if (!config) {
       return c.json({ error: 'No AI API key configured' }, 400);
     }
@@ -67,7 +79,12 @@ app.post('/', async (c) => {
 
     console.log(`Found ${changes.length} changes to review`);
 
-    const aiResponses = await processAllBatches(changes, config, 10);
+    const aiResponses = await processAllBatches(
+      changes,
+      config,
+      articleContext,
+      10,
+    );
 
     const { reviews, changesToApply } = processResponses(aiResponses, changes);
 

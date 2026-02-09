@@ -17,12 +17,12 @@ export function buildBatchPrompt(
   articleContext: ArticleContext,
 ): string {
 
-  let prompt = `**ARTICLE CONTEXT:**\n`;
+  let prompt = '**ARTICLE CONTEXT:**\n';
   prompt += `Title: "${articleContext.title || 'Untitled Article'}"\n`;
   if (articleContext.description) {
     prompt += `Description: ${articleContext.description}\n`;
   }
-  prompt += `\n`;
+  prompt += '\n**INSTRUCTIONS:**\n';
 
   prompt += `Review the following ${changes.length} changes for this article:\n\n`;
 

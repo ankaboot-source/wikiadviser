@@ -1,5 +1,5 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
-import { LLMConfig } from '../utils/types.ts';
+import { LLMConfig, ArticleContext } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
 export async function getMiraBotId(
@@ -22,6 +22,7 @@ export async function getMiraBotId(
 export async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string,
+  articleContext: ArticleContext,
   customPromptText?: string,
 ): Promise<LLMConfig | null> {
   try {
@@ -71,10 +72,21 @@ export async function getLLMConfig(
 
     if (customPromptText?.trim()) {
       console.log('Applying custom prompt instructions');
-      console.log('Custom prompt:', customPromptText);
+
+      const contextBlock = `**ARTICLE CONTEXT:**
+You are reviewing changes for the article: "${articleContext.title}"${
+        articleContext.description
+          ? `\nDescription: ${articleContext.description}`
+          : ''
+      }
+
+`;
+
+      console.log('Generated context block:', contextBlock);
+
       finalPrompt = `You are Mira, a Wikipedia editing assistant.
 
-**CRITICAL: You MUST respond with ONLY a JSON array. No explanations, no preamble, no markdown code blocks. Just the JSON array.**
+${contextBlock}**CRITICAL: You MUST respond with ONLY a JSON array. No explanations, no preamble, no markdown code blocks. Just the JSON array.**
 
 You will receive multiple changes to review. For EACH change, you must follow these instructions:
 
@@ -106,7 +118,20 @@ Return an array of objects, one per change:
 - Leave proposed_change as empty string ONLY when has_changes is false`;
     } else {
       console.log('Using default prompt (no custom instructions)');
-      finalPrompt = basePrompt;
+      const contextBlock = `**ARTICLE CONTEXT:**
+You are reviewing changes for the article: "${articleContext.title || 'Untitled Article'}"${
+        articleContext.description
+          ? `\nDescription: ${articleContext.description}`
+          : ''
+      }
+
+`;
+
+      finalPrompt = `You are Mira, a Wikipedia editing assistant.
+
+${contextBlock}${basePrompt.replace('You are Mira, a Wikipedia editing assistant.\n\n', '')}`;
+
+      console.log(finalPrompt);
     }
 
     return {

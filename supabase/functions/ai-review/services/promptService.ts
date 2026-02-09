@@ -1,4 +1,4 @@
-import { DiffChange } from '../utils/types.ts';
+import { DiffChange, ArticleContext } from '../utils/types.ts';
 
 export function getEditTypeName(
   changeType: 'insert' | 'delete' | 'change',
@@ -14,8 +14,17 @@ export function getEditTypeName(
 export function buildBatchPrompt(
   changes: DiffChange[],
   startIndex: number,
+  articleContext: ArticleContext,
 ): string {
-  let prompt = `Review the following ${changes.length} changes:\n\n`;
+
+  let prompt = `**ARTICLE CONTEXT:**\n`;
+  prompt += `Title: "${articleContext.title || 'Untitled Article'}"\n`;
+  if (articleContext.description) {
+    prompt += `Description: ${articleContext.description}\n`;
+  }
+  prompt += `\n`;
+
+  prompt += `Review the following ${changes.length} changes for this article:\n\n`;
 
   changes.forEach((change, i) => {
     const editType = getEditTypeName(change.type);
@@ -33,6 +42,7 @@ export function buildBatchPrompt(
   });
 
   prompt += `\nReturn a JSON array with ${changes.length} objects (change_index ${startIndex} to ${startIndex + changes.length - 1}).`;
+  console.log(prompt);
 
   return prompt;
 }

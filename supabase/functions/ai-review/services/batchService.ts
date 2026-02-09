@@ -3,6 +3,7 @@ import {
   AIResponse,
   LLMConfig,
   BatchResult,
+  ArticleContext,
 } from '../utils/types.ts';
 import { buildBatchPrompt, calculateTokens } from './promptService.ts';
 import { callOpenRouter, validateResponse } from './aiService.ts';
@@ -22,9 +23,10 @@ export async function processBatch(
   batch: DiffChange[],
   startIndex: number,
   config: LLMConfig,
+  articleContext: ArticleContext,
 ): Promise<BatchResult> {
   try {
-    const batchedPrompt = buildBatchPrompt(batch, startIndex);
+    const batchedPrompt = buildBatchPrompt(batch, startIndex, articleContext);
     const { estimatedInput, maxResponse } = calculateTokens(
       batchedPrompt.length,
       batch.length,
@@ -88,6 +90,7 @@ export async function processBatch(
 export async function processAllBatches(
   changes: DiffChange[],
   config: LLMConfig,
+  articleContext: ArticleContext,
   batchSize = 10,
 ): Promise<AIResponse[]> {
   const batches = splitIntoBatches(changes, batchSize);
@@ -106,7 +109,12 @@ export async function processAllBatches(
       `\n=== Batch ${batchIndex + 1}/${batches.length} (${batch.length} changes) ===`,
     );
 
-    const result = await processBatch(batch, startIndex, config);
+    const result = await processBatch(
+      batch,
+      startIndex,
+      config,
+      articleContext,
+    );
 
     if (result.success) {
       console.log(`  ✓ Success: ${result.responses.length} responses`);

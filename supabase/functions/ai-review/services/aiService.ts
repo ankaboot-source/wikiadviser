@@ -10,22 +10,24 @@ export async function reviewFullArticle(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<AIReviewResponse> {
-
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    'https://openrouter.ai/api/v1/chat/completions',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.2,
+      }),
     },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.2,
-    }),
-  });
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -48,7 +50,6 @@ export async function reviewFullArticle(
   if (finishReason === 'length') {
     console.warn('AI response was truncated due to length limit');
   }
-
 
   try {
     const cleaned = content

@@ -41,9 +41,3 @@ export interface ParsedResponse {
   responses?: AIResponse[];
   rawText?: string;
 }
-export interface LLMConfig {
-  apiKey: string;
-  prompt: string;
-  model: string;
-  hasUserConfig: boolean;
-}

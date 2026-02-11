@@ -1,5 +1,5 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
-import { LLMConfig, ArticleContext } from '../utils/types.ts';
+import { LLMConfig } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
 export async function getMiraBotId(
@@ -13,16 +13,18 @@ export async function getMiraBotId(
     .maybeSingle();
 
   if (error) {
-    console.error('Error fetching Mira bot ID:', error);
+    console.error('Error fetching Mira bot ID', error);
     return null;
   }
-  return data?.id ?? null;
+  if (!data?.id) {
+    return null;
+  }
+  return data.id;
 }
 
 export async function getLLMConfig(
   supabase: ReturnType<typeof createSupabaseClient>,
   userId: string,
-  articleContext: ArticleContext,
   customPromptText?: string,
 ): Promise<LLMConfig | null> {
   try {
@@ -33,8 +35,7 @@ export async function getLLMConfig(
       .single();
 
     let apiKey: string | null = null;
-    const basePrompt: string = defaultAiPrompt;
-    let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-3.5-turbo';
+    let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-4o-mini';
     let hasUserConfig = false;
 
     if (!profileError && profileData?.llm_reviewer_config) {
@@ -49,13 +50,11 @@ export async function getLLMConfig(
         if (!keyError && userApiKey) {
           apiKey = userApiKey;
           hasUserConfig = true;
-          console.log('Using user API key');
         }
       }
 
       if (config.model) {
         model = config.model;
-        console.log(`Using user model: ${model}`);
       }
     }
     if (!apiKey) {
@@ -68,71 +67,7 @@ export async function getLLMConfig(
       return null;
     }
 
-    let finalPrompt: string;
-
-    if (customPromptText?.trim()) {
-      console.log('Applying custom prompt instructions');
-
-      const contextBlock = `**ARTICLE CONTEXT:**
-You are reviewing changes for the article: "${articleContext.title}"${
-        articleContext.description
-          ? `\nDescription: ${articleContext.description}`
-          : ''
-      }
-
-`;
-
-      console.log('Generated context block:', contextBlock);
-
-      finalPrompt = `You are Mira, a Wikipedia editing assistant.
-
-${contextBlock}**CRITICAL: You MUST respond with ONLY a JSON array. No explanations, no preamble, no markdown code blocks. Just the JSON array.**
-
-You will receive multiple changes to review. For EACH change, you must follow these instructions:
-
-**YOUR PRIMARY TASK:**
-${customPromptText}
-
-**IMPORTANT:** When following the above instructions:
-- If the instruction asks you to translate, modify, add, or change content, you MUST set has_changes to TRUE
-- If the instruction asks you to improve, rewrite, or transform content, you MUST set has_changes to TRUE
-- Put the result of following the instruction in proposed_change
-- Only set has_changes to FALSE if you genuinely cannot improve or modify the content as instructed
-
-**Response format - ONLY JSON ARRAY:**
-Return an array of objects, one per change:
-[
-  {
-    "change_index": 0,
-    "has_changes": true or false,
-    "comment": "Brief explanation of what you did",
-    "proposed_change": "The modified/translated/improved text (empty string only if has_changes is false)"
-  }
-]
-
-**Rules:**
-- Return ONLY the JSON array, nothing else
-- No markdown blocks like \`\`\`json
-- Include ALL changes in order (use change_index to match)
-- Set has_changes to TRUE when you apply your instructions
-- Leave proposed_change as empty string ONLY when has_changes is false`;
-    } else {
-      console.log('Using default prompt (no custom instructions)');
-      const contextBlock = `**ARTICLE CONTEXT:**
-You are reviewing changes for the article: "${articleContext.title || 'Untitled Article'}"${
-        articleContext.description
-          ? `\nDescription: ${articleContext.description}`
-          : ''
-      }
-
-`;
-
-      finalPrompt = `You are Mira, a Wikipedia editing assistant.
-
-${contextBlock}${basePrompt.replace('You are Mira, a Wikipedia editing assistant.\n\n', '')}`;
-
-      console.log(finalPrompt);
-    }
+    const finalPrompt = customPromptText?.trim() || defaultAiPrompt;
 
     return {
       apiKey,

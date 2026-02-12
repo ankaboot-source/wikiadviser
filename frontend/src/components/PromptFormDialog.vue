@@ -80,10 +80,6 @@
           :disable="!isFormValid"
           @click="handleSave"
         >
-          <template v-if="loading" #loading>
-            <q-spinner class="on-left" />
-            {{ editingPrompt ? 'Saving' : 'Creating' }}
-          </template>
         </q-btn>
       </q-card-actions>
     </q-card>

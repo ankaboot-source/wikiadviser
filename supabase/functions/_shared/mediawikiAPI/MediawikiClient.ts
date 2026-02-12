@@ -536,6 +536,45 @@ export default class MediawikiClient {
 
     return page.revisions || [];
   }
+  /**
+   * Get article data for AI review (wikitext)
+   */
+  async getArticleForAIReview(articleId: string): Promise<{
+    wikitext: string;
+  }> {
+    const wikitext = await this.getCurrentArticleWikitext(articleId);
+
+    return {
+      wikitext,
+    };
+  }
+
+  /**
+   * Get HTML diff between two revisions
+   */
+  async getRevisionDiffHtml(
+    articleId: string,
+    fromRevId: number,
+    toRevId: number,
+  ): Promise<string> {
+    const response = await this.mediawikiApiInstance.get('', {
+      params: {
+        action: 'compare',
+        fromrev: fromRevId,
+        torev: toRevId,
+        prop: 'diff',
+        format: 'json',
+        formatversion: 2,
+      },
+    });
+
+    const diffHtml = response.data.compare?.body;
+    if (!diffHtml) {
+      throw new Error('Failed to retrieve diff HTML');
+    }
+
+    return diffHtml;
+  }
 
   /**
    * Gets wikitext for a specific revision (used for comparison in AI review)

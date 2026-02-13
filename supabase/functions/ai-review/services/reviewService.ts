@@ -44,7 +44,7 @@ export async function reviewAndImproveArticle(
   articleId: string,
   language: string,
   config: LLMConfig,
-  _miraBotId: string,
+  miraBotId: string,
   customInstructions?: string,
 ): Promise<ReviewResult> {
   const mediawiki = new MediawikiClient(language, wikipediaApi);

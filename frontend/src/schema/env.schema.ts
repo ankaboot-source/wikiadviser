@@ -36,6 +36,7 @@ const envSchema = z.object({
   POSTHOG_API_KEY: z.string().optional(),
   POSTHOG_API_HOST: z.string().optional(),
   USE_MIRA: z.boolean().default(false),
+  AI_MODEL: z.string().default('google/gemini-2.5-flash-lite'),
 });
 
 const envServer = envSchema.safeParse({
@@ -49,6 +50,7 @@ const envServer = envSchema.safeParse({
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
   USE_MIRA: process.env.USE_MIRA?.toLocaleLowerCase() === 'true' ? true : false,
+  AI_MODEL: process.env.AI_MODEL,
 });
 
 if (!envServer.success) {

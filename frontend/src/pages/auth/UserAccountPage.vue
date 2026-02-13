@@ -162,7 +162,12 @@
 
       <!-- Profile Picture Section -->
       <div class="q-my-lg">
-        <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
+        <h2
+          v-if="hasPassword && hasEmailProvider"
+          class="text-h6 merriweather q-mb-xs"
+        >
+          Profile Picture
+        </h2>
         <div>
           <img
             :src="picture"

@@ -396,6 +396,7 @@ import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { computed, onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import ENV from 'src/schema/env.schema';
 
 interface ModelOption {
   id: string;
@@ -786,11 +787,12 @@ async function saveLLMConfig() {
     savingLLMConfig.value = false;
   }
 }
+const DEFAULT_AI_MODEL = ENV.AI_MODEL;
 async function loadLLMConfig() {
   const config = userStore.user?.llm_reviewer_config;
   if (config) {
     llmConfig.value = {
-      model: config.model || '',
+      model: config.model || DEFAULT_AI_MODEL,
     };
     apiKey.value.hasPersonalKey = config.has_api_key || false;
   }

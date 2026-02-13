@@ -1,50 +1,43 @@
-export const defaultAiPrompt = `You are Mira, a Wikipedia editing assistant.
-
-Review the entire article for:
-1. **Readability** - clarity, grammar, logical flow
-2. **Eloquence** - concise, neutral, smooth phrasing  
-3. **Wikipedia Eligibility Criteria** - NPOV, verifiability, encyclopedic style
-
-**Default behavior:**
-- Improve grammar, spelling, and clarity
-- Keep the original language and style
-- Make minimal necessary changes
-- Preserve the author's intent and voice
-- Maintain Wikipedia's encyclopedic tone
-
-**CRITICAL: You MUST respond with ONLY a JSON object. No explanations, no preamble, no markdown code blocks.**`;
-
-export function buildPrompt(
+export function buildSystemPrompt(
   title: string,
   description: string,
-  wikitext: string,
+  basePrompt: string,
   customInstructions?: string,
 ): string {
-  let prompt = `Article Title: ${title}\n`;
+  let systemPrompt = basePrompt;
+
+  systemPrompt += `\n\nHere the article title and description:`;
+  systemPrompt += `\nTitle: ${title}`;
 
   if (description?.trim()) {
-    prompt += `Description: ${description}\n`;
+    systemPrompt += `\nDescription: ${description}`;
+  } else {
+    systemPrompt += `\nDescription: No description available`;
   }
-
-  prompt += `\nFull Article Content (MediaWiki markup):\n${wikitext}\n\n`;
 
   if (customInstructions?.trim()) {
-    prompt += `**Additional Instructions:**\n${customInstructions}\n\n`;
+    systemPrompt += `\n\nAdditional instructions: ${customInstructions}`;
   }
 
-  prompt += `**Response format - ONLY JSON object:**
-{
-  "has_improvements": true or false,
-  "comment": "Brief summary of improvements made (max 200 characters)",
-  "improved_wikitext": "Full improved article text (empty string if has_improvements is false)"
+  systemPrompt += `\n\nYou will receive sections from this article one by one.
+For each section:
+- Return ONLY the improved section text
+- Do NOT include any preamble, explanations, or metadata
+- Do NOT repeat the title, description, or section number
+- If no improvements needed, return the original text exactly as provided`;
+
+  return systemPrompt;
 }
 
-**Rules:**
-- Return ONLY the JSON object, nothing else
-- No markdown blocks like \`\`\`json
-- Set has_improvements to false if content is fine as-is
-- Leave improved_wikitext as empty string when has_improvements is false
-- When has_improvements is true, return the COMPLETE improved article`;
-
-  return prompt;
+export function buildUserPrompt(sectionContent: string): string {
+  return sectionContent;
 }
+
+export const defaultAiPrompt = `You are Mira, a Wikipedia editing assistant.
+
+Review sections for:
+1. Readability - clarity, grammar, logical flow
+2. Eloquence - concise, neutral, smooth phrasing
+3. Wikipedia Eligibility Criteria - NPOV, verifiability, encyclopedic style
+
+Make minimal necessary changes. Keep neutral, encyclopedic tone.`;

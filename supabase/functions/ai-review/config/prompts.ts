@@ -6,13 +6,13 @@ export function buildSystemPrompt(
 ): string {
   let systemPrompt = basePrompt;
 
-  systemPrompt += `\n\nHere the article title and description:`;
+  systemPrompt += '\n\nHere the article title and description:';
   systemPrompt += `\nTitle: ${title}`;
 
   if (description?.trim()) {
     systemPrompt += `\nDescription: ${description}`;
   } else {
-    systemPrompt += `\nDescription: No description available`;
+    systemPrompt += '\nDescription: No description available';
   }
 
   if (customInstructions?.trim()) {

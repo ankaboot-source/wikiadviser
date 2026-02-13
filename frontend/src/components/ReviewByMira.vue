@@ -6,6 +6,7 @@
       outline
       no-caps
       class="q-mr-xs q-px-md"
+      :class="{ 'custom-prompt-active ': selectedPrompt?.isCustom }"
       content-class="no-shadow"
       :disable="loading"
       split
@@ -29,11 +30,7 @@
           <q-item-section>
             <q-item-label
               class="flex items-center"
-              :style="
-                selectedPrompt?.id === prompt.id
-                  ? 'text-decoration: underline dotted; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
-                  : 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;'
-              "
+              :class="{ 'text-primary': selectedPrompt?.id === prompt.id }"
             >
               <span>{{ prompt.name }}</span>
             </q-item-label>
@@ -420,3 +417,9 @@ async function triggerReview() {
   }
 }
 </script>
+<style scoped>
+.custom-prompt-active :deep(.q-btn:first-child .q-btn__content) {
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+}
+</style>

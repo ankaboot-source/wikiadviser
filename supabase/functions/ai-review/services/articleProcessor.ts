@@ -91,7 +91,6 @@ export function splitArticleIntoSections(wikitext: string): ArticleSection[] {
   const sections: ArticleSection[] = [];
   const lines = wikitext.split('\n');
   let currentSection: string[] = [];
-  let sectionIndex = 0;
 
   for (const line of lines) {
     const headerMatch = line.match(/^(=+)([^=]+)\1$/);
@@ -102,7 +101,6 @@ export function splitArticleIntoSections(wikitext: string): ArticleSection[] {
 
       const split = splitLargeSection(content, title);
       sections.push(...split);
-      sectionIndex += split.length;
 
       currentSection = [];
     }

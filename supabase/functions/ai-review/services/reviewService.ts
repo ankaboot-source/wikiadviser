@@ -1,7 +1,8 @@
 import MediawikiClient from '../../_shared/mediawikiAPI/MediawikiClient.ts';
 import wikipediaApi from '../../_shared/wikipedia/WikipediaApi.ts';
-import { buildPrompt } from '../config/prompts.ts';
-import { reviewFullArticle } from './aiService.ts';
+import { buildSystemPrompt, buildUserPrompt } from '../config/prompts.ts';
+import { reviewArticleSection } from './aiService.ts';
+import { splitArticleIntoSections } from './articleProcessor.ts';
 import type { LLMConfig } from '../utils/types.ts';
 import { getArticle } from '../../_shared/helpers/supabaseHelper.ts';
 
@@ -12,6 +13,33 @@ export interface ReviewResult {
   newRevisionId: number;
 }
 
+function cleanAIResponse(response: string, originalContent: string): string {
+  let cleaned = response.trim();
+  cleaned = cleaned.trim();
+  if (cleaned.length < originalContent.length * 0.2) {
+    return originalContent;
+  }
+  return cleaned;
+}
+function safeReplace(
+  text: string,
+  oldContent: string,
+  newContent: string,
+): string {
+  const index = text.indexOf(oldContent);
+
+  if (index === -1) {
+    console.warn('Could not find content to replace');
+    return text;
+  }
+
+  return (
+    text.substring(0, index) +
+    newContent +
+    text.substring(index + oldContent.length)
+  );
+}
+
 export async function reviewAndImproveArticle(
   articleId: string,
   language: string,
@@ -19,56 +47,85 @@ export async function reviewAndImproveArticle(
   miraBotId: string,
   customInstructions?: string,
 ): Promise<ReviewResult> {
-  console.info('Starting full article review', { language });
-
   const mediawiki = new MediawikiClient(language, wikipediaApi);
 
   const articleData = await mediawiki.getArticleForAIReview(articleId);
 
   const article = await getArticle(articleId);
-  console.info('Article wikitext fetched', {
-    title: article.title,
-    description: article.description,
-    wikitextLength: articleData.wikitext.length,
-  });
-  const userPrompt = buildPrompt(
+
+  console.log(
+    `Article: ${article.title}, ${articleData.wikitext.length} chars`,
+  );
+
+  const sections = splitArticleIntoSections(articleData.wikitext);
+
+  const systemPrompt = buildSystemPrompt(
     article.title,
     article.description,
-    articleData.wikitext,
+    config.prompt,
     customInstructions,
   );
 
-  console.info('Sending full article to AI for review', {
-    promptLength: userPrompt.length,
-  });
+  let improvedWikitext = articleData.wikitext;
+  let improvedSections = 0;
+  const replacements: Array<{ original: string; improved: string }> = [];
 
-  const result = await reviewFullArticle(
-    config.apiKey,
-    config.model,
-    config.prompt,
-    userPrompt,
+  for (let i = 0; i < sections.length; i++) {
+    const section = sections[i];
+    console.log(
+      `Processing ${i + 1}/${sections.length}: ${section.content.length} chars`,
+    );
+
+    const userPrompt = buildUserPrompt(section.content);
+
+    const rawResponse = await reviewArticleSection(
+      config.apiKey,
+      config.model,
+      systemPrompt,
+      userPrompt,
+    );
+
+    const improvedContent = cleanAIResponse(rawResponse, section.content);
+
+    const hasChange = improvedContent.trim() !== section.content.trim();
+
+    if (hasChange && improvedContent.trim()) {
+      replacements.push({
+        original: section.content,
+        improved: improvedContent,
+      });
+      improvedSections++;
+      console.log(`Section ${i + 1}/${sections.length}: improved`);
+    } else {
+      console.log(`Section ${i + 1}/${sections.length}: unchanged`);
+    }
+  }
+
+  console.log(
+    `Complete: ${improvedSections}/${sections.length} sections improved`,
   );
 
-  console.info('AI processing completed', {
-    hasImprovements: result.has_improvements,
-    comment: result.comment,
-  });
-
-  if (!result.has_improvements || !result.improved_wikitext.trim()) {
-    console.info('No improvements needed');
+  if (improvedSections === 0) {
     return {
       hasImprovements: false,
-      comment: result.comment,
+      comment: 'No improvements needed',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
   }
 
-  if (result.improved_wikitext.trim() === articleData.wikitext.trim()) {
-    console.warn('Improved wikitext identical to original');
+  for (const replacement of replacements) {
+    improvedWikitext = safeReplace(
+      improvedWikitext,
+      replacement.original,
+      replacement.improved,
+    );
+  }
+
+  if (improvedWikitext.trim() === articleData.wikitext.trim()) {
     return {
       hasImprovements: false,
-      comment: 'No actual changes detected',
+      comment: 'No changes detected',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -76,26 +133,13 @@ export async function reviewAndImproveArticle(
 
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
-    result.improved_wikitext,
-    `Mira: ${result.comment}`,
+    improvedWikitext,
+    `Mira: reviewed and improved ${improvedSections} section(s)`,
   );
-
-  console.info('MediaWiki revision created', {
-    oldRevid: editResult.oldrevid,
-    newRevid: editResult.newrevid,
-  });
-
-  const diffHtml = await mediawiki.getRevisionDiffHtml(
-    articleId,
-    editResult.oldrevid,
-    editResult.newrevid,
-  );
-
-  await mediawiki.updateChanges(articleId, miraBotId, diffHtml);
 
   return {
     hasImprovements: true,
-    comment: result.comment,
+    comment: `Improved ${improvedSections} section(s)`,
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

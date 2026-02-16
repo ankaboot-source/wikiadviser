@@ -3,7 +3,7 @@
     <q-avatar size="sm">
       <img
         :src="isMiraUser ? '/icons/logo.svg' : avatarUrl"
-        :referrerpolicy="'no-referrer'"
+        referrerpolicy="no-referrer"
       />
     </q-avatar>
     <span class="username q-ml-sm ellipsis">

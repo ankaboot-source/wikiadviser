@@ -17,7 +17,7 @@
         <span v-if="!$q.screen.lt.md" class="review-label">
           &nbsp;Review by&nbsp;<span
             class="prompt-name"
-            :class="{ 'prompt-name-active': selectedPrompt?.isCustom }"
+            :class="{ 'prompt-name-active': selectedPrompt }"
             >{{ selectedPrompt?.name }}</span
           >
         </span>
@@ -469,7 +469,7 @@ async function triggerReview() {
 }
 @media screen and (min-width: 1600px) {
   .prompt-name {
-    max-width: 20vw;
+    max-width: 10vw;
   }
 }
 </style>

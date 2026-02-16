@@ -2,20 +2,24 @@
   <div>
     <q-btn-dropdown
       :icon="loading ? undefined : 'img:/icons/logo.svg'"
-      :label="loading ? '' : $q.screen.lt.md ? '' : 'Review by Mira'"
       outline
       no-caps
-      class="q-mr-xs q-px-md"
-      :class="{ 'custom-prompt-active ': selectedPrompt?.isCustom }"
+      class="q-mr-xs q-px-md btn-no-icon-spacing review-btn-wrapper"
       content-class="no-shadow"
       :disable="loading"
       split
       @click="triggerReview"
     >
-      <template v-if="loading" #label>
-        <q-spinner size="1em" />
-        <span v-if="!$q.screen.lt.md" class="q-ml-sm q-pl-xs">
-          Review by Mira
+      <template #label>
+        <template v-if="loading">
+          <q-spinner size="1em" />
+        </template>
+        <span v-if="!$q.screen.lt.md" class="review-label">
+          &nbsp;Review by&nbsp;<span
+            class="prompt-name"
+            :class="{ 'prompt-name-active': selectedPrompt?.isCustom }"
+            >{{ selectedPrompt?.name }}</span
+          >
         </span>
       </template>
 
@@ -417,9 +421,55 @@ async function triggerReview() {
   }
 }
 </script>
+
 <style scoped>
-.custom-prompt-active :deep(.q-btn:first-child .q-btn__content) {
+.btn-no-icon-spacing :deep(.q-btn__content > *:not(:first-child)) {
+  margin-left: 0;
+}
+
+.review-btn-wrapper {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.review-btn-wrapper :deep(.q-btn__content) {
+  overflow: hidden;
+}
+
+.review-label {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.prompt-name {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  flex-shrink: 1;
+  max-width: 10vw;
+}
+
+.prompt-name-active {
   text-decoration: underline dotted;
   text-underline-offset: 4px;
+}
+@media screen and (max-width: 1200px) {
+  .prompt-name {
+    max-width: 1vw;
+  }
+}
+@media screen and (max-width: 1400px) {
+  .prompt-name {
+    max-width: 5vw;
+  }
+}
+@media screen and (min-width: 1600px) {
+  .prompt-name {
+    max-width: 20vw;
+  }
 }
 </style>

@@ -427,9 +427,17 @@ async function triggerReview() {
   margin-left: 0;
 }
 
+.review-label {
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  min-width: 0;
+}
+
 .prompt-name {
   display: inline-block;
   text-overflow: ellipsis;
+  min-width: 0;
   max-width: 10vw;
 }
 
@@ -449,7 +457,7 @@ async function triggerReview() {
 }
 @media screen and (min-width: 1600px) {
   .prompt-name {
-    max-width: 10vw;
+    max-width: 25vw;
   }
 }
 </style>

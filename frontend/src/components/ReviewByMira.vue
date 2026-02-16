@@ -427,29 +427,9 @@ async function triggerReview() {
   margin-left: 0;
 }
 
-.review-btn-wrapper {
-  max-width: 100%;
-  min-width: 0;
-}
-
-.review-btn-wrapper :deep(.q-btn__content) {
-  overflow: hidden;
-}
-
-.review-label {
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  min-width: 0;
-}
-
 .prompt-name {
   display: inline-block;
-  overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  flex-shrink: 1;
   max-width: 10vw;
 }
 

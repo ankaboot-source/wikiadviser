@@ -1,7 +1,10 @@
 <template>
   <div :class="`${section} user`">
     <q-avatar size="sm">
-      <img :src="avatarUrl" referrerpolicy="no-referrer" />
+      <img
+        :src="isMiraUser ? '/icons/logo.svg' : avatarUrl"
+        :referrerpolicy="'no-referrer'"
+      />
     </q-avatar>
     <span class="username q-ml-sm ellipsis">
       {{ name }}
@@ -10,11 +13,20 @@
 </template>
 
 <script setup lang="ts">
-const { avatarUrl, name } = defineProps<{
+import { computed } from 'vue';
+import env from 'src/schema/env.schema';
+
+const { avatarUrl, name, email } = defineProps<{
   avatarUrl: string | undefined;
   name: string;
   section: 'profile' | 'revision';
+  email?: string;
 }>();
+
+const isMiraUser = computed(() => {
+  const userEmail = email || name;
+  return userEmail === env.AI_BOT_EMAIL;
+});
 </script>
 
 <style scoped>

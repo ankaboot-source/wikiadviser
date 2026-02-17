@@ -606,10 +606,24 @@ async function updateLLMConfigInDB(updates: {
   const userId = userStore.user?.id;
   if (!userId) return;
 
+  const { data: profileData } = await supabaseClient
+    .from('profiles')
+    .select('llm_reviewer_config')
+    .eq('id', userId)
+    .single();
+
+  const existingConfig =
+    typeof profileData?.llm_reviewer_config === 'object' &&
+    profileData?.llm_reviewer_config !== null &&
+    !Array.isArray(profileData?.llm_reviewer_config)
+      ? (profileData.llm_reviewer_config as Record<string, unknown>)
+      : {};
+
   const { error } = await supabaseClient
     .from('profiles')
     .update({
       llm_reviewer_config: {
+        ...existingConfig,
         model: updates.model ?? llmConfig.value.model,
         has_api_key: updates.has_api_key ?? apiKey.value.hasPersonalKey,
       },

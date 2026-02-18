@@ -38,17 +38,6 @@ class SupabaseAuthorization {
   }
 
   async verifyCookie(context: Context) {
-    // Fast-path: if there are no Supabase session cookies, avoid a network call.
-    const cookieObj = getCookie(context);
-    const cookieKeys = cookieObj ? Object.keys(cookieObj) : [];
-    const supabaseCookieKeys = cookieKeys.filter((key) =>
-      key.startsWith("sb-") || key.toLowerCase().includes("supabase")
-    );
-
-    if (!cookieObj || supabaseCookieKeys.length === 0) {
-      return null;
-    }
-
     const supabaseUrl =
       Deno.env.get("SUPABASE_URL") ?? Deno.env.get("SUPABASE_PROJECT_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -66,18 +55,6 @@ class SupabaseAuthorization {
     }
 
     try {
-      // Cache session verification briefly to avoid repeated calls during bursts
-      // (e.g. MediaWiki assets fetched through forward_auth).
-      const cacheKey = supabaseCookieKeys
-        .sort()
-        .map((k) => `${k}=${cookieObj[k]}`)
-        .join(";");
-      const now = Date.now();
-      const cached = sessionCache.get(cacheKey);
-      if (cached && cached.exp > now) {
-        return cached.user;
-      }
-
       const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
         cookies: {
           getAll() {
@@ -122,9 +99,7 @@ class SupabaseAuthorization {
         return null;
       }
 
-      const user = data?.session?.user ?? null;
-      sessionCache.set(cacheKey, { user, exp: now + SESSION_CACHE_TTL_MS });
-      return user;
+      return data?.session?.user ?? null;
     } catch (e) {
       console.error(
         "Exception during cookie verification/session retrieval:",
@@ -134,8 +109,5 @@ class SupabaseAuthorization {
     }
   }
 }
-
-const SESSION_CACHE_TTL_MS = 10_000;
-const sessionCache = new Map<string, { user: unknown; exp: number }>();
 
 export default SupabaseAuthorization;

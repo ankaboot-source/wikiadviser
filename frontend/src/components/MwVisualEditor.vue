@@ -148,7 +148,6 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
       // The MediaWiki iframe already navigates to the diff view after save.
-      // Avoid double diff navigation (and duplicated API calls) from the parent.
       break;
     case 'deleted-revision':
       isProcessingChanges.value = true;

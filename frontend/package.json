@@ -42,7 +42,7 @@
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^9.20.0",
-    "prettier": "^3.1.1",
+    "prettier": "^3.7.4",
     "typescript": "^5.9.2"
   },
   "engines": {

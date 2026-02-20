@@ -14,7 +14,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
       id,
       article_id,
       role,
-      user: profiles_view(id, email, avatar_url, default_avatar, allowed_articles, display_name)
+      user: profiles_view(id, email, avatar_url, display_name)
       `,
     )
     .order('created_at')

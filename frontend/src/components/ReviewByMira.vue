@@ -95,7 +95,13 @@ const props = defineProps<{
   revisionImprovements: RevisionImprovement[];
 }>();
 
-const emit = defineEmits<(e: 'review-complete', data: { changeId?: string; success: boolean }) => void>();
+const emit =
+  defineEmits<
+    (
+      e: 'review-complete',
+      data: { changeId?: string; success: boolean },
+    ) => void
+  >();
 
 interface ReviewItem {
   change_id: string;

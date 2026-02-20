@@ -52,10 +52,12 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   const pendingPromptsCount = computed(() => pendingPrompts.value.size);
 
   const revisionImprovements = computed(() => {
-    return Array.from(pendingPrompts.value.entries()).map(([changeId, prompt]) => ({
-      change_id: changeId,
-      prompt,
-    }));
+    return Array.from(pendingPrompts.value.entries()).map(
+      ([changeId, prompt]) => ({
+        change_id: changeId,
+        prompt,
+      }),
+    );
   });
 
   return {

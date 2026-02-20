@@ -145,6 +145,10 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       await handleIgnoredInitialEdit();
       break;
     case 'saved-changes':
+      isProcessingChanges.value = true;
+      loading.value = { ...loaderPresets.changes };
+      // The MediaWiki iframe already navigates to the diff view after save.
+      break;
     case 'deleted-revision':
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };

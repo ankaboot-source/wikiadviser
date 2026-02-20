@@ -14,6 +14,7 @@
         :role="role"
         :editor-permission="editorPermission"
         :users="users"
+        :changes-list="changesList"
         class="toolbar-area"
       />
 

@@ -287,6 +287,7 @@ import {
 } from 'src/api/supabaseHelper';
 import { useUserStore } from 'src/stores/userStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -294,6 +295,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 const $q = useQuasar();
 const userStore = useUserStore();
 const store = useSelectedChangeStore();
+const miraStore = useMiraReviewStore();
 const props = defineProps<{
   item: ChangeItem;
   role: Enums<'role'>;
@@ -393,12 +395,14 @@ const previewItem = computed(() => {
 
 async function handleComment() {
   if (toSendComment.value.trim().length > 0) {
+    const comment = toSendComment.value.trim();
     await insertComment(
       props.item.id,
       userId.value,
       props.item.article_id as string,
-      toSendComment.value.trim(),
+      comment,
     );
+    miraStore.addPendingPrompt(props.item.id, comment);
     toSendComment.value = '';
   }
 }
@@ -477,6 +481,11 @@ watch(expanded, () => {
     nextTick(() => {
       scrollChatToBottom();
     });
+    store.setSelectedChange(props.item as ChangeItem);
+  } else {
+    if (store.selectedChangeId === props.item.id) {
+      store.setSelectedChange(null);
+    }
   }
 });
 

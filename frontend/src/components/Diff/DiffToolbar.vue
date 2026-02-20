@@ -28,6 +28,8 @@
       v-if="USE_MIRA"
       :article="article"
       :hide-label="$q.screen.lt.sm"
+      :revision-improvements="revisionImprovements"
+      @review-complete="handleReviewComplete"
     />
     <q-btn
       v-if="role != 'viewer'"
@@ -49,7 +51,8 @@
 import ShareCard from 'src/components/Share/ShareCard.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
-import { Article, Enums, User } from 'src/types';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
+import { Article, ChangeItem, Enums, User } from 'src/types';
 import { computed, ref } from 'vue';
 import ReviewByMira from 'src/components/ReviewByMira.vue';
 import { useQuasar } from 'quasar';
@@ -57,6 +60,7 @@ import ENV from 'src/schema/env.schema';
 
 const articlesStore = useArticlesStore();
 const activeViewStore = useActiveViewStore();
+const miraStore = useMiraReviewStore();
 const $q = useQuasar();
 
 const USE_MIRA = ENV.USE_MIRA;
@@ -66,6 +70,7 @@ const props = defineProps<{
   role: Enums<'role'>;
   editorPermission: boolean | null;
   users: User[];
+  changesList: ChangeItem[];
 }>();
 
 const shareDialog = ref(false);
@@ -93,4 +98,16 @@ const toggleOptions = computed(() => {
     ? [viewButton]
     : [viewButton, editButton];
 });
+
+const revisionImprovements = computed(() =>
+  miraStore.revisionImprovements.map((imp) => ({
+    change_id: imp.change_id,
+    prompt: imp.prompt,
+    content: '',
+  })),
+);
+
+function handleReviewComplete() {
+  miraStore.clearPendingPrompts();
+}
 </script>

@@ -9,8 +9,6 @@ import { reviewAndImproveArticle } from './services/reviewService.ts';
 import { improveRevisionChanges } from './services/commentReviewService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
 
-type SupabaseClientType = ReturnType<typeof createSupabaseClient>;
-
 interface RevisionImprovement {
   change_id: string;
   prompt: string;
@@ -57,7 +55,7 @@ app.post('/', async (c) => {
     }
 
     if (Array.isArray(revision_improvements) && revision_improvements.length > 0) {
-      console.info('Processing revision-based improvements:', revision_improvements.length);
+      console.info('Processing revision-based improvements:');
 
       const config = await getLLMConfig(supabase, user.id);
 

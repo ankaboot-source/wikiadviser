@@ -157,8 +157,8 @@ export async function improveRevisionChanges(
     finalWikitext = generatedWikitext;
     totalImproved = improvedCount;
   } else {
-    const paragraphs = splitIntoParagraphs(wikitext!);
-    const systemPrompt = buildRevisionSystemPrompt(article, wikitext!);
+    const paragraphs = splitIntoParagraphs(wikitext);
+    const systemPrompt = buildRevisionSystemPrompt(article, wikitext);
     const { improvedParagraphs, improvedCount } =
       await improveExistingArticleParagraphs(
         remapped,

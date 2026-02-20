@@ -115,9 +115,9 @@ export async function reviewAndImproveArticle(
     }
   }
 
-  console.log(`Article: ${article.title}, ${wikitext!.length} chars`);
+  console.log(`Article: ${article.title}, ${wikitext.length} chars`);
 
-  const sections = splitArticleIntoSections(wikitext!);
+  const sections = splitArticleIntoSections(wikitext);
 
   const systemPrompt = buildSystemPrompt(
     article.title,
@@ -126,7 +126,7 @@ export async function reviewAndImproveArticle(
     customInstructions,
   );
 
-  let improvedWikitext = wikitext!;
+  let improvedWikitext = wikitext;
   let improvedSections = 0;
   const replacements: Array<{ original: string; improved: string }> = [];
 
@@ -197,7 +197,7 @@ export async function reviewAndImproveArticle(
     );
   }
 
-  if (improvedWikitext.trim() === wikitext!.trim()) {
+  if (improvedWikitext.trim() === wikitext?.trim()) {
     return {
       hasImprovements: false,
       comment: 'No changes detected',

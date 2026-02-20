@@ -91,7 +91,6 @@ interface RevisionImprovement {
 
 const props = defineProps<{
   article: Article;
-  hideLabel?: boolean;
   revisionImprovements: RevisionImprovement[];
 }>();
 

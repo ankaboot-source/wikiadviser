@@ -83,8 +83,20 @@ import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
 import PromptFormDialog from 'src/components/PromptFormDialog.vue';
 
+interface RevisionImprovement {
+  change_id: string;
+  prompt: string;
+  content: string;
+}
+
 const props = defineProps<{
   article: Article;
+  hideLabel?: boolean;
+  revisionImprovements: RevisionImprovement[];
+}>();
+
+const emit = defineEmits<{
+  (e: 'review-complete', data: { changeId?: string; success: boolean }): void;
 }>();
 
 interface ReviewItem {
@@ -104,6 +116,7 @@ interface ReviewResponse {
   old_revision?: number;
   new_revision?: number;
   error?: string;
+  change_id?: string;
 }
 
 interface Prompt {
@@ -376,15 +389,29 @@ async function triggerReview() {
   reviews.value = [];
 
   try {
+    const hasRevisionImprovements = props.revisionImprovements.length > 0;
+
+    const requestBody: Record<string, unknown> = {
+      article_id: props.article.article_id,
+    };
+
+    if (hasRevisionImprovements) {
+      requestBody.revision_improvements = props.revisionImprovements.map(
+        (imp) => ({
+          change_id: imp.change_id,
+          prompt: imp.prompt,
+        }),
+      );
+    } else {
+      requestBody.language = props.article.language;
+      requestBody.prompt = selectedPrompt.value?.isCustom
+        ? selectedPrompt.value.prompt
+        : undefined;
+    }
+
     const { data, error: fnError } =
       await supabaseClient.functions.invoke<ReviewResponse>('ai-review', {
-        body: {
-          article_id: props.article.article_id,
-          language: props.article.language,
-          prompt: selectedPrompt.value?.isCustom
-            ? selectedPrompt.value.prompt
-            : undefined,
-        },
+        body: requestBody,
       });
 
     if (fnError) {
@@ -396,7 +423,13 @@ async function triggerReview() {
       reviews.value = data.reviews;
     }
 
-    if (
+    if (data?.change_id) {
+      emit('review-complete', { changeId: data.change_id, success: true });
+      showNotification(
+        'success',
+        data.summary || 'AI improvement added to changes list',
+      );
+    } else if (
       data?.trigger_diff_update &&
       data?.mira_bot_id &&
       data?.old_revision &&

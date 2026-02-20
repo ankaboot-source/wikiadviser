@@ -52,7 +52,7 @@ import ShareCard from 'src/components/Share/ShareCard.vue';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
-import { Article, ChangeItem, Enums, User } from 'src/types';
+import { Article, Enums, User } from 'src/types';
 import { computed, ref } from 'vue';
 import ReviewByMira from 'src/components/ReviewByMira.vue';
 import { useQuasar } from 'quasar';
@@ -70,7 +70,6 @@ const props = defineProps<{
   role: Enums<'role'>;
   editorPermission: boolean | null;
   users: User[];
-  changesList: ChangeItem[];
 }>();
 
 const shareDialog = ref(false);

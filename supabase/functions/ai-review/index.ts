@@ -59,11 +59,6 @@ app.post('/', async (c) => {
       Array.isArray(revision_improvements) &&
       revision_improvements.length > 0
     ) {
-      console.info(
-        'Processing revision-based improvements:',
-        revision_improvements.length,
-      );
-
       const config = await getLLMConfig(supabase, user.id);
 
       if (!config) {
@@ -71,7 +66,9 @@ app.post('/', async (c) => {
         return c.json({ error: 'No AI configuration available' }, 400);
       }
 
-      const changeIds = (revision_improvements as RevisionImprovement[]).map((imp) => imp.change_id);
+      const changeIds = (revision_improvements as RevisionImprovement[]).map(
+        (imp) => imp.change_id,
+      );
       const { data: changes, error: changesError } = await supabase
         .from('changes')
         .select('id, content, index, status')
@@ -114,15 +111,18 @@ app.post('/', async (c) => {
       );
 
       console.info(
-        '[comment-review] improvements to process:\n' +
-          improvements
-            .map(
-              (i) =>
-                `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | ` +
-                `status: ${STATUS_LABELS[i.status] ?? i.status} | ` +
-                `contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
-            )
-            .join('\n'),
+        `[comment-review] improvements to process:
+        ${improvements
+          .map(
+            (i) =>
+              `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${
+                STATUS_LABELS[i.status] ?? i.status
+              } | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(
+                0,
+                80,
+              )}"`,
+          )
+          .join('\n')}`,
       );
 
       const result = await improveRevisionChanges(

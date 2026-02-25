@@ -60,11 +60,27 @@ Return ONLY the improved paragraph, without any preamble or explanation.`;
 export function buildRevisionUserPrompt(
   paragraph: string,
   instruction: string,
+  status: number,
 ): string {
+  const STATUS_LABELS: Record<number, string> = {
+    0: 'pending',
+    1: 'approved',
+    2: 'rejected',
+  };
+
+  const statusLabel = STATUS_LABELS[status] ?? 'unknown';
+
   return `PARAGRAPH TO IMPROVE:
 ${paragraph}
 
+CURRENT CHANGE STATUS: ${statusLabel}
+
 USER INSTRUCTION: ${instruction}
+
+Context rules:
+- If status is "approved", refine and polish if needed.
+- If status is "rejected", rework carefully according to the instruction.
+- If status is "pending", improve normally based on the instruction.
 
 Return ONLY the improved paragraph:`;
 }

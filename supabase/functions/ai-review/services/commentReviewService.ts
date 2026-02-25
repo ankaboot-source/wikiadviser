@@ -14,6 +14,7 @@ export interface CommentImprovement {
   prompt: string;
   content: string;
   index: number | null;
+  status: number;
 }
 
 export interface CommentReviewResult {
@@ -69,7 +70,7 @@ async function improveExistingArticleParagraphs(
         config.apiKey,
         config.model,
         systemPrompt,
-        buildRevisionUserPrompt(paragraph, prompt),
+        buildRevisionUserPrompt(paragraph, prompt, improvement.status),
       );
 
       const trimmed = improved.trim();

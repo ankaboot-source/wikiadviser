@@ -54,8 +54,15 @@ app.post('/', async (c) => {
       return c.json({ error: 'Mira bot not configured' }, 500);
     }
 
-    if (Array.isArray(revision_improvements) && revision_improvements.length > 0) {
-      console.info('Processing revision-based improvements:');
+    if (
+      revision_improvements &&
+      Array.isArray(revision_improvements) &&
+      revision_improvements.length > 0
+    ) {
+      console.info(
+        'Processing revision-based improvements:',
+        revision_improvements.length,
+      );
 
       const config = await getLLMConfig(supabase, user.id);
 
@@ -67,7 +74,7 @@ app.post('/', async (c) => {
       const changeIds = (revision_improvements as RevisionImprovement[]).map((imp) => imp.change_id);
       const { data: changes, error: changesError } = await supabase
         .from('changes')
-        .select('id, content, index')
+        .select('id, content, index, status')
         .in('id', changeIds);
 
       if (changesError) {
@@ -80,20 +87,50 @@ app.post('/', async (c) => {
         return c.json({ error: 'No changes found' }, 404);
       }
 
-      const changeMap = new Map(
-        changes.map((ch: { id: string; content: string; index: number | null }) => [ch.id, ch]),
+      const changeDataMap = new Map(
+        changes.map((c) => [
+          c.id,
+          { content: c.content, index: c.index, status: c.status },
+        ]),
       );
 
-      const improvements = (revision_improvements as RevisionImprovement[])
-        .map((imp) => {
-          const ch = changeMap.get(imp.change_id);
-          return ch
-            ? { change_id: imp.change_id, prompt: imp.prompt, content: ch.content, index: ch.index }
-            : null;
-        })
-        .filter((imp): imp is NonNullable<typeof imp> => imp !== null);
+      const STATUS_LABELS: Record<number, string> = {
+        0: 'pending',
+        1: 'approved',
+        2: 'rejected',
+      };
 
-      const result = await improveRevisionChanges(article_id, improvements, config, MIRA_BOT_ID);
+      const improvements = (revision_improvements as RevisionImprovement[]).map(
+        (imp) => {
+          const changeData = changeDataMap.get(imp.change_id);
+          return {
+            change_id: imp.change_id,
+            prompt: imp.prompt,
+            content: changeData?.content || '',
+            index: changeData?.index ?? null,
+            status: changeData?.status ?? 0,
+          };
+        },
+      );
+
+      console.info(
+        '[comment-review] improvements to process:\n' +
+          improvements
+            .map(
+              (i) =>
+                `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | ` +
+                `status: ${STATUS_LABELS[i.status] ?? i.status} | ` +
+                `contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
+            )
+            .join('\n'),
+      );
+
+      const result = await improveRevisionChanges(
+        article_id,
+        improvements,
+        config,
+        MIRA_BOT_ID,
+      );
 
       if (!result.hasImprovements) {
         console.info('No improvements made');

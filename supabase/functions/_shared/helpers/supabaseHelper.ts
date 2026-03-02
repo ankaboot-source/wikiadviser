@@ -106,28 +106,10 @@ export async function getOwnedArticles(userId: string) {
 export async function getChanges(articleId: string) {
   const { data: changesData, error: changesError } = await supabase
     .from('changes')
-    .select(
-      `
-      id,
-      content,
-      created_at,
-      description,
-      status,
-      type_of_edit,
-      index,
-      article_id,
-      contributor_id,
-      revision_id,
-      archived,
-      hidden,
-      user: profiles(id, email, avatar_url, default_avatar, allowed_articles), 
-      comments(content,created_at, user: profiles(id, email, avatar_url, default_avatar, allowed_articles)),
-      revision: revisions(summary, revid)
-      `
-    )
+    .select('*')
     .order('index')
-    .eq('article_id', articleId);
-
+    .eq('article_id', articleId);  
+    
   if (changesError) {
     throw new Error(changesError.message);
   }

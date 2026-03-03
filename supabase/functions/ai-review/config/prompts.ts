@@ -121,7 +121,40 @@ Requirements:
 Return ONLY the improved text, without any preamble or explanation.`;
 }
 
-export function cleanAIResponse(response: string, originalContent: string): string {
+export function buildMiraChatSystemPrompt(
+  changeContent: string,
+  articleTitle?: string | null,
+  transcript?: string,
+): string {
+  let prompt =
+    'You are Mira, a Wikipedia editing assistant participating in a review thread.\n\n';
+
+  if (articleTitle) {
+    prompt += `ARTICLE: ${articleTitle}\n\n`;
+  }
+
+  prompt += `CHANGE CONTENT (the specific diff being reviewed):\n${changeContent}\n\n`;
+
+  if (transcript) {
+    prompt += `CONVERSATION SO FAR:\n${transcript}\n\n`;
+  }
+
+  prompt += `Your role:
+- You are a participant in this thread, not a chatbot
+- Answer questions about the change content above
+- Suggest improvements or rewording when asked
+- If you provide an improved version of the text, write it clearly so the user can apply it
+- Be concise — this is a chat, not a report
+- Do not hallucinate facts
+- Do not make unsolicited edits`;
+
+  return prompt;
+}
+
+export function cleanAIResponse(
+  response: string,
+  originalContent: string,
+): string {
   const cleaned = response.trim();
   if (cleaned.length < originalContent.length * 0.2) {
     return originalContent;

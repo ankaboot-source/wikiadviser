@@ -7,6 +7,7 @@ import {
 } from '../_shared/helpers/supabaseHelper.ts';
 import { reviewAndImproveArticle } from './services/reviewService.ts';
 import { improveRevisionChanges } from './services/commentReviewService.ts';
+import {  handleChatMessage } from './services/chatService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
 
 interface RevisionImprovement {
@@ -25,6 +26,9 @@ app.post('/', async (c) => {
       article_id,
       prompt: customInstructions,
       revision_improvements,
+      type,
+      change_id,
+      content,
     } = await c.req.json();
     const authHeader = c.req.header('Authorization');
 
@@ -47,6 +51,25 @@ app.post('/', async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
+    if (type === 'comment-reply') {
+      if (!change_id || !content) {
+        return c.json({ error: 'Missing change_id or content' }, 400);
+      }
+
+      const config = await getLLMConfig(supabase, user.id);
+      if (!config) {
+        return c.json({ error: 'No AI configuration available' }, 400);
+      }
+
+      const MIRA_BOT_ID = await getMiraBotId(supabase);
+      if (!MIRA_BOT_ID) {
+        return c.json({ error: 'Mira bot not configured' }, 500);
+      }
+
+      await handleChatMessage(supabase, change_id, article_id, content, MIRA_BOT_ID, config);
+
+      return c.json({ ok: true });
+    }
     const MIRA_BOT_ID = await getMiraBotId(supabase);
 
     if (!MIRA_BOT_ID) {

@@ -28,7 +28,7 @@ function splitIntoParagraphs(wikitext: string): string[] {
   return wikitext.split(/\n\n+/).filter((p) => p.trim().length > 0);
 }
 
-function remapImprovementIndices(
+function sortImprovementIndices(
   improvements: CommentImprovement[],
 ): Array<CommentImprovement & { relativeIndex: number }> {
   return improvements
@@ -38,7 +38,7 @@ function remapImprovementIndices(
 }
 
 async function improveExistingArticleParagraphs(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: ReturnType<typeof sortImprovementIndices>,
   paragraphs: string[],
   systemPrompt: string,
   config: LLMConfig,
@@ -90,7 +90,7 @@ async function improveExistingArticleParagraphs(
 }
 
 async function generateContentForEmptyArticle(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: ReturnType<typeof sortImprovementIndices>,
   article: { title: string | null; description: string | null },
   config: LLMConfig,
 ): Promise<{ generatedWikitext: string; improvedCount: number }> {
@@ -138,9 +138,9 @@ export async function improveRevisionChanges(
   const { wikitext } = await mediawiki.getArticleForAIReview(articleId);
 
   const isEmptyArticle = !wikitext || wikitext.trim().length === 0;
-  const remapped = remapImprovementIndices(improvements);
+  const sorted = sortImprovementIndices(improvements);
 
-  if (remapped.length === 0) {
+  if (sorted.length === 0) {
     return {
       hasImprovements: false,
       comment: 'No indexed improvements to process',
@@ -154,7 +154,7 @@ export async function improveRevisionChanges(
 
   if (isEmptyArticle) {
     const { generatedWikitext, improvedCount } =
-      await generateContentForEmptyArticle(remapped, article, config);
+      await generateContentForEmptyArticle(sorted, article, config);
     finalWikitext = generatedWikitext;
     totalImproved = improvedCount;
   } else {
@@ -162,7 +162,7 @@ export async function improveRevisionChanges(
     const systemPrompt = buildRevisionSystemPrompt(article, wikitext);
     const { improvedParagraphs, improvedCount } =
       await improveExistingArticleParagraphs(
-        remapped,
+        sorted,
         paragraphs,
         systemPrompt,
         config,

@@ -242,16 +242,18 @@ async function savePromptsToDB() {
         prompt: p.prompt,
       }));
 
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({
-        llm_reviewer_config: {
-          ...existingConfig,
-          prompts: customPrompts,
-          selected_prompt_id: selectedPrompt.value?.id || null,
-        },
-      })
-      .eq('id', userId);
+    const updatedConfig = {
+      ...existingConfig,
+      prompts: customPrompts,
+      selected_prompt_id: selectedPrompt.value?.id || null,
+    };
+    const { error } = await supabaseClient.functions.invoke(
+      'user/llm-reviewer-config',
+      {
+        method: 'PUT',
+        body: { llm_reviewer_config: updatedConfig },
+      },
+    );
 
     if (error) throw error;
 

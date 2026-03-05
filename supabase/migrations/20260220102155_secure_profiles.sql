@@ -1,14 +1,14 @@
 drop policy "Public profiles are viewable by everyone."
 on "public"."profiles";
 
--- View
+-- RLS: View
 create policy "Enable users to view their own data only"
 on "public"."profiles"
 for SELECT
 to authenticated
 using ( auth.uid() = id );
 
--- Update: RLS
+-- RLS: Update
 DROP POLICY "Users can update own profile."
 ON "public"."profiles";
 
@@ -21,6 +21,6 @@ CREATE POLICY "Users can update own profile."
     );
 
 
--- Update: CLS
+-- CLS: Update
 revoke update on profiles from authenticated;
 grant update (avatar_url, llm_reviewer_config) on public.profiles to authenticated;

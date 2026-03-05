@@ -32,9 +32,26 @@ export async function updateLlmReviewerConfig(c: Context) {
 
   const supabaseAdmin = createSupabaseAdmin();
 
+  const { data: profileData } = await supabaseAdmin
+    .from("profiles")
+    .select("llm_reviewer_config")
+    .eq("id", user.id)
+    .single();
+
+  const existingConfig = typeof profileData?.llm_reviewer_config === "object" &&
+      profileData?.llm_reviewer_config !== null &&
+      !Array.isArray(profileData?.llm_reviewer_config)
+    ? profileData.llm_reviewer_config
+    : {};
+
   const { error } = await supabaseAdmin
     .from("profiles")
-    .update({ llm_reviewer_config: body.llm_reviewer_config })
+    .update({
+      llm_reviewer_config: {
+        ...existingConfig,
+        ...body.llm_reviewer_config,
+      },
+    })
     .eq("id", user.id);
 
   if (error) {

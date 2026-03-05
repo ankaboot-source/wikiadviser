@@ -137,11 +137,7 @@
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
-              :avatar="
-                comment.user.email === env.AI_BOT_EMAIL
-                  ? '/icons/logo.svg'
-                  : comment.user.avatar_url
-              "
+              :avatar="getCommentAvatar(comment.user)"
               :bg-color="comment.user.email == email ? 'green' : 'accent'"
               :class="comment.user.email == email ? 'q-mr-xs' : ''"
             />
@@ -428,7 +424,8 @@ async function handleComment() {
 }
 
 const description = ref(props.item?.description);
-
+const getCommentAvatar = (user: Profile) =>
+  user.email === env.AI_BOT_EMAIL ? '/icons/logo.svg' : user.avatar_url;
 const statusIcon = computed(
   () => statusDictionary.get(props.item?.status as number)?.icon,
 );

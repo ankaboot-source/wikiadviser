@@ -540,13 +540,20 @@ export default class MediawikiClient {
    * Get article data for AI review (wikitext)
    */
   async getArticleForAIReview(articleId: string): Promise<{
-    wikitext: string;
+    wikitext: string | null;
   }> {
-    const wikitext = await this.getCurrentArticleWikitext(articleId);
-
-    return {
-      wikitext,
-    };
+    try {
+      const wikitext = await this.getCurrentArticleWikitext(articleId);
+      return { wikitext };
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes('No wikitext found')
+      ) {
+        return { wikitext: null };
+      }
+      throw error;
+    }
   }
 
   /**

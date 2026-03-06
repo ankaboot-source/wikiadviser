@@ -28,17 +28,50 @@ function splitIntoParagraphs(wikitext: string): string[] {
   return wikitext.split(/\n\n+/).filter((p) => p.trim().length > 0);
 }
 
-function remapImprovementIndices(
-  improvements: CommentImprovement[],
-): Array<CommentImprovement & { relativeIndex: number }> {
-  return improvements
-    .filter((imp) => imp.index !== null)
-    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
-    .map((imp, relativeIndex) => ({ ...imp, relativeIndex }));
+function stripHtml(html: string): string {
+  return html
+    .replaceAll(/<[^>]+>/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeParagraph(text: string): string {
+  return text
+    .toLowerCase()
+    .replaceAll(/\s+/g, ' ')
+    .replaceAll(/[^\w\s]/g, '')
+    .trim();
+}
+
+function calculateSimilarity(a: string, b: string): number {
+  const wordsA = new Set(normalizeParagraph(a).split(/\s+/).filter(Boolean));
+  const wordsB = new Set(normalizeParagraph(b).split(/\s+/).filter(Boolean));
+  const intersection = new Set([...wordsA].filter((w) => wordsB.has(w)));
+  const union = new Set([...wordsA, ...wordsB]);
+  return union.size === 0 ? 0 : intersection.size / union.size;
+}
+
+function findBestMatchingParagraph(
+  changeContent: string,
+  paragraphs: string[],
+): { index: number; similarity: number } {
+  const needle = stripHtml(changeContent);
+  let bestIndex = -1;
+  let bestSimilarity = 0;
+
+  for (let i = 0; i < paragraphs.length; i++) {
+    const similarity = calculateSimilarity(needle, paragraphs[i]);
+    if (similarity > bestSimilarity) {
+      bestSimilarity = similarity;
+      bestIndex = i;
+    }
+  }
+
+  return { index: bestIndex, similarity: bestSimilarity };
 }
 
 async function improveExistingArticleParagraphs(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: CommentImprovement[],
   paragraphs: string[],
   systemPrompt: string,
   config: LLMConfig,
@@ -47,20 +80,29 @@ async function improveExistingArticleParagraphs(
   let improvedCount = 0;
 
   for (const improvement of improvements) {
-    const { relativeIndex, prompt, change_id } = improvement;
+    const { change_id, prompt, content, status } = improvement;
 
-    if (relativeIndex >= paragraphs.length) {
+    const { index: matchedIndex, similarity } = findBestMatchingParagraph(
+      content,
+      paragraphs,
+    );
+
+    if (matchedIndex === -1 || similarity < 0.1) {
       console.warn(
-        `[CommentReview] Skipping change ${change_id}: index ${relativeIndex} out of bounds`,
+        `[CommentReview] Skipping change ${change_id}: no matching paragraph found (best similarity: ${similarity.toFixed(2)})`,
       );
       continue;
     }
 
-    const paragraph = paragraphs[relativeIndex];
+    const paragraph = paragraphs[matchedIndex];
 
-    if (!paragraph || paragraph.trim().length < 10) {
+    console.info(
+      `[CommentReview] change ${change_id.substring(0, 8)} matched paragraph ${matchedIndex} (similarity: ${similarity.toFixed(2)}): "${paragraph.substring(0, 80)}..."`,
+    );
+
+    if (paragraph.trim().length < 10) {
       console.warn(
-        `[CommentReview] Skipping change ${change_id}: paragraph too short or empty`,
+        `[CommentReview] Skipping change ${change_id}: matched paragraph too short`,
       );
       continue;
     }
@@ -70,12 +112,12 @@ async function improveExistingArticleParagraphs(
         config.apiKey,
         config.model,
         systemPrompt,
-        buildRevisionUserPrompt(paragraph, prompt, improvement.status),
+        buildRevisionUserPrompt(paragraph, prompt, status),
       );
 
       const trimmed = improved.trim();
       if (trimmed && trimmed !== paragraph) {
-        improvedParagraphs[relativeIndex] = trimmed;
+        improvedParagraphs[matchedIndex] = trimmed;
         improvedCount++;
       }
     } catch (error) {
@@ -90,7 +132,7 @@ async function improveExistingArticleParagraphs(
 }
 
 async function generateContentForEmptyArticle(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: CommentImprovement[],
   article: { title: string | null; description: string | null },
   config: LLMConfig,
 ): Promise<{ generatedWikitext: string; improvedCount: number }> {
@@ -138,12 +180,14 @@ export async function improveRevisionChanges(
   const { wikitext } = await mediawiki.getArticleForAIReview(articleId);
 
   const isEmptyArticle = !wikitext || wikitext.trim().length === 0;
-  const remapped = remapImprovementIndices(improvements);
+  const indexedImprovements = improvements.filter(
+    (imp) => imp.content && imp.content.trim().length > 0,
+  );
 
-  if (remapped.length === 0) {
+  if (indexedImprovements.length === 0) {
     return {
       hasImprovements: false,
-      comment: 'No indexed improvements to process',
+      comment: 'No improvements to process',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -154,7 +198,11 @@ export async function improveRevisionChanges(
 
   if (isEmptyArticle) {
     const { generatedWikitext, improvedCount } =
-      await generateContentForEmptyArticle(remapped, article, config);
+      await generateContentForEmptyArticle(
+        indexedImprovements,
+        article,
+        config,
+      );
     finalWikitext = generatedWikitext;
     totalImproved = improvedCount;
   } else {
@@ -162,7 +210,7 @@ export async function improveRevisionChanges(
     const systemPrompt = buildRevisionSystemPrompt(article, wikitext);
     const { improvedParagraphs, improvedCount } =
       await improveExistingArticleParagraphs(
-        remapped,
+        indexedImprovements,
         paragraphs,
         systemPrompt,
         config,

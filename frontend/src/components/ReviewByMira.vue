@@ -75,13 +75,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
+import PromptFormDialog from 'src/components/PromptFormDialog.vue';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
-import PromptFormDialog from 'src/components/PromptFormDialog.vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface RevisionImprovement {
   change_id: string;
@@ -242,18 +242,16 @@ async function savePromptsToDB() {
         prompt: p.prompt,
       }));
 
-    const updatedConfig = {
-      ...existingConfig,
-      prompts: customPrompts,
-      selected_prompt_id: selectedPrompt.value?.id || null,
-    };
-    const { error } = await supabaseClient.functions.invoke(
-      'user/llm-reviewer-config',
-      {
-        method: 'PUT',
-        body: { llm_reviewer_config: updatedConfig },
-      },
-    );
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({
+        llm_reviewer_config: {
+          ...existingConfig,
+          prompt: customPrompts,
+          selected_prompt_id: selectedPrompt.value?.id || null,
+        },
+      })
+      .eq('id', userId);
 
     if (error) throw error;
 

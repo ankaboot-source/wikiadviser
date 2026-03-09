@@ -123,7 +123,6 @@
       </div>
     </q-item-section>
     <q-separator />
-    <!-- Comments section -->
     <q-item-section>
       <q-item-section class="q-pa-md row justify-center bg-secondary">
         <q-scroll-area
@@ -137,7 +136,7 @@
               :text="[comment.content]"
               :stamp="new Date(comment.created_at).toLocaleString()"
               :sent="comment.user.email == email"
-              :avatar="getCommentAvatar(comment.user)"
+              :avatar="comment.user.avatar_url"
               :bg-color="comment.user.email == email ? 'green' : 'accent'"
               :class="comment.user.email == email ? 'q-mr-xs' : ''"
             />
@@ -292,8 +291,6 @@ import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
-import supabaseClient from 'src/api/supabase';
-import env from 'src/schema/env.schema';
 
 const $q = useQuasar();
 const userStore = useUserStore();
@@ -406,26 +403,12 @@ async function handleComment() {
       comment,
     );
     miraStore.addPendingPrompt(props.item.id, comment);
-
-    // If this change was authored by Mira, trigger an AI reply
-    if (props.item.user.email === env.AI_BOT_EMAIL) {
-      supabaseClient.functions.invoke('ai-review', {
-        body: {
-          type: 'comment-reply',
-          change_id: props.item.id,
-          article_id: props.item.article_id,
-          content: comment,
-        },
-      });
-    }
-
     toSendComment.value = '';
   }
 }
 
 const description = ref(props.item?.description);
-const getCommentAvatar = (user: Profile) =>
-  user.email === env.AI_BOT_EMAIL ? '/icons/logo.svg' : user.avatar_url;
+
 const statusIcon = computed(
   () => statusDictionary.get(props.item?.status as number)?.icon,
 );

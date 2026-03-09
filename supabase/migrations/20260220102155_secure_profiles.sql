@@ -23,4 +23,4 @@ CREATE POLICY "Users can update own profile."
 
 -- CLS: Update
 revoke update on profiles from authenticated;
-grant update (avatar_url, llm_reviewer_config) on public.profiles to authenticated;
+grant update (avatar_url, default_avatar,  llm_reviewer_config) on public.profiles to authenticated;

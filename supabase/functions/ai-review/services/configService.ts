@@ -3,9 +3,7 @@ import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
 import { LLMConfig } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
-export async function getMiraBotId(
-  supabaseClient: ReturnType<typeof createSupabaseClient>,
-): Promise<string | null> {
+export async function getMiraBotId(): Promise<string | null> {
   const botEmail = Deno.env.get('AI_BOT_EMAIL');
   const admin = createSupabaseAdmin();
   const { data, error } = await admin

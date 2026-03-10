@@ -247,7 +247,7 @@ async function savePromptsToDB() {
       .update({
         llm_reviewer_config: {
           ...existingConfig,
-          prompt: customPrompts,
+          prompts: customPrompts,
           selected_prompt_id: selectedPrompt.value?.id || null,
         },
       })

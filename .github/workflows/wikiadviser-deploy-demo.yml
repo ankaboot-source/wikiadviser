@@ -32,12 +32,14 @@ jobs:
           MEDIAWIKI_DEV_ENDPOINT: ${{vars.MEDIAWIKI_DEV_ENDPOINT}}
           X_API_KEY: ${{secrets.X_API_KEY_QA}}
           USE_MIRA: ${{ vars.USE_MIRA_QA }}
+          POSTHOG_API_KEY: ${{secrets.POSTHOG_API_KEY}}
+          POSTHOG_API_HOST: ${{vars.POSTHOG_API_HOST}}
 
         with:
           host: ${{ vars.WIKIADVISER_DEMO_HOST }}
           key: ${{ secrets.SSH_PRIVATE_WIKIADVISER }}
           username: ${{ secrets.WIKIADVISER_USERNAME }}
-          envs: USE_MIRA,X_API_KEY,MEDIAWIKI_DEV_ENDPOINT,MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_ANON_KEY,SUPABASE_PROJECT_URL,WIKIPEDIA_PROXY,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV
+          envs: POSTHOG_API_KEY,POSTHOG_API_HOST,USE_MIRA,X_API_KEY,MEDIAWIKI_DEV_ENDPOINT,MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_ANON_KEY,SUPABASE_PROJECT_URL,WIKIPEDIA_PROXY,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV
           script: |
             wikiadviser_path="$HOME/wikiadviser"
             # Check if the folder exists
@@ -69,6 +71,9 @@ jobs:
             echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env
             echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env
             echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env
+            echo "POSTHOG_API_KEY=$POSTHOG_API_KEY" >> $wikiadviser_path/.env
+            echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env
+
 
             docker compose --env-file .env -f docker-compose.demo.yml up -d \
               --build \

@@ -27,7 +27,7 @@ function combineSections(sections: ArticleSection[]): ArticleSection[] {
     } else {
       combined.push({
         index: combined.length,
-        content: currentBatch.map((s) => s.content).join('\n\n'),
+        content: currentBatch.map((s) => s.content).join('\n'),
         sectionTitle: currentBatch[0].sectionTitle,
       });
       currentBatch = [section];
@@ -38,7 +38,7 @@ function combineSections(sections: ArticleSection[]): ArticleSection[] {
   if (currentBatch.length > 0) {
     combined.push({
       index: combined.length,
-      content: currentBatch.map((s) => s.content).join('\n\n'),
+      content: currentBatch.map((s) => s.content).join('\n'),
       sectionTitle: currentBatch[0].sectionTitle,
     });
   }

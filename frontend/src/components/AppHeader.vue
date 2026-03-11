@@ -11,12 +11,22 @@
             to="/"
           />
           <q-breadcrumbs-el v-if="article?.title">
-            <div class="column" style="max-width: 65vw">
+            <div
+              class="column"
+              style="max-width: clamp(400px, calc(85vw - 450px), 65vw)"
+            >
               <div class="row items-center no-wrap title-row full-width">
                 <span
                   v-if="!isEditingTitle"
-                  class="text-h6 text-semi-bold ellipsis"
-                  style="line-height: 1.2"
+                  class="text-h6 text-semi-bold"
+                  style="
+                    line-height: 1.2;
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    min-width: 0;
+                    flex: 1 1 0;
+                  "
                 >
                   {{ article.title }}
                 </span>
@@ -41,6 +51,7 @@
                   name="edit"
                   size="16px"
                   class="cursor-pointer hover-visible q-ml-xs"
+                  style="flex-shrink: 0"
                   @click="enableTitleEdit"
                 />
               </div>
@@ -82,6 +93,7 @@
                   name="edit"
                   size="14px"
                   class="cursor-pointer hover-visible q-ml-xs"
+                  style="flex-shrink: 0"
                   @click="enableDescriptionEdit"
                 />
               </div>
@@ -347,7 +359,8 @@ function goToAccount() {
   min-width: 0;
 }
 
-.q-breadcrumbs > div {
+/* Fix: must use :deep() to actually reach Quasar's rendered div */
+:deep(.q-breadcrumbs > div) {
   flex-wrap: nowrap;
 }
 

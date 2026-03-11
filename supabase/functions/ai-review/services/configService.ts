@@ -1,12 +1,12 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
+import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
 import { LLMConfig } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
-export async function getMiraBotId(
-  supabaseClient: ReturnType<typeof createSupabaseClient>,
-): Promise<string | null> {
+export async function getMiraBotId(): Promise<string | null> {
   const botEmail = Deno.env.get('AI_BOT_EMAIL');
-  const { data, error } = await supabaseClient
+  const admin = createSupabaseAdmin();
+  const { data, error } = await admin
     .from('profiles')
     .select('id')
     .eq('email', botEmail)
@@ -17,6 +17,7 @@ export async function getMiraBotId(
     return null;
   }
   if (!data?.id) {
+    console.error(`Mira bot not found for email: ${botEmail}`);
     return null;
   }
   return data.id;

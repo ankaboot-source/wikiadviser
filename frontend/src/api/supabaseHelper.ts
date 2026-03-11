@@ -6,36 +6,14 @@ import { parseChangeHtml } from 'src/utils/parsing';
 import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
-  const { data: permissionsData, error: permissionsError } = await supabase
-    // Fetch permissions of users of a specific article id
-    .from('permissions')
-    .select(
-      `
-      id,
-      article_id,
-      role,
-      user: profiles_view(id, email, avatar_url, display_name)
-      `,
-    )
-    .order('created_at')
-    .eq('article_id', articleId);
+  const { data, error } = await supabaseClient.functions.invoke('get/users', {
+    method: 'POST',
+    body: { articleId },
+  });
 
-  if (permissionsError) {
-    throw new Error(permissionsError.message);
-  }
+  if (error) throw new Error(error.message);
 
-  const users: User[] = permissionsData.map(
-    (permission) =>
-      ({
-        id: permission.user?.id,
-        picture: permission.user?.avatar_url,
-        name: permission.user?.display_name || permission.user?.email,
-        role: permission.role,
-        permissionId: permission.id,
-      }) as User,
-  );
-
-  return users;
+  return (data?.users ?? []) as User[];
 }
 
 export async function createArticle(
@@ -80,82 +58,42 @@ export async function importArticle(
 }
 
 export async function getArticles(userId: string): Promise<Article[]> {
-  // check if user has permission on that Article
-  const { data: articleData, error: articleError } = await supabase
-    .from('permissions')
-    .select(
-      `
-    id,
-    article_id,
-    role,
-    articles(
-      title,
-      description,
-      created_at,
-      language,
-      web_publication,
-      imported,
-      changes!changes_article_id_fkey(
-        created_at,
-        profiles_view(display_name, email)
-      )
-    )
-  `,
-    )
-    .eq('user_id', userId)
-    // Sort articles by created_at
-    .order('articles(created_at)', {
-      ascending: false,
-    })
-    // Keep only the first change in that sorted list
-    .limit(1, { foreignTable: 'articles.changes' });
+  const { data, error } = await supabaseClient.functions.invoke('get/articles', {
+    method: 'POST',
+    body: { userId },
+  });
 
-  if (articleError) {
-    throw new Error(articleError.message);
-  }
-  if (articleData.length === 0) {
-    return [];
-  }
-
-  const articles: Article[] = articleData
-    .filter((article) => article.role !== null)
-    .map(
-      (article) =>
-        ({
-          article_id: article.article_id,
-          title: article.articles?.title,
-          description: article.articles?.description,
-          permission_id: article.id,
-          role: article.role,
-          language: article.articles?.language,
-          created_at: new Date(article.articles?.created_at as string),
-          web_publication: article.articles?.web_publication,
-          imported: article.articles?.imported,
-          latest_change: {
-            created_at: article.articles?.changes[0]?.created_at
-              ? new Date(article.articles?.changes[0]?.created_at as string)
-              : undefined,
-            name:
-              article.articles?.changes[0]?.profiles_view?.display_name ||
-              article.articles?.changes[0]?.profiles_view?.email,
-          },
-        }) as Article,
-    )
-    .sort((a, b) => {
-      // Sort the articles by latest_change.created_at
-      if (a.latest_change?.created_at && b.latest_change?.created_at) {
-        return (
-          b.latest_change.created_at.getTime() -
-          a.latest_change.created_at.getTime()
-        );
-      } else if (a.latest_change?.created_at) {
-        return -1; // a has a change date, b doesn't - a comes first
-      } else if (b.latest_change?.created_at) {
-        return 1; // b has a change date, a doesn't - b comes first
-      }
-
-      return 0;
-    });
+  if (error) throw new Error(error.message);
+  
+  const articles: Article[] = ((data?.articles ?? []) as Array<{
+    article_id: string;
+    title: string;
+    description: string;
+    permission_id: string;
+    role: Enums<'role'>;
+    language: string;
+    created_at: string;
+    web_publication: boolean;
+    imported: boolean;
+    latest_change: {
+      created_at: string;
+      name: string;
+    };
+  }>).map((article) => ({
+    article_id: article.article_id,
+    title: article.title,
+    description: article.description,
+    permission_id: article.permission_id,
+    role: article.role,
+    language: article.language,
+    created_at: new Date(article.created_at),
+    web_publication: article.web_publication,
+    imported: article.imported,
+    latest_change: {
+      created_at: article.latest_change?.created_at ? new Date(article.latest_change.created_at) : undefined,
+      name: article.latest_change?.name,
+    },
+  }));
 
   return articles;
 }
@@ -206,34 +144,16 @@ export async function getParsedChanges(
   id: string,
   single = false,
 ): Promise<ChangeItem[]> {
-  const { data, error } = await supabase
-    .from('changes')
-    .select(
-      `
-        id,
-        content,
-        created_at,
-        description,
-        status,
-        type_of_edit,
-        index,
-        article_id,
-        contributor_id,
-        revision_id,
-        archived,
-        hidden,
-        user: profiles_view(id, email, avatar_url, display_name), 
-        comments: comments(content,created_at, user: profiles_view(id, email, avatar_url, display_name)),
-        revision: revisions(summary, revid)
-        `,
-    )
-    .order('index')
-    .eq(single ? 'id' : 'article_id', id);
+  const { data, error } = await supabaseClient.functions.invoke('get/changes', {
+    method: 'POST',
+    body: { id, single },
+  });
 
-  if (!data || error) {
-    throw new Error(error?.message ?? 'Could not get parsed changes');
-  }
-  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
+  if (error) throw new Error(error.message);
+
+  const changes = data?.changes ?? [];
+
+  return changes.map((change) => parseChangeHtml(change as unknown as ChangeItem));
 }
 
 export async function updateChange(

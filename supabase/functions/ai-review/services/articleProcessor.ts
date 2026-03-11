@@ -110,12 +110,12 @@ export function splitArticleIntoSections(wikitext: string): ArticleSection[] {
 
   if (currentSection.length > 0) {
     const content = currentSection.join('\n');
-    const split = splitLargeSection(content, undefined);
+    const split = splitLargeSection(content);
     sections.push(...split);
   }
 
   if (sections.length === 0) {
-    const split = splitLargeSection(wikitext, undefined);
+    const split = splitLargeSection(wikitext);
     sections.push(...split);
   }
 

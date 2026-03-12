@@ -66,7 +66,7 @@ async function generateEmptyArticleContent(
     const displayTitleMatch = existingWikitext.match(
       /\{\{DISPLAYTITLE:[^}]*\}\}/i,
     );
-    const displayTitle = displayTitleMatch ? displayTitleMatch[0] + '\n' : '';
+    const displayTitle = displayTitleMatch ? `${displayTitleMatch[0]}\n` : '';
 
     return displayTitle + content;
   } catch (error) {

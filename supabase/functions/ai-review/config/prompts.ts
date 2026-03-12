@@ -135,7 +135,7 @@ export function cleanAIResponse(
     /\{\{DISPLAYTITLE:[^}]*\}\}/i,
   );
   if (displayTitleMatch && !cleaned.includes(displayTitleMatch[0])) {
-    return displayTitleMatch[0] + '\n' + cleaned;
+    return `${displayTitleMatch[0]}\n${cleaned}`;
   }
 
   return cleaned;

@@ -47,7 +47,7 @@ app.post('/', async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const MIRA_BOT_ID = await getMiraBotId(supabase);
+    const MIRA_BOT_ID = await getMiraBotId();
 
     if (!MIRA_BOT_ID) {
       console.error('Mira bot not configured in database');

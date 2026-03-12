@@ -130,6 +130,14 @@ export function cleanAIResponse(
   if (cleaned.length < originalContent.length * 0.2) {
     return originalContent;
   }
+
+  const displayTitleMatch = originalContent.match(
+    /\{\{DISPLAYTITLE:[^}]*\}\}/i,
+  );
+  if (displayTitleMatch && !cleaned.includes(displayTitleMatch[0])) {
+    return displayTitleMatch[0] + '\n' + cleaned;
+  }
+
   return cleaned;
 }
 

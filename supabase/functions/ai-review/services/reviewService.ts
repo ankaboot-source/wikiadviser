@@ -6,7 +6,7 @@ import {
   buildEmptyArticlePrompt,
   cleanAIResponse,
 } from '../config/prompts.ts';
-import { reviewArticleSection } from './aiService.ts';
+import { reviewArticleSection, generateRevisionSummary } from './aiService.ts';
 import { splitArticleIntoSections } from './articleProcessor.ts';
 import type { LLMConfig } from '../utils/types.ts';
 import { getArticle } from '../../_shared/helpers/supabaseHelper.ts';
@@ -206,15 +206,21 @@ export async function reviewAndImproveArticle(
     };
   }
 
+  const summaryPhrase = await generateRevisionSummary(
+    config.apiKey,
+    config.model,
+    wikitext,
+    improvedWikitext,
+  );
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
     improvedWikitext,
-    `Mira: reviewed and improved ${improvedSections} section(s)`,
+    `Mira: ${summaryPhrase}`,
   );
 
   return {
     hasImprovements: true,
-    comment: `Improved ${improvedSections} section(s)`,
+    comment: 'Changes applied',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

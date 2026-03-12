@@ -1,7 +1,7 @@
 import MediawikiClient from '../../_shared/mediawikiAPI/MediawikiClient.ts';
 import wikipediaApi from '../../_shared/wikipedia/WikipediaApi.ts';
 import { getArticle } from '../../_shared/helpers/supabaseHelper.ts';
-import { reviewArticleSection } from './aiService.ts';
+import { generateRevisionSummary, reviewArticleSection } from './aiService.ts';
 import {
   buildRevisionSystemPrompt,
   buildRevisionUserPrompt,
@@ -180,15 +180,21 @@ export async function improveRevisionChanges(
     };
   }
 
+  const summaryPhrase = await generateRevisionSummary(
+    config.apiKey,
+    config.model,
+    wikitext ?? '',
+    finalWikitext,
+  );
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
     finalWikitext,
-    `Mira: improved ${totalImproved} section(s) based on user comments`,
+    `Mira: ${summaryPhrase}`,
   );
 
   return {
     hasImprovements: true,
-    comment: `Improved ${totalImproved} section(s)`,
+    comment: 'Changes applied',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

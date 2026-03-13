@@ -5,6 +5,7 @@ import {
   buildUserPrompt,
   buildEmptyArticlePrompt,
   cleanAIResponse,
+  extractDisplayTitle,
 } from '../config/prompts.ts';
 import { generateRevisionSummary, reviewArticleSection } from './aiService.ts';
 import { splitArticleIntoSections } from './articleProcessor.ts';
@@ -63,12 +64,8 @@ async function generateEmptyArticleContent(
     const content = generated?.trim();
     if (!content || content.length < 50) return null;
 
-    const displayTitleMatch = existingWikitext.match(
-      /\{\{DISPLAYTITLE:[^}]*\}\}/i,
-    );
-    const displayTitle = displayTitleMatch ? `${displayTitleMatch[0]}\n` : '';
-
-    return displayTitle + content;
+    const displayTitle = extractDisplayTitle(existingWikitext);
+    return displayTitle ? `${displayTitle}\n${content}` : content;
   } catch (error) {
     console.error('Error generating content for empty article:', error);
     return null;
@@ -137,10 +134,11 @@ async function buildImprovedWikitext(
   );
   return { improvedWikitext, improvedSections: replacements.length };
 }
+
 function hasRealContent(wikitext: string): boolean {
   const stripped = wikitext
     .replaceAll(/\{\{DISPLAYTITLE:[^}]*\}\}/gi, '')
-    .replaceAll(/\{\{[^}]*\}\}/g, '') // strip remaining templates
+    .replaceAll(/\{\{[^}]*\}\}/g, '')
     .trim();
   return stripped.length > 0;
 }

@@ -1,3 +1,7 @@
+export function extractDisplayTitle(wikitext: string): string {
+  return wikitext.match(/\{\{DISPLAYTITLE:[^}]*\}\}/i)?.[0] ?? '';
+}
+
 export function buildSystemPrompt(
   title: string,
   description: string,
@@ -131,11 +135,9 @@ export function cleanAIResponse(
     return originalContent;
   }
 
-  const displayTitleMatch = originalContent.match(
-    /\{\{DISPLAYTITLE:[^}]*\}\}/i,
-  );
-  if (displayTitleMatch && !cleaned.includes(displayTitleMatch[0])) {
-    return `${displayTitleMatch[0]}\n${cleaned}`;
+  const displayTitle = extractDisplayTitle(originalContent);
+  if (displayTitle && !cleaned.includes(displayTitle)) {
+    return `${displayTitle}\n${cleaned}`;
   }
 
   return cleaned;

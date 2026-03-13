@@ -1,7 +1,7 @@
 <template>
   <q-header class="text-black text-left bg-secondary">
     <q-toolbar>
-      <q-toolbar-title class="col-10 col-shrink">
+      <q-toolbar-title class="col col-shrink" style="min-width: 0">
         <q-breadcrumbs class="merriweather">
           <q-breadcrumbs-el
             v-if="!article?.title || !$q.screen.lt.md"
@@ -13,7 +13,8 @@
           <q-breadcrumbs-el v-if="article?.title">
             <div
               class="column"
-              style="max-width: clamp(400px, calc(85vw - 450px), 65vw)"
+              :style="titleColumnStyle"
+              style="overflow: hidden"
             >
               <div class="row items-center no-wrap title-row full-width">
                 <span
@@ -39,7 +40,7 @@
                   input-class="text-h6 text-semi-bold"
                   input-style="line-height: 1.2;"
                   class="col-grow"
-                  style="min-width: 65vw"
+                  :style="{ minWidth: inputMinWidth }"
                   autofocus
                   :rules="[(val) => val && val.trim().length > 0]"
                   @keyup.enter="saveTitle"
@@ -82,7 +83,7 @@
                   input-class="text-caption text-grey-7"
                   input-style="line-height: 1.2;"
                   class="col-grow"
-                  style="min-width: 65vw"
+                  :style="{ minWidth: inputMinWidth }"
                   autofocus
                   @keyup.enter="saveDescription"
                   @keyup.esc="cancelEdit"
@@ -242,6 +243,16 @@ const isEditingTitle = ref(false);
 const isEditingDescription = ref(false);
 const editedTitle = ref('');
 const editedDescription = ref('');
+
+const titleColumnStyle = computed(() =>
+  $q.screen.lt.md
+    ? { maxWidth: 'calc(100vw - 60px)' }
+    : { maxWidth: 'clamp(200px, calc(85vw - 450px), 65vw)' },
+);
+
+const inputMinWidth = computed(() =>
+  $q.screen.lt.md ? 'calc(100vw - 80px)' : '65vw',
+);
 
 watch(article, (newArticle) => {
   editedTitle.value = newArticle?.title || '';

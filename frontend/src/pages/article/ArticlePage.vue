@@ -44,7 +44,7 @@ import {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js';
-import supabase from 'src/api/supabase';
+import supabaseClient from 'src/api/supabase';
 import {
   getParsedChanges,
   getUsers,
@@ -78,7 +78,7 @@ const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
 const changesList = ref<ChangeItem[]>([]);
 const changesContent = ref<string | null>(null);
-const realtimeChannel: RealtimeChannel = supabase.channel('db-changes');
+const realtimeChannel: RealtimeChannel = supabaseClient.channel('db-changes');
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
@@ -148,7 +148,7 @@ async function handleCommentRealtime(
   for (const change of changesList.value) {
     if (change.id === insertedComment.change_id) {
       insertedComment.user = (
-        await supabase
+        await supabaseClient
           .from('profiles')
           .select()
           .eq('id', insertedComment.commenter_id)
@@ -231,7 +231,7 @@ onBeforeMount(async () => {
   changesList.value = await getParsedChanges(articleId.value);
   changesContent.value = parseArticleHtml(
     (
-      await supabase
+      await supabaseClient
         .from('articles')
         .select('current_html_content')
         .eq('id', articleId.value)

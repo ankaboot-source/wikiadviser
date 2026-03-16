@@ -1,11 +1,8 @@
 import { Session } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
-import {
-  default as supabase,
-  default as supabaseClient,
-} from 'src/api/supabase';
 import { Profile } from 'src/types';
 import { ref } from 'vue';
+import supabaseClient from 'src/api/supabase';
 
 export const useUserStore = defineStore('session', () => {
   // States
@@ -15,7 +12,8 @@ export const useUserStore = defineStore('session', () => {
 
   // Actions
   async function getSession() {
-    session.value = (await supabase.auth.getSession())?.data.session as Session;
+    session.value = (await supabaseClient.auth.getSession())?.data
+      .session as Session;
     return session.value;
   }
 

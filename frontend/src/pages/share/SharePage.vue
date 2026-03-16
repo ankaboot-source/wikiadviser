@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import supabase from 'src/api/supabase';
+import supabaseClient from 'src/api/supabase';
 import UpgradePage from 'src/components/Subscription/UpgradeAccountPage.vue';
 import { onBeforeMount, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -38,7 +38,7 @@ onBeforeMount(async () => {
     const { params } = useRoute();
     const token = params.token;
     const { data: shareLink, error: validationError } =
-      await supabase.functions.invoke(`share-link/${token}`, {
+      await supabaseClient.functions.invoke(`share-link/${token}`, {
         method: 'GET',
       });
 

@@ -3,7 +3,6 @@ import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
 import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
-import supabase from './supabase';
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data, error } = await supabaseClient.functions.invoke('get/users', {
@@ -122,7 +121,7 @@ export async function getArticles(): Promise<Article[]> {
 }
 
 export async function isArticleExists(articleId: string): Promise<boolean> {
-  const { data: articleData, error: articleError } = await supabase.rpc(
+  const { data: articleData, error: articleError } = await supabaseClient.rpc(
     'is_article_exists',
     {
       article_id: articleId,
@@ -142,7 +141,7 @@ export async function updatePermission(
   const updatedPermissionsPromises = permissions.map(
     async ({ permissionId, role }) => {
       // Update permissions where id matches permissionId
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('permissions')
         .update({ role })
         .match({ id: permissionId });
@@ -183,7 +182,7 @@ export async function updateChange(
   description?: string,
   archived?: boolean,
 ) {
-  const { error: changeError } = await supabase
+  const { error: changeError } = await supabaseClient
     .from('changes')
     .update({ status, description, archived })
     .match({ id: changeId });
@@ -199,7 +198,7 @@ export async function insertComment(
   articleId: string,
   content: string,
 ) {
-  const { error: changeError } = await supabase.from('comments').insert({
+  const { error: changeError } = await supabaseClient.from('comments').insert({
     change_id: changeId,
     commenter_id: commenterId,
     article_id: articleId,
@@ -212,7 +211,7 @@ export async function insertComment(
 }
 
 export async function deletePermission(permissionId: string) {
-  const { error: changeError } = await supabase
+  const { error: changeError } = await supabaseClient
     .from('permissions')
     .delete()
     .eq('id', permissionId);
@@ -257,7 +256,7 @@ export async function createLink(articleId: string, role: Enums<'role'>) {
   expiresAt.setDate(expiresAt.getDate() + SHARE_LINK_DAY_LIMIT);
 
   const { data: shareLink, error: tokenCreationError } =
-    await supabase.functions.invoke('share-link', {
+    await supabaseClient.functions.invoke('share-link', {
       method: 'POST',
       body: {
         article_id: articleId,
@@ -275,7 +274,7 @@ export async function updateArticleWebPublication(
   web_publication: boolean,
   articleId: string,
 ) {
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('articles')
     .update({ web_publication })
     .eq('id', articleId);
@@ -288,7 +287,7 @@ export async function updateArticleWebPublication(
 export async function deleteUser() {
   await deleteAllArticles();
 
-  const { error: deleteUserError } = await supabase.rpc(
+  const { error: deleteUserError } = await supabaseClient.rpc(
     'delete_user_and_anonymize_data',
   );
 
@@ -296,7 +295,7 @@ export async function deleteUser() {
 }
 
 export async function hideChanges(changeId: string) {
-  const { data: change, error } = await supabase
+  const { data: change, error } = await supabaseClient
     .from('changes')
     .select('*')
     .eq('id', changeId)
@@ -314,7 +313,7 @@ export async function hideChanges(changeId: string) {
     throw new Error('Cannot hide this change');
   }
 
-  const { error: hideError } = await supabase
+  const { error: hideError } = await supabaseClient
     .from('changes')
     .update({ hidden: true })
     .eq('id', change.id);
@@ -324,7 +323,7 @@ export async function hideChanges(changeId: string) {
   }
 }
 export async function updateArticleTitle(articleId: string, newTitle: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('articles')
     .update({ title: newTitle })
     .eq('id', articleId);
@@ -337,7 +336,7 @@ export async function updateArticleDescription(
   articleId: string,
   newDescription: string,
 ) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('articles')
     .update({ description: newDescription })
     .eq('id', articleId);

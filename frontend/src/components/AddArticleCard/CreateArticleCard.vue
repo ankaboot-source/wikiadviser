@@ -117,7 +117,7 @@ async function addArticle() {
       newArticle.value.language.value,
       newArticle.value.description,
     );
-    await articlesStore.fetchArticles(user.id);
+    await articlesStore.fetchArticles();
 
     loadingCreation.value = false;
 

@@ -13,7 +13,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
 
   if (error) throw new Error(error.message);
 
-    const users: User[] = data.map(
+  const users: User[] = data.map(
     (permission) =>
       ({
         id: permission.user?.id,
@@ -68,12 +68,11 @@ export async function importArticle(
   return data.articleId;
 }
 
-export async function getArticles(userId: string): Promise<Article[]> {
+export async function getArticles(): Promise<Article[]> {
   const { data, error } = await supabaseClient.functions.invoke(
     'get/articles',
     {
       method: 'POST',
-      body: { userId },
     },
   );
 

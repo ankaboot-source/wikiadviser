@@ -1,4 +1,6 @@
+import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
+import createSupabaseClient from "../../_shared/supabaseClient.ts";
 
 export type Article = {
   article_id: string;
@@ -16,13 +18,22 @@ export type Article = {
   };
 };
 
-export async function getArticles(c: any) {
-  const supabaseAdmin = createSupabaseAdmin();
-  const { userId } = await c.req.json();
+export async function getArticles(c: Context) {
+  const supabaseClient = createSupabaseClient(
+    c.req.header("Authorization"),
+  );
 
-  if (!userId) {
-    return c.json({ message: "userId is required" }, 400);
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+
+  if (!user) {
+    return new Response("", {
+      status: 401,
+    });
   }
+
+  const supabaseAdmin = createSupabaseAdmin();
 
   // check if user has permission on that Article
   const { data, error } = await supabaseAdmin
@@ -46,7 +57,7 @@ export async function getArticles(c: any) {
     )
   `,
     )
-    .eq("user_id", userId)
+    .eq("user_id", user.id)
     // Sort articles by created_at
     .order("articles(created_at)", {
       ascending: false,

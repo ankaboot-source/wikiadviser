@@ -191,7 +191,7 @@ async function importSelectedArticle(searchedArticle: SearchResult) {
       searchedArticle.description,
     );
 
-    await articlesStore.fetchArticles(user.id);
+    await articlesStore.fetchArticles();
 
     $q.loading.hide();
     $q.notify({

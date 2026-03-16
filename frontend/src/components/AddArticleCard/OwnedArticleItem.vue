@@ -200,8 +200,7 @@ import { deleteArticle } from 'src/api/supabaseHelper';
 import ShareCard from 'src/components/Share/ShareCard.vue';
 import { wikiadviserLanguages } from 'src/data/wikiadviserLanguages';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useUserStore } from 'src/stores/userStore';
-import { Article, Profile } from 'src/types';
+import { Article } from 'src/types';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -245,9 +244,7 @@ async function removeArticle(articleId: string) {
       color: 'positive',
     });
 
-    const user = useUserStore().user as Profile;
-
-    await articlesStore.fetchArticles(user.id);
+    await articlesStore.fetchArticles();
   } catch (error) {
     deletingArticle.value = false;
     deleteArticleDialog.value = false;

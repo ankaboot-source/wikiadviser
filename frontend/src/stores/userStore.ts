@@ -1,7 +1,9 @@
 import { Session } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
-import supabase from 'src/api/supabase';
-import supabaseClient from 'src/api/supabase';
+import {
+  default as supabase,
+  default as supabaseClient,
+} from 'src/api/supabase';
 import { Profile } from 'src/types';
 import { ref } from 'vue';
 
@@ -25,7 +27,6 @@ export const useUserStore = defineStore('session', () => {
       'get/profile',
       {
         method: 'POST',
-        body: { userId: session.value.user.id },
       },
     );
 

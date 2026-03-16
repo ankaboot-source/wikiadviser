@@ -51,11 +51,11 @@ import {
   isArticleExists,
 } from 'src/api/supabaseHelper';
 import DiffList from 'src/components/Diff/DiffList.vue';
-import DiffCard from 'src/components/DiffCard.vue';
 import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
+import DiffCard from 'src/components/DiffCard.vue';
+import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
-import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -194,7 +194,7 @@ async function handlePermissionsRealtime(
 
     // If current user's own role is removed
     if (!users.value.find((user) => user.id === userId.value)) {
-      await articlesStore.fetchArticles(userId.value);
+      await articlesStore.fetchArticles();
       $q.notify({
         type: 'warning',
         message: 'Your were removed from the article',
@@ -212,7 +212,7 @@ onBeforeMount(async () => {
 
   articleId.value = articleIdFromParams as string;
   users.value = await getUsers(articleId.value);
-  await articlesStore.fetchArticles(userId.value);
+  await articlesStore.fetchArticles();
 
   if (!article.value) {
     const isArticle = await isArticleExists(articleId.value);

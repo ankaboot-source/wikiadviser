@@ -68,39 +68,45 @@ export async function getArticles(userId: string): Promise<Article[]> {
 
   if (error) throw new Error(error.message);
 
-  const articles: Article[] = (
-    (data?.articles ?? []) as Array<{
-      article_id: string;
-      title: string;
-      description: string;
-      permission_id: string;
-      role: Enums<'role'>;
-      language: string;
-      created_at: string;
-      web_publication: boolean;
-      imported: boolean;
-      latest_change: {
-        created_at: string;
-        name: string;
-      };
-    }>
-  ).map((article) => ({
-    article_id: article.article_id,
-    title: article.title,
-    description: article.description,
-    permission_id: article.permission_id,
-    role: article.role,
-    language: article.language,
-    created_at: new Date(article.created_at),
-    web_publication: article.web_publication,
-    imported: article.imported,
-    latest_change: {
-      created_at: article.latest_change?.created_at
-        ? new Date(article.latest_change.created_at)
-        : undefined,
-      name: article.latest_change?.name,
-    },
-  }));
+  const articles: Article[] = data
+    .filter((article) => article.role !== null)
+    .map(
+      (article) =>
+        ({
+          article_id: article.article_id,
+          title: article.articles?.title,
+          description: article.articles?.description,
+          permission_id: article.id,
+          role: article.role,
+          language: article.articles?.language,
+          created_at: new Date(article.articles?.created_at as string),
+          web_publication: article.articles?.web_publication,
+          imported: article.articles?.imported,
+          latest_change: {
+            created_at: article.articles?.changes[0]?.created_at
+              ? new Date(article.articles?.changes[0]?.created_at as string)
+              : undefined,
+            name:
+              article.articles?.changes[0]?.profiles_view?.display_name ||
+              article.articles?.changes[0]?.profiles_view?.email,
+          },
+        }) as Article,
+    )
+    .sort((a, b) => {
+      // Sort the articles by latest_change.created_at
+      if (a.latest_change?.created_at && b.latest_change?.created_at) {
+        return (
+          b.latest_change.created_at.getTime() -
+          a.latest_change.created_at.getTime()
+        );
+      } else if (a.latest_change?.created_at) {
+        return -1; // a has a change date, b doesn't - a comes first
+      } else if (b.latest_change?.created_at) {
+        return 1; // b has a change date, a doesn't - b comes first
+      }
+
+      return 0;
+    });
 
   return articles;
 }

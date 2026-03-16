@@ -175,11 +175,7 @@ export async function getParsedChanges(
 
   if (error) throw new Error(error.message);
 
-  const changes = data?.changes ?? [];
-
-  return changes.map((change) =>
-    parseChangeHtml(change as unknown as ChangeItem),
-  );
+  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
 }
 
 export async function updateChange(

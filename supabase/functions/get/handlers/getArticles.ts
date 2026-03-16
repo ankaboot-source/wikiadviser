@@ -39,23 +39,23 @@ export async function getArticles(c: Context) {
   const { data, error } = await supabaseAdmin
     .from("permissions")
     .select(
-      `
-    id,
-    article_id,
-    role,
-    articles(
-      title,
-      description,
-      created_at,
-      language,
-      web_publication,
-      imported,
-      changes!changes_article_id_fkey(
+    `
+      id,
+      article_id,
+      role,
+      articles(
+        title,
+        description,
         created_at,
-        profiles_view(display_name, email)
+        language,
+        web_publication,
+        imported,
+        changes!changes_article_id_fkey(
+          created_at,
+          profiles_view(display_name, email)
+        )
       )
-    )
-  `,
+    `,
     )
     .eq("user_id", user.id)
     // Sort articles by created_at

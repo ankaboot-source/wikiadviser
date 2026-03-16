@@ -2,22 +2,6 @@ import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
 import createSupabaseClient from "../../_shared/supabaseClient.ts";
 
-type Article = {
-  article_id: string;
-  title: string;
-  description: string;
-  permission_id: string;
-  role: any;
-  created_at: Date;
-  language: string;
-  web_publication: boolean;
-  imported: boolean;
-  latest_change: {
-    created_at: Date;
-    name: string;
-  };
-};
-
 export async function getArticles(c: Context) {
   const supabaseClient = createSupabaseClient(
     c.req.header("Authorization"),

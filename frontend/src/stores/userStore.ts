@@ -21,10 +21,13 @@ export const useUserStore = defineStore('session', () => {
     await getSession();
     if (!session.value) return;
 
-    const { data, error } = await supabaseClient.functions.invoke('get/profile', {
-      method: 'POST',
-      body: { userId: session.value.user.id },
-    });
+    const { data, error } = await supabaseClient.functions.invoke(
+      'get/profile',
+      {
+        method: 'POST',
+        body: { userId: session.value.user.id },
+      },
+    );
 
     if (error) {
       console.error('Error fetching profile data:', error);

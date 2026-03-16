@@ -1,6 +1,7 @@
+import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
 
-export async function getUsers(c: any) {
+export async function getUsers(c: Context) {
   const supabaseAdmin = createSupabaseAdmin();
   const { articleId } = await c.req.json();
 

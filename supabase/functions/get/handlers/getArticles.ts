@@ -11,7 +11,21 @@ export async function getArticles(c: any) {
   const { data: articleData, error: articleError } = await supabaseAdmin
     .from("permissions")
     .select(
-      "id, article_id, role, user_id, articles!inner(title, description, created_at, language, web_publication, imported, changes!changes_article_id_fkey(created_at, contributor_id, id))"
+      `
+      id,
+      article_id,
+      role,
+      user_id,
+      articles!inner(
+        title,
+        description,
+        created_at,
+        language,
+        web_publication,
+        imported,
+        changes!changes_article_id_fkey(created_at,contributor_id,id)
+      )
+      `
     )
     .eq("user_id", userId)
     .order("articles(created_at)", { ascending: false })

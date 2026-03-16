@@ -1,4 +1,4 @@
-import createSupabaseAdmin from "../_shared/supabaseAdmin.ts";
+import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
 
 export async function getChanges(c: any) {
   const supabaseAdmin = createSupabaseAdmin();

@@ -9,6 +9,8 @@ updates:
     directory: "/" # root package.json
     schedule:
       interval: "weekly"
+    exclude-paths:
+      - "docker/resources/extensions/MyVisualEditor/**"
 
   - package-ecosystem: "npm"
     directory: "/frontend" # frontend/package.json

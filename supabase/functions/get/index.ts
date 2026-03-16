@@ -5,7 +5,8 @@ import { getUsers } from "./handlers/getUsers.ts";
 import { getArticles } from "./handlers/getArticles.ts";
 import { getChanges } from "./handlers/getChanges.ts";
 
-const functionName = "get";
+const functionName = "get"; // these queries use `profiles_view` which is only queryable from the supabase admin client for security reasons
+
 const app = new Hono().basePath(`/${functionName}`);
 
 app.use("*", corsMiddleware);

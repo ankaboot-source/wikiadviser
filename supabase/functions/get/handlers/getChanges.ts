@@ -11,7 +11,22 @@ export async function getChanges(c: any) {
   const { data: changesData, error } = await supabaseAdmin
     .from("changes")
     .select(
-      "id, content, created_at, description, status, type_of_edit, index, article_id, contributor_id, revision_id, archived, hidden, comments:comments(content, created_at, commenter_id, id), revision: revisions(summary, revid)"
+      `
+      id,
+      content,
+      created_at,
+      description,
+      status,
+      type_of_edit,
+      index,
+      article_id,
+      contributor_id,
+      revision_id,
+      archived,
+      hidden,
+      comments:comments(content,created_at,commenter_id,id),
+      revision:revisions(summary,revid)
+      `
     )
     .order("index")
     .eq(single ? "id" : "article_id", id);

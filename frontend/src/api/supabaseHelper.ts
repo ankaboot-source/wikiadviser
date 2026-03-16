@@ -13,7 +13,18 @@ export async function getUsers(articleId: string): Promise<User[]> {
 
   if (error) throw new Error(error.message);
 
-  return (data?.users ?? []) as User[];
+    const users: User[] = data.map(
+    (permission) =>
+      ({
+        id: permission.user?.id,
+        picture: permission.user?.avatar_url,
+        name: permission.user?.display_name || permission.user?.email,
+        role: permission.role,
+        permissionId: permission.id,
+      }) as User,
+  );
+
+  return users;
 }
 
 export async function createArticle(

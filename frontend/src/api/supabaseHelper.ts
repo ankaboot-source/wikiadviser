@@ -58,28 +58,33 @@ export async function importArticle(
 }
 
 export async function getArticles(userId: string): Promise<Article[]> {
-  const { data, error } = await supabaseClient.functions.invoke('get/articles', {
-    method: 'POST',
-    body: { userId },
-  });
+  const { data, error } = await supabaseClient.functions.invoke(
+    'get/articles',
+    {
+      method: 'POST',
+      body: { userId },
+    },
+  );
 
   if (error) throw new Error(error.message);
-  
-  const articles: Article[] = ((data?.articles ?? []) as Array<{
-    article_id: string;
-    title: string;
-    description: string;
-    permission_id: string;
-    role: Enums<'role'>;
-    language: string;
-    created_at: string;
-    web_publication: boolean;
-    imported: boolean;
-    latest_change: {
+
+  const articles: Article[] = (
+    (data?.articles ?? []) as Array<{
+      article_id: string;
+      title: string;
+      description: string;
+      permission_id: string;
+      role: Enums<'role'>;
+      language: string;
       created_at: string;
-      name: string;
-    };
-  }>).map((article) => ({
+      web_publication: boolean;
+      imported: boolean;
+      latest_change: {
+        created_at: string;
+        name: string;
+      };
+    }>
+  ).map((article) => ({
     article_id: article.article_id,
     title: article.title,
     description: article.description,
@@ -90,7 +95,9 @@ export async function getArticles(userId: string): Promise<Article[]> {
     web_publication: article.web_publication,
     imported: article.imported,
     latest_change: {
-      created_at: article.latest_change?.created_at ? new Date(article.latest_change.created_at) : undefined,
+      created_at: article.latest_change?.created_at
+        ? new Date(article.latest_change.created_at)
+        : undefined,
       name: article.latest_change?.name,
     },
   }));
@@ -153,7 +160,9 @@ export async function getParsedChanges(
 
   const changes = data?.changes ?? [];
 
-  return changes.map((change) => parseChangeHtml(change as unknown as ChangeItem));
+  return changes.map((change) =>
+    parseChangeHtml(change as unknown as ChangeItem),
+  );
 }
 
 export async function updateChange(

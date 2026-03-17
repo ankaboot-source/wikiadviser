@@ -119,7 +119,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { Notify } from 'quasar';
 import { useRouter } from 'vue-router';
-import supabase from 'src/api/supabase';
+import supabaseClient from 'src/api/supabase';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import type { Tables } from 'src/types/database.types';
 
@@ -217,7 +217,7 @@ function getNotificationMessage(notification: NotificationData): string {
 async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
   if (!articleIds.length || !userIds.length) return new Map<string, string>();
 
-  const { data: perms, error } = await supabase
+  const { data: perms, error } = await supabaseClient
     .from('permissions')
     .select('article_id, user_id, role')
     .in('article_id', articleIds)
@@ -236,7 +236,7 @@ async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
 }
 
 async function loadNotificationsForUser(userId: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('notifications')
     .select(
       `
@@ -287,7 +287,7 @@ async function loadNotificationsForUser(userId: string) {
 }
 
 async function fetchNotificationById(id: string) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('notifications')
     .select(
       `
@@ -317,7 +317,7 @@ async function fetchNotificationById(id: string) {
   if (!row) return null;
 
   if (row.article_id && row.triggered_on) {
-    const { data: perms, error: pErr } = await supabase
+    const { data: perms, error: pErr } = await supabaseClient
       .from('permissions')
       .select('role')
       .eq('article_id', row.article_id)
@@ -331,7 +331,7 @@ async function fetchNotificationById(id: string) {
 
 async function getChangeIdForNotification(notification: NotificationData) {
   if (notification.type === 'comment') {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('comments')
       .select('change_id')
       .eq('commenter_id', notification.triggered_by)
@@ -348,7 +348,7 @@ async function getChangeIdForNotification(notification: NotificationData) {
   }
 
   if (notification.type === 'revision') {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('changes')
       .select('id')
       .eq('article_id', notification.article_id)
@@ -393,7 +393,7 @@ async function navigateAndMarkRead(notification: NotificationData) {
       }
       window.location.href = url.href;
     }
-    await supabase
+    await supabaseClient
       .from('notifications')
       .update({ is_read: true })
       .eq('id', notification.id);
@@ -416,7 +416,7 @@ async function markAllRead() {
   try {
     const ids = unread.value.map((n) => n.id).filter(Boolean);
     if (ids.length) {
-      await supabase
+      await supabaseClient
         .from('notifications')
         .update({ is_read: true })
         .in('id', ids);
@@ -429,7 +429,7 @@ async function markAllRead() {
 
 onMounted(async () => {
   try {
-    const { data: authData } = await supabase.auth.getUser();
+    const { data: authData } = await supabaseClient.auth.getUser();
     const user = authData?.user;
     if (!user) return;
 
@@ -438,7 +438,7 @@ onMounted(async () => {
 
     await loadNotificationsForUser(user.id);
 
-    supabase
+    supabaseClient
       .channel('notifs')
       .on(
         'postgres_changes',

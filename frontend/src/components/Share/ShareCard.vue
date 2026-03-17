@@ -100,8 +100,7 @@ import {
 } from 'src/api/supabaseHelper';
 import ENV from 'src/schema/env.schema';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
-import { useUserStore } from 'src/stores/userStore';
-import { Article, Enums, Permission, Profile, User } from 'src/types';
+import { Article, Enums, Permission, User } from 'src/types';
 import { HOURS_IN_DAY, SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { onBeforeMount, ref } from 'vue';
 import ShareUser from './ShareUser.vue';
@@ -227,8 +226,7 @@ async function handleApplyChanges() {
           icon: 'public',
         });
       }
-      const user = useUserStore().user as Profile;
-      await articlesStore.fetchArticles(user.id);
+      await articlesStore.fetchArticles();
     }
   } catch (error) {
     $q.loading.hide();

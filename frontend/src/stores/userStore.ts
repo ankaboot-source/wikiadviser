@@ -1,8 +1,8 @@
 import { Session } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
-import supabase from 'src/api/supabase';
 import { Profile } from 'src/types';
 import { ref } from 'vue';
+import supabaseClient from 'src/api/supabase';
 
 export const useUserStore = defineStore('session', () => {
   // States
@@ -12,7 +12,8 @@ export const useUserStore = defineStore('session', () => {
 
   // Actions
   async function getSession() {
-    session.value = (await supabase.auth.getSession())?.data.session as Session;
+    session.value = (await supabaseClient.auth.getSession())?.data
+      .session as Session;
     return session.value;
   }
 
@@ -20,31 +21,21 @@ export const useUserStore = defineStore('session', () => {
     await getSession();
     if (!session.value) return;
 
-    user.value = session.value
-      ? ((
-          await supabase
-            .from('profiles_view')
-            .select('*')
-            .eq('id', session.value.user.id)
-            .single()
-        ).data as Profile)
-      : null;
-    name.value = user.value?.display_name || user.value?.email;
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('llm_reviewer_config')
-      .eq('id', session.value.user.id)
-      .single();
+    const { data, error } = await supabaseClient.functions.invoke(
+      'get/profile',
+      {
+        method: 'POST',
+      },
+    );
 
-    if (profileError) {
-      console.error('Error fetching profile data:', profileError);
+    if (error) {
+      console.error('Error fetching profile data:', error);
+      user.value = null;
+      return;
     }
-    if (user.value) {
-      user.value = {
-        ...user.value,
-        llm_reviewer_config: profileData?.llm_reviewer_config || null,
-      };
-    }
+
+    user.value = data?.profile as Profile;
+    name.value = user.value?.display_name || user.value?.email;
   }
 
   function $resetUser() {

@@ -207,7 +207,7 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import supabase from 'src/api/supabase';
+import supabaseClient from 'src/api/supabase';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useUserStore } from 'src/stores/userStore';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
@@ -329,7 +329,7 @@ function cancelEdit() {
 }
 
 async function signOut() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
     throw error;

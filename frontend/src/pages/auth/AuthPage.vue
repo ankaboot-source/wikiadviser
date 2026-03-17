@@ -40,10 +40,7 @@
 import { Auth } from '@nuxtbase/auth-ui-vue';
 import { ThemeSupa, ViewType } from '@supabase/auth-ui-shared';
 import { storeToRefs } from 'pinia';
-import {
-  default as supabase,
-  default as supabaseClient,
-} from 'src/api/supabase';
+import supabaseClient from 'src/api/supabase';
 import { useUserStore } from 'src/stores/userStore';
 import { AUTH_UI_VUE_VARIABLES_STYLE } from 'src/utils/consts';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
@@ -131,7 +128,7 @@ onMounted(() => {
 });
 
 async function loginAnonymously() {
-  const { data, error } = await supabase.auth.signInAnonymously();
+  const { data, error } = await supabaseClient.auth.signInAnonymously();
 
   console.log(data, error);
 }

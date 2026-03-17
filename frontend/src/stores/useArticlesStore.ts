@@ -17,8 +17,8 @@ export const useArticlesStore = defineStore('articles', () => {
   );
 
   // Actions
-  async function fetchArticles(userId: string) {
-    articles.value = await getArticles(userId);
+  async function fetchArticles() {
+    articles.value = await getArticles();
   }
 
   function resetArticles() {

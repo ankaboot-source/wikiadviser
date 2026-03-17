@@ -15,6 +15,7 @@ export interface CommentImprovement {
   content: string;
   index: number | null;
   status: number;
+  type_of_edit: number;
 }
 
 export interface CommentReviewResult {
@@ -23,66 +24,155 @@ export interface CommentReviewResult {
   oldRevisionId: number;
   newRevisionId: number;
 }
+const REMOVE_TYPE = 2;
 
 function splitIntoParagraphs(wikitext: string): string[] {
   return wikitext.split(/\n\n+/).filter((p) => p.trim().length > 0);
 }
 
-function remapImprovementIndices(
-  improvements: CommentImprovement[],
-): Array<CommentImprovement & { relativeIndex: number }> {
-  return improvements
-    .filter((imp) => imp.index !== null)
-    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
-    .map((imp, relativeIndex) => ({ ...imp, relativeIndex }));
+function extractLeadingDirectives(wikitext: string): {
+  directives: string;
+  body: string;
+} {
+  const lines = wikitext.split('\n');
+  const directiveLines: string[] = [];
+
+  for (const line of lines) {
+    if (/^\s*\{\{[^}]+\}\}\s*$/.test(line)) {
+      directiveLines.push(line);
+    } else {
+      break;
+    }
+  }
+
+  if (directiveLines.length === 0) {
+    return { directives: '', body: wikitext };
+  }
+
+  const directives = directiveLines.join('\n');
+  const body = wikitext.slice(directives.length).replace(/^\n+/, '');
+  return { directives, body };
+}
+
+function resolveTargetIndex(
+  improvement: CommentImprovement,
+  paragraphs: string[],
+): number {
+  const { type_of_edit, index, content, change_id } = improvement;
+
+  if (type_of_edit === REMOVE_TYPE) {
+    if (index === null) return -1;
+    const target = Math.min(index, paragraphs.length - 1);
+    console.info(
+      `[CommentReview] Change ${change_id.substring(0, 8)} is a removal, using index ${target}`,
+    );
+    return target;
+  }
+
+  const plainText = content
+    .replaceAll(/<[^>]*>/g, ' ')
+    .replaceAll(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+
+  const matched = paragraphs.findIndex((p) =>
+    p.toLowerCase().includes(plainText),
+  );
+
+  if (matched !== -1) return matched;
+
+  if (index !== null) {
+    const fallback = Math.min(index, paragraphs.length - 1);
+    console.info(
+      `[CommentReview] Change ${change_id.substring(0, 8)} fell back to index ${fallback}`,
+    );
+    return fallback;
+  }
+
+  return -1;
+}
+
+async function applyImprovement(
+  improvement: CommentImprovement,
+  paragraph: string,
+  systemPrompt: string,
+  config: LLMConfig,
+): Promise<string | null> {
+  try {
+    const improved = await reviewArticleSection(
+      config.apiKey,
+      config.model,
+      systemPrompt,
+      buildRevisionUserPrompt(
+        paragraph,
+        improvement.prompt,
+        improvement.status,
+      ),
+    );
+    const trimmed = improved.trim();
+    return trimmed && trimmed !== paragraph ? trimmed : null;
+  } catch (error) {
+    console.error(
+      `[CommentReview] Failed to improve paragraph for change ${improvement.change_id}:`,
+      error instanceof Error ? error.message : error,
+    );
+    return null;
+  }
 }
 
 async function improveExistingArticleParagraphs(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: CommentImprovement[],
   paragraphs: string[],
   systemPrompt: string,
   config: LLMConfig,
 ): Promise<{ improvedParagraphs: string[]; improvedCount: number }> {
   const improvedParagraphs = [...paragraphs];
+  const usedIndices = new Set<number>();
   let improvedCount = 0;
 
   for (const improvement of improvements) {
-    const { relativeIndex, prompt, change_id } = improvement;
+    const { change_id } = improvement;
 
-    if (relativeIndex >= paragraphs.length) {
+    const targetIndex = resolveTargetIndex(improvement, paragraphs);
+
+    if (targetIndex === -1) {
       console.warn(
-        `[CommentReview] Skipping change ${change_id}: index ${relativeIndex} out of bounds`,
+        `[CommentReview] Skipping change ${change_id}: could not match content to any paragraph`,
       );
       continue;
     }
 
-    const paragraph = paragraphs[relativeIndex];
+    if (usedIndices.has(targetIndex)) {
+      console.warn(
+        `[CommentReview] Skipping change ${change_id.substring(0, 8)}: paragraph ${targetIndex} already modified by a previous change`,
+      );
+      continue;
+    }
+
+    const paragraph = paragraphs[targetIndex];
 
     if (!paragraph || paragraph.trim().length < 10) {
       console.warn(
-        `[CommentReview] Skipping change ${change_id}: paragraph too short or empty`,
+        `[CommentReview] Skipping change ${change_id}: matched paragraph too short or empty`,
       );
       continue;
     }
 
-    try {
-      const improved = await reviewArticleSection(
-        config.apiKey,
-        config.model,
-        systemPrompt,
-        buildRevisionUserPrompt(paragraph, prompt, improvement.status),
-      );
+    console.info(
+      `[CommentReview] Change ${change_id.substring(0, 8)} matched paragraph ${targetIndex}/${paragraphs.length - 1}`,
+    );
 
-      const trimmed = improved.trim();
-      if (trimmed && trimmed !== paragraph) {
-        improvedParagraphs[relativeIndex] = trimmed;
-        improvedCount++;
-      }
-    } catch (error) {
-      console.error(
-        `[CommentReview] Failed to improve paragraph for change ${change_id}:`,
-        error instanceof Error ? error.message : error,
-      );
+    const result = await applyImprovement(
+      improvement,
+      paragraph,
+      systemPrompt,
+      config,
+    );
+
+    if (result) {
+      improvedParagraphs[targetIndex] = result;
+      usedIndices.add(targetIndex);
+      improvedCount++;
     }
   }
 
@@ -90,7 +180,7 @@ async function improveExistingArticleParagraphs(
 }
 
 async function generateContentForEmptyArticle(
-  improvements: ReturnType<typeof remapImprovementIndices>,
+  improvements: CommentImprovement[],
   article: { title: string | null; description: string | null },
   config: LLMConfig,
 ): Promise<{ generatedWikitext: string; improvedCount: number }> {
@@ -138,12 +228,12 @@ export async function improveRevisionChanges(
   const { wikitext } = await mediawiki.getArticleForAIReview(articleId);
 
   const isEmptyArticle = !wikitext || wikitext.trim().length === 0;
-  const remapped = remapImprovementIndices(improvements);
+  const validImprovements = improvements.filter((imp) => imp.content?.trim());
 
-  if (remapped.length === 0) {
+  if (validImprovements.length === 0) {
     return {
       hasImprovements: false,
-      comment: 'No indexed improvements to process',
+      comment: 'No improvements with content to process',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -154,20 +244,24 @@ export async function improveRevisionChanges(
 
   if (isEmptyArticle) {
     const { generatedWikitext, improvedCount } =
-      await generateContentForEmptyArticle(remapped, article, config);
+      await generateContentForEmptyArticle(validImprovements, article, config);
     finalWikitext = generatedWikitext;
     totalImproved = improvedCount;
   } else {
-    const paragraphs = splitIntoParagraphs(wikitext);
+    const { directives, body } = extractLeadingDirectives(wikitext);
+    const paragraphs = splitIntoParagraphs(body);
     const systemPrompt = buildRevisionSystemPrompt(article, wikitext);
     const { improvedParagraphs, improvedCount } =
       await improveExistingArticleParagraphs(
-        remapped,
+        validImprovements,
         paragraphs,
         systemPrompt,
         config,
       );
-    finalWikitext = improvedParagraphs.join('\n\n');
+    const improvedBody = improvedParagraphs.join('\n\n');
+    finalWikitext = directives
+      ? `${directives}\n${improvedBody}`
+      : improvedBody;
     totalImproved = improvedCount;
   }
 

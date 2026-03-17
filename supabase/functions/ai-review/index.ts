@@ -71,7 +71,7 @@ app.post('/', async (c) => {
       );
       const { data: changes, error: changesError } = await supabase
         .from('changes')
-        .select('id, content, index, status')
+        .select('id, content, index, status,type_of_edit')
         .in('id', changeIds);
 
       if (changesError) {
@@ -87,7 +87,12 @@ app.post('/', async (c) => {
       const changeDataMap = new Map(
         changes.map((c) => [
           c.id,
-          { content: c.content, index: c.index, status: c.status },
+          {
+            content: c.content,
+            index: c.index,
+            status: c.status,
+            type_of_edit: c.type_of_edit,
+          },
         ]),
       );
 
@@ -106,6 +111,7 @@ app.post('/', async (c) => {
             content: changeData?.content || '',
             index: changeData?.index ?? null,
             status: changeData?.status ?? 0,
+            type_of_edit: changeData?.type_of_edit ?? 0,
           };
         },
       );

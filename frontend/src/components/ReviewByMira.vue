@@ -388,6 +388,7 @@ function showNotification(type: 'success' | 'info' | 'error', message: string) {
 }
 
 async function triggerReview() {
+  miraStore.$reset();
   loading.value = true;
   reviews.value = [];
 
@@ -454,6 +455,7 @@ async function triggerReview() {
     }
   } finally {
     loading.value = false;
+    miraStore.clearPendingPrompts();
   }
 }
 </script>

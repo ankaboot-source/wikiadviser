@@ -165,6 +165,7 @@ watch(
     if (pending) {
       isProcessingChanges.value = true;
       loading.value = { value: true, message: loaderPresets.changes.message };
+      activeViewStore.modeToggle = 'edit';
       nextTick().then(() => gotoDiffLink());
     }
   },

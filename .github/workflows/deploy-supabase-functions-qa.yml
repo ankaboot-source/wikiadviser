@@ -67,3 +67,6 @@ jobs:
 
       - name: deploy ai-review
         run: supabase functions deploy ai-review --no-verify-jwt --debug
+
+      - name: deploy get
+        run: supabase functions deploy get --no-verify-jwt --debug

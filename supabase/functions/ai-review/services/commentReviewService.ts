@@ -130,6 +130,11 @@ async function improveExistingArticleParagraphs(
   const usedIndices = new Set<number>();
   let improvedCount = 0;
 
+  const resolved: Array<{
+    improvement: CommentImprovement;
+    targetIndex: number;
+  }> = [];
+
   for (const improvement of improvements) {
     const { change_id } = improvement;
 
@@ -158,20 +163,35 @@ async function improveExistingArticleParagraphs(
       continue;
     }
 
+    usedIndices.add(targetIndex);
+    resolved.push({ improvement, targetIndex });
     console.info(
       `[CommentReview] Change ${change_id.substring(0, 8)} matched paragraph ${targetIndex}/${paragraphs.length - 1}`,
     );
+    
+  }
 
-    const result = await applyImprovement(
-      improvement,
-      paragraph,
-      systemPrompt,
-      config,
-    );
+  const results = await Promise.all(
+    resolved.map(({ improvement, targetIndex }) =>
+      applyImprovement(
+        improvement,
+        paragraphs[targetIndex],
+        systemPrompt,
+        config,
+      )
+        .then((result) => ({ result, targetIndex }))
+        .catch(() => {
+          console.error(
+            `[CommentReview] Unhandled error for change ${improvement.change_id}`,
+          );
+          return null;
+        }),
+    ),
+  );
 
-    if (result) {
-      improvedParagraphs[targetIndex] = result;
-      usedIndices.add(targetIndex);
+  for (const item of results) {
+    if (item?.result) {
+      improvedParagraphs[item.targetIndex] = item.result;
       improvedCount++;
     }
   }

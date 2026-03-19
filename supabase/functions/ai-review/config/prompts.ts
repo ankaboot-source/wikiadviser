@@ -40,26 +40,28 @@ export function buildUserPrompt(sectionContent: string): string {
 
 export function buildRevisionSystemPrompt(
   article: { title: string | null; description: string | null },
-  wikitext: string,
+  wikitext?: string,
 ): string {
+  const contextSection = wikitext
+    ? `\nARTICLE CONTEXT (READ ONLY — DO NOT MODIFY, TRANSLATE, OR OUTPUT THIS):
+${wikitext}
+END OF CONTEXT\n`
+    : '';
+
   return `You are Mira, a Wikipedia editing assistant.
 
 ARTICLE: ${article.title || 'Unknown'}
 DESCRIPTION: ${article.description || 'No description available'}
+${contextSection}
+You will receive a SINGLE paragraph to modify based on a user instruction.
 
-FULL ARTICLE WIKITEXT:
-${wikitext}
-
-You will receive paragraphs to improve based on user instructions.
-
-Requirements:
-1. Maintain consistency with the full article context
-2. Keep the content factual and neutral
-3. Follow Wikipedia style guidelines
-4. Preserve any wikitext formatting (links, templates, etc.)
-5. If no improvement is needed, return the original text unchanged
-
-Return ONLY the improved paragraph, without any preamble or explanation.`;
+CRITICAL RULES:
+- Modify ONLY the paragraph provided in the user message
+- Do NOT translate, rewrite, or output any other part of the article
+- Do NOT output the full article or multiple paragraphs
+- Return ONLY the modified version of the given paragraph
+- Preserve wikitext formatting (links, templates, etc.)
+- Keep the content factual and neutral`;
 }
 
 export function buildRevisionUserPrompt(
@@ -75,19 +77,16 @@ export function buildRevisionUserPrompt(
 
   const statusLabel = STATUS_LABELS[status] ?? 'unknown';
 
-  return `PARAGRAPH TO IMPROVE:
+  return `PARAGRAPH TO MODIFY (and ONLY this paragraph):
 ${paragraph}
 
-CURRENT CHANGE STATUS: ${statusLabel}
-
 USER INSTRUCTION: ${instruction}
+CHANGE STATUS: ${statusLabel}
 
-Context rules:
-- If status is "approved", refine and polish if needed.
-- If status is "rejected", rework carefully according to the instruction.
-- If status is "pending", improve normally based on the instruction.
-
-Return ONLY the improved paragraph:`;
+Rules:
+- Apply the instruction to THIS PARAGRAPH ONLY
+- Do NOT output any other paragraphs or the full article
+- Return ONLY the modified paragraph text, no preamble or explanation`;
 }
 
 export function buildEmptyArticlePrompt(article: {

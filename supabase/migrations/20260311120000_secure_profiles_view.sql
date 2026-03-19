@@ -1,9 +1,8 @@
 -- Drop the view
 DROP VIEW IF EXISTS public.profiles_view;
 
--- Recreate view with security_invoker
--- This makes the view use the caller's RLS context (PostgreSQL 15+)
-CREATE VIEW public.profiles_view WITH (security_invoker = true) AS
+-- add llm_reviewer_config to the view
+CREATE VIEW public.profiles_view AS
 SELECT p.id,
     u.email,
     u.email_change,
@@ -16,3 +15,6 @@ SELECT p.id,
     p.llm_reviewer_config
 FROM profiles p
 JOIN auth.users u ON u.id = p.id;
+
+-- Revoke all permissions on the view from PUBLIC to secure it
+REVOKE ALL ON public.profiles_view FROM PUBLIC;

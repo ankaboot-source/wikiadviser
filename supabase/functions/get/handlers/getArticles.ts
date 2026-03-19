@@ -53,7 +53,7 @@ export async function getArticles(c: Context) {
     throw new Error(error.message);
   }
   if (data.length === 0) {
-    return [];
+    return c.json([]);
   }
 
   return c.json(data);

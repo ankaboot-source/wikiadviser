@@ -20,7 +20,7 @@ Deno.test('indices always start at 0 and go up', () => {
 });
 
 Deno.test('large input gets split into multiple sections', () => {
-  const paragraph = 'word '.repeat(50) + '\n\n';
+  const paragraph = `${'word '.repeat(50)}\n\n`;
   const result = splitArticleIntoSections(paragraph.repeat(30));
   assertEquals(result.length > 1, true);
 });

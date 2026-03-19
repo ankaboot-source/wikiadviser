@@ -23,7 +23,7 @@ export async function getArticles(c: Context) {
   const { data, error } = await supabaseAdmin
     .from("permissions")
     .select(
-      `
+    `
       id,
       article_id,
       role,

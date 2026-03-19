@@ -12,7 +12,7 @@ export async function getProfile(c: Context) {
   } = await supabaseClient.auth.getUser();
 
   if (!user) {
-    return new Response("", {
+    return new Response("User Not Found", {
       status: 401,
     });
   }
@@ -25,7 +25,7 @@ export async function getProfile(c: Context) {
     .single();
 
   if (error) {
-    return c.json({ message: error.message }, 500);
+    return c.json({ message: error.message }, 403);
   }
 
   return c.json({ profile: data });

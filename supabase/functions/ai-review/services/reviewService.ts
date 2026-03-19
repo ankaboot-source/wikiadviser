@@ -5,8 +5,9 @@ import {
   buildUserPrompt,
   buildEmptyArticlePrompt,
   cleanAIResponse,
+  extractDisplayTitle,
 } from '../config/prompts.ts';
-import { reviewArticleSection } from './aiService.ts';
+import { generateRevisionSummary, reviewArticleSection } from './aiService.ts';
 import { splitArticleIntoSections } from './articleProcessor.ts';
 import type { LLMConfig } from '../utils/types.ts';
 import { getArticle } from '../../_shared/helpers/supabaseHelper.ts';
@@ -19,6 +20,13 @@ export interface ReviewResult {
 }
 
 const BATCH_SIZE = 3;
+
+const noImprovement = (comment: string): ReviewResult => ({
+  hasImprovements: false,
+  comment,
+  oldRevisionId: 0,
+  newRevisionId: 0,
+});
 
 function safeReplace(
   text: string,
@@ -39,95 +47,37 @@ function safeReplace(
   );
 }
 
-export async function reviewAndImproveArticle(
-  articleId: string,
-  language: string,
+async function generateEmptyArticleContent(
+  article: { title: string | null; description: string | null },
   config: LLMConfig,
-  miraBotId: string,
-  customInstructions?: string,
-): Promise<ReviewResult> {
-  const mediawiki = new MediawikiClient(language, wikipediaApi);
+  customInstructions: string,
+  existingWikitext: string,
+): Promise<string | null> {
+  try {
+    const generated = await reviewArticleSection(
+      config.apiKey,
+      config.model,
+      buildEmptyArticlePrompt(article),
+      `USER INSTRUCTION: ${customInstructions}\n\nGenerate content for this article:`,
+    );
 
-  const articleData = await mediawiki.getArticleForAIReview(articleId);
-  const article = await getArticle(articleId);
+    const content = generated?.trim();
+    if (!content || content.length < 50) return null;
 
-  const wikitext = articleData.wikitext;
-  const isEmptyArticle = !wikitext || wikitext.trim().length === 0;
-
-  if (isEmptyArticle) {
-    if (!customInstructions?.trim()) {
-      return {
-        hasImprovements: false,
-        comment:
-          'Article has no content. Add a custom prompt to generate content.',
-        oldRevisionId: 0,
-        newRevisionId: 0,
-      };
-    }
-
-    if (!article.title?.trim()) {
-      return {
-        hasImprovements: false,
-        comment: 'Article has no title — cannot generate content',
-        oldRevisionId: 0,
-        newRevisionId: 0,
-      };
-    }
-
-    try {
-      const generated = await reviewArticleSection(
-        config.apiKey,
-        config.model,
-        buildEmptyArticlePrompt(article),
-        `USER INSTRUCTION: ${customInstructions}\n\nGenerate content for this article:`,
-      );
-
-      const content = generated?.trim();
-      if (!content || content.length < 50) {
-        return {
-          hasImprovements: false,
-          comment: 'Generated content was too short or empty',
-          oldRevisionId: 0,
-          newRevisionId: 0,
-        };
-      }
-
-      const editResult = await mediawiki.editArticleAsBot(
-        articleId,
-        content,
-        'Mira: generated initial article content',
-      );
-
-      return {
-        hasImprovements: true,
-        comment: 'Generated initial article content',
-        oldRevisionId: editResult.oldrevid,
-        newRevisionId: editResult.newrevid,
-      };
-    } catch (error) {
-      console.error('Error generating content for empty article:', error);
-      return {
-        hasImprovements: false,
-        comment: 'Failed to generate article content',
-        oldRevisionId: 0,
-        newRevisionId: 0,
-      };
-    }
+    const displayTitle = extractDisplayTitle(existingWikitext);
+    return displayTitle ? `${displayTitle}\n${content}` : content;
+  } catch (error) {
+    console.error('Error generating content for empty article:', error);
+    return null;
   }
+}
 
-  console.log(`Article: ${article.title}, ${wikitext.length} chars`);
-
+async function buildImprovedWikitext(
+  wikitext: string,
+  config: LLMConfig,
+  systemPrompt: string,
+): Promise<{ improvedWikitext: string; improvedSections: number }> {
   const sections = splitArticleIntoSections(wikitext);
-
-  const systemPrompt = buildSystemPrompt(
-    article.title,
-    article.description,
-    config.prompt,
-    customInstructions,
-  );
-
-  let improvedWikitext = wikitext;
-  let improvedSections = 0;
   const replacements: Array<{ original: string; improved: string }> = [];
 
   for (let i = 0; i < sections.length; i += BATCH_SIZE) {
@@ -149,9 +99,10 @@ export async function reviewAndImproveArticle(
           );
 
           const improvedContent = cleanAIResponse(rawResponse, section.content);
-          const hasChange = improvedContent.trim() !== section.content.trim();
-
-          if (hasChange && improvedContent.trim()) {
+          if (
+            improvedContent.trim() &&
+            improvedContent.trim() !== section.content.trim()
+          ) {
             console.log(`Section ${idx + 1}/${sections.length}: improved`);
             return { original: section.content, improved: improvedContent };
           }
@@ -169,52 +120,102 @@ export async function reviewAndImproveArticle(
     );
 
     for (const result of results) {
-      if (result) {
-        replacements.push(result);
-        improvedSections++;
-      }
+      if (result) replacements.push(result);
     }
   }
 
-  console.log(
-    `Complete: ${improvedSections}/${sections.length} sections improved`,
+  const improvedWikitext = replacements.reduce(
+    (text, { original, improved }) => safeReplace(text, original, improved),
+    wikitext,
   );
 
-  if (improvedSections === 0) {
-    return {
-      hasImprovements: false,
-      comment: 'No improvements needed',
-      oldRevisionId: 0,
-      newRevisionId: 0,
-    };
+  console.log(
+    `Complete: ${replacements.length}/${sections.length} sections improved`,
+  );
+  return { improvedWikitext, improvedSections: replacements.length };
+}
+
+function hasRealContent(wikitext: string): boolean {
+  const stripped = wikitext
+    .replaceAll(/\{\{DISPLAYTITLE:[^}]*\}\}/gi, '')
+    .replaceAll(/\{\{[^}]*\}\}/g, '')
+    .trim();
+  return stripped.length > 0;
+}
+export async function reviewAndImproveArticle(
+  articleId: string,
+  language: string,
+  config: LLMConfig,
+  miraBotId: string,
+  customInstructions?: string,
+): Promise<ReviewResult> {
+  const mediawiki = new MediawikiClient(language, wikipediaApi);
+  const [articleData, article] = await Promise.all([
+    mediawiki.getArticleForAIReview(articleId),
+    getArticle(articleId),
+  ]);
+
+  const wikitext = articleData.wikitext ?? '';
+  const isEmpty = !hasRealContent(wikitext);
+
+  let improvedWikitext: string;
+  let improvedSections: number;
+
+  if (isEmpty) {
+    if (!customInstructions?.trim())
+      return noImprovement(
+        'Article has no content. Add a custom prompt to generate content.',
+      );
+    if (!article.title?.trim())
+      return noImprovement('Article has no title — cannot generate content');
+
+    const generated = await generateEmptyArticleContent(
+      article,
+      config,
+      customInstructions,
+      wikitext,
+    );
+    if (!generated)
+      return noImprovement('Generated content was too short or empty');
+
+    improvedWikitext = generated;
+    improvedSections = 1;
+  } else {
+    console.log(`Article: ${article.title}, ${wikitext.length} chars`);
+    const systemPrompt = buildSystemPrompt(
+      article.title,
+      article.description,
+      config.prompt,
+      customInstructions,
+    );
+    ({ improvedWikitext, improvedSections } = await buildImprovedWikitext(
+      wikitext,
+      config,
+      systemPrompt,
+    ));
   }
 
-  for (const replacement of replacements) {
-    improvedWikitext = safeReplace(
-      improvedWikitext,
-      replacement.original,
-      replacement.improved,
+  if (improvedSections === 0 || improvedWikitext.trim() === wikitext.trim()) {
+    return noImprovement(
+      improvedSections === 0 ? 'No improvements needed' : 'No changes detected',
     );
   }
 
-  if (improvedWikitext.trim() === wikitext?.trim()) {
-    return {
-      hasImprovements: false,
-      comment: 'No changes detected',
-      oldRevisionId: 0,
-      newRevisionId: 0,
-    };
-  }
-
+  const summaryPhrase = await generateRevisionSummary(
+    config.apiKey,
+    config.model,
+    wikitext,
+    improvedWikitext,
+  );
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
     improvedWikitext,
-    `Mira: reviewed and improved ${improvedSections} section(s)`,
+    `Mira: ${summaryPhrase}`,
   );
 
   return {
     hasImprovements: true,
-    comment: `Improved ${improvedSections} section(s)`,
+    comment: 'Changes applied',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

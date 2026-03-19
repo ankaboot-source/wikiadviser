@@ -27,7 +27,7 @@ function combineSections(sections: ArticleSection[]): ArticleSection[] {
     } else {
       combined.push({
         index: combined.length,
-        content: currentBatch.map((s) => s.content).join('\n\n'),
+        content: currentBatch.map((s) => s.content).join('\n'),
         sectionTitle: currentBatch[0].sectionTitle,
       });
       currentBatch = [section];
@@ -38,7 +38,7 @@ function combineSections(sections: ArticleSection[]): ArticleSection[] {
   if (currentBatch.length > 0) {
     combined.push({
       index: combined.length,
-      content: currentBatch.map((s) => s.content).join('\n\n'),
+      content: currentBatch.map((s) => s.content).join('\n'),
       sectionTitle: currentBatch[0].sectionTitle,
     });
   }
@@ -110,12 +110,12 @@ export function splitArticleIntoSections(wikitext: string): ArticleSection[] {
 
   if (currentSection.length > 0) {
     const content = currentSection.join('\n');
-    const split = splitLargeSection(content, undefined);
+    const split = splitLargeSection(content);
     sections.push(...split);
   }
 
   if (sections.length === 0) {
-    const split = splitLargeSection(wikitext, undefined);
+    const split = splitLargeSection(wikitext);
     sections.push(...split);
   }
 

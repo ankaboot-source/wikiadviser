@@ -1,3 +1,7 @@
+export function extractDisplayTitle(wikitext: string): string {
+  return wikitext.match(/\{\{DISPLAYTITLE:[^}]*\}\}/i)?.[0] ?? '';
+}
+
 export function buildSystemPrompt(
   title: string,
   description: string,
@@ -21,9 +25,10 @@ export function buildSystemPrompt(
 
   systemPrompt += `\n\nYou will receive sections from this article one by one.
 For each section:
-- Return ONLY the improved section text
-- Do NOT include any preamble, explanations, or metadata
-- Do NOT repeat the title, description, or section number
+- CRITICAL: Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}, etc.), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- Improve only the prose content between structural lines
+- Return ONLY the improved section text, without any preamble or explanation
+- Do NOT repeat the article title, description, or section number
 - If no improvements needed, return the original text exactly as provided`;
 
   return systemPrompt;
@@ -121,11 +126,20 @@ Requirements:
 Return ONLY the improved text, without any preamble or explanation.`;
 }
 
-export function cleanAIResponse(response: string, originalContent: string): string {
+export function cleanAIResponse(
+  response: string,
+  originalContent: string,
+): string {
   const cleaned = response.trim();
   if (cleaned.length < originalContent.length * 0.2) {
     return originalContent;
   }
+
+  const displayTitle = extractDisplayTitle(originalContent);
+  if (displayTitle && !cleaned.includes(displayTitle)) {
+    return `${displayTitle}\n${cleaned}`;
+  }
+
   return cleaned;
 }
 

@@ -32,10 +32,6 @@ export default function buildAvatar(
   }
 
   const hash = encodeMD5(name);
-  const { color, fontColor } = new ColorsGenerator(
-    hash,
-    backgroundColors,
-  ).generateColors();
-
-  return `https://avatar.iran.liara.run/username?username=${encodeURIComponent(name)}&background=${color}&color=${fontColor}`;
+  const index = (Number.parseInt(hash.substring(0, 8), 16) % ANON_COUNT) + 1;
+  return getStorageUrl(`${ANON_FOLDER}/AV${index}.png`);
 }

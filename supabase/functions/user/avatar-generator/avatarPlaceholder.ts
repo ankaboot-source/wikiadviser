@@ -1,28 +1,18 @@
-import { encodeMD5 } from "../utils.ts";
-import ColorsGenerator from "./colorsGenerator.ts";
+import { encodeMD5 } from '../utils.ts';
+import ColorsGenerator from './colorsGenerator.ts';
+import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
 
-/**
- * Builds a UI avatar URL based on the provided name and colors.
- *
- * @param name - The name used to generate the avatar.
- * @param backgroundColor - The background color of the avatar.
- * @param fontColor - The font color of the avatar.
- * @param charactersLength [charactersLength=1] - The number of characters to display in the avatar.
- * @returns the URL of the generated UI avatar.
- */
-function generateAvatar(
-  name: string,
-  backgroundColor: string,
-  fontColor: string,
-  charactersLength = 1,
-) {
-  return `https://avatar.iran.liara.run/username?username=${name}&background=${backgroundColor}&color=${fontColor}&length=${charactersLength}`;
-}
+const AVATARS_BUCKET = 'logo';
+const ANON_FOLDER = 'images/avatars';
+const ANON_COUNT = 100;
 
-function generateAnonymousAvatar() {
-  return `https://avatar.iran.liara.run/public?username=${
-    String(Math.floor(Math.random() * 10000)).padStart(4, "0")
-  }`;
+const supabaseAdmin = createSupabaseAdmin();
+
+function getStorageUrl(path: string): string {
+  const { data } = supabaseAdmin.storage
+    .from(AVATARS_BUCKET)
+    .getPublicUrl(path);
+  return data.publicUrl;
 }
 
 /**
@@ -35,15 +25,17 @@ function generateAnonymousAvatar() {
 export default function buildAvatar(
   name: string | null,
   backgroundColors: string[],
-) {
+): string {
   if (!name) {
-    return generateAnonymousAvatar();
+    const index = Math.floor(Math.random() * ANON_COUNT) + 1;
+    return getStorageUrl(`${ANON_FOLDER}/AV${index}.png`);
   }
 
+  const hash = encodeMD5(name);
   const { color, fontColor } = new ColorsGenerator(
-    encodeMD5(name),
+    hash,
     backgroundColors,
   ).generateColors();
 
-  return generateAvatar(name, color, fontColor);
+  return `https://avatar.iran.liara.run/username?username=${encodeURIComponent(name)}&background=${color}&color=${fontColor}`;
 }

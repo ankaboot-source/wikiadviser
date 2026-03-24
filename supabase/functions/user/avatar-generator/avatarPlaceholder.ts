@@ -2,8 +2,8 @@ import { encodeMD5 } from '../utils.ts';
 import ColorsGenerator from './colorsGenerator.ts';
 import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
 
-const AVATARS_BUCKET = 'logo';
-const ANON_FOLDER = 'images/avatars';
+const AVATARS_BUCKET = 'avatars';
+const ANON_FOLDER = 'images';
 const ANON_COUNT = 100;
 
 const supabaseAdmin = createSupabaseAdmin();

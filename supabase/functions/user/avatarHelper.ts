@@ -14,23 +14,25 @@ export async function setDefaultAvatar(c: Context) {
     });
   }
   const profile = (
-    await supabaseClient.from("profiles_view").select("*").eq("id", user.id)
+    await supabaseClient
+      .from("profiles_view")
+      .select("*")
+      .eq("id", user.id)
       .single()
   ).data;
 
   const backgrounds = ENV.WIKIADVISER_BACKGROUND_COLORS;
   const isAnon = !profile.email;
-  const avatar = buildAvatar(
+
+  const avatarUrl = await buildAvatar(
+    profile.id,
     isAnon ? null : profile.display_name || profile.email,
     backgrounds,
   );
 
   const { error: updateError } = await supabaseClient
     .from("profiles")
-    .update({
-      avatar_url: avatar,
-      default_avatar: true,
-    })
+    .update({ avatar_url: avatarUrl, default_avatar: true })
     .eq("id", profile.id);
 
   if (updateError) {

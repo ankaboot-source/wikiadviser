@@ -387,7 +387,6 @@ function showNotification(type: 'success' | 'info' | 'error', message: string) {
 }
 
 async function triggerReview() {
-
   loading.value = true;
   reviews.value = [];
 

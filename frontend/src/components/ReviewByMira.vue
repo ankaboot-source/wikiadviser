@@ -195,7 +195,7 @@ async function loadPromptsFromDB() {
         : {};
     const customPrompts: StoredPrompt[] =
       (config.prompts as StoredPrompt[]) || [];
-    const customPromptObjects = customPrompts.map((cp) => ({
+    const customPromptObjects: Prompt[] = customPrompts.map((cp) => ({
       id: cp.id,
       name: cp.name,
       prompt: cp.prompt,
@@ -349,7 +349,6 @@ async function deletePrompt() {
       icon: 'check',
       color: 'positive',
     });
-
     promptDialog.value = false;
     editingPrompt.value = null;
   } catch (error) {
@@ -388,24 +387,23 @@ function showNotification(type: 'success' | 'info' | 'error', message: string) {
 }
 
 async function triggerReview() {
-  miraStore.$reset();
+
   loading.value = true;
   reviews.value = [];
 
-  try {
-    const hasRevisionImprovements = props.revisionImprovements.length > 0;
+  const snapshotImprovements = [...props.revisionImprovements];
+  const hasRevisionImprovements = snapshotImprovements.length > 0;
 
+  try {
     const requestBody: Record<string, unknown> = {
       article_id: props.article.article_id,
     };
 
     if (hasRevisionImprovements) {
-      requestBody.revision_improvements = props.revisionImprovements.map(
-        (imp) => ({
-          change_id: imp.change_id,
-          prompt: imp.prompt,
-        }),
-      );
+      requestBody.revision_improvements = snapshotImprovements.map((imp) => ({
+        change_id: imp.change_id,
+        prompt: imp.prompt,
+      }));
     } else {
       requestBody.language = props.article.language;
       requestBody.prompt = selectedPrompt.value?.isCustom
@@ -428,6 +426,7 @@ async function triggerReview() {
     }
 
     if (data?.change_id) {
+      miraStore.$reset();
       emit('review-complete', { changeId: data.change_id, success: true });
       showNotification(
         'success',
@@ -439,6 +438,7 @@ async function triggerReview() {
       data?.old_revision &&
       data?.new_revision
     ) {
+      miraStore.$reset();
       miraStore.completeReview({
         miraBotId: data.mira_bot_id,
         oldRevid: data.old_revision,
@@ -453,6 +453,7 @@ async function triggerReview() {
     if (!error) {
       showNotification('error', 'An unexpected error occurred during review');
     }
+    miraStore.$reset();
   } finally {
     loading.value = false;
     miraStore.clearPendingPrompts();

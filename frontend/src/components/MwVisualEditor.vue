@@ -69,10 +69,42 @@ const iframeRef = ref();
 const isProcessingChanges = ref(false);
 
 const renderIframe = ref(true);
+const pendingDiffAfterLoad = ref(false);
 async function reloadIframe() {
   renderIframe.value = false;
   await nextTick();
   renderIframe.value = true;
+}
+function gotoDiffLink() {
+  activeViewStore.modeToggle = 'edit';
+
+  if (!iframeRef.value?.contentWindow) {
+    console.warn(
+      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready',
+    );
+    return;
+  }
+
+  iframeRef.value.contentWindow.postMessage(
+    {
+      type: 'wikiadviser',
+      data: 'diff',
+      articleId: props.article.article_id,
+    },
+    '*',
+  );
+}
+async function onIframeLoad() {
+  if (pendingDiffAfterLoad.value) {
+    pendingDiffAfterLoad.value = false;
+    await new Promise<void>((r) => setTimeout(r, 300));
+    gotoDiffLink();
+    return;
+  }
+
+  if (!isProcessingChanges.value) {
+    loading.value.value = false;
+  }
 }
 
 async function handleDiffChange(data: {
@@ -105,20 +137,6 @@ async function handleDiffChange(data: {
   isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
   reloadIframe();
-}
-
-function gotoDiffLink() {
-  activeViewStore.modeToggle = 'edit';
-
-  // tell mediawiki to goto difflink (which automatically initiates diff-change)
-  iframeRef.value.contentWindow.postMessage(
-    {
-      type: 'wikiadviser',
-      data: 'diff',
-      articleId: props.article.article_id,
-    },
-    '*',
-  );
 }
 
 async function handleIgnoredInitialEdit() {
@@ -162,20 +180,19 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
-    if (pending) {
-      isProcessingChanges.value = true;
-      loading.value = { value: true, message: loaderPresets.changes.message };
-      activeViewStore.modeToggle = 'edit';
+    if (!pending) return;
+
+    isProcessingChanges.value = true;
+    loading.value = { value: true, message: loaderPresets.changes.message };
+
+    if (activeViewStore.isEditing && iframeRef.value?.contentWindow) {
       nextTick().then(() => gotoDiffLink());
+    } else {
+      pendingDiffAfterLoad.value = true;
+      activeViewStore.modeToggle = 'edit';
     }
   },
 );
-
-async function onIframeLoad() {
-  if (!isProcessingChanges.value) {
-    loading.value.value = false;
-  }
-}
 
 onMounted(() => {
   window.addEventListener('message', EventHandler);

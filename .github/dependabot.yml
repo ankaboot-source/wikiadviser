@@ -9,10 +9,14 @@ updates:
     directory: "/" # root package.json
     schedule:
       interval: "weekly"
-    exclude-paths:
-      - "docker/resources/extensions/MyVisualEditor/**"
 
   - package-ecosystem: "npm"
     directory: "/frontend" # frontend/package.json
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: "npm"
+    directory: "/docker/resources/extensions/MyVisualEditor"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0

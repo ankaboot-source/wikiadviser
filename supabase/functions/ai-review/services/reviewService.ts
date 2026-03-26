@@ -19,7 +19,7 @@ export interface ReviewResult {
   newRevisionId: number;
 }
 
-const BATCH_SIZE = 3;
+const BATCH_SIZE = 5;
 
 const noImprovement = (comment: string): ReviewResult => ({
   hasImprovements: false,

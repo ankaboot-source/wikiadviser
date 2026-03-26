@@ -1,5 +1,4 @@
 -- Reset avatar_url only for users whose avatar is from avatar.iran.liara.run
--- (the old broken provider). Google, ui-avatars, and storage URLs are kept as-is.
 -- On next login, App.vue detects avatar_url = NULL and regenerates via POST /user/avatar.
 UPDATE public.profiles
 SET

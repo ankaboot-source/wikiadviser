@@ -149,7 +149,7 @@ async function improveExistingArticleParagraphs(
 
     if (usedIndices.has(targetIndex)) {
       console.warn(
-        `[CommentReview] Skipping change ${change_id.substring(0, 8)}: paragraph ${targetIndex} already modified by a previous change`,
+        `[CommentReview] Skipping change ${change_id.substring(0, 8)}: paragraph ${targetIndex} already claimed`,
       );
       continue;
     }
@@ -166,9 +166,8 @@ async function improveExistingArticleParagraphs(
     usedIndices.add(targetIndex);
     resolved.push({ improvement, targetIndex });
     console.info(
-      `[CommentReview] Change ${change_id.substring(0, 8)} matched paragraph ${targetIndex}/${paragraphs.length - 1}`,
+      `[CommentReview] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}/${paragraphs.length - 1}`,
     );
-    
   }
 
   const results = await Promise.all(
@@ -180,9 +179,10 @@ async function improveExistingArticleParagraphs(
         config,
       )
         .then((result) => ({ result, targetIndex }))
-        .catch(() => {
+        .catch((err) => {
           console.error(
-            `[CommentReview] Unhandled error for change ${improvement.change_id}`,
+            `[CommentReview] Unhandled error for change ${improvement.change_id}:`,
+            err,
           );
           return null;
         }),
@@ -237,7 +237,7 @@ export async function improveRevisionChanges(
   articleId: string,
   improvements: CommentImprovement[],
   config: LLMConfig,
-  _miraBotId: string,
+  miraBotId: string,
 ): Promise<CommentReviewResult> {
   const article = await getArticle(articleId);
   if (!article) {
@@ -253,7 +253,7 @@ export async function improveRevisionChanges(
   if (validImprovements.length === 0) {
     return {
       hasImprovements: false,
-      comment: 'No improvements with content to process',
+      comment: 'No improvements with content to process.',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -288,7 +288,7 @@ export async function improveRevisionChanges(
   if (totalImproved === 0) {
     return {
       hasImprovements: false,
-      comment: 'No improvements made',
+      comment: 'No improvements were applied.',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -306,9 +306,13 @@ export async function improveRevisionChanges(
     `Mira: ${summaryPhrase}`,
   );
 
+  console.info(
+    `[CommentReview] Edit complete — old rev: ${editResult.oldrevid}, new rev: ${editResult.newrevid}, bot: ${miraBotId.substring(0, 8)}`,
+  );
+
   return {
     hasImprovements: true,
-    comment: 'Changes applied',
+    comment: 'Changes applied successfully.',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

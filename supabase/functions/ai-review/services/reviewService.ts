@@ -19,7 +19,7 @@ export interface ReviewResult {
   newRevisionId: number;
 }
 
-const BATCH_SIZE = 3;
+const BATCH_SIZE = 5;
 
 const noImprovement = (comment: string): ReviewResult => ({
   hasImprovements: false,
@@ -87,7 +87,7 @@ async function buildImprovedWikitext(
       batch.map(async (section, batchIdx) => {
         const idx = i + batchIdx;
         console.log(
-          `Processing ${idx + 1}/${sections.length}: ${section.content.length} chars`,
+          `Processing section ${idx + 1}/${sections.length}: ${section.content.length} chars`,
         );
 
         try {
@@ -138,7 +138,6 @@ async function buildImprovedWikitext(
 function hasRealContent(wikitext: string): boolean {
   const stripped = wikitext
     .replaceAll(/\{\{DISPLAYTITLE:[^}]*\}\}/gi, '')
-    .replaceAll(/\{\{[^}]*\}\}/g, '')
     .trim();
   return stripped.length > 0;
 }
@@ -162,12 +161,14 @@ export async function reviewAndImproveArticle(
   let improvedSections: number;
 
   if (isEmpty) {
-    if (!customInstructions?.trim())
+    if (!customInstructions?.trim()) {
       return noImprovement(
         'Article has no content. Add a custom prompt to generate content.',
       );
-    if (!article.title?.trim())
-      return noImprovement('Article has no title — cannot generate content');
+    }
+    if (!article.title?.trim()) {
+      return noImprovement('Article has no title — cannot generate content.');
+    }
 
     const generated = await generateEmptyArticleContent(
       article,
@@ -175,13 +176,16 @@ export async function reviewAndImproveArticle(
       customInstructions,
       wikitext,
     );
-    if (!generated)
-      return noImprovement('Generated content was too short or empty');
+    if (!generated) {
+      return noImprovement('Generated content was too short or empty.');
+    }
 
     improvedWikitext = generated;
     improvedSections = 1;
   } else {
-    console.log(`Article: ${article.title}, ${wikitext.length} chars`);
+    console.log(
+      `Article: "${article.title}", wikitext length: ${wikitext.length} chars`,
+    );
     const systemPrompt = buildSystemPrompt(
       article.title,
       article.description,
@@ -197,7 +201,9 @@ export async function reviewAndImproveArticle(
 
   if (improvedSections === 0 || improvedWikitext.trim() === wikitext.trim()) {
     return noImprovement(
-      improvedSections === 0 ? 'No improvements needed' : 'No changes detected',
+      improvedSections === 0
+        ? 'No improvements needed.'
+        : 'No changes detected.',
     );
   }
 
@@ -215,7 +221,7 @@ export async function reviewAndImproveArticle(
 
   return {
     hasImprovements: true,
-    comment: 'Changes applied',
+    comment: 'Changes applied successfully.',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
   };

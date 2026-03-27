@@ -59,6 +59,8 @@ app.post('/', async (c) => {
       Array.isArray(revision_improvements) &&
       revision_improvements.length > 0
     ) {
+      await addMiraBotPermission(article_id);
+
       const config = await getLLMConfig(supabase, user.id);
 
       if (!config) {
@@ -204,7 +206,7 @@ app.post('/', async (c) => {
       config_source: config.hasUserConfig ? 'user' : 'environment',
     });
   } catch (error) {
-    console.error('AI review failed');
+    console.error('AI review failed:', error);
     return c.json(
       {
         error: 'Failed to process review',

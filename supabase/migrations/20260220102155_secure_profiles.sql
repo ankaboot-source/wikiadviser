@@ -1,7 +1,10 @@
 DROP POLICY IF EXISTS "Public profiles are viewable by everyone."
-ON public.profiles;
+ON public.profiles; 
 
 -- RLS: View
+DROP POLICY IF EXISTS "Enable users to view their own data only"
+ON public.profiles; 
+
 create policy "Enable users to view their own data only"
 on "public"."profiles"
 for SELECT
@@ -9,7 +12,7 @@ to authenticated
 using ( auth.uid() = id );
 
 -- RLS: Update
-DROP POLICY "Users can update own profile."
+DROP POLICY IF EXISTS "Users can update own profile."
 ON "public"."profiles";
 
 CREATE POLICY "Users can update own profile."

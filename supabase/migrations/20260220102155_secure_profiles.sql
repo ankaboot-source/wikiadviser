@@ -1,5 +1,5 @@
-drop policy "Public profiles are viewable by everyone."
-on "public"."profiles";
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone."
+ON public.profiles;
 
 -- RLS: View
 create policy "Enable users to view their own data only"

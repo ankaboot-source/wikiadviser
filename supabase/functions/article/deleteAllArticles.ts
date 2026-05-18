@@ -10,12 +10,10 @@ import { deleteArticleByArticleId } from "./deleteArticle.ts";
  */
 export async function deleteAllArticles(context: Context) {
   const authHeader = context.req.header("Authorization");
-  const apiKey = context.req.header("apikey");
 
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  const isServiceRole = apiKey === serviceRoleKey ||
-    authHeader === `Bearer ${serviceRoleKey}`;
+  const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
 
   console.log("Internal request?:", isServiceRole);
 

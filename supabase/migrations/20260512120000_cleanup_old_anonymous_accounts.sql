@@ -94,7 +94,6 @@ BEGIN
 			headers := jsonb_build_object(
 				'Content-Type', 'application/json',
 				'Authorization', 'Bearer ' || service_role_key,
-				'apikey', service_role_key,
 				'x-user-id', body->>'user_id' -- pg_net doesnt currently support body in DELETE requests, so we pass user_id as a header
 			)
 		);
@@ -104,7 +103,6 @@ BEGIN
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
                 'Authorization', 'Bearer ' || service_role_key,
-                'apikey', service_role_key
             ),
             body := body
         );

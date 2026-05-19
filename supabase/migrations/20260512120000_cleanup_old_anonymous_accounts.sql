@@ -163,6 +163,8 @@ BEGIN
 END;
 $$;
 
+create extension if not exists pg_cron;
+
 SELECT cron.schedule(
     'cleanup-inactive-anon-users-weekly',
     '0 3 * * 0',  -- every Sunday at 03:00

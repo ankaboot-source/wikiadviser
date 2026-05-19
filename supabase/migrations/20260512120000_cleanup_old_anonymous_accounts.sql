@@ -102,7 +102,7 @@ BEGIN
             url := project_url || '/functions/v1/' || edge_function_name,
             headers := jsonb_build_object(
                 'Content-Type', 'application/json',
-                'Authorization', 'Bearer ' || service_role_key,
+                'Authorization', 'Bearer ' || service_role_key
             ),
             body := body
         );

@@ -161,7 +161,7 @@
       </div>
 
       <!-- Profile Picture Section -->
-      <div class="q-my-lg">
+      <div v-if="!isAnon" class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">Profile Picture</h2>
         <div>
           <img

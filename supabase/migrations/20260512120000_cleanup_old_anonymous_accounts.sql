@@ -55,6 +55,8 @@ BEGIN
   DELETE FROM profiles
   WHERE id = target_user_id;
 
+  DELETE FROM auth.users
+  WHERE id = target_user_id;
 END;
 $$;
 

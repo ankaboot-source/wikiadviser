@@ -1,52 +1,53 @@
+import { LLMConfig } from '../utils/types.ts';
+import { OpenAICompatibleProvider } from './providers/openai-compatible.ts';
+import { AnthropicProvider } from './providers/anthropic.ts';
+import { GeminiProvider } from './providers/gemini.ts';
+import { AIProvider } from './providers/types.ts';
+
+const PROVIDER_ENDPOINTS: Record<string, string> = {
+  openrouter: 'https://openrouter.ai/api/v1',
+  openai: 'https://api.openai.com/v1',
+};
+
+function getProvider(config: LLMConfig): AIProvider {
+  switch (config.provider) {
+    case 'openrouter':
+      return new OpenAICompatibleProvider(PROVIDER_ENDPOINTS.openrouter);
+    case 'openai':
+      return new OpenAICompatibleProvider(PROVIDER_ENDPOINTS.openai);
+    case 'anthropic':
+      return new AnthropicProvider();
+    case 'gemini':
+      return new GeminiProvider();
+    case 'custom':
+      if (!config.endpoint) throw new Error('Custom provider requires an endpoint URL');
+      return new OpenAICompatibleProvider(config.endpoint);
+    default:
+      console.warn(`Unknown provider "${config.provider}", falling back to OpenRouter`);
+      return new OpenAICompatibleProvider(PROVIDER_ENDPOINTS.openrouter);
+  }
+}
+
+const MAX_RETRIES = 3;
+
 export async function reviewArticleSection(
-  apiKey: string,
-  model: string,
+  config: LLMConfig,
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
-  const MAX_RETRIES = 3;
   let lastError: Error = new Error('Unknown error');
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`AI request attempt ${attempt}/${MAX_RETRIES}...`);
     try {
-      const response = await fetch(
-        'https://openrouter.ai/api/v1/chat/completions',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
-            ],
-            temperature: 0.2,
-          }),
-        },
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('AI API request failed', {
-          status: response.status,
-          error: errorText,
-        });
-        throw new Error(`AI API error ${response.status}: ${errorText}`);
-      }
-
-      const data = await response.json();
-      const content = data.choices?.[0]?.message?.content || '';
-
-      if (!content) {
-        console.error('Empty response from AI');
-        throw new Error('Empty response from AI');
-      }
-
-      return content.trim();
+      const provider = getProvider(config);
+      return await provider.chatCompletion({
+        apiKey: config.apiKey,
+        model: config.model,
+        systemPrompt,
+        userPrompt,
+        temperature: 0.2,
+      });
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       console.warn(
@@ -61,47 +62,25 @@ export async function reviewArticleSection(
 }
 
 export async function generateRevisionSummary(
-  apiKey: string,
-  model: string,
+  config: LLMConfig,
   oldText: string,
   newText: string,
 ): Promise<string> {
   try {
-    const response = await fetch(
-      'https://openrouter.ai/api/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: 'system',
-              content:
-                'You summarise text edits in 3-7 words as a lowercase verb phrase. ' +
-                'Examples: "translated introduction", "improved grammar and clarity", ' +
-                '"expanded lead section", "fixed wikitext formatting". ' +
-                'Respond with ONLY the phrase, no punctuation.',
-            },
-            {
-              role: 'user',
-              content: `BEFORE:\n${oldText.slice(0, 800)}\n\nAFTER:\n${newText.slice(0, 800)}`,
-            },
-          ],
-          max_tokens: 20,
-          temperature: 0,
-        }),
-      },
-    );
-
-    if (!response.ok) return 'reviewed article';
-
-    const data = await response.json();
-    const phrase = data.choices?.[0]?.message?.content?.trim().toLowerCase();
-    return phrase || 'reviewed article';
+    const provider = getProvider(config);
+    const summary = await provider.chatCompletion({
+      apiKey: config.apiKey,
+      model: config.model,
+      systemPrompt:
+        'You summarise text edits in 3-7 words as a lowercase verb phrase. ' +
+        'Examples: "translated introduction", "improved grammar and clarity", ' +
+        '"expanded lead section", "fixed wikitext formatting". ' +
+        'Respond with ONLY the phrase, no punctuation.',
+      userPrompt: `BEFORE:\n${oldText.slice(0, 800)}\n\nAFTER:\n${newText.slice(0, 800)}`,
+      temperature: 0,
+      maxTokens: 20,
+    });
+    return summary.toLowerCase();
   } catch {
     return 'reviewed article';
   }

@@ -37,6 +37,8 @@ export async function getLLMConfig(
 
     let apiKey: string | null = null;
     let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-4o-mini';
+    let provider: string = Deno.env.get('AI_PROVIDER') ?? 'openrouter';
+    let endpoint: string | null = null;
     let hasUserConfig = false;
 
     if (!profileError && profileData?.llm_reviewer_config) {
@@ -57,6 +59,14 @@ export async function getLLMConfig(
       if (config.model) {
         model = config.model;
       }
+
+      if (config.provider) {
+        provider = config.provider;
+      }
+
+      if (config.endpoint) {
+        endpoint = config.endpoint;
+      }
     }
     if (!apiKey) {
       apiKey = Deno.env.get('OPENROUTER_API_KEY') ?? null;
@@ -75,6 +85,8 @@ export async function getLLMConfig(
       prompt: finalPrompt,
       model,
       hasUserConfig,
+      provider,
+      endpoint,
     };
   } catch (error) {
     console.error('Error getting LLM config:', error);

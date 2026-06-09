@@ -23,6 +23,7 @@ services:
         POSTHOG_API_HOST: ${POSTHOG_API_HOST}
         X_API_KEY: ${X_API_KEY}
         USE_MIRA: ${USE_MIRA}
+        USE_CHANGE_DESCRIPTION: ${USE_CHANGE_DESCRIPTION}
 
     ports:
       - 443:443
@@ -38,6 +39,7 @@ services:
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
       - X_API_KEY=${X_API_KEY}
       - USE_MIRA=${USE_MIRA}
+      - USE_CHANGE_DESCRIPTION=${USE_CHANGE_DESCRIPTION}
 
 volumes:
   caddy-data:

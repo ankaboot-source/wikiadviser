@@ -1,7 +1,11 @@
 import { AIProvider, ChatCompletionParams } from './types.ts';
 
 export class OpenAICompatibleProvider implements AIProvider {
-  constructor(private baseUrl: string) {}
+  private baseUrl: string;
+
+  constructor(baseUrl: string) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '');
+  }
 
   async chatCompletion(params: ChatCompletionParams): Promise<string> {
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
@@ -23,6 +27,10 @@ export class OpenAICompatibleProvider implements AIProvider {
 
     if (!response.ok) {
       const errorText = await response.text();
+      console.error('AI API request failed', {
+        status: response.status,
+        error: errorText,
+      });
       throw new Error(`AI API error ${response.status}: ${errorText}`);
     }
 

@@ -21,12 +21,14 @@ export interface AIResponse {
   proposed_change: string;
 }
 
+export type AIProviderType = 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom';
+
 export interface LLMConfig {
   apiKey: string;
   prompt: string;
   model: string;
   hasUserConfig: boolean;
-  provider: string;
+  provider: AIProviderType;
   endpoint?: string | null;
 }
 

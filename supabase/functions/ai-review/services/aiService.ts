@@ -35,12 +35,12 @@ export async function reviewArticleSection(
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
+  const provider = getProvider(config);
   let lastError: Error = new Error('Unknown error');
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`AI request attempt ${attempt}/${MAX_RETRIES}...`);
     try {
-      const provider = getProvider(config);
       return await provider.chatCompletion({
         apiKey: config.apiKey,
         model: config.model,

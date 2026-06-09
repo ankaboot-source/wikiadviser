@@ -1,6 +1,6 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
 import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
-import { LLMConfig } from '../utils/types.ts';
+import { LLMConfig, AIProviderType } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
 export async function getMiraBotId(): Promise<string | null> {
@@ -37,7 +37,7 @@ export async function getLLMConfig(
 
     let apiKey: string | null = null;
     let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-4o-mini';
-    let provider: string = Deno.env.get('AI_PROVIDER') ?? 'openrouter';
+    let provider: AIProviderType = (Deno.env.get('AI_PROVIDER') as AIProviderType) ?? 'openrouter';
     let endpoint: string | null = null;
     let hasUserConfig = false;
 
@@ -61,7 +61,7 @@ export async function getLLMConfig(
       }
 
       if (config.provider) {
-        provider = config.provider;
+        provider = config.provider as AIProviderType;
       }
 
       if (config.endpoint) {

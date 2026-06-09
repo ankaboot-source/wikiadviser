@@ -39,6 +39,7 @@ const envSchema = z.object({
   USE_CHANGE_DESCRIPTION: z.boolean().default(true),
   AI_MODEL: z.string().default('google/gemini-2.5-flash-lite'),
   AI_BOT_EMAIL: z.string().default('mira@wikiadviser.io'),
+  AI_PROVIDER: z.string().default('openrouter'),
 });
 
 const envServer = envSchema.safeParse({
@@ -58,6 +59,7 @@ const envServer = envSchema.safeParse({
       : true,
   AI_MODEL: process.env.AI_MODEL,
   AI_BOT_EMAIL: process.env.AI_BOT_EMAIL,
+  AI_PROVIDER: process.env.AI_PROVIDER,
 });
 
 if (!envServer.success) {

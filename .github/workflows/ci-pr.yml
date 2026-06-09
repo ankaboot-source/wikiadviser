@@ -47,8 +47,8 @@ jobs:
           node-version: "20.x"
           cache: "pnpm"
       - name: Install dependencies
-        run: cd frontend && pnpm install --frozen-lockfile
+        run: pnpm install --prefix frontend --frozen-lockfile
       - name: Check linting
-        run: cd frontend && pnpm run lint
+        run: pnpm run --prefix frontend lint
       - name: Check formatting
-        run: cd frontend && pnpm run prettier
+        run: pnpm run --prefix frontend prettier

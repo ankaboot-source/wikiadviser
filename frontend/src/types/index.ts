@@ -82,6 +82,10 @@ export interface Profile {
     prompt?: string;
     model?: string;
     has_api_key?: boolean;
+    provider?: string;
+    endpoint?: string | null;
+    prompts?: Array<{ id: string; name: string; prompt: string }>;
+    selected_prompt_id?: string | null;
   };
 }
 

@@ -95,7 +95,9 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section v-if="USE_CHANGE_DESCRIPTION && (description || editorPermission)">
+    <q-item-section
+      v-if="USE_CHANGE_DESCRIPTION && (description || editorPermission)"
+    >
       <div class="q-pa-md">
         <div class="row">
           <q-input

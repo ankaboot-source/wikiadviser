@@ -52,7 +52,10 @@ const envServer = envSchema.safeParse({
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
   USE_MIRA: process.env.USE_MIRA?.toLocaleLowerCase() === 'true' ? true : false,
-  USE_CHANGE_DESCRIPTION: process.env.USE_CHANGE_DESCRIPTION?.toLocaleLowerCase() === 'false' ? false : true,
+  USE_CHANGE_DESCRIPTION:
+    process.env.USE_CHANGE_DESCRIPTION?.toLocaleLowerCase() === 'false'
+      ? false
+      : true,
   AI_MODEL: process.env.AI_MODEL,
   AI_BOT_EMAIL: process.env.AI_BOT_EMAIL,
 });

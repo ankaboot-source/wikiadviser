@@ -26,6 +26,8 @@ export interface LLMConfig {
   prompt: string;
   model: string;
   hasUserConfig: boolean;
+  provider: string;
+  endpoint?: string | null;
 }
 
 export interface BatchResult {

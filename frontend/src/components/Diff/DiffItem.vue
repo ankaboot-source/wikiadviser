@@ -95,7 +95,7 @@
     </q-item-section>
     <q-separator />
 
-    <q-item-section v-if="description || editorPermission">
+    <q-item-section v-if="USE_CHANGE_DESCRIPTION && (description || editorPermission)">
       <div class="q-pa-md">
         <div class="row">
           <q-input
@@ -291,11 +291,13 @@ import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
+import ENV from 'src/schema/env.schema';
 
 const $q = useQuasar();
 const userStore = useUserStore();
 const store = useSelectedChangeStore();
 const miraStore = useMiraReviewStore();
+const USE_CHANGE_DESCRIPTION = ENV.USE_CHANGE_DESCRIPTION;
 const props = defineProps<{
   item: ChangeItem;
   role: Enums<'role'>;
@@ -353,6 +355,10 @@ const userId = computed(() => (userStore.user as Profile).id);
 
 const previewDescription = computed(() => {
   const { item } = props;
+
+  if (!USE_CHANGE_DESCRIPTION) {
+    return '';
+  }
 
   if ((item.description as string).length > 0) {
     return item.description;

@@ -36,6 +36,7 @@ const envSchema = z.object({
   POSTHOG_API_KEY: z.string().optional(),
   POSTHOG_API_HOST: z.string().optional(),
   USE_MIRA: z.boolean().default(false),
+  USE_CHANGE_DESCRIPTION: z.boolean().default(true),
   AI_MODEL: z.string().default('google/gemini-2.5-flash-lite'),
   AI_BOT_EMAIL: z.string().default('mira@wikiadviser.io'),
 });
@@ -51,6 +52,7 @@ const envServer = envSchema.safeParse({
   POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
   POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
   USE_MIRA: process.env.USE_MIRA?.toLocaleLowerCase() === 'true' ? true : false,
+  USE_CHANGE_DESCRIPTION: process.env.USE_CHANGE_DESCRIPTION?.toLocaleLowerCase() === 'false' ? false : true,
   AI_MODEL: process.env.AI_MODEL,
   AI_BOT_EMAIL: process.env.AI_BOT_EMAIL,
 });

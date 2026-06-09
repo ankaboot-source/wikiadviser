@@ -84,6 +84,7 @@ module.exports = configure(function (/* ctx */) {
         POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
         POSTHOG_API_HOST: process.env.POSTHOG_API_HOST,
         USE_MIRA: process.env.USE_MIRA,
+        USE_CHANGE_DESCRIPTION: process.env.USE_CHANGE_DESCRIPTION,
       },
       // rawDefine: {}
       // ignorePublicFolder: true,

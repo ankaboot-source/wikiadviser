@@ -315,10 +315,11 @@
           />
         </div>
 
-        <!-- Model Search -->
+        <!-- Model: dropdown for OpenRouter, free-text for others -->
         <div class="q-mb-md">
           <label class="text-subtitle2 q-mb-xs block">AI Model</label>
           <q-select
+            v-if="llmConfig.provider === 'openrouter'"
             v-model="llmConfig.model"
             :options="filteredModelOptions"
             bg-color="white"
@@ -345,6 +346,14 @@
               </q-item>
             </template>
           </q-select>
+          <q-input
+            v-else
+            v-model="llmConfig.model"
+            bg-color="white"
+            dense
+            outlined
+            placeholder="e.g. claude-sonnet-4-20250514, gemini-2.5-flash, gpt-4o"
+          />
         </div>
         <!-- Save Button -->
         <div class="flex justify-end">
@@ -752,6 +761,7 @@ const apiKeyActions = {
 };
 
 async function loadModelsFromAPI() {
+  if (llmConfig.value.provider !== 'openrouter') return;
   const userId = userStore.user?.id;
   if (!userId) return;
 
@@ -816,9 +826,12 @@ function filterModels(val: string, update: (fn: () => void) => void) {
 }
 
 function onProviderChange(newProvider: string) {
-  if (newProvider !== 'openrouter') {
+  llmConfig.value.model = '';
+  if (newProvider === 'openrouter') {
+    loadModelsFromAPI();
+  } else {
+    allModelOptions.value = [];
     filteredModelOptions.value = [];
-    llmConfig.value.model = '';
   }
 }
 

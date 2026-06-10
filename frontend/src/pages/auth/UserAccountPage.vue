@@ -200,7 +200,9 @@
         </p>
         <!-- API Key Status & Input -->
         <div class="q-mb-md">
-          <label class="text-subtitle2 q-mb-xs block">AI Provider API Key</label>
+          <label class="text-subtitle2 q-mb-xs block"
+            >AI Provider API Key</label
+          >
           <!-- Key Status Banner -->
           <div v-if="!apiKey.showInput" class="q-mb-sm">
             <q-banner rounded class="bg-primary text-white">
@@ -298,7 +300,11 @@
             @update:model-value="onProviderChange"
           >
             <template #no-option>
-              <q-item><q-item-section class="text-grey">No providers</q-item-section></q-item>
+              <q-item
+                ><q-item-section class="text-grey"
+                  >No providers</q-item-section
+                ></q-item
+              >
             </template>
           </q-select>
         </div>

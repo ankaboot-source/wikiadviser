@@ -80,6 +80,8 @@ export async function getLLMConfig(
 
     const finalPrompt = customPromptText?.trim() || defaultAiPrompt;
 
+    console.log(`LLM config resolved: provider="${provider}" model="${model}" hasUserConfig=${hasUserConfig}`);
+
     return {
       apiKey,
       prompt: finalPrompt,

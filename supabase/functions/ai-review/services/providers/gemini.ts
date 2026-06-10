@@ -4,7 +4,10 @@ export class GeminiProvider implements AIProvider {
   private baseUrl = 'https://generativelanguage.googleapis.com/v1beta';
 
   async chatCompletion(params: ChatCompletionParams): Promise<string> {
-    const url = `${this.baseUrl}/models/${params.model}:generateContent?key=${params.apiKey}`;
+    const model = params.model;
+    console.log(`[Gemini] POST ${this.baseUrl}/models/${model}:generateContent`);
+
+    const url = `${this.baseUrl}/models/${model}:generateContent?key=${params.apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
@@ -35,6 +38,7 @@ export class GeminiProvider implements AIProvider {
     }
 
     const data = await response.json();
+    console.log(`[Gemini] API responded successfully status=${response.status}`);
     const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!content) throw new Error('Empty response from Gemini');
     return content.trim();

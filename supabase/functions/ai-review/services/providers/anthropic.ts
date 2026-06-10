@@ -4,7 +4,10 @@ export class AnthropicProvider implements AIProvider {
   private baseUrl = 'https://api.anthropic.com/v1';
 
   async chatCompletion(params: ChatCompletionParams): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/messages`, {
+    const url = `${this.baseUrl}/messages`;
+    console.log(`[Anthropic] POST ${url} model="${params.model}"`);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'x-api-key': params.apiKey,
@@ -30,6 +33,7 @@ export class AnthropicProvider implements AIProvider {
     }
 
     const data = await response.json();
+    console.log(`[Anthropic] API responded successfully model="${data.model || params.model}" status=${response.status}`);
     const content = data.content?.[0]?.text;
     if (!content) throw new Error('Empty response from Anthropic');
     return content.trim();

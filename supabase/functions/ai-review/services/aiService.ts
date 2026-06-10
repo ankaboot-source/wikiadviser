@@ -36,18 +36,21 @@ export async function reviewArticleSection(
   userPrompt: string,
 ): Promise<string> {
   const provider = getProvider(config);
+  console.log(`[AI Review] Starting review with provider="${config.provider}" model="${config.model}"`);
   let lastError: Error = new Error('Unknown error');
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     console.log(`AI request attempt ${attempt}/${MAX_RETRIES}...`);
     try {
-      return await provider.chatCompletion({
+      const result = await provider.chatCompletion({
         apiKey: config.apiKey,
         model: config.model,
         systemPrompt,
         userPrompt,
         temperature: 0.2,
       });
+      console.log(`[AI Review] Successfully received response from ${config.provider} (${config.model})`);
+      return result;
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
       console.warn(
@@ -68,6 +71,7 @@ export async function generateRevisionSummary(
 ): Promise<string> {
   try {
     const provider = getProvider(config);
+    console.log(`[AI Summary] Generating summary with provider="${config.provider}" model="${config.model}"`);
     const summary = await provider.chatCompletion({
       apiKey: config.apiKey,
       model: config.model,

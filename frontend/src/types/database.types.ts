@@ -340,6 +340,10 @@ export type Database = {
             prompt?: string | null;
             model?: string | null;
             has_api_key?: boolean;
+            provider?: string;
+            endpoint?: string | null;
+            prompts?: Array<{ id: string; name: string; prompt: string }>;
+            selected_prompt_id?: string | null;
           } | null;
         };
         Insert: {
@@ -352,6 +356,10 @@ export type Database = {
             prompt?: string | null;
             model?: string | null;
             has_api_key?: boolean;
+            provider?: string;
+            endpoint?: string | null;
+            prompts?: Array<{ id: string; name: string; prompt: string }>;
+            selected_prompt_id?: string | null;
           } | null;
         };
         Update: {
@@ -364,6 +372,10 @@ export type Database = {
             prompt?: string | null;
             model?: string | null;
             has_api_key?: boolean;
+            provider?: string;
+            endpoint?: string | null;
+            prompts?: Array<{ id: string; name: string; prompt: string }>;
+            selected_prompt_id?: string | null;
           } | null;
         };
         Relationships: [];

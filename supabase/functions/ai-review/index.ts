@@ -175,6 +175,7 @@ app.post('/', async (c) => {
     }
 
     console.info('LLM config retrieved', {
+      provider: config.provider,
       model: config.model,
       hasUserConfig: config.hasUserConfig,
     });

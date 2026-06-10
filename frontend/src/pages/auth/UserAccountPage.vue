@@ -200,7 +200,9 @@
         </p>
         <!-- API Key Status & Input -->
         <div class="q-mb-md">
-          <label class="text-subtitle2 q-mb-xs block">OpenRouter API Key</label>
+          <label class="text-subtitle2 q-mb-xs block"
+            >AI Provider API Key</label
+          >
           <!-- Key Status Banner -->
           <div v-if="!apiKey.showInput" class="q-mb-sm">
             <q-banner rounded class="bg-primary text-white">
@@ -284,10 +286,46 @@
           </q-card>
         </q-dialog>
 
-        <!-- Model Search -->
+        <!-- Provider Selection -->
+        <div class="q-mb-md">
+          <label class="text-subtitle2 q-mb-xs block">AI Provider</label>
+          <q-select
+            v-model="llmConfig.provider"
+            :options="providerOptions"
+            bg-color="white"
+            dense
+            outlined
+            emit-value
+            map-options
+            @update:model-value="onProviderChange"
+          >
+            <template #no-option>
+              <q-item
+                ><q-item-section class="text-grey"
+                  >No providers</q-item-section
+                ></q-item
+              >
+            </template>
+          </q-select>
+        </div>
+
+        <!-- Custom Endpoint (only visible when provider is 'custom') -->
+        <div v-if="llmConfig.provider === 'custom'" class="q-mb-md">
+          <label class="text-subtitle2 q-mb-xs block">API Endpoint URL</label>
+          <q-input
+            v-model="llmConfig.endpoint"
+            bg-color="white"
+            dense
+            outlined
+            placeholder="https://api.example.com/v1"
+          />
+        </div>
+
+        <!-- Model: dropdown for OpenRouter, free-text for others -->
         <div class="q-mb-md">
           <label class="text-subtitle2 q-mb-xs block">AI Model</label>
           <q-select
+            v-if="llmConfig.provider === 'openrouter'"
             v-model="llmConfig.model"
             :options="filteredModelOptions"
             bg-color="white"
@@ -314,6 +352,14 @@
               </q-item>
             </template>
           </q-select>
+          <q-input
+            v-else
+            v-model="llmConfig.model"
+            bg-color="white"
+            dense
+            outlined
+            placeholder="e.g. claude-sonnet-4-20250514, gemini-2.5-flash, gpt-4o"
+          />
         </div>
         <!-- Save Button -->
         <div class="flex justify-end">
@@ -408,6 +454,19 @@ interface OpenRouterModel {
   id: string;
   context_length: number;
 }
+
+interface ProviderOption {
+  label: string;
+  value: string;
+}
+
+const providerOptions: ProviderOption[] = [
+  { label: 'OpenRouter', value: 'openrouter' },
+  { label: 'OpenAI', value: 'openai' },
+  { label: 'Anthropic', value: 'anthropic' },
+  { label: 'Google Gemini', value: 'gemini' },
+  { label: 'Custom (OpenAI-compatible)', value: 'custom' },
+];
 
 const $q = useQuasar();
 const $router = useRouter();
@@ -584,6 +643,8 @@ async function prepareNewAccount() {
 
 const llmConfig = ref({
   model: '',
+  provider: 'openrouter',
+  endpoint: null as string | null,
 });
 
 const apiKey = ref({
@@ -626,6 +687,8 @@ async function updateLLMConfigInDB(updates: {
         ...existingConfig,
         model: updates.model ?? llmConfig.value.model,
         has_api_key: updates.has_api_key ?? apiKey.value.hasPersonalKey,
+        provider: llmConfig.value.provider,
+        endpoint: llmConfig.value.endpoint,
       },
     })
     .eq('id', userId);
@@ -704,6 +767,7 @@ const apiKeyActions = {
 };
 
 async function loadModelsFromAPI() {
+  if (llmConfig.value.provider !== 'openrouter') return;
   const userId = userStore.user?.id;
   if (!userId) return;
 
@@ -767,6 +831,16 @@ function filterModels(val: string, update: (fn: () => void) => void) {
   });
 }
 
+function onProviderChange(newProvider: string) {
+  llmConfig.value.model = '';
+  if (newProvider === 'openrouter') {
+    loadModelsFromAPI();
+  } else {
+    allModelOptions.value = [];
+    filteredModelOptions.value = [];
+  }
+}
+
 async function saveLLMConfig() {
   const userId = userStore.user?.id;
   if (!userId) return;
@@ -807,10 +881,16 @@ async function loadLLMConfig() {
   if (config) {
     llmConfig.value = {
       model: config.model || DEFAULT_AI_MODEL,
+      provider: config.provider || 'openrouter',
+      endpoint: config.endpoint || null,
     };
     apiKey.value.hasPersonalKey = config.has_api_key || false;
   }
-  await loadModelsFromAPI();
+  if (llmConfig.value.provider !== 'openrouter') {
+    filteredModelOptions.value = [];
+  } else {
+    await loadModelsFromAPI();
+  }
 }
 
 onBeforeMount(async () => {

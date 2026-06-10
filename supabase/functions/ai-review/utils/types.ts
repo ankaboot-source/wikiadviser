@@ -21,11 +21,15 @@ export interface AIResponse {
   proposed_change: string;
 }
 
+export type AIProviderType = 'openrouter' | 'openai' | 'anthropic' | 'gemini' | 'custom';
+
 export interface LLMConfig {
   apiKey: string;
   prompt: string;
   model: string;
   hasUserConfig: boolean;
+  provider: AIProviderType;
+  endpoint?: string | null;
 }
 
 export interface BatchResult {

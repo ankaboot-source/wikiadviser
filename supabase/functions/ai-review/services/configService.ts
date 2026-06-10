@@ -1,6 +1,6 @@
 import createSupabaseClient from '../../_shared/supabaseClient.ts';
 import createSupabaseAdmin from '../../_shared/supabaseAdmin.ts';
-import { LLMConfig } from '../utils/types.ts';
+import { LLMConfig, AIProviderType } from '../utils/types.ts';
 import { defaultAiPrompt } from '../config/prompts.ts';
 
 export async function getMiraBotId(): Promise<string | null> {
@@ -37,6 +37,8 @@ export async function getLLMConfig(
 
     let apiKey: string | null = null;
     let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-4o-mini';
+    let provider: AIProviderType = (Deno.env.get('AI_PROVIDER') as AIProviderType) ?? 'openrouter';
+    let endpoint: string | null = null;
     let hasUserConfig = false;
 
     if (!profileError && profileData?.llm_reviewer_config) {
@@ -57,6 +59,14 @@ export async function getLLMConfig(
       if (config.model) {
         model = config.model;
       }
+
+      if (config.provider) {
+        provider = config.provider as AIProviderType;
+      }
+
+      if (config.endpoint) {
+        endpoint = config.endpoint;
+      }
     }
     if (!apiKey) {
       apiKey = Deno.env.get('OPENROUTER_API_KEY') ?? null;
@@ -70,11 +80,15 @@ export async function getLLMConfig(
 
     const finalPrompt = customPromptText?.trim() || defaultAiPrompt;
 
+    console.log(`LLM config resolved: provider="${provider}" model="${model}" hasUserConfig=${hasUserConfig}`);
+
     return {
       apiKey,
       prompt: finalPrompt,
       model,
       hasUserConfig,
+      provider,
+      endpoint,
     };
   } catch (error) {
     console.error('Error getting LLM config:', error);

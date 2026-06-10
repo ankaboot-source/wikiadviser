@@ -55,8 +55,7 @@ async function generateEmptyArticleContent(
 ): Promise<string | null> {
   try {
     const generated = await reviewArticleSection(
-      config.apiKey,
-      config.model,
+      config,
       buildEmptyArticlePrompt(article),
       `USER INSTRUCTION: ${customInstructions}\n\nGenerate content for this article:`,
     );
@@ -92,8 +91,7 @@ async function buildImprovedWikitext(
 
         try {
           const rawResponse = await reviewArticleSection(
-            config.apiKey,
-            config.model,
+            config,
             systemPrompt,
             buildUserPrompt(section.content),
           );
@@ -208,8 +206,7 @@ export async function reviewAndImproveArticle(
   }
 
   const summaryPhrase = await generateRevisionSummary(
-    config.apiKey,
-    config.model,
+    config,
     wikitext,
     improvedWikitext,
   );

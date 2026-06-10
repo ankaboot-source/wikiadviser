@@ -100,8 +100,7 @@ async function applyImprovement(
 ): Promise<string | null> {
   try {
     const improved = await reviewArticleSection(
-      config.apiKey,
-      config.model,
+      config,
       systemPrompt,
       buildRevisionUserPrompt(
         paragraph,
@@ -211,8 +210,7 @@ async function generateContentForEmptyArticle(
   for (const improvement of improvements) {
     try {
       const generated = await reviewArticleSection(
-        config.apiKey,
-        config.model,
+        config,
         systemPrompt,
         `USER INSTRUCTION: ${improvement.prompt}\n\nGenerate content for this article:`,
       );
@@ -295,8 +293,7 @@ export async function improveRevisionChanges(
   }
 
   const summaryPhrase = await generateRevisionSummary(
-    config.apiKey,
-    config.model,
+    config,
     wikitext ?? '',
     finalWikitext,
   );

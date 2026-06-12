@@ -19,7 +19,7 @@
     "@quasar/cli": "^2.3.0",
     "@quasar/extras": "^1.17.0",
     "@sentry/vue": "^7.101.1",
-    "@supabase/ssr": "^0.7.0",
+    "@supabase/ssr": "^0.10.3",
     "cheerio": "^1.1.2",
     "dotenv": "^17.2.2",
     "pinia": "^2.1.7",

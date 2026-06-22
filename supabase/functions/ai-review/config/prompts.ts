@@ -19,17 +19,29 @@ export function buildSystemPrompt(
     systemPrompt += '\nDescription: No description available';
   }
 
-  if (customInstructions?.trim()) {
-    systemPrompt += `\n\nAdditional instructions: ${customInstructions}`;
+  const hasCustomInstructions = !!customInstructions?.trim();
+
+  if (hasCustomInstructions) {
+    systemPrompt += `\n\nCRITICAL INSTRUCTION (takes priority over ALL other rules): ${customInstructions}`;
   }
 
   systemPrompt += `\n\nYou will receive sections from this article one by one.
 For each section:
-- CRITICAL: Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}, etc.), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
-- Improve only the prose content between structural lines
-- Return ONLY the improved section text, without any preamble or explanation
+- CRITICAL: Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- ${
+    hasCustomInstructions
+      ? 'Apply the CRITICAL INSTRUCTION to this section. The CRITICAL INSTRUCTION takes priority over all other rules, including wikitext structural preservation rules.'
+      : 'Improve only the prose content between structural lines'
+  }
+- Return ONLY the ${
+    hasCustomInstructions ? 'modified' : 'improved'
+  } section text, without any preamble or explanation
 - Do NOT repeat the article title, description, or section number
-- If no improvements needed, return the original text exactly as provided`;
+- ${
+    hasCustomInstructions
+      ? 'The CRITICAL INSTRUCTION MUST be applied to this section.'
+      : 'If no improvements needed, return the original text exactly as provided'
+  }`;
 
   return systemPrompt;
 }

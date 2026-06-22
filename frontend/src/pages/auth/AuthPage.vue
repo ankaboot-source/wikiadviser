@@ -44,13 +44,15 @@ import supabaseClient from 'src/api/supabase';
 import { useUserStore } from 'src/stores/userStore';
 import { AUTH_UI_VUE_VARIABLES_STYLE } from 'src/utils/consts';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { onBeforeRouteLeave } from 'vue-router';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
 
 const { session } = storeToRefs(useUserStore());
 
 const providerScopes = {
   azure: 'email',
 };
+
+const route = useRoute();
 
 const authView = ref<ViewType>('sign_in');
 const message = ref('Welcome back to WikiAdviser');
@@ -125,6 +127,12 @@ onBeforeRouteLeave(() => {
 
 onMounted(() => {
   convretToMicrosoftButton();
+
+  const source = route.query.source as string | undefined;
+  if (source === 'palestine') {
+    sessionStorage.setItem('source', 'palestine');
+    authView.value = 'sign_up';
+  }
 });
 
 async function loginAnonymously() {

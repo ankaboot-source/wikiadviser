@@ -50,6 +50,36 @@ onMounted(async () => {
       await userStore.fetchProfile();
     }
 
+    const sourceParam = sessionStorage.getItem('source');
+    if (sourceParam === 'palestine') {
+      const { data: profileData } = await supabaseClient
+        .from('profiles')
+        .select('llm_reviewer_config')
+        .eq('id', userStore.user.id)
+        .single();
+
+      const existingConfig =
+        typeof profileData?.llm_reviewer_config === 'object' &&
+        profileData?.llm_reviewer_config !== null &&
+        !Array.isArray(profileData?.llm_reviewer_config)
+          ? { ...(profileData.llm_reviewer_config as Record<string, unknown>) }
+          : {};
+
+      await supabaseClient
+        .from('profiles')
+        .update({
+          llm_reviewer_config: {
+            ...existingConfig,
+            has_handala: true,
+            selected_prompt_id: 'handala',
+          },
+        })
+        .eq('id', userStore.user.id);
+
+      await userStore.fetchProfile();
+      sessionStorage.removeItem('source');
+    }
+
     const isAnon = !userStore.user?.email;
     const isUninitializedUser = isAnon && !userStore.user?.email_change;
     const hasPassword = Boolean(userStore.user?.has_password);

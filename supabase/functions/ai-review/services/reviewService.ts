@@ -145,6 +145,7 @@ export async function reviewAndImproveArticle(
   config: LLMConfig,
   miraBotId: string,
   customInstructions?: string,
+  promptName?: string,
 ): Promise<ReviewResult> {
   const mediawiki = new MediawikiClient(language, wikipediaApi);
   const [articleData, article] = await Promise.all([
@@ -213,7 +214,7 @@ export async function reviewAndImproveArticle(
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
     improvedWikitext,
-    `Mira: ${summaryPhrase}`,
+    `${promptName || 'Mira'}: ${summaryPhrase}`,
   );
 
   return {

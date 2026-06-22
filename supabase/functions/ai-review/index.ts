@@ -24,6 +24,7 @@ app.post('/', async (c) => {
     const {
       article_id,
       prompt: customInstructions,
+      prompt_name,
       revision_improvements,
     } = await c.req.json();
     const authHeader = c.req.header('Authorization');
@@ -138,6 +139,7 @@ app.post('/', async (c) => {
         improvements,
         config,
         MIRA_BOT_ID,
+        prompt_name,
       );
 
       if (!result.hasImprovements) {
@@ -186,6 +188,7 @@ app.post('/', async (c) => {
       config,
       MIRA_BOT_ID,
       customInstructions,
+      prompt_name,
     );
 
     if (!result.hasImprovements) {

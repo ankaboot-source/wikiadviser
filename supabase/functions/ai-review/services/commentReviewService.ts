@@ -236,6 +236,7 @@ export async function improveRevisionChanges(
   improvements: CommentImprovement[],
   config: LLMConfig,
   miraBotId: string,
+  promptName?: string,
 ): Promise<CommentReviewResult> {
   const article = await getArticle(articleId);
   if (!article) {
@@ -300,7 +301,7 @@ export async function improveRevisionChanges(
   const editResult = await mediawiki.editArticleAsBot(
     articleId,
     finalWikitext,
-    `Mira: ${summaryPhrase}`,
+    `${promptName || 'Mira'}: ${summaryPhrase}`,
   );
 
   console.info(

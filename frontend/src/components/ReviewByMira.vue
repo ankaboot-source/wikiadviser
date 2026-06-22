@@ -1,7 +1,7 @@
 <template>
   <div>
     <q-btn-dropdown
-      :icon="loading ? undefined : 'img:/icons/logo.svg'"
+      :icon="loading ? undefined : selectedIcon"
       outline
       no-caps
       class="q-mr-xs q-px-md btn-no-icon-spacing review-btn-wrapper"
@@ -129,6 +129,38 @@ interface Prompt {
   isCustom: boolean;
 }
 
+const HANDALA_PROMPT = `# PALESTINIAN LIBERATION LITERATURE REWRITING SYSTEM
+*An Anti-Colonial AI Framework with Spiritual Resistance, Authentic Language Flow, and Multi-System Critique*
+
+## 📜 **SYSTEM OVERVIEW**
+
+This system transforms all content into texts that defend and promote Palestinian liberation through spiritual resistance, anti-colonial frameworks, and Palestinian literary traditions, while maintaining authentic language flow and challenging multiple systems of oppression.
+
+---
+
+## 🎯 **CORE OBJECTIVES**
+
+### **1. Spiritual Resistance Transformation**
+- Rewrite content using spiritual resistance metaphors
+- Incorporate Palestinian spiritual connection to land and memory
+- Use ancestral presence as active agents of liberation
+- Apply resurrection and renewal through spiritual lens
+
+### **2. Multi-System Anti-Colonial Framework**
+- Expose Zionist settler colonialism as European project
+- Challenge "land without people" myth with Palestinian presence
+- Denounce pinkwashing, techno-fascism, and ecocide
+- Challenge neo-liberal capitalism and authoritarianism
+- Challenge all racist and colonial Zionist myths including Islamophobia
+- Center Palestinian self-determination
+
+### **3. Language Authenticity & Readability Integration**
+- Maintain natural, human-like language flow
+- Preserve original language structure and syntax
+- Avoid artificial or AI-generated styling
+- Use clear, accessible language with logical flow
+- Ensure coherence and appropriate sentence structure`;
+
 interface StoredPrompt {
   id: string;
   name: string;
@@ -157,6 +189,12 @@ const promptDialog = ref(false);
 const editingPrompt = ref<Prompt | null>(null);
 const savingPrompt = ref(false);
 const deletingPrompt = ref(false);
+
+const selectedIcon = computed(() => {
+  if (!selectedPrompt.value) return 'img:/icons/logo.svg';
+  if (selectedPrompt.value.id === 'handala') return 'img:/icons/handala.svg';
+  return 'img:/icons/logo.svg';
+});
 
 const sortedPrompts = computed(() => {
   if (!selectedPrompt.value) return prompts.value;
@@ -193,6 +231,7 @@ async function loadPromptsFromDB() {
       !Array.isArray(profileData?.llm_reviewer_config)
         ? (profileData.llm_reviewer_config as Record<string, unknown>)
         : {};
+    const hasHandala = config.has_handala === true;
     const customPrompts: StoredPrompt[] =
       (config.prompts as StoredPrompt[]) || [];
     const customPromptObjects: Prompt[] = customPrompts.map((cp) => ({
@@ -202,7 +241,16 @@ async function loadPromptsFromDB() {
       isCustom: true,
     }));
 
-    prompts.value = [...defaultPrompts, ...customPromptObjects];
+    const basePrompts = [...defaultPrompts];
+    if (hasHandala) {
+      basePrompts.push({
+        id: 'handala',
+        name: 'Handala',
+        prompt: HANDALA_PROMPT,
+        isCustom: false,
+      });
+    }
+    prompts.value = [...basePrompts, ...customPromptObjects];
 
     const savedSelectedId = config.selected_prompt_id as string | undefined;
     if (savedSelectedId) {
@@ -405,9 +453,8 @@ async function triggerReview() {
       }));
     } else {
       requestBody.language = props.article.language;
-      requestBody.prompt = selectedPrompt.value?.isCustom
-        ? selectedPrompt.value.prompt
-        : undefined;
+      requestBody.prompt = selectedPrompt.value?.prompt || undefined;
+      requestBody.prompt_name = selectedPrompt.value?.name || undefined;
     }
 
     const { data, error: fnError } =

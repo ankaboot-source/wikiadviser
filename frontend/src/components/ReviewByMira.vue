@@ -416,7 +416,17 @@ async function triggerReview() {
       });
 
     if (fnError) {
-      showNotification('error', 'Failed to complete AI review');
+      const errData = (fnError as Record<string, unknown>)?.context
+        ?.data as Record<string, unknown> | undefined;
+      const details = errData?.details as string | undefined;
+      const errMsg = errData?.error as string | undefined;
+      const userMsg =
+        details?.includes('429') || details?.includes('quota')
+          ? 'AI provider quota exceeded — please wait or switch to a different model'
+          : details?.includes('API key') || details?.includes('apiKey')
+            ? 'AI provider configuration error — check your API key'
+            : details || errMsg || 'AI provider error';
+      showNotification('error', userMsg);
       throw fnError;
     }
 

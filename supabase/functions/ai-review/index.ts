@@ -118,9 +118,20 @@ app.post('/', async (c) => {
         },
       );
 
+      const rejectedImprovements = improvements.filter(
+        (imp) => imp.status === 2,
+      );
+
+      const skippedCount = improvements.length - rejectedImprovements.length;
+      if (skippedCount > 0) {
+        console.info(
+          `[comment-review] Skipped ${skippedCount} non-rejected change(s)`,
+        );
+      }
+
       console.info(
         `[comment-review] improvements to process:
-        ${improvements
+        ${rejectedImprovements
           .map(
             (i) =>
               `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${
@@ -133,9 +144,18 @@ app.post('/', async (c) => {
           .join('\n')}`,
       );
 
+      if (rejectedImprovements.length === 0) {
+        console.info('No rejected changes to process');
+        return c.json({
+          summary: 'No rejected changes to process',
+          has_improvements: false,
+          trigger_diff_update: false,
+        });
+      }
+
       const result = await improveRevisionChanges(
         article_id,
-        improvements,
+        rejectedImprovements,
         config,
         MIRA_BOT_ID,
       );

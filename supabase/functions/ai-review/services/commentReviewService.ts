@@ -246,7 +246,9 @@ export async function improveRevisionChanges(
   const { wikitext } = await mediawiki.getArticleForAIReview(articleId);
 
   const isEmptyArticle = !wikitext || wikitext.trim().length === 0;
-  const validImprovements = improvements.filter((imp) => imp.content?.trim());
+  const validImprovements = improvements.filter(
+    (imp) => imp.status === 2 && imp.content?.trim(),
+  );
 
   if (validImprovements.length === 0) {
     return {

@@ -196,7 +196,7 @@
       <div class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">LLM Reviewer Agent</h2>
         <p class="text-body1 q-mb-md">
-          Configure your AI reviewer with OpenRouter API.
+          Configure your AI reviewer.
         </p>
         <!-- API Key Status & Input -->
         <div class="q-mb-md">

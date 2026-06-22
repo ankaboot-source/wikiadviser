@@ -80,8 +80,10 @@ function gotoDiffLink() {
 
   if (!iframeRef.value?.contentWindow) {
     console.warn(
-      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready',
+      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready — will retry on next load',
     );
+    pendingDiffAfterLoad.value = true;
+    activeViewStore.modeToggle = 'edit';
     return;
   }
 

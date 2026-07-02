@@ -37,6 +37,7 @@ export type Article = {
     created_at: Date;
     name: string;
   };
+  pending_diff?: boolean | null;
 };
 
 export type Comment = {

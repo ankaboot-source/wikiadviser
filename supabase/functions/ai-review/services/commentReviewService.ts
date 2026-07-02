@@ -246,8 +246,15 @@ export async function redoRejectedChanges(
 
   const currentWikitext = await mediawiki.getCurrentArticleWikitext(articleId);
 
-  const revisions = await mediawiki.getRecentRevisions(articleId, 2);
-  const parentRevId = revisions[0]?.parentid;
+  let parentRevId: number | null = null;
+  try {
+    const revisions = await mediawiki.getRecentRevisions(articleId, 2);
+    parentRevId = revisions[0]?.parentid ?? null;
+  } catch (e) {
+    console.warn(
+      '[redoRejected] Could not fetch recent revisions, falling back to current-only mode',
+    );
+  }
   let previousWikitext: string | null = null;
 
   if (parentRevId && parentRevId > 0) {

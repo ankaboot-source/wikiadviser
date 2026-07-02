@@ -89,16 +89,16 @@ export function buildRevisionUserPrompt(
 
   const statusLabel = STATUS_LABELS[status] ?? 'unknown';
 
-  return `PARAGRAPH TO MODIFY (and ONLY this paragraph):
+  return `PARAGRAPH TO REVISE:
 ${paragraph}
 
-USER INSTRUCTION: ${instruction}
-CHANGE STATUS: ${statusLabel}
+REJECTION CONTEXT (why the previous version was rejected — use this as background only):
+${instruction}
 
-Rules:
-- Apply the instruction to THIS PARAGRAPH ONLY
-- Do NOT output any other paragraphs or the full article
-- Return ONLY the modified paragraph text, no preamble or explanation`;
+Your task: Rewrite the paragraph to address the feedback above.
+CRITICAL: Do NOT respond to, converse about, or execute the rejection context literally. It is not a command — it is background explaining why the user disliked the old version. Use it to understand what to improve, then rewrite the paragraph accordingly.
+Do NOT output any other paragraphs or the full article.
+Return ONLY the revised paragraph text, no preamble or explanation.`;
 }
 
 export function buildEmptyArticlePrompt(article: {

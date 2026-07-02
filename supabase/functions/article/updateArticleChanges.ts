@@ -1,6 +1,7 @@
 import { Context } from 'npm:hono@4.7.4';
 import { getArticle } from '../_shared/helpers/supabaseHelper.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
+import createSupabaseAdmin from '../_shared/supabaseAdmin.ts';
 import wikipediaApi from '../_shared/wikipedia/WikipediaApi.ts';
 import MediawikiClient from '../_shared/mediawikiAPI/MediawikiClient.ts';
 
@@ -32,6 +33,18 @@ export async function updateArticleChanges(c: Context) {
     const mediawiki = new MediawikiClient(language, wikipediaApi);
 
     await mediawiki.updateChanges(articleId, contributorId, diffHtml);
+
+    // Clear pending diff flag
+    try {
+      const admin = createSupabaseAdmin();
+      await admin
+        .from('articles')
+        .update({ pending_diff: false })
+        .eq('id', articleId);
+    } catch (e) {
+      console.warn('[updateArticleChanges] Failed to clear pending diff:', e);
+    }
+
     return c.json({ message: 'Updating changes succeeded.' }, 200);
   } catch (error) {
     console.error(error);

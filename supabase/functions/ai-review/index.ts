@@ -1,6 +1,7 @@
 import { Hono } from 'npm:hono@4.7.4';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
+import createSupabaseAdmin from '../_shared/supabaseAdmin.ts';
 import {
   getArticle,
   addMiraBotPermission,
@@ -172,6 +173,16 @@ app.post('/', async (c) => {
         });
       }
 
+      console.info('[review] improveRevisionChanges succeeded, saving pending_diff');
+      try {
+        const admin = createSupabaseAdmin();
+        await admin
+          .from('articles')
+          .update({ pending_diff: true })
+          .eq('id', article_id);
+      } catch (e) {
+        console.warn('[review] Failed to save pending diff:', e);
+      }
       return c.json({
         summary: result.comment,
         has_improvements: true,
@@ -250,6 +261,22 @@ app.post('/', async (c) => {
       );
 
       if (result.hasImprovements) {
+        console.info('[auto-retry] Edit succeeded, saving pending_diff');
+        try {
+          const admin = createSupabaseAdmin();
+          console.info('[auto-retry] Admin client created, updating article', article_id);
+          const { error: updateError } = await admin
+            .from('articles')
+            .update({ pending_diff: true })
+            .eq('id', article_id);
+          if (updateError) {
+            console.warn('[auto-retry] Update returned error:', updateError);
+          } else {
+            console.info('[auto-retry] pending_diff saved successfully');
+          }
+        } catch (e) {
+          console.warn('[auto-retry] Failed to save pending diff:', e);
+        }
         return c.json({
           summary: result.comment,
           has_improvements: true,
@@ -306,6 +333,22 @@ app.post('/', async (c) => {
       });
     }
 
+    console.info('[review] Full review succeeded, saving pending_diff');
+    try {
+      const admin = createSupabaseAdmin();
+      console.info('[review] Admin client created, updating article', article_id);
+      const { error: updateError } = await admin
+        .from('articles')
+        .update({ pending_diff: true })
+        .eq('id', article_id);
+      if (updateError) {
+        console.warn('[review] Update returned error:', updateError);
+      } else {
+        console.info('[review] pending_diff saved successfully');
+      }
+    } catch (e) {
+      console.warn('[review] Failed to save pending diff:', e);
+    }
     return c.json({
       summary: result.comment,
       has_improvements: true,

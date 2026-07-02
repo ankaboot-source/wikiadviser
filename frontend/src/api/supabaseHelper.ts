@@ -91,6 +91,7 @@ export async function getArticles(): Promise<Article[]> {
           created_at: new Date(article.articles?.created_at as string),
           web_publication: article.articles?.web_publication,
           imported: article.articles?.imported,
+          pending_diff: article.articles?.pending_diff,
           latest_change: {
             created_at: article.articles?.changes[0]?.created_at
               ? new Date(article.articles?.changes[0]?.created_at as string)

@@ -34,6 +34,7 @@ export async function reviewArticleSection(
   config: LLMConfig,
   systemPrompt: string,
   userPrompt: string,
+  maxTokens?: number,
 ): Promise<string> {
   const provider = getProvider(config);
   console.log(`[AI Review] Starting review with provider="${config.provider}" model="${config.model}"`);
@@ -48,6 +49,7 @@ export async function reviewArticleSection(
         systemPrompt,
         userPrompt,
         temperature: 0.2,
+        ...(maxTokens ? { maxTokens } : {}),
       });
       console.log(`[AI Review] Successfully received response from ${config.provider} (${config.model})`);
       return result;

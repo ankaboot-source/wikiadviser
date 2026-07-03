@@ -1,12 +1,16 @@
 import { Hono } from 'npm:hono@4.7.4';
 import { corsMiddleware } from '../_shared/middleware/cors.ts';
 import createSupabaseClient from '../_shared/supabaseClient.ts';
+import createSupabaseAdmin from '../_shared/supabaseAdmin.ts';
 import {
   getArticle,
   addMiraBotPermission,
 } from '../_shared/helpers/supabaseHelper.ts';
 import { reviewAndImproveArticle } from './services/reviewService.ts';
-import { improveRevisionChanges } from './services/commentReviewService.ts';
+import {
+  improveRevisionChanges,
+  redoRejectedChanges,
+} from './services/commentReviewService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
 
 interface RevisionImprovement {
@@ -118,9 +122,20 @@ app.post('/', async (c) => {
         },
       );
 
+      const rejectedImprovements = improvements.filter(
+        (imp) => imp.status === 2,
+      );
+
+      const skippedCount = improvements.length - rejectedImprovements.length;
+      if (skippedCount > 0) {
+        console.info(
+          `[comment-review] Skipped ${skippedCount} non-rejected change(s)`,
+        );
+      }
+
       console.info(
         `[comment-review] improvements to process:
-        ${improvements
+        ${rejectedImprovements
           .map(
             (i) =>
               `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${
@@ -133,9 +148,18 @@ app.post('/', async (c) => {
           .join('\n')}`,
       );
 
+      if (rejectedImprovements.length === 0) {
+        console.info('No rejected changes to process');
+        return c.json({
+          summary: 'No rejected changes to process',
+          has_improvements: false,
+          trigger_diff_update: false,
+        });
+      }
+
       const result = await improveRevisionChanges(
         article_id,
-        improvements,
+        rejectedImprovements,
         config,
         MIRA_BOT_ID,
       );
@@ -149,6 +173,16 @@ app.post('/', async (c) => {
         });
       }
 
+      console.info('[review] improveRevisionChanges succeeded, saving pending_diff');
+      try {
+        const admin = createSupabaseAdmin();
+        await admin
+          .from('articles')
+          .update({ pending_diff: true })
+          .eq('id', article_id);
+      } catch (e) {
+        console.warn('[review] Failed to save pending diff:', e);
+      }
       return c.json({
         summary: result.comment,
         has_improvements: true,
@@ -156,6 +190,108 @@ app.post('/', async (c) => {
         new_revision: result.newRevisionId,
         mira_bot_id: MIRA_BOT_ID,
         trigger_diff_update: true,
+      });
+    }
+
+    const { data: rejectedChanges, error: rejectedError } = await supabase
+      .from('changes')
+      .select('id, content, index, status, type_of_edit')
+      .eq('article_id', article_id)
+      .eq('status', 2);
+
+    if (!rejectedError && rejectedChanges && rejectedChanges.length > 0) {
+      console.info(
+        `[auto-retry] Found ${rejectedChanges.length} rejected change(s) to retry`,
+      );
+
+      await addMiraBotPermission(article_id);
+      const config = await getLLMConfig(supabase, user.id, customInstructions);
+
+      if (!config) {
+        console.error('No AI configuration available');
+        return c.json({ error: 'No AI configuration available' }, 400);
+      }
+
+      const instruction = customInstructions?.trim() || 'Improve the text';
+
+      const rejectedChangeIds = rejectedChanges.map((c) => c.id);
+      const { data: comments } = await supabase
+        .from('comments')
+        .select('change_id, content')
+        .in('change_id', rejectedChangeIds);
+
+      const commentsByChangeId = new Map<string, string[]>();
+      for (const comment of comments || []) {
+        const existing = commentsByChangeId.get(comment.change_id) || [];
+        existing.push(comment.content);
+        commentsByChangeId.set(comment.change_id, existing);
+      }
+
+      const improvements = rejectedChanges.map((change) => {
+        const changeComments = commentsByChangeId.get(change.id) || [];
+        const feedbackBlock = changeComments.length > 0
+          ? `User feedback on this change:\n${changeComments.join('\n')}\n\n`
+          : '';
+        const promptWithFeedback = `${instruction}\n\nThe previous version was rejected by the user — produce a different version.\n\n${feedbackBlock}`.trim();
+
+        return {
+          change_id: change.id,
+          prompt: promptWithFeedback,
+          content: change.content || '',
+          index: change.index,
+          status: change.status,
+          type_of_edit: change.type_of_edit ?? 0,
+        };
+      });
+
+      console.info(
+        `[auto-retry] improvements to process:\n${improvements
+          .map(
+            (i) =>
+              `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: rejected | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
+          )
+          .join('\n')}`,
+      );
+
+      const result = await redoRejectedChanges(
+        article_id,
+        improvements,
+        config,
+        MIRA_BOT_ID,
+      );
+
+      if (result.hasImprovements) {
+        console.info('[auto-retry] Edit succeeded, saving pending_diff');
+        try {
+          const admin = createSupabaseAdmin();
+          console.info('[auto-retry] Admin client created, updating article', article_id);
+          const { error: updateError } = await admin
+            .from('articles')
+            .update({ pending_diff: true })
+            .eq('id', article_id);
+          if (updateError) {
+            console.warn('[auto-retry] Update returned error:', updateError);
+          } else {
+            console.info('[auto-retry] pending_diff saved successfully');
+          }
+        } catch (e) {
+          console.warn('[auto-retry] Failed to save pending diff:', e);
+        }
+        return c.json({
+          summary: result.comment,
+          has_improvements: true,
+          old_revision: result.oldRevisionId,
+          new_revision: result.newRevisionId,
+          mira_bot_id: MIRA_BOT_ID,
+          trigger_diff_update: true,
+        });
+      }
+
+      console.info('[auto-retry] No improvements from retry');
+      return c.json({
+        summary: result.comment || 'Could not improve rejected changes',
+        has_improvements: false,
+        trigger_diff_update: false,
       });
     }
 
@@ -197,6 +333,22 @@ app.post('/', async (c) => {
       });
     }
 
+    console.info('[review] Full review succeeded, saving pending_diff');
+    try {
+      const admin = createSupabaseAdmin();
+      console.info('[review] Admin client created, updating article', article_id);
+      const { error: updateError } = await admin
+        .from('articles')
+        .update({ pending_diff: true })
+        .eq('id', article_id);
+      if (updateError) {
+        console.warn('[review] Update returned error:', updateError);
+      } else {
+        console.info('[review] pending_diff saved successfully');
+      }
+    } catch (e) {
+      console.warn('[review] Failed to save pending diff:', e);
+    }
     return c.json({
       summary: result.comment,
       has_improvements: true,

@@ -94,6 +94,11 @@ async function buildImprovedWikitext(
             config,
             systemPrompt,
             buildUserPrompt(section.content),
+            8192,
+          );
+
+          console.log(
+            `[debug] Section ${idx + 1} raw response (first 300 chars): "${rawResponse.substring(0, 300)}"`,
           );
 
           const improvedContent = cleanAIResponse(rawResponse, section.content);

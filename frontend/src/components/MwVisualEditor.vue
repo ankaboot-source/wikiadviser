@@ -80,8 +80,10 @@ function gotoDiffLink() {
 
   if (!iframeRef.value?.contentWindow) {
     console.warn(
-      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready',
+      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready — will retry on next load',
     );
+    pendingDiffAfterLoad.value = true;
+    activeViewStore.modeToggle = 'edit';
     return;
   }
 
@@ -102,9 +104,7 @@ async function onIframeLoad() {
     return;
   }
 
-  if (!isProcessingChanges.value) {
-    loading.value.value = false;
-  }
+  loading.value.value = false;
 }
 
 async function handleDiffChange(data: {
@@ -122,10 +122,22 @@ async function handleDiffChange(data: {
     body.miraBotId = miraStore.currentMiraBotId;
   }
 
-  await supabaseClient.functions.invoke(functionName, {
-    method: 'PUT',
-    body: JSON.stringify(body),
-  });
+  try {
+    await supabaseClient.functions.invoke(functionName, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  } catch (err) {
+    console.error('[MwVisualEditor] Failed to save changes:', err);
+    $q.notify({
+      message: 'Failed to save changes',
+      icon: 'error',
+      color: 'negative',
+    });
+    isProcessingChanges.value = false;
+    loading.value = { ...loaderPresets.editor };
+    return;
+  }
 
   miraStore.completeDiffUpdate();
 
@@ -165,33 +177,69 @@ async function EventHandler(event: MessageEvent): Promise<void> {
     case 'saved-changes':
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
-      // The MediaWiki iframe already navigates to the diff view after save.
+      try {
+        await supabaseClient.functions.invoke(
+          `/article/${data.articleId}/pending-diff`,
+          {
+            method: 'PUT',
+          },
+        );
+      } catch (e) {
+        console.warn('[MwVisualEditor] Failed to set pending diff:', e);
+      }
       break;
     case 'deleted-revision':
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
       gotoDiffLink();
       break;
+    case 'diff-error':
+      console.error('[MwVisualEditor] Diff navigation failed:', data.error);
+      isProcessingChanges.value = false;
+      loading.value = { ...loaderPresets.editor };
+      $q.notify({
+        message: 'Failed to load changes',
+        icon: 'error',
+        color: 'negative',
+      });
+      break;
     default:
       break;
   }
+}
+
+function handleDiffPending() {
+  isProcessingChanges.value = true;
+  loading.value = { value: true, message: loaderPresets.changes.message };
+  setTimeout(() => {
+    loading.value.value = false;
+    $q.notify({
+      message:
+        'We are still processing changes, here you can see what is happening behind the scenes.',
+      icon: 'info',
+      color: 'info',
+    });
+  }, 20000);
+
+  pendingDiffAfterLoad.value = true;
+  activeViewStore.modeToggle = 'edit';
 }
 
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
     if (!pending) return;
-
-    isProcessingChanges.value = true;
-    loading.value = { value: true, message: loaderPresets.changes.message };
-
-    if (activeViewStore.isEditing && iframeRef.value?.contentWindow) {
-      nextTick().then(() => gotoDiffLink());
-    } else {
-      pendingDiffAfterLoad.value = true;
-      activeViewStore.modeToggle = 'edit';
-    }
+    handleDiffPending();
   },
+);
+
+watch(
+  () => props.article.pending_diff,
+  (pending) => {
+    if (!pending) return;
+    handleDiffPending();
+  },
+  { immediate: true },
 );
 
 onMounted(() => {

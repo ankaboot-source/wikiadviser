@@ -34,6 +34,7 @@ export async function getArticles(c: Context) {
         language,
         web_publication,
         imported,
+        pending_diff,
         changes!changes_article_id_fkey(
           created_at,
           profiles_view(display_name, email)

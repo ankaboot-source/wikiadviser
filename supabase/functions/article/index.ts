@@ -6,6 +6,7 @@ import { deleteArticle } from "./deleteArticle.ts";
 import { deleteArticleRevision } from "./deleteArticleRevision.ts";
 import { hasPermissions } from "./hasPermission.ts";
 import { importArticle } from "./importArticle.ts";
+import { setPendingDiff } from "./setPendingDiff.ts";
 import { updateArticleChanges } from "./updateArticleChanges.ts";
 
 const functionName = "article";
@@ -17,6 +18,11 @@ app.post("/", createArticle);
 app.post("/import", importArticle);
 app.delete("/:id", hasPermissions(["owner"]), deleteArticle);
 app.delete("/", deleteAllArticles);
+app.put(
+  "/:id/pending-diff",
+  hasPermissions(["owner", "editor"]),
+  setPendingDiff,
+);
 app.put(
   "/:id/changes",
   hasPermissions(["owner", "editor"]),

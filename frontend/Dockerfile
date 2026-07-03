@@ -27,6 +27,7 @@ ENV USE_MIRA ${USE_MIRA}
 ENV USE_CHANGE_DESCRIPTION ${USE_CHANGE_DESCRIPTION}
 
 RUN npm install -g pnpm
+RUN yes | pnpm approve-builds
 RUN pnpm install && pnpm run build
 
 FROM caddy:2.8.0-alpine as production-stage

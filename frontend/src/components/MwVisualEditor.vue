@@ -178,9 +178,12 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       isProcessingChanges.value = true;
       loading.value = { ...loaderPresets.changes };
       try {
-        await supabaseClient.functions.invoke(`/article/${data.articleId}/pending-diff`, {
-          method: 'PUT',
-        });
+        await supabaseClient.functions.invoke(
+          `/article/${data.articleId}/pending-diff`,
+          {
+            method: 'PUT',
+          },
+        );
       } catch (e) {
         console.warn('[MwVisualEditor] Failed to set pending diff:', e);
       }
@@ -211,7 +214,8 @@ function handleDiffPending() {
   setTimeout(() => {
     loading.value.value = false;
     $q.notify({
-      message: 'We are still processing changes, here you can see what is happening behind the scenes.',
+      message:
+        'We are still processing changes, here you can see what is happening behind the scenes.',
       icon: 'info',
       color: 'info',
     });

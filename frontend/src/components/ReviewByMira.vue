@@ -416,8 +416,9 @@ async function triggerReview() {
       });
 
     if (fnError) {
-      const errData = (fnError as Record<string, unknown>)?.context
-        ?.data as Record<string, unknown> | undefined;
+      const errData = (fnError as Record<string, unknown>)?.context?.data as
+        | Record<string, unknown>
+        | undefined;
       const details = errData?.details as string | undefined;
       const errMsg = errData?.error as string | undefined;
       const userMsg =

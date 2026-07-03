@@ -195,9 +195,7 @@
       <!-- LLM Reviewer Agent Section -->
       <div class="q-my-lg">
         <h2 class="text-h6 merriweather q-mb-xs">LLM Reviewer Agent</h2>
-        <p class="text-body1 q-mb-md">
-          Configure your AI reviewer.
-        </p>
+        <p class="text-body1 q-mb-md">Configure your AI reviewer.</p>
         <!-- API Key Status & Input -->
         <div class="q-mb-md">
           <label class="text-subtitle2 q-mb-xs block"

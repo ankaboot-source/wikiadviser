@@ -207,7 +207,15 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
 function handleDiffPending() {
   isProcessingChanges.value = true;
-  // loading.value = { value: true, message: loaderPresets.changes.message };
+  loading.value = { value: true, message: loaderPresets.changes.message };
+  setTimeout(() => {
+    loading.value.value = false;
+    $q.notify({
+      message: 'We are still processing changes, here you can see what is happening behind the scenes.',
+      icon: 'info',
+      color: 'info',
+    });
+  }, 20000);
 
   pendingDiffAfterLoad.value = true;
   activeViewStore.modeToggle = 'edit';

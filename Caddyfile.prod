@@ -46,7 +46,7 @@
     
     header {
       -X-Frame-Options
-      +Content-Security-Policy "frame-ancestors https://*.wikiadviser.io";
+      +Content-Security-Policy "frame-ancestors https://*.agircollectif.org";
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 

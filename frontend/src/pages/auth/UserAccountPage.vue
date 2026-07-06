@@ -804,12 +804,6 @@ async function loadModelsFromAPI() {
       }))
       .sort((a: ModelOption, b: ModelOption) => b.context - a.context);
 
-    if (!apiKey.value.hasPersonalKey) {
-      allModelOptions.value = allModelOptions.value.filter(
-        (m: ModelOption) => m.id.includes(':free'),
-      );
-    }
-
     filteredModelOptions.value = allModelOptions.value.slice(0, 50);
   } catch (error) {
     console.error('Error fetching models:', error);

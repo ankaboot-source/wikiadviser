@@ -105,7 +105,6 @@ async function applyImprovement(
       buildRevisionUserPrompt(
         paragraph,
         improvement.prompt,
-        improvement.status,
       ),
     );
     const trimmed = improved.trim();
@@ -404,7 +403,6 @@ export async function redoRejectedChanges(
         buildRevisionUserPrompt(
           sourceParagraph,
           prompt,
-          improvement.status,
         ),
         8192,
       );

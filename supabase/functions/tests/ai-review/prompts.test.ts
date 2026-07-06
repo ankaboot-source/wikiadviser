@@ -108,16 +108,9 @@ Deno.test(
 );
 
 Deno.test('buildRevisionUserPrompt has the paragraph and instruction', () => {
-  const result = buildRevisionUserPrompt('The fox.', 'Make it shorter.', 0);
+  const result = buildRevisionUserPrompt('The fox.', 'Make it shorter.');
   assertStringIncludes(result, 'The fox.');
   assertStringIncludes(result, 'Make it shorter.');
-});
-
-Deno.test('buildRevisionUserPrompt maps status numbers to labels', () => {
-  assertStringIncludes(buildRevisionUserPrompt('p', 'i', 0), 'pending');
-  assertStringIncludes(buildRevisionUserPrompt('p', 'i', 1), 'approved');
-  assertStringIncludes(buildRevisionUserPrompt('p', 'i', 2), 'rejected');
-  assertStringIncludes(buildRevisionUserPrompt('p', 'i', 99), 'unknown');
 });
 
 Deno.test('buildEmptyArticlePrompt has title and description', () => {

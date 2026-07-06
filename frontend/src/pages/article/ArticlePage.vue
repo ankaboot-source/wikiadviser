@@ -218,10 +218,11 @@ onBeforeMount(async () => {
     const isArticle = await isArticleExists(articleId.value);
 
     if (!isArticle) {
+      // Article does not exist
       router.push({ name: '404' });
       return;
     }
-
+    // Article does not exist for this user
     router.push({ name: '403' });
     return;
   }

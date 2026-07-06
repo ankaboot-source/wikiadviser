@@ -25,7 +25,9 @@ export function buildSystemPrompt(
     systemPrompt += `\n\nCRITICAL INSTRUCTION (takes priority over ALL other rules): ${customInstructions}`;
   }
 
-  systemPrompt += `\n\nYou will receive sections from this article one by one.
+  systemPrompt += `\n\nAlways provide only the requested output exactly as I ask. Do not repeat the user prompt. Do not include greetings, sign-offs, introductions, explanations, commentary, or extra text. Format the response so I can copy and use it directly without editing.
+
+You will receive sections from this article one by one.
 For each section:
 - CRITICAL: Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
 - ${
@@ -79,16 +81,7 @@ CRITICAL RULES:
 export function buildRevisionUserPrompt(
   paragraph: string,
   instruction: string,
-  status: number,
 ): string {
-  const STATUS_LABELS: Record<number, string> = {
-    0: 'pending',
-    1: 'approved',
-    2: 'rejected',
-  };
-
-  const statusLabel = STATUS_LABELS[status] ?? 'unknown';
-
   return `PARAGRAPH TO REVISE:
 ${paragraph}
 

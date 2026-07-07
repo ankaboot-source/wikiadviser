@@ -55,6 +55,7 @@ import DiffToolbar from 'src/components/Diff/DiffToolbar.vue';
 import DiffCard from 'src/components/DiffCard.vue';
 import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useUserStore } from 'src/stores/userStore';
 import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
@@ -85,6 +86,7 @@ const editorPermission = computed(
 );
 const role = computed<Enums<'role'>>(() => article.value?.role ?? 'viewer');
 const isFocusMode = computed(() => activeViewStore.isFocusMode);
+const miraStore = useMiraReviewStore();
 
 const firstToggle = computed(() => {
   const emptyContent = !changesContent.value || !changesContent.value.length;
@@ -104,6 +106,13 @@ watch(
     activeViewStore.modeToggle = newToggle;
   },
   { immediate: true },
+);
+
+watch(
+  () => miraStore.isDiffUpdatePending,
+  (pending) => {
+    if (pending) activeViewStore.modeToggle = 'edit';
+  },
 );
 
 async function handleArticleRealtime(

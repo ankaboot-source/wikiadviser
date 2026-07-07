@@ -448,7 +448,6 @@ async function triggerReview() {
       data?.old_revision &&
       data?.new_revision
     ) {
-      miraStore.$reset();
       miraStore.completeReview({
         miraBotId: data.mira_bot_id,
         oldRevid: data.old_revision,

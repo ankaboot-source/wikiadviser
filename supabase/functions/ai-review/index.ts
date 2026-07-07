@@ -333,7 +333,8 @@ app.post('/', async (c) => {
       });
     }
 
-    console.info('[review] Full review succeeded, saving pending_diff');
+  console.info('[review] Full review succeeded, saving pending_diff');
+  if (!result.wasEmpty) {
     try {
       const admin = createSupabaseAdmin();
       console.info('[review] Admin client created, updating article', article_id);
@@ -349,15 +350,21 @@ app.post('/', async (c) => {
     } catch (e) {
       console.warn('[review] Failed to save pending diff:', e);
     }
-    return c.json({
-      summary: result.comment,
-      has_improvements: true,
-      old_revision: result.oldRevisionId,
-      new_revision: result.newRevisionId,
-      mira_bot_id: MIRA_BOT_ID,
-      trigger_diff_update: true,
-      config_source: config.hasUserConfig ? 'user' : 'environment',
-    });
+  } else {
+    console.info(
+      '[review] Article was empty before edit, skipping pending_diff (no real diff to review)',
+    );
+  }
+  return c.json({
+    summary: result.comment,
+    has_improvements: true,
+    old_revision: result.oldRevisionId,
+    new_revision: result.newRevisionId,
+    mira_bot_id: MIRA_BOT_ID,
+    trigger_diff_update: !result.wasEmpty,
+    was_empty: result.wasEmpty,
+    config_source: config.hasUserConfig ? 'user' : 'environment',
+  });
   } catch (error) {
     console.error('AI review failed:', error);
     return c.json(

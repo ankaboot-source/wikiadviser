@@ -17,6 +17,7 @@ export interface ReviewResult {
   comment: string;
   oldRevisionId: number;
   newRevisionId: number;
+  wasEmpty: boolean;
 }
 
 const BATCH_SIZE = 5;
@@ -26,6 +27,7 @@ const noImprovement = (comment: string): ReviewResult => ({
   comment,
   oldRevisionId: 0,
   newRevisionId: 0,
+  wasEmpty: false,
 });
 
 function safeReplace(
@@ -230,5 +232,6 @@ export async function reviewAndImproveArticle(
     comment: 'Changes applied successfully.',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
+    wasEmpty: isEmpty,
   };
 }

@@ -70,17 +70,90 @@ const isProcessingChanges = ref(false);
 
 const renderIframe = ref(true);
 const pendingDiffAfterLoad = ref(false);
+const diffUrlPromise = ref<Promise<string> | null>(null);
+let diffTimeout: ReturnType<typeof setTimeout> | null = null;
 async function reloadIframe() {
   renderIframe.value = false;
   await nextTick();
   renderIframe.value = true;
+}
+function buildDiffUrl(
+  articleId: string,
+  oldRevid: number,
+  newRevid: number,
+): string {
+  const url = `${mediawikiBaseUrl}/index.php?title=${encodeURIComponent(articleId)}&diff=${newRevid}&oldid=${oldRevid}&diffmode=visual&diffonly=1&wikiadviser`;
+  console.log('[MwVisualEditor][buildDiffUrl]', {
+    articleId,
+    oldRevid,
+    newRevid,
+    url,
+  });
+  return url;
+}
+async function fetchDiffUrl(articleId: string): Promise<string> {
+  const apiUrl = `${mediawikiBaseUrl}/api.php`;
+  const params = new URLSearchParams({
+    action: 'query',
+    prop: 'revisions',
+    titles: articleId,
+    rvlimit: '2',
+    rvdir: 'newer',
+    rvprop: 'content|ids',
+    formatversion: '2',
+    origin: '*',
+  });
+
+  const fullUrl = `${apiUrl}?${params.toString()}`;
+  console.log('[MwVisualEditor][fetchDiffUrl] START', { apiUrl: fullUrl });
+
+  let res: Response;
+  try {
+    res = await fetch(fullUrl);
+  } catch (e) {
+    console.error('[MwVisualEditor][fetchDiffUrl] fetch() threw', e);
+    throw e;
+  }
+  console.log('[MwVisualEditor][fetchDiffUrl] response', {
+    ok: res.ok,
+    status: res.status,
+    contentType: res.headers.get('content-type'),
+  });
+  if (!res.ok) throw new Error(`MediaWiki API ${res.status}`);
+
+  const data = await res.json();
+  console.log('[MwVisualEditor][fetchDiffUrl] json', data);
+
+  const revisions = data?.query?.pages?.[0]?.revisions;
+  if (!revisions || revisions.length === 0) {
+    throw new Error('No revisions returned from MediaWiki');
+  }
+
+  const originalRevid = revisions[0].revid;
+  const latestRevid = revisions[revisions.length - 1].revid;
+
+  const isOnlyDisplayTitle =
+    /^\s*\{\{DISPLAYTITLE:[^}]*\}\}\s*$/i.test(revisions[0].content ?? '');
+  const baseRevid =
+    isOnlyDisplayTitle && revisions.length > 1
+      ? revisions[1].revid
+      : originalRevid;
+
+  console.log('[MwVisualEditor][fetchDiffUrl] resolved revids', {
+    originalRevid,
+    latestRevid,
+    isOnlyDisplayTitle,
+    baseRevid,
+  });
+
+  return buildDiffUrl(articleId, baseRevid, latestRevid);
 }
 function gotoDiffLink() {
   activeViewStore.modeToggle = 'edit';
 
   if (!iframeRef.value?.contentWindow) {
     console.warn(
-      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready — will retry on next load',
+      '[MwVisualEditor] gotoDiffLink: contentWindow not ready — will retry on next load',
     );
     pendingDiffAfterLoad.value = true;
     activeViewStore.modeToggle = 'edit';
@@ -97,10 +170,40 @@ function gotoDiffLink() {
   );
 }
 async function onIframeLoad() {
+  console.log('[MwVisualEditor][onIframeLoad] FIRED', {
+    pendingDiffAfterLoad: pendingDiffAfterLoad.value,
+    hasDiffUrlPromise: diffUrlPromise.value !== null,
+    currentArticleLink: articleLink.value,
+    currentIframeSrc: iframeRef.value?.src,
+  });
+
   if (pendingDiffAfterLoad.value) {
     pendingDiffAfterLoad.value = false;
-    await new Promise<void>((r) => setTimeout(r, 300));
-    gotoDiffLink();
+    try {
+      console.log('[MwVisualEditor][onIframeLoad] awaiting diffUrlPromise');
+      const url = await diffUrlPromise.value;
+      console.log('[MwVisualEditor][onIframeLoad] diffUrl resolved', { url });
+      if (iframeRef.value) {
+        console.log('[MwVisualEditor][onIframeLoad] about to recreate iframe with diff URL');
+        articleLink.value = url;
+        renderIframe.value = false;
+        await nextTick();
+        renderIframe.value = true;
+        console.log('[MwVisualEditor][onIframeLoad] iframe recreated, new articleLink=', articleLink.value);
+      } else {
+        console.warn('[MwVisualEditor][onIframeLoad] iframeRef.value is null!');
+      }
+    } catch (e) {
+      console.error('[MwVisualEditor][onIframeLoad] failed to fetch diff URL', e);
+      isProcessingChanges.value = false;
+      loading.value.value = false;
+      miraStore.completeDiffUpdate();
+      $q.notify({
+        message: 'Failed to load changes',
+        icon: 'error',
+        color: 'negative',
+      });
+    }
     return;
   }
 
@@ -208,11 +311,19 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 }
 
-function handleDiffPending() {
+async function handleDiffPending() {
+  console.log('[MwVisualEditor][handleDiffPending] CALLED', {
+    articleId: props.article.article_id,
+    hasReviewData: miraStore.reviewData !== null,
+    iframeAlreadyRendered: !!iframeRef.value,
+  });
+
   isProcessingChanges.value = true;
   loading.value = { value: true, message: loaderPresets.changes.message };
-  setTimeout(() => {
+  diffTimeout = setTimeout(() => {
     loading.value.value = false;
+    isProcessingChanges.value = false;
+    miraStore.completeDiffUpdate();
     $q.notify({
       message:
         'We are still processing changes, here you can see what is happening behind the scenes.',
@@ -223,23 +334,77 @@ function handleDiffPending() {
 
   pendingDiffAfterLoad.value = true;
   activeViewStore.modeToggle = 'edit';
+
+  const review = miraStore.reviewData;
+  if (review) {
+    console.log('[MwVisualEditor][handleDiffPending] using fast path (reviewData)', review);
+    diffUrlPromise.value = Promise.resolve(
+      buildDiffUrl(
+        props.article.article_id,
+        review.oldRevid,
+        review.newRevid,
+      ),
+    );
+  } else {
+    console.log('[MwVisualEditor][handleDiffPending] using slow path (fetchDiffUrl)');
+    diffUrlPromise.value = fetchDiffUrl(props.article.article_id);
+  }
+  console.log('[MwVisualEditor][handleDiffPending] DONE — pendingDiffAfterLoad=true, diffUrlPromise set');
+
+  // If the iframe is ALREADY rendered (e.g. user is in the same Vue session
+  // and just clicked "Review by Mira"), its load event already fired before
+  // we got here — onIframeLoad will never see pendingDiffAfterLoad=true.
+  // Navigate it directly by re-creating the iframe with the diff URL.
+  if (iframeRef.value) {
+    console.log('[MwVisualEditor][handleDiffPending] iframe already rendered — navigating directly');
+    try {
+      const url = await diffUrlPromise.value;
+      console.log('[MwVisualEditor][handleDiffPending] direct-navigate with URL', { url });
+      if (iframeRef.value) {
+        articleLink.value = url;
+        renderIframe.value = false;
+        await nextTick();
+        renderIframe.value = true;
+        // Prevent onIframeLoad from re-navigating when the new iframe loads.
+        pendingDiffAfterLoad.value = false;
+        console.log('[MwVisualEditor][handleDiffPending] direct-navigate done');
+      }
+    } catch (e) {
+      console.error('[MwVisualEditor][handleDiffPending] direct-navigate failed', e);
+    }
+  } else {
+    console.log('[MwVisualEditor][handleDiffPending] iframe not rendered yet — onIframeLoad will handle it');
+  }
 }
 
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
+    console.log('[MwVisualEditor][watch isDiffUpdatePending]', { pending });
     if (!pending) return;
     handleDiffPending();
   },
+  { immediate: true },
 );
 
 watch(
   () => props.article.pending_diff,
   (pending) => {
+    console.log('[MwVisualEditor][watch article.pending_diff]', {
+      pending,
+      articleId: props.article.article_id,
+    });
     if (!pending) return;
     handleDiffPending();
   },
   { immediate: true },
+);
+
+watch(
+  () => articleLink.value,
+  (newVal, oldVal) => {
+    console.log('[MwVisualEditor][watch articleLink]', { oldVal, newVal });
+  },
 );
 
 onMounted(() => {
@@ -248,6 +413,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
+  if (diffTimeout) clearTimeout(diffTimeout);
   miraStore.$reset();
 });
 </script>

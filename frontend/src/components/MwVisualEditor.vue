@@ -148,8 +148,6 @@ async function handleDiffChange(data: {
   });
   isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
-  // After the diff lands, return the user to the editor.
-  articleLink.value = `${mediawikiBaseUrl}/index.php?title=${encodeURIComponent(props.article.article_id)}&veaction=edit`;
   reloadIframe();
 }
 
@@ -230,10 +228,10 @@ async function handleDiffPending() {
 
   // If the iframe is already rendered, its load event already fired
   // before we got here, so onIframeLoad will never see
-  // pendingDiffAfterLoad=true. Post the message directly instead.
+  // pendingDiffAfterLoad=true. Post the message directly and let
+  // onIframeLoad hide the overlay when the diff page actually loads.
   if (iframeRef.value) {
     pendingDiffAfterLoad.value = false;
-    loading.value.value = false;
     gotoDiffLink();
   }
 }

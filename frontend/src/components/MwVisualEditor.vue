@@ -215,6 +215,11 @@ async function handleDiffChange(data: {
   diffHtml: string;
   articleId: string;
 }) {
+  // Once the diff has landed and the iframe sent diff-change, we're done.
+  // Clear pendingDiffAfterLoad so the fresh iframe from reloadIframe() does
+  // not re-trigger handleDiffPending in an infinite loop.
+  pendingDiffAfterLoad.value = false;
+
   const functionName = `/article/${data.articleId}/changes`;
 
   const body: { diffHtml: string; miraBotId?: string } = {
@@ -251,6 +256,11 @@ async function handleDiffChange(data: {
   });
   isProcessingChanges.value = false;
   loading.value = { ...loaderPresets.editor };
+  // After the diff lands, we want the user to go back to the editor (this
+  // is the expected UX after an AI review: show the diff, then return to
+  // the editor). Reset articleLink to the editor URL and reload the iframe.
+  // The editor page does not post a `diff-change` message, so no loop.
+  articleLink.value = `${mediawikiBaseUrl}/index.php?title=${encodeURIComponent(props.article.article_id)}&veaction=edit`;
   reloadIframe();
 }
 
@@ -361,12 +371,15 @@ async function handleDiffPending() {
       const url = await diffUrlPromise.value;
       console.log('[MwVisualEditor][handleDiffPending] direct-navigate with URL', { url });
       if (iframeRef.value) {
+        // CRITICAL: clear the flag BEFORE toggling renderIframe. The
+        // await nextTick() below yields to the event loop, and if
+        // pendingDiffAfterLoad is still true, onIframeLoad will race us
+        // and cause an infinite navigation loop.
+        pendingDiffAfterLoad.value = false;
         articleLink.value = url;
         renderIframe.value = false;
         await nextTick();
         renderIframe.value = true;
-        // Prevent onIframeLoad from re-navigating when the new iframe loads.
-        pendingDiffAfterLoad.value = false;
         console.log('[MwVisualEditor][handleDiffPending] direct-navigate done');
       }
     } catch (e) {

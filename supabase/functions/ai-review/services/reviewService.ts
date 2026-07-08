@@ -17,6 +17,7 @@ export interface ReviewResult {
   comment: string;
   oldRevisionId: number;
   newRevisionId: number;
+  wasEmpty: boolean;
 }
 
 const BATCH_SIZE = 5;
@@ -26,6 +27,7 @@ const noImprovement = (comment: string): ReviewResult => ({
   comment,
   oldRevisionId: 0,
   newRevisionId: 0,
+  wasEmpty: false,
 });
 
 function safeReplace(
@@ -53,22 +55,17 @@ async function generateEmptyArticleContent(
   customInstructions: string,
   existingWikitext: string,
 ): Promise<string | null> {
-  try {
-    const generated = await reviewArticleSection(
-      config,
-      buildEmptyArticlePrompt(article),
-      `USER INSTRUCTION: ${customInstructions}\n\nGenerate content for this article:`,
-    );
+  const generated = await reviewArticleSection(
+    config,
+    buildEmptyArticlePrompt(article),
+    `USER INSTRUCTION: ${customInstructions}\n\nGenerate content for this article:`,
+  );
 
-    const content = generated?.trim();
-    if (!content || content.length < 50) return null;
+  const content = generated?.trim();
+  if (!content || content.length < 50) return null;
 
-    const displayTitle = extractDisplayTitle(existingWikitext);
-    return displayTitle ? `${displayTitle}\n${content}` : content;
-  } catch (error) {
-    console.error('Error generating content for empty article:', error);
-    return null;
-  }
+  const displayTitle = extractDisplayTitle(existingWikitext);
+  return displayTitle ? `${displayTitle}\n${content}` : content;
 }
 
 async function buildImprovedWikitext(
@@ -78,6 +75,8 @@ async function buildImprovedWikitext(
 ): Promise<{ improvedWikitext: string; improvedSections: number }> {
   const sections = splitArticleIntoSections(wikitext);
   const replacements: Array<{ original: string; improved: string }> = [];
+  let lastError: Error | null = null;
+  let failedSections = 0;
 
   for (let i = 0; i < sections.length; i += BATCH_SIZE) {
     const batch = sections.slice(i, i + BATCH_SIZE);
@@ -117,6 +116,8 @@ async function buildImprovedWikitext(
             `Section ${idx + 1} failed:`,
             error instanceof Error ? error.message : error,
           );
+          lastError = error instanceof Error ? error : new Error(String(error));
+          failedSections++;
           return null;
         }
       }),
@@ -135,6 +136,11 @@ async function buildImprovedWikitext(
   console.log(
     `Complete: ${replacements.length}/${sections.length} sections improved`,
   );
+
+  if (replacements.length === 0 && failedSections === sections.length && lastError) {
+    throw lastError;
+  }
+
   return { improvedWikitext, improvedSections: replacements.length };
 }
 
@@ -226,5 +232,6 @@ export async function reviewAndImproveArticle(
     comment: 'Changes applied successfully.',
     oldRevisionId: editResult.oldrevid,
     newRevisionId: editResult.newrevid,
+    wasEmpty: isEmpty,
   };
 }

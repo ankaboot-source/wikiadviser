@@ -70,6 +70,7 @@ const isProcessingChanges = ref(false);
 
 const renderIframe = ref(true);
 const pendingDiffAfterLoad = ref(false);
+let diffTimeout: ReturnType<typeof setTimeout> | null = null;
 async function reloadIframe() {
   renderIframe.value = false;
   await nextTick();
@@ -79,9 +80,6 @@ function gotoDiffLink() {
   activeViewStore.modeToggle = 'edit';
 
   if (!iframeRef.value?.contentWindow) {
-    console.warn(
-      '[MwVisualEditor] gotoDiffLink: iframe contentWindow not ready — will retry on next load',
-    );
     pendingDiffAfterLoad.value = true;
     activeViewStore.modeToggle = 'edit';
     return;
@@ -99,7 +97,7 @@ function gotoDiffLink() {
 async function onIframeLoad() {
   if (pendingDiffAfterLoad.value) {
     pendingDiffAfterLoad.value = false;
-    await new Promise<void>((r) => setTimeout(r, 300));
+    loading.value.value = false;
     gotoDiffLink();
     return;
   }
@@ -112,6 +110,8 @@ async function handleDiffChange(data: {
   diffHtml: string;
   articleId: string;
 }) {
+  pendingDiffAfterLoad.value = false;
+
   const functionName = `/article/${data.articleId}/changes`;
 
   const body: { diffHtml: string; miraBotId?: string } = {
@@ -208,11 +208,13 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 }
 
-function handleDiffPending() {
+async function handleDiffPending() {
   isProcessingChanges.value = true;
   loading.value = { value: true, message: loaderPresets.changes.message };
-  setTimeout(() => {
+  diffTimeout = setTimeout(() => {
     loading.value.value = false;
+    isProcessingChanges.value = false;
+    miraStore.completeDiffUpdate();
     $q.notify({
       message:
         'We are still processing changes, here you can see what is happening behind the scenes.',
@@ -223,6 +225,15 @@ function handleDiffPending() {
 
   pendingDiffAfterLoad.value = true;
   activeViewStore.modeToggle = 'edit';
+
+  // If the iframe is already rendered, its load event already fired
+  // before we got here, so onIframeLoad will never see
+  // pendingDiffAfterLoad=true. Post the message directly and let
+  // onIframeLoad hide the overlay when the diff page actually loads.
+  if (iframeRef.value) {
+    pendingDiffAfterLoad.value = false;
+    gotoDiffLink();
+  }
 }
 
 watch(
@@ -231,6 +242,7 @@ watch(
     if (!pending) return;
     handleDiffPending();
   },
+  { immediate: true },
 );
 
 watch(
@@ -248,6 +260,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
+  if (diffTimeout) clearTimeout(diffTimeout);
   miraStore.$reset();
 });
 </script>

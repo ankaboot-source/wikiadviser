@@ -60,11 +60,6 @@ const baseArticleLink = `${mediawikiBaseUrl}/index.php?title=${encodeURIComponen
 const veLink = `${baseArticleLink}&veaction=edit`;
 const articleLink = ref(veLink);
 
-function navigateToVE() {
-  loading.value = { ...loaderPresets.editor };
-  articleLink.value = veLink;
-  reloadIframe();
-}
 const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
@@ -83,6 +78,11 @@ async function reloadIframe() {
   renderIframe.value = false;
   await nextTick();
   renderIframe.value = true;
+}
+function navigateToVE() {
+  loading.value = { ...loaderPresets.editor };
+  articleLink.value = veLink;
+  reloadIframe();
 }
 
 // Reload the iframe pointing at the editor URL with gotodiff=1 appended.

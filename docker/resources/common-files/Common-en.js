@@ -368,6 +368,29 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
         };
       });
       
+// If its gotodiff param, redirect to diff page (good for Mira diffing)
+$(function () {
+    if (!mw.util.getParamValue("gotodiff")) {
+        return;
+    }
+
+    const articleId = this.getPageName();
+    if (!articleId) {
+        return;
+    }
+
+    console.log("[WikiAdviser] gotodiff param detected, redirecting to diff page for article:", articleId);
+
+    mw.wikiadviser.getDiffUrl(articleId)
+        .then(function (diffUrl) {
+            console.log("[WikiAdviser] Redirect:", diffUrl);
+            window.location.replace(diffUrl);
+        })
+        .catch(function (error) {
+            console.error("[WikiAdviser] Failed:", error);
+        });
+});
+
 // Source Editor Save Handling
 $(function() {
   if (!isIframe) return;

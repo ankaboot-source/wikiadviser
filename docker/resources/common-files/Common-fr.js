@@ -921,6 +921,30 @@ mw.hook( 'wikipage.content' ).add( addBibSubsetMenu );
         };
       });
       
+// If its gotodiff param, redirect to diff page (good for Mira diffing)
+$(function () {
+  console.log("[WikiAdviser] Checking for gotodiff param...",mw.util.getParamValue("gotodiff"));
+    // Has params "gotodiff" & "wikiadviser"
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('wikiadviser') || !urlParams.has('gotodiff')) return;
+
+    const articleId = mw.config.get('wgPageName');
+    if (!articleId) {
+        return;
+    }
+
+    console.log("[WikiAdviser] gotodiff param detected, redirecting to diff page for article:", articleId);
+
+    mw.wikiadviser.getDiffUrl(articleId)
+        .then(function (diffUrl) {
+            console.log("[WikiAdviser] Redirect:", diffUrl);
+            window.location.replace(diffUrl);
+        })
+        .catch(function (error) {
+            console.error("[WikiAdviser] Failed:", error);
+        });
+});
+
 // Source Editor Save Handling
 $(function() {
   if (!isIframe) return;

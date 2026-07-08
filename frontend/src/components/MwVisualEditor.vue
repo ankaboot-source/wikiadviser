@@ -54,9 +54,12 @@ const activeViewStore = useActiveViewStore();
 const miraStore = useMiraReviewStore();
 
 const mediawikiBaseUrl = `${ENV.MEDIAWIKI_ENDPOINT}/${props.article.language}`;
-const articleLink = ref(
-  `${mediawikiBaseUrl}/index.php?title=${props.article.article_id}&veaction=edit`,
-);
+const baseArticleLink = `${mediawikiBaseUrl}/index.php?title=${encodeURIComponent(
+  props.article.article_id,
+)}`;
+const veLink = `${baseArticleLink}&veaction=edit`;
+const articleLink = ref(veLink);
+
 const loaderPresets = {
   editor: { value: true, message: 'Loading Editor' },
   changes: {
@@ -69,39 +72,31 @@ const iframeRef = ref();
 const isProcessingChanges = ref(false);
 
 const renderIframe = ref(true);
-const pendingDiffAfterLoad = ref(false);
-let diffTimeout: ReturnType<typeof setTimeout> | null = null;
+
 async function reloadIframe() {
   renderIframe.value = false;
   await nextTick();
   renderIframe.value = true;
 }
-function gotoDiffLink() {
-  activeViewStore.modeToggle = 'edit';
-
-  if (!iframeRef.value?.contentWindow) {
-    pendingDiffAfterLoad.value = true;
-    activeViewStore.modeToggle = 'edit';
-    return;
-  }
-
-  iframeRef.value.contentWindow.postMessage(
-    {
-      type: 'wikiadviser',
-      data: 'diff',
-      articleId: props.article.article_id,
-    },
-    '*',
-  );
+function navigateToVE() {
+  loading.value = { ...loaderPresets.editor };
+  articleLink.value = veLink;
+  reloadIframe();
 }
-async function onIframeLoad() {
-  if (pendingDiffAfterLoad.value) {
-    pendingDiffAfterLoad.value = false;
-    loading.value.value = false;
-    gotoDiffLink();
-    return;
-  }
 
+// Reload the iframe pointing at the editor URL with gotodiff=1 appended.
+// MediaWiki's Common.js detects the param, fetches the diff URL via
+// mw.wikiadviser.getDiffUrl(), and replaces window.location to land on
+// the diff page. This sidesteps the cross-origin postMessage race that
+// made the old "send event to iframe" approach unreliable.
+async function navigateToDiff() {
+  isProcessingChanges.value = true;
+  loading.value = { ...loaderPresets.changes };
+  articleLink.value = `${baseArticleLink}&gotodiff&wikiadviser`;
+  await reloadIframe();
+}
+
+function onIframeLoad() {
   loading.value.value = false;
 }
 
@@ -110,10 +105,7 @@ async function handleDiffChange(data: {
   diffHtml: string;
   articleId: string;
 }) {
-  pendingDiffAfterLoad.value = false;
-
   const functionName = `/article/${data.articleId}/changes`;
-
   const body: { diffHtml: string; miraBotId?: string } = {
     diffHtml: data.diffHtml,
   };
@@ -135,7 +127,7 @@ async function handleDiffChange(data: {
       color: 'negative',
     });
     isProcessingChanges.value = false;
-    loading.value = { ...loaderPresets.editor };
+    navigateToVE();
     return;
   }
 
@@ -147,32 +139,31 @@ async function handleDiffChange(data: {
     color: 'positive',
   });
   isProcessingChanges.value = false;
-  loading.value = { ...loaderPresets.editor };
-  reloadIframe();
+  navigateToVE();
+  // The diff page in the iframe handles its own navigation back to
+  // the editor after the user accepts/rejects.
 }
 
-async function handleIgnoredInitialEdit() {
+function handleIgnoredInitialEdit() {
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',
     color: 'positive',
   });
   isProcessingChanges.value = false;
-  loading.value = { ...loaderPresets.editor };
-  await reloadIframe();
+  navigateToVE();
 }
 
 async function EventHandler(event: MessageEvent): Promise<void> {
   const { data } = event;
 
-  if (data.type === 'diff-change') {
-    await handleDiffChange(data);
-    return;
-  }
-
+  console.log('[MwVisualEditor] Received event:', data);
   switch (data.type) {
     case 'ignored-initial-edit':
-      await handleIgnoredInitialEdit();
+      handleIgnoredInitialEdit();
+      break;
+    case 'diff-change':
+      await handleDiffChange(data);
       break;
     case 'saved-changes':
       isProcessingChanges.value = true;
@@ -187,11 +178,11 @@ async function EventHandler(event: MessageEvent): Promise<void> {
       } catch (e) {
         console.warn('[MwVisualEditor] Failed to set pending diff:', e);
       }
+      isProcessingChanges.value = false;
+      navigateToVE();
       break;
     case 'deleted-revision':
-      isProcessingChanges.value = true;
-      loading.value = { ...loaderPresets.changes };
-      gotoDiffLink();
+      await navigateToDiff();
       break;
     case 'diff-error':
       console.error('[MwVisualEditor] Diff navigation failed:', data.error);
@@ -208,48 +199,24 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   }
 }
 
-async function handleDiffPending() {
-  isProcessingChanges.value = true;
-  loading.value = { value: true, message: loaderPresets.changes.message };
-  diffTimeout = setTimeout(() => {
-    loading.value.value = false;
-    isProcessingChanges.value = false;
-    miraStore.completeDiffUpdate();
-    $q.notify({
-      message:
-        'We are still processing changes, here you can see what is happening behind the scenes.',
-      icon: 'info',
-      color: 'info',
-    });
-  }, 20000);
-
-  pendingDiffAfterLoad.value = true;
-  activeViewStore.modeToggle = 'edit';
-
-  // If the iframe is already rendered, its load event already fired
-  // before we got here, so onIframeLoad will never see
-  // pendingDiffAfterLoad=true. Post the message directly and let
-  // onIframeLoad hide the overlay when the diff page actually loads.
-  if (iframeRef.value) {
-    pendingDiffAfterLoad.value = false;
-    gotoDiffLink();
-  }
-}
-
+// AI review just completed — show the "still processing" UX toast and
+// reload the iframe with gotodiff=1 to navigate to the diff page.
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
+    console.log('[MwVisualEditor] isDiffUpdatePending changed:', pending);
     if (!pending) return;
-    handleDiffPending();
+    navigateToDiff();
   },
-  { immediate: true },
 );
 
+// Page loaded with pending_diff=true (e.g. user reloaded a wikiadviser
+// that already has pending changes). immediate:true fires once on mount.
 watch(
   () => props.article.pending_diff,
   (pending) => {
-    if (!pending) return;
-    handleDiffPending();
+    console.log('[MwVisualEditor] article.pending_diff changed:', pending);
+    if (pending) navigateToDiff();
   },
   { immediate: true },
 );
@@ -260,7 +227,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
-  if (diffTimeout) clearTimeout(diffTimeout);
   miraStore.$reset();
 });
 </script>

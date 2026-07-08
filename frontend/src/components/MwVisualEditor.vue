@@ -72,7 +72,6 @@ const iframeRef = ref();
 const isProcessingChanges = ref(false);
 
 const renderIframe = ref(true);
-let diffTimeout: ReturnType<typeof setTimeout> | null = null;
 
 async function reloadIframe() {
   renderIframe.value = false;
@@ -145,7 +144,7 @@ async function handleDiffChange(data: {
   // the editor after the user accepts/rejects.
 }
 
-async function handleIgnoredInitialEdit() {
+function handleIgnoredInitialEdit() {
   $q.notify({
     message: 'Changes successfully updated',
     icon: 'check',
@@ -161,7 +160,7 @@ async function EventHandler(event: MessageEvent): Promise<void> {
   console.log('[MwVisualEditor] Received event:', data);
   switch (data.type) {
     case 'ignored-initial-edit':
-      await handleIgnoredInitialEdit();
+      handleIgnoredInitialEdit();
       break;
     case 'diff-change':
       await handleDiffChange(data);
@@ -228,7 +227,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('message', EventHandler);
-  if (diffTimeout) clearTimeout(diffTimeout);
   miraStore.$reset();
 });
 </script>

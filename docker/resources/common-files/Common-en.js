@@ -370,11 +370,12 @@ mw.loader.using( [ 'mediawiki.util' ] ).done( function () {
       
 // If its gotodiff param, redirect to diff page (good for Mira diffing)
 $(function () {
-    if (!mw.util.getParamValue("wikiadviser") || !mw.util.getParamValue("gotodiff")) {
-        return;
-    }
+  console.log("[WikiAdviser] Checking for gotodiff param...",mw.util.getParamValue("gotodiff"));
+    // Has params "gotodiff" & "wikiadviser"
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('wikiadviser') || !urlParams.has('gotodiff')) return;
 
-    const articleId = this.getPageName();
+    const articleId = mw.config.get('wgPageName');
     if (!articleId) {
         return;
     }

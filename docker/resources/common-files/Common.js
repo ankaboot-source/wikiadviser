@@ -231,7 +231,7 @@ mw.hook("ve.activationComplete").add(function () {
 
 // If its gotodiff param, redirect to diff page (good for Mira diffing)
 $(function () {
-    if (!mw.util.getParamValue("gotodiff")) {
+    if (!mw.util.getParamValue("wikiadviser") || !mw.util.getParamValue("gotodiff")) {
         return;
     }
 
@@ -251,6 +251,7 @@ $(function () {
             console.error("[WikiAdviser] Failed:", error);
         });
 });
+
 
 // Source Editor Save Handling
 $(function () {

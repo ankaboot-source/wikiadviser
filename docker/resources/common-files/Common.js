@@ -150,18 +150,19 @@ mw.wikiadviser = {
 };
 
 // If its gotodiff param, redirect to diff page (good for Mira diffing)
-(function () {
-    if (!mw.util.getParamValue("gotodiff")) {
-        return;
-    }
+$(function () {
+  console.log("[WikiAdviser] Checking for gotodiff param...",mw.util.getParamValue("gotodiff"));
+    // Has params "gotodiff" & "wikiadviser"
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('wikiadviser') || !urlParams.has('gotodiff')) return;
 
-    const articleId = this.getPageName();
+    const articleId = mw.config.get('wgPageName');
     if (!articleId) {
         return;
     }
 
     console.log("[WikiAdviser] gotodiff param detected, redirecting to diff page for article:", articleId);
-    
+
     mw.wikiadviser.getDiffUrl(articleId)
         .then(function (diffUrl) {
             console.log("[WikiAdviser] Redirect:", diffUrl);
@@ -170,8 +171,7 @@ mw.wikiadviser = {
         .catch(function (error) {
             console.error("[WikiAdviser] Failed:", error);
         });
-
-})();
+});
 
 mw.hook("ve.activationStart").add(function () {
   try {

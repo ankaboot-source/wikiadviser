@@ -430,6 +430,7 @@ const preventLinkVisit = (event: MouseEvent) => {
 };
 
 async function handleReview(Status: Status) {
+  await handleComment();
   await updateChange(props.item.id, Status);
   expanded.value = false;
 }

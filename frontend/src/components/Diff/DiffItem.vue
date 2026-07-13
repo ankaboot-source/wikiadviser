@@ -289,7 +289,6 @@ import {
 } from 'src/api/supabaseHelper';
 import { useUserStore } from 'src/stores/userStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { ChangeItem, Enums, Profile, Status } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
@@ -298,7 +297,6 @@ import ENV from 'src/schema/env.schema';
 const $q = useQuasar();
 const userStore = useUserStore();
 const store = useSelectedChangeStore();
-const miraStore = useMiraReviewStore();
 const USE_CHANGE_DESCRIPTION = ENV.USE_CHANGE_DESCRIPTION;
 const props = defineProps<{
   item: ChangeItem;
@@ -410,7 +408,6 @@ async function handleComment() {
       props.item.article_id as string,
       comment,
     );
-    miraStore.addPendingPrompt(props.item.id, comment);
     toSendComment.value = '';
   }
 }
@@ -430,6 +427,7 @@ const preventLinkVisit = (event: MouseEvent) => {
 };
 
 async function handleReview(Status: Status) {
+  await handleComment();
   await updateChange(props.item.id, Status);
   expanded.value = false;
 }

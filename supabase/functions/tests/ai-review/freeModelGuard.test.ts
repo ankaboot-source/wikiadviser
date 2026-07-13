@@ -4,6 +4,8 @@ import {
 import { LLMConfig } from "../../ai-review/utils/types.ts";
 import { assertFreeModelAllowed } from "../../ai-review/utils/freeModelGuard.ts";
 
+Deno.env.set("AI_MODEL", "openrouter/free");
+
 function makeConfig(overrides: Partial<LLMConfig> = {}): LLMConfig {
   return {
     apiKey: "sk-test",

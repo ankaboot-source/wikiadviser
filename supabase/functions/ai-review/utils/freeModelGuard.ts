@@ -1,9 +1,8 @@
 import { LLMConfig } from "./types.ts";
 
-const AI_MODEL = Deno.env.get("AI_MODEL");
 export function isFreeModel(model: string): boolean {
   if (!model) return false;
-  if (model === AI_MODEL) return true;
+  if (model === Deno.env.get("AI_MODEL")) return true;
   return model.endsWith(":free");
 }
 

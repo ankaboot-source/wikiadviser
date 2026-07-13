@@ -211,8 +211,8 @@
                 Your API Key is safely stored and encrypted in our secrets vault
               </span>
               <span v-else>
-                Using global API key. Add your own OpenRouter API key to
-                customize.
+                Using global API key. Only free OpenRouter models are available.
+                Add your own OpenRouter key to unlock all models.
               </span>
               <template #action>
                 <q-btn
@@ -446,6 +446,13 @@ interface ModelOption {
   id: string;
   name: string;
   context: number;
+  isFree: boolean;
+}
+
+function isFreeModel(model: string): boolean {
+  if (!model) return false;
+  if (model === 'openrouter/free') return true;
+  return model.endsWith(':free');
 }
 
 interface OpenRouterModel {
@@ -653,6 +660,8 @@ const apiKey = ref({
   showRemoveDialog: false,
 });
 
+const usingGlobalKey = computed(() => !apiKey.value.hasPersonalKey);
+
 const allModelOptions = ref<ModelOption[]>([]);
 const filteredModelOptions = ref<ModelOption[]>([]);
 const loadingModels = ref(false);
@@ -801,10 +810,14 @@ async function loadModelsFromAPI() {
         id: model.id,
         name: `${model.id} (${model.context_length} tokens)`,
         context: model.context_length,
+        isFree: isFreeModel(model.id),
       }))
       .sort((a: ModelOption, b: ModelOption) => b.context - a.context);
 
-    filteredModelOptions.value = allModelOptions.value.slice(0, 50);
+    const initialPool = usingGlobalKey.value
+      ? allModelOptions.value.filter((m: ModelOption) => m.isFree)
+      : allModelOptions.value;
+    filteredModelOptions.value = initialPool.slice(0, 50);
   } catch (error) {
     console.error('Error fetching models:', error);
   } finally {
@@ -817,12 +830,18 @@ function filterModels(val: string, update: (fn: () => void) => void) {
     loadModelsFromAPI();
   }
 
+  const restrictToFree = usingGlobalKey.value;
+
   update(() => {
+    let pool = allModelOptions.value;
+    if (restrictToFree) {
+      pool = pool.filter((model: ModelOption) => model.isFree);
+    }
     if (val === '') {
-      filteredModelOptions.value = allModelOptions.value.slice(0, 50);
+      filteredModelOptions.value = pool.slice(0, 50);
     } else {
       const needle = val.toLowerCase();
-      filteredModelOptions.value = allModelOptions.value
+      filteredModelOptions.value = pool
         .filter((model: ModelOption) => model.id.toLowerCase().includes(needle))
         .slice(0, 50);
     }
@@ -842,6 +861,21 @@ function onProviderChange(newProvider: string) {
 async function saveLLMConfig() {
   const userId = userStore.user?.id;
   if (!userId) return;
+
+  if (
+    llmConfig.value.provider === 'openrouter' &&
+    !apiKey.value.hasPersonalKey &&
+    !apiKey.value.input?.trim() &&
+    llmConfig.value.model &&
+    !isFreeModel(llmConfig.value.model)
+  ) {
+    $q.notify({
+      message: 'Only free models are allowed when using the global API key ',
+      icon: 'error',
+      color: 'negative',
+    });
+    return;
+  }
 
   savingLLMConfig.value = true;
   try {
@@ -883,6 +917,14 @@ async function loadLLMConfig() {
       endpoint: config.endpoint || null,
     };
     apiKey.value.hasPersonalKey = config.has_api_key || false;
+  }
+  if (
+    llmConfig.value.provider === 'openrouter' &&
+    !apiKey.value.hasPersonalKey &&
+    llmConfig.value.model &&
+    !isFreeModel(llmConfig.value.model)
+  ) {
+    llmConfig.value.model = DEFAULT_AI_MODEL;
   }
   if (llmConfig.value.provider !== 'openrouter') {
     filteredModelOptions.value = [];

@@ -36,7 +36,7 @@ export async function getLLMConfig(
       .single();
 
     let apiKey: string | null = null;
-    let model: string = Deno.env.get('AI_MODEL') ?? 'openai/gpt-4o-mini';
+    let model: string = Deno.env.get('AI_MODEL') ?? 'openrouter/free';
     let provider: AIProviderType = (Deno.env.get('AI_PROVIDER') as AIProviderType) ?? 'openrouter';
     let endpoint: string | null = null;
     let hasUserConfig = false;

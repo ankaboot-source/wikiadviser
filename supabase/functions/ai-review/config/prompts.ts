@@ -125,20 +125,6 @@ Requirements:
 Return ONLY the generated content, without any preamble or explanation.`;
 }
 
-export function buildImprovementPrompt(instructions: string): string {
-  return `You are Mira, a Wikipedia editing assistant.
-
-Your task is to improve the given text based on these instructions: ${instructions}
-
-Requirements:
-1. Only make changes that address the instructions
-2. Keep the content factual and neutral
-3. Follow Wikipedia style guidelines
-4. If no improvement is needed, return the original text unchanged
-
-Return ONLY the improved text, without any preamble or explanation.`;
-}
-
 export function cleanAIResponse(
   response: string,
   originalContent: string,

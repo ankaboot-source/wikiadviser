@@ -37,7 +37,7 @@ const envSchema = z.object({
   POSTHOG_API_HOST: z.string().optional(),
   USE_MIRA: z.boolean().default(false),
   USE_CHANGE_DESCRIPTION: z.boolean().default(true),
-  AI_MODEL: z.string().default('google/gemini-2.5-flash-lite'),
+  AI_MODEL: z.string().default('openrouter/free'),
   AI_BOT_EMAIL: z.string().default('mira@wikiadviser.io'),
   AI_PROVIDER: z.string().default('openrouter'),
 });

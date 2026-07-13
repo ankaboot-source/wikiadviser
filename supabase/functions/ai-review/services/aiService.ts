@@ -1,4 +1,5 @@
 import { LLMConfig } from '../utils/types.ts';
+import { assertFreeModelAllowed } from '../utils/freeModelGuard.ts';
 import { OpenAICompatibleProvider } from './providers/openai-compatible.ts';
 import { AnthropicProvider } from './providers/anthropic.ts';
 import { GeminiProvider } from './providers/gemini.ts';
@@ -36,6 +37,7 @@ export async function reviewArticleSection(
   userPrompt: string,
   maxTokens?: number,
 ): Promise<string> {
+  assertFreeModelAllowed(config);
   const provider = getProvider(config);
   console.log(`[AI Review] Starting review with provider="${config.provider}" model="${config.model}"`);
   let lastError: Error = new Error('Unknown error');
@@ -72,6 +74,7 @@ export async function generateRevisionSummary(
   newText: string,
 ): Promise<string> {
   try {
+    assertFreeModelAllowed(config);
     const provider = getProvider(config);
     console.log(`[AI Summary] Generating summary with provider="${config.provider}" model="${config.model}"`);
     const summary = await provider.chatCompletion({

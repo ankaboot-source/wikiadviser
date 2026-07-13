@@ -7,16 +7,8 @@ import {
   addMiraBotPermission,
 } from '../_shared/helpers/supabaseHelper.ts';
 import { reviewAndImproveArticle } from './services/reviewService.ts';
-import {
-  improveRevisionChanges,
-  redoRejectedChanges,
-} from './services/commentReviewService.ts';
+import { redoRejectedChanges } from './services/commentReviewService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
-
-interface RevisionImprovement {
-  change_id: string;
-  prompt: string;
-}
 
 const app = new Hono().basePath('/ai-review');
 app.use('*', corsMiddleware);
@@ -28,7 +20,6 @@ app.post('/', async (c) => {
     const {
       article_id,
       prompt: customInstructions,
-      revision_improvements,
     } = await c.req.json();
     const authHeader = c.req.header('Authorization');
 
@@ -56,141 +47,6 @@ app.post('/', async (c) => {
     if (!MIRA_BOT_ID) {
       console.error('Mira bot not configured in database');
       return c.json({ error: 'Mira bot not configured' }, 500);
-    }
-
-    if (
-      revision_improvements &&
-      Array.isArray(revision_improvements) &&
-      revision_improvements.length > 0
-    ) {
-      await addMiraBotPermission(article_id);
-
-      const config = await getLLMConfig(supabase, user.id);
-
-      if (!config) {
-        console.error('No AI configuration available');
-        return c.json({ error: 'No AI configuration available' }, 400);
-      }
-
-      const changeIds = (revision_improvements as RevisionImprovement[]).map(
-        (imp) => imp.change_id,
-      );
-      const { data: changes, error: changesError } = await supabase
-        .from('changes')
-        .select('id, content, index, status,type_of_edit')
-        .in('id', changeIds);
-
-      if (changesError) {
-        console.error('Failed to fetch changes:', changesError);
-        return c.json({ error: 'Failed to fetch changes' }, 500);
-      }
-
-      if (!changes || changes.length === 0) {
-        console.error('No changes found');
-        return c.json({ error: 'No changes found' }, 404);
-      }
-
-      const changeDataMap = new Map(
-        changes.map((c) => [
-          c.id,
-          {
-            content: c.content,
-            index: c.index,
-            status: c.status,
-            type_of_edit: c.type_of_edit,
-          },
-        ]),
-      );
-
-      const STATUS_LABELS: Record<number, string> = {
-        0: 'pending',
-        1: 'approved',
-        2: 'rejected',
-      };
-
-      const improvements = (revision_improvements as RevisionImprovement[]).map(
-        (imp) => {
-          const changeData = changeDataMap.get(imp.change_id);
-          return {
-            change_id: imp.change_id,
-            prompt: imp.prompt,
-            content: changeData?.content || '',
-            index: changeData?.index ?? null,
-            status: changeData?.status ?? 0,
-            type_of_edit: changeData?.type_of_edit ?? 0,
-          };
-        },
-      );
-
-      const rejectedImprovements = improvements.filter(
-        (imp) => imp.status === 2,
-      );
-
-      const skippedCount = improvements.length - rejectedImprovements.length;
-      if (skippedCount > 0) {
-        console.info(
-          `[comment-review] Skipped ${skippedCount} non-rejected change(s)`,
-        );
-      }
-
-      console.info(
-        `[comment-review] improvements to process:
-        ${rejectedImprovements
-          .map(
-            (i) =>
-              `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${
-                STATUS_LABELS[i.status] ?? i.status
-              } | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(
-                0,
-                80,
-              )}"`,
-          )
-          .join('\n')}`,
-      );
-
-      if (rejectedImprovements.length === 0) {
-        console.info('No rejected changes to process');
-        return c.json({
-          summary: 'No rejected changes to process',
-          has_improvements: false,
-          trigger_diff_update: false,
-        });
-      }
-
-      const result = await improveRevisionChanges(
-        article_id,
-        rejectedImprovements,
-        config,
-        MIRA_BOT_ID,
-      );
-
-      if (!result.hasImprovements) {
-        console.info('No improvements made');
-        return c.json({
-          summary: result.comment || 'No improvements needed',
-          has_improvements: false,
-          trigger_diff_update: false,
-        });
-      }
-
-      console.info('[review] improveRevisionChanges succeeded, saving pending_diff');
-      try {
-        const admin = createSupabaseAdmin();
-        await admin
-          .from('articles')
-          .update({ pending_diff: true })
-          .eq('id', article_id);
-      } catch (e) {
-        console.warn('[review] Failed to save pending diff:', e);
-      }
-      return c.json({
-        summary: result.comment,
-        has_improvements: true,
-        old_revision: result.oldRevisionId,
-        new_revision: result.newRevisionId,
-        mira_bot_id: MIRA_BOT_ID,
-        trigger_diff_update: true,
-      });
     }
 
     const { data: rejectedChanges, error: rejectedError } = await supabase

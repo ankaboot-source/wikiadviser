@@ -83,15 +83,8 @@ import { useUserStore } from 'src/stores/userStore';
 import { Article } from 'src/types';
 import { computed, onMounted, ref } from 'vue';
 
-interface RevisionImprovement {
-  change_id: string;
-  prompt: string;
-  content: string;
-}
-
 const props = defineProps<{
   article: Article;
-  revisionImprovements: RevisionImprovement[];
 }>();
 
 const emit =
@@ -390,29 +383,16 @@ async function triggerReview() {
   loading.value = true;
   reviews.value = [];
 
-  const snapshotImprovements = [...props.revisionImprovements];
-  const hasRevisionImprovements = snapshotImprovements.length > 0;
-
   try {
-    const requestBody: Record<string, unknown> = {
-      article_id: props.article.article_id,
-    };
-
-    if (hasRevisionImprovements) {
-      requestBody.revision_improvements = snapshotImprovements.map((imp) => ({
-        change_id: imp.change_id,
-        prompt: imp.prompt,
-      }));
-    } else {
-      requestBody.language = props.article.language;
-      requestBody.prompt = selectedPrompt.value?.isCustom
-        ? selectedPrompt.value.prompt
-        : undefined;
-    }
-
     const { data, error: fnError } =
       await supabaseClient.functions.invoke<ReviewResponse>('ai-review', {
-        body: requestBody,
+        body: {
+          article_id: props.article.article_id,
+          language: props.article.language,
+          prompt: selectedPrompt.value?.isCustom
+            ? selectedPrompt.value.prompt
+            : undefined,
+        },
       });
 
     if (fnError) {
@@ -465,7 +445,6 @@ async function triggerReview() {
     miraStore.$reset();
   } finally {
     loading.value = false;
-    miraStore.clearPendingPrompts();
   }
 }
 </script>

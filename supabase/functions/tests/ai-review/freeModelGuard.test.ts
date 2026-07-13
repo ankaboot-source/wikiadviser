@@ -1,5 +1,4 @@
 import {
-  assertEquals,
   assertThrows,
 } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { LLMConfig } from "../../ai-review/utils/types.ts";
@@ -18,29 +17,29 @@ function makeConfig(overrides: Partial<LLMConfig> = {}): LLMConfig {
 }
 
 Deno.test(
-  "assertFreeModelAllowed: OpenRouter + global key + :free model passes",
+  "assertFreeModelAllowed: global key + :free model passes",
   () => {
     const config = makeConfig({
       hasUserConfig: false,
       model: "deepseek/deepseek-r1:free",
     });
-    assertEquals(assertFreeModelAllowed(config), undefined);
+    assertFreeModelAllowed(config);
   },
 );
 
 Deno.test(
-  "assertFreeModelAllowed: OpenRouter + global key + openrouter/free router passes",
+  "assertFreeModelAllowed: global key + AI_MODEL env default passes",
   () => {
     const config = makeConfig({
       hasUserConfig: false,
       model: "openrouter/free",
     });
-    assertEquals(assertFreeModelAllowed(config), undefined);
+    assertFreeModelAllowed(config);
   },
 );
 
 Deno.test(
-  "assertFreeModelAllowed: OpenRouter + global key + paid model throws",
+  "assertFreeModelAllowed: global key + paid model throws",
   () => {
     const config = makeConfig({
       hasUserConfig: false,
@@ -51,37 +50,37 @@ Deno.test(
 );
 
 Deno.test(
-  "assertFreeModelAllowed: OpenRouter + personal key + paid model passes",
+  "assertFreeModelAllowed: personal key + paid model passes",
   () => {
     const config = makeConfig({
       hasUserConfig: true,
       model: "openai/gpt-4o",
     });
-    assertEquals(assertFreeModelAllowed(config), undefined);
+    assertFreeModelAllowed(config);
   },
 );
 
 Deno.test(
-  "assertFreeModelAllowed: non-OpenRouter provider + global key passes",
-  () => {
-    const config = makeConfig({
-      hasUserConfig: false,
-      provider: "openai",
-      model: "gpt-4o",
-    });
-    assertEquals(assertFreeModelAllowed(config), undefined);
-  },
-);
-
-Deno.test(
-  "assertFreeModelAllowed: OpenRouter + global key + custom provider endpoint passes",
+  "assertFreeModelAllowed: global key + free model + custom provider passes",
   () => {
     const config = makeConfig({
       hasUserConfig: false,
       provider: "custom",
-      model: "whatever",
+      model: "some-model:free",
       endpoint: "https://example.com/v1",
     });
-    assertEquals(assertFreeModelAllowed(config), undefined);
+    assertFreeModelAllowed(config);
+  },
+);
+
+Deno.test(
+  "assertFreeModelAllowed: global key + free model + non-openrouter provider passes",
+  () => {
+    const config = makeConfig({
+      hasUserConfig: false,
+      provider: "openai",
+      model: "gpt-4o:free",
+    });
+    assertFreeModelAllowed(config);
   },
 );

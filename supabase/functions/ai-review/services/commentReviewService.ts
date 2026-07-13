@@ -16,6 +16,7 @@ export interface CommentImprovement {
   index: number | null;
   status: number;
   type_of_edit: number;
+  mode: 'rejection' | 'follow-up';
 }
 
 export interface CommentReviewResult {
@@ -105,6 +106,7 @@ async function applyImprovement(
       buildRevisionUserPrompt(
         paragraph,
         improvement.prompt,
+        improvement.mode,
       ),
     );
     const trimmed = improved.trim();
@@ -230,7 +232,7 @@ async function generateContentForEmptyArticle(
   return { generatedWikitext: paragraphs.join('\n\n'), improvedCount };
 }
 
-export async function redoRejectedChanges(
+export async function processCommentedChanges(
   articleId: string,
   improvements: CommentImprovement[],
   config: LLMConfig,
@@ -251,7 +253,7 @@ export async function redoRejectedChanges(
     parentRevId = revisions[0]?.parentid ?? null;
   } catch (e) {
     console.warn(
-      '[redoRejected] Could not fetch recent revisions, falling back to current-only mode',
+      '[processCommented] Could not fetch recent revisions, falling back to current-only mode',
     );
   }
   let previousWikitext: string | null = null;
@@ -264,19 +266,17 @@ export async function redoRejectedChanges(
       );
     } catch (e) {
       console.warn(
-        '[redoRejected] Could not fetch previous revision, falling back to current',
+        '[processCommented] Could not fetch previous revision, falling back to current',
       );
     }
   }
 
-  const validImprovements = improvements.filter(
-    (imp) => imp.status === 2 && imp.content?.trim(),
-  );
+  const validImprovements = improvements.filter((imp) => imp.content?.trim());
 
   if (validImprovements.length === 0) {
     return {
       hasImprovements: false,
-      comment: 'No rejected changes to process.',
+      comment: 'No comment-backed changes to process.',
       oldRevisionId: 0,
       newRevisionId: 0,
     };
@@ -301,7 +301,7 @@ export async function redoRejectedChanges(
       }
     }
     console.info(
-      `[redoRejected] ${changedIndices.size} paragraph(s) differ between revisions`,
+      `[processCommented] ${changedIndices.size} paragraph(s) differ between revisions`,
     );
   }
 
@@ -327,7 +327,7 @@ export async function redoRejectedChanges(
 
     if (type_of_edit === REMOVE_TYPE) {
       if (index === null) {
-        console.warn(`[redoRejected] Skipping change ${change_id}: removal has no index`);
+        console.warn(`[processCommented] Skipping change ${change_id}: removal has no index`);
         continue;
       }
       targetIndex = Math.min(index, currentParagraphs.length - 1);
@@ -348,7 +348,7 @@ export async function redoRejectedChanges(
         );
         if (targetIndex === -1) {
           console.warn(
-            `[redoRejected] Skipping change ${change_id}: could not match to any paragraph`,
+            `[processCommented] Skipping change ${change_id}: could not match to any paragraph`,
           );
           continue;
         }
@@ -357,12 +357,12 @@ export async function redoRejectedChanges(
     }
 
     console.info(
-      `[redoRejected] Change ${change_id.substring(0, 8)} → method: ${matchMethod} | storedIdx: ${index} | resolvedIdx: ${targetIndex} | plainText: "${plainTextPreview}"`,
+      `[processCommented] Change ${change_id.substring(0, 8)} → method: ${matchMethod} | storedIdx: ${index} | resolvedIdx: ${targetIndex} | plainText: "${plainTextPreview}"`,
     );
 
     if (usedIndices.has(targetIndex)) {
       console.warn(
-        `[redoRejected] Skipping change ${change_id.substring(0, 8)}: paragraph ${targetIndex} already claimed`,
+        `[processCommented] Skipping change ${change_id.substring(0, 8)}: paragraph ${targetIndex} already claimed`,
       );
       continue;
     }
@@ -378,11 +378,11 @@ export async function redoRejectedChanges(
           ? prevPara.substring(0, 60) + '...'
           : prevPara;
         console.info(
-          `[redoRejected] Using PREVIOUS revision para[${targetIndex}]: "${prevPreview}"`,
+          `[processCommented] Using PREVIOUS revision para[${targetIndex}]: "${prevPreview}"`,
         );
       } else {
         console.info(
-          `[redoRejected] Previous para[${targetIndex}] same as current — using current`,
+          `[processCommented] Previous para[${targetIndex}] same as current — using current`,
         );
       }
     }
@@ -391,7 +391,7 @@ export async function redoRejectedChanges(
       ? currentParagraph.substring(0, 60) + '...'
       : currentParagraph;
     console.info(
-      `[redoRejected] Current para[${targetIndex}]: "${currPreview}"`,
+      `[processCommented] Current para[${targetIndex}]: "${currPreview}"`,
     );
 
     usedIndices.add(targetIndex);
@@ -403,6 +403,7 @@ export async function redoRejectedChanges(
         buildRevisionUserPrompt(
           sourceParagraph,
           prompt,
+          improvement.mode,
         ),
         8192,
       );
@@ -412,16 +413,16 @@ export async function redoRejectedChanges(
         improvedParagraphs[targetIndex] = trimmed;
         improvedCount++;
         console.info(
-          `[redoRejected] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: improved`,
+          `[processCommented] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: improved`,
         );
       } else {
         console.info(
-          `[redoRejected] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: no change`,
+          `[processCommented] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: no change`,
         );
       }
     } catch (error) {
       console.error(
-        `[redoRejected] Failed to improve change ${change_id}:`,
+        `[processCommented] Failed to improve change ${change_id}:`,
         error,
       );
     }

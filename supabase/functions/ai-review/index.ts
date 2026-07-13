@@ -7,8 +7,14 @@ import {
   addMiraBotPermission,
 } from '../_shared/helpers/supabaseHelper.ts';
 import { reviewAndImproveArticle } from './services/reviewService.ts';
-import { redoRejectedChanges } from './services/commentReviewService.ts';
+import { processCommentedChanges } from './services/commentReviewService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
+
+const STATUS_LABELS: Record<number, string> = {
+  0: 'pending',
+  1: 'approved',
+  2: 'rejected',
+};
 
 const app = new Hono().basePath('/ai-review');
 app.use('*', corsMiddleware);
@@ -49,32 +55,18 @@ app.post('/', async (c) => {
       return c.json({ error: 'Mira bot not configured' }, 500);
     }
 
-    const { data: rejectedChanges, error: rejectedError } = await supabase
+    const { data: candidateChanges, error: candidateError } = await supabase
       .from('changes')
       .select('id, content, index, status, type_of_edit')
       .eq('article_id', article_id)
-      .eq('status', 2);
+      .in('status', [1, 2]);
 
-    if (!rejectedError && rejectedChanges && rejectedChanges.length > 0) {
-      console.info(
-        `[auto-retry] Found ${rejectedChanges.length} rejected change(s) to retry`,
-      );
-
-      await addMiraBotPermission(article_id);
-      const config = await getLLMConfig(supabase, user.id, customInstructions);
-
-      if (!config) {
-        console.error('No AI configuration available');
-        return c.json({ error: 'No AI configuration available' }, 400);
-      }
-
-      const instruction = customInstructions?.trim() || 'Improve the text';
-
-      const rejectedChangeIds = rejectedChanges.map((c) => c.id);
+    if (!candidateError && candidateChanges && candidateChanges.length > 0) {
+      const candidateIds = candidateChanges.map((c) => c.id);
       const { data: comments } = await supabase
         .from('comments')
         .select('change_id, content')
-        .in('change_id', rejectedChangeIds);
+        .in('change_id', candidateIds);
 
       const commentsByChangeId = new Map<string, string[]>();
       for (const comment of comments || []) {
@@ -83,72 +75,111 @@ app.post('/', async (c) => {
         commentsByChangeId.set(comment.change_id, existing);
       }
 
-      const improvements = rejectedChanges.map((change) => {
-        const changeComments = commentsByChangeId.get(change.id) || [];
-        const feedbackBlock = changeComments.length > 0
-          ? `User feedback on this change:\n${changeComments.join('\n')}\n\n`
-          : '';
-        const promptWithFeedback = `${instruction}\n\nThe previous version was rejected by the user — produce a different version.\n\n${feedbackBlock}`.trim();
-
-        return {
-          change_id: change.id,
-          prompt: promptWithFeedback,
-          content: change.content || '',
-          index: change.index,
-          status: change.status,
-          type_of_edit: change.type_of_edit ?? 0,
-        };
+      const processableChanges = candidateChanges.filter((c) => {
+        if (c.status === 2) return true;
+        if (c.status === 1) {
+          return (commentsByChangeId.get(c.id) || []).length > 0;
+        }
+        return false;
       });
 
-      console.info(
-        `[auto-retry] improvements to process:\n${improvements
-          .map(
-            (i) =>
-              `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: rejected | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
-          )
-          .join('\n')}`,
-      );
+      if (processableChanges.length > 0) {
+        const rejectedCount = processableChanges.filter(
+          (c) => c.status === 2,
+        ).length;
+        const approvedWithCommentsCount =
+          processableChanges.length - rejectedCount;
+        console.info(
+          `[auto-retry] Processing ${rejectedCount} rejected and ${approvedWithCommentsCount} approved-with-comments change(s)`,
+        );
 
-      const result = await redoRejectedChanges(
-        article_id,
-        improvements,
-        config,
-        MIRA_BOT_ID,
-      );
+        await addMiraBotPermission(article_id);
+        const config = await getLLMConfig(supabase, user.id, customInstructions);
 
-      if (result.hasImprovements) {
-        console.info('[auto-retry] Edit succeeded, saving pending_diff');
-        try {
-          const admin = createSupabaseAdmin();
-          console.info('[auto-retry] Admin client created, updating article', article_id);
-          const { error: updateError } = await admin
-            .from('articles')
-            .update({ pending_diff: true })
-            .eq('id', article_id);
-          if (updateError) {
-            console.warn('[auto-retry] Update returned error:', updateError);
-          } else {
-            console.info('[auto-retry] pending_diff saved successfully');
-          }
-        } catch (e) {
-          console.warn('[auto-retry] Failed to save pending diff:', e);
+        if (!config) {
+          console.error('No AI configuration available');
+          return c.json({ error: 'No AI configuration available' }, 400);
         }
+
+        const instruction = customInstructions?.trim() || 'Improve the text';
+
+        const improvements = processableChanges.map((change) => {
+          const changeComments = commentsByChangeId.get(change.id) || [];
+          const feedbackBlock = changeComments.length > 0
+            ? `User feedback on this change:\n${changeComments.join('\n')}\n\n`
+            : '';
+          const contextLine = change.status === 2
+            ? 'The previous version was rejected by the user — produce a different version.'
+            : 'The user approved this change but has follow-up feedback — apply it while preserving what they liked.';
+          const promptWithFeedback =
+            `${instruction}\n\n${contextLine}\n\n${feedbackBlock}`.trim();
+
+          return {
+            change_id: change.id,
+            prompt: promptWithFeedback,
+            content: change.content || '',
+            index: change.index,
+            status: change.status,
+            type_of_edit: change.type_of_edit ?? 0,
+            mode: change.status === 2
+              ? ('rejection' as const)
+              : ('follow-up' as const),
+          };
+        });
+
+        console.info(
+          `[auto-retry] improvements to process:\n${improvements
+            .map(
+              (i) =>
+                `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${STATUS_LABELS[i.status] ?? i.status} | mode: ${i.mode} | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
+            )
+            .join('\n')}`,
+        );
+
+        const result = await processCommentedChanges(
+          article_id,
+          improvements,
+          config,
+          MIRA_BOT_ID,
+        );
+
+        if (result.hasImprovements) {
+          console.info('[auto-retry] Edit succeeded, saving pending_diff');
+          try {
+            const admin = createSupabaseAdmin();
+            console.info(
+              '[auto-retry] Admin client created, updating article',
+              article_id,
+            );
+            const { error: updateError } = await admin
+              .from('articles')
+              .update({ pending_diff: true })
+              .eq('id', article_id);
+            if (updateError) {
+              console.warn('[auto-retry] Update returned error:', updateError);
+            } else {
+              console.info('[auto-retry] pending_diff saved successfully');
+            }
+          } catch (e) {
+            console.warn('[auto-retry] Failed to save pending diff:', e);
+          }
+          return c.json({
+            summary: result.comment,
+            has_improvements: true,
+            old_revision: result.oldRevisionId,
+            new_revision: result.newRevisionId,
+            mira_bot_id: MIRA_BOT_ID,
+            trigger_diff_update: true,
+          });
+        }
+
+        console.info('[auto-retry] No improvements from retry');
         return c.json({
-          summary: result.comment,
-          has_improvements: true,
-          old_revision: result.oldRevisionId,
-          new_revision: result.newRevisionId,
-          mira_bot_id: MIRA_BOT_ID,
-          trigger_diff_update: true,
+          summary: result.comment || 'Could not improve changes',
+          has_improvements: false,
+          trigger_diff_update: false,
         });
       }
-
-      console.info('[auto-retry] No improvements from retry');
-      return c.json({
-        summary: result.comment || 'Could not improve rejected changes',
-        has_improvements: false,
-        trigger_diff_update: false,
-      });
     }
 
     await addMiraBotPermission(article_id);

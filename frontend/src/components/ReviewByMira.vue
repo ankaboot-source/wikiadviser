@@ -422,6 +422,13 @@ async function triggerReview() {
         'success',
         data.summary || 'AI improvement added to changes list',
       );
+    } else if (data?.was_empty && data?.mira_bot_id) {
+      miraStore.completeReview({
+        miraBotId: data.mira_bot_id,
+        oldRevid: 0,
+        newRevid: 0,
+      });
+      showNotification('success', data.summary);
     } else if (
       data?.trigger_diff_update &&
       data?.mira_bot_id &&

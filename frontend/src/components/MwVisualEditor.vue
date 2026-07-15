@@ -201,12 +201,19 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 
 // AI review just completed — show the "still processing" UX toast and
 // reload the iframe with gotodiff=1 to navigate to the diff page.
+// For empty-article reviews, completeReview is called with 0/0 revids
+// and we just reload the VE so the user sees the newly generated content.
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
     console.log('[MwVisualEditor] isDiffUpdatePending changed:', pending);
     if (!pending) return;
-    navigateToDiff();
+    const data = miraStore.reviewData;
+    if (data && data.oldRevid === 0 && data.newRevid === 0) {
+      navigateToVE();
+    } else {
+      navigateToDiff();
+    }
   },
 );
 

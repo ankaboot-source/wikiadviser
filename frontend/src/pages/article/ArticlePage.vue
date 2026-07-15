@@ -115,6 +115,19 @@ watch(
   },
 );
 
+async function applyChanges(htmlContent?: string) {
+  changesList.value = await getParsedChanges(articleId.value);
+  if (htmlContent === undefined) {
+    const { data } = await supabaseClient
+      .from('articles')
+      .select('current_html_content')
+      .eq('id', articleId.value)
+      .single();
+    htmlContent = data?.current_html_content as string;
+  }
+  changesContent.value = parseArticleHtml(htmlContent, changesList.value);
+}
+
 async function handleArticleRealtime(
   payload: RealtimePostgresChangesPayload<Tables<'articles'>>,
 ) {
@@ -124,30 +137,11 @@ async function handleArticleRealtime(
     return;
   }
 
-  changesList.value = await getParsedChanges(articleId.value);
-  changesContent.value = parseArticleHtml(
-    updatedArticle.current_html_content as string,
-    changesList.value,
-  );
+  await applyChanges(updatedArticle.current_html_content as string);
 }
 
-async function handleChangeRealtime(
-  payload: RealtimePostgresChangesPayload<Tables<'changes'>>,
-) {
-  const newChange = payload.new as Tables<'changes'>;
-  const oldChangeIndex = changesList.value.find(
-    (change) => change.id === newChange.id,
-  )?.index;
-
-  if (oldChangeIndex !== newChange.index) {
-    return;
-  }
-
-  changesList.value = await getParsedChanges(articleId.value);
-  changesContent.value = parseArticleHtml(
-    changesContent.value as string,
-    changesList.value,
-  );
+async function handleChangeRealtime() {
+  await applyChanges();
 }
 
 async function handleCommentRealtime(
@@ -266,7 +260,7 @@ onBeforeMount(async () => {
     .on<Tables<'changes'>>(
       'postgres_changes',
       {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'changes',
         filter: `article_id=eq.${articleId.value}`,

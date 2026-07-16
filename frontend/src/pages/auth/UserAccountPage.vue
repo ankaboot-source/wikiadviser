@@ -442,6 +442,8 @@ import { useUserStore } from 'src/stores/userStore';
 import { computed, onBeforeMount, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+const DEFAULT_AI_MODEL = ENV.AI_MODEL;
+
 interface ModelOption {
   id: string;
   name: string;
@@ -451,7 +453,7 @@ interface ModelOption {
 
 function isFreeModel(model: string): boolean {
   if (!model) return false;
-  if (model === 'openrouter/free') return true;
+  if (model === DEFAULT_AI_MODEL) return true;
   return model.endsWith(':free');
 }
 
@@ -907,7 +909,6 @@ async function saveLLMConfig() {
     savingLLMConfig.value = false;
   }
 }
-const DEFAULT_AI_MODEL = ENV.AI_MODEL;
 async function loadLLMConfig() {
   const config = userStore.user?.llm_reviewer_config;
   if (config) {

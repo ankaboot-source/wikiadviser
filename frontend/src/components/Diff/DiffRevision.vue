@@ -47,6 +47,55 @@
         </q-item-section>
       </q-item-section>
     </template>
+    <!-- Whole-revision comment thread (one comment for the whole revision,
+         not change-by-change). Sits above the per-change items. -->
+    <q-item-section v-if="!viewerPermission" class="q-pt-sm q-px-md">
+      <div class="row items-center q-gutter-x-sm">
+        <q-icon name="forum" size="sm" />
+        <div class="text-subtitle2">Comment on this revision</div>
+      </div>
+      <q-scroll-area
+        v-if="revisionComments.length"
+        style="max-height: 9.5rem"
+        class="q-px-sm q-pb-sm q-mt-xs bg-secondary rounded-borders"
+      >
+        <template v-for="comment in revisionComments" :key="comment.id">
+          <q-chat-message
+            :name="getName(comment.user)"
+            :text="[comment.content]"
+            :stamp="new Date(comment.created_at).toLocaleString()"
+            :sent="comment.user.email == email"
+            :avatar="comment.user.avatar_url"
+            :bg-color="comment.user.email == email ? 'green' : 'accent'"
+            :class="comment.user.email == email ? 'q-mr-xs' : ''"
+          />
+        </template>
+      </q-scroll-area>
+      <q-input
+        v-model="toSendRevisionComment"
+        autogrow
+        outlined
+        dense
+        class="row full-width q-mt-sm"
+        placeholder="Leave a comment on this revision"
+        :disable="viewerPermission"
+        @keydown.enter="handleRevisionComment"
+      >
+        <template #append>
+          <q-btn
+            round
+            dense
+            flat
+            icon="send"
+            color="primary"
+            tabindex="-1"
+            @click="handleRevisionComment"
+          />
+        </template>
+      </q-input>
+    </q-item-section>
+    <q-separator class="q-mt-sm" />
+
     <!-- Current Changes -->
     <q-list>
       <diff-item
@@ -115,8 +164,16 @@
 
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
+import { insertRevisionComment } from 'src/api/supabaseHelper';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Enums, Revision } from 'src/types';
+import { useUserStore } from 'src/stores/userStore';
+import {
+  Comment,
+  Enums,
+  Profile,
+  Revision,
+} from 'src/types';
+import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
 import UserComponent from '../UserComponent.vue';
@@ -127,14 +184,17 @@ const props = defineProps<{
   revision: Revision;
   articleId: string;
   isFirst: boolean;
+  revisionComments: Comment[];
 }>();
 
 const store = useSelectedChangeStore();
+const userStore = useUserStore();
 const $q = useQuasar();
 
 const expanded = ref($q.screen.gt.sm || props.isFirst);
 const deleteRevisionDialog = ref<boolean>(false);
 const deletingRevision = ref<boolean>(false);
+const toSendRevisionComment = ref('');
 
 const summary = computed(() => props.revision.summary);
 const changesToReviewLength = computed(() => {
@@ -151,6 +211,46 @@ const localeTimeString = computed(() =>
     },
   ),
 );
+
+const revisionComments = computed(() => props.revisionComments || []);
+const email = computed(() => userStore.user?.email || '');
+const userId = computed(() => (userStore.user as Profile).id);
+const viewerPermission = computed(() => props.role === 'viewer');
+
+function getName(user: Profile) {
+  if (user?.display_name && user.display_name.trim() !== '') {
+    return user.display_name;
+  }
+  if (user?.email && user.email.trim() !== '') {
+    return (
+      user.email.substring(0, MAX_EMAIL_LENGTH) +
+      (user.email.length > MAX_EMAIL_LENGTH ? '...' : '')
+    );
+  }
+  return undefined;
+}
+
+async function handleRevisionComment() {
+  const content = toSendRevisionComment.value.trim();
+  if (!content) return;
+  if (!props.revision.id) {
+    console.warn('Revision has no id; cannot post revision-level comment');
+    return;
+  }
+  toSendRevisionComment.value = '';
+  try {
+    await insertRevisionComment(
+      props.revision.id,
+      userId.value,
+      props.articleId,
+      content,
+    );
+  } catch (e) {
+    // Restore so the user doesn't lose their text
+    toSendRevisionComment.value = content;
+    throw e;
+  }
+}
 
 watch(
   () => store.selectedChangeId,

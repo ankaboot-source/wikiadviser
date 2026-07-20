@@ -46,7 +46,8 @@ export type Comment = {
   user: Profile;
   content: string | null;
   commenter_id: string;
-  change_id: string;
+  change_id: string | null;
+  revision_id: string | null;
 };
 
 export type Permission = {
@@ -60,11 +61,13 @@ export enum Status {
   EditRejected = 2,
 }
 export interface Revision {
+  id: string;
   revid: number;
   index: number;
   summary: string;
   items: ChangeItem[];
   isRecent: boolean;
+  comments: Comment[];
 }
 
 export interface Profile {

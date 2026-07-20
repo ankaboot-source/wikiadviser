@@ -1,6 +1,13 @@
 import supabaseClient from 'src/api/supabase';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
+import {
+  Article,
+  ChangeItem,
+  Comment,
+  Enums,
+  Permission,
+  User,
+} from 'src/types';
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
 
@@ -159,6 +166,10 @@ export async function updatePermission(
 /**
  * Retrieves and parses changes from the database based on the provided ID.
  *
+ * Returns the parsed change list plus a Map of revision-level comments
+ * keyed by revision uuid, so callers can attach whole-revision comments
+ * to the matching revision group.
+ *
  * @param id - The ID of the changes or the article ID depending on the context.
  * @param single - Retrieve single change or all, default "false"
  * @throws {Error} Throws an error on fail.
@@ -166,7 +177,10 @@ export async function updatePermission(
 export async function getParsedChanges(
   id: string,
   single = false,
-): Promise<ChangeItem[]> {
+): Promise<{
+  changes: ChangeItem[];
+  revisionComments: Map<string, Comment[]>;
+}> {
   const { data, error } = await supabaseClient.functions.invoke('get/changes', {
     method: 'POST',
     body: { id, single },
@@ -174,7 +188,46 @@ export async function getParsedChanges(
 
   if (error) throw new Error(error.message);
 
-  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
+  // Backward compat: older server returns a plain array.
+  const rawChanges: unknown[] = Array.isArray(data)
+    ? data
+    : Array.isArray(data?.changes)
+      ? data.changes
+      : [];
+
+  const rawRevComments: unknown[] = Array.isArray(data?.revisionComments)
+    ? data.revisionComments
+    : [];
+
+  const changes = rawChanges.map((change) =>
+    parseChangeHtml(change as unknown as ChangeItem),
+  );
+
+  const revisionComments = new Map<string, Comment[]>();
+  for (const c of rawRevComments) {
+    const row = c as {
+      revision_id: string | null;
+      content: string | null;
+      created_at: string | null;
+      id: string;
+      user: Comment['user'];
+    };
+    if (!row.revision_id) continue;
+    const bucket = revisionComments.get(row.revision_id) || [];
+    bucket.push({
+      id: row.id,
+      created_at: row.created_at ? new Date(row.created_at) : new Date(),
+      user: row.user,
+      content: row.content,
+      commenter_id:
+        (row.user as { id?: string } | null)?.id ?? '',
+      change_id: null,
+      revision_id: row.revision_id,
+    });
+    revisionComments.set(row.revision_id, bucket);
+  }
+
+  return { changes, revisionComments };
 }
 
 export async function updateChange(
@@ -208,6 +261,24 @@ export async function insertComment(
 
   if (changeError) {
     throw new Error(changeError.message);
+  }
+}
+
+export async function insertRevisionComment(
+  revisionId: string,
+  commenterId: string,
+  articleId: string,
+  content: string,
+) {
+  const { error } = await supabaseClient.from('comments').insert({
+    revision_id: revisionId,
+    commenter_id: commenterId,
+    article_id: articleId,
+    content,
+  });
+
+  if (error) {
+    throw new Error(error.message);
   }
 }
 

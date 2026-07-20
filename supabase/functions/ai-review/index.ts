@@ -57,22 +57,51 @@ app.post('/', async (c) => {
 
     const { data: candidateChanges, error: candidateError } = await supabase
       .from('changes')
-      .select('id, content, index, status, type_of_edit')
+      .select('id, content, index, status, type_of_edit, revision_id')
       .eq('article_id', article_id)
       .in('status', [1, 2]);
 
     if (!candidateError && candidateChanges && candidateChanges.length > 0) {
       const candidateIds = candidateChanges.map((c) => c.id);
-      const { data: comments } = await supabase
-        .from('comments')
-        .select('change_id, content')
-        .in('change_id', candidateIds);
+      const candidateRevisionIds = Array.from(
+        new Set(
+          candidateChanges
+            .map((c) => c.revision_id)
+            .filter((rid): rid is string => typeof rid === 'string'),
+        ),
+      );
+
+      const [changeCommentsResp, revisionCommentsResp] = await Promise.all([
+        supabase
+          .from('comments')
+          .select('change_id, content')
+          .in('change_id', candidateIds),
+        candidateRevisionIds.length > 0
+          ? supabase
+              .from('comments')
+              .select('revision_id, content')
+              .in('revision_id', candidateRevisionIds)
+              .is('change_id', null)
+          : Promise.resolve({ data: [] as Array<{ revision_id: string; content: string | null }>, error: null }),
+      ]);
+
+      const comments = changeCommentsResp.data || [];
+      const revisionComments = revisionCommentsResp.data || [];
 
       const commentsByChangeId = new Map<string, string[]>();
-      for (const comment of comments || []) {
+      for (const comment of comments) {
         const existing = commentsByChangeId.get(comment.change_id) || [];
         existing.push(comment.content);
         commentsByChangeId.set(comment.change_id, existing);
+      }
+
+      const revisionCommentsByRevisionId = new Map<string, string[]>();
+      for (const comment of revisionComments) {
+        if (!comment.revision_id) continue;
+        const existing =
+          revisionCommentsByRevisionId.get(comment.revision_id) || [];
+        existing.push(comment.content);
+        revisionCommentsByRevisionId.set(comment.revision_id, existing);
       }
 
       const processableChanges = candidateChanges.filter((c) => {
@@ -105,14 +134,21 @@ app.post('/', async (c) => {
 
         const improvements = processableChanges.map((change) => {
           const changeComments = commentsByChangeId.get(change.id) || [];
+          const revisionFeedback =
+            (change.revision_id &&
+              revisionCommentsByRevisionId.get(change.revision_id)) ||
+            [];
           const feedbackBlock = changeComments.length > 0
             ? `User feedback on this change:\n${changeComments.join('\n')}\n\n`
+            : '';
+          const revisionFeedbackBlock = revisionFeedback.length > 0
+            ? `Revision-level feedback (applies to the whole revision, not just this change):\n${revisionFeedback.join('\n')}\n\n`
             : '';
           const contextLine = change.status === 2
             ? 'The previous version was rejected by the user — produce a different version.'
             : 'The user approved this change but has follow-up feedback — apply it while preserving what they liked.';
           const promptWithFeedback =
-            `${instruction}\n\n${contextLine}\n\n${feedbackBlock}`.trim();
+            `${revisionFeedbackBlock}${instruction}\n\n${contextLine}\n\n${feedbackBlock}`.trim();
 
           return {
             change_id: change.id,
@@ -124,6 +160,7 @@ app.post('/', async (c) => {
             mode: change.status === 2
               ? ('rejection' as const)
               : ('follow-up' as const),
+            revision_feedback: revisionFeedback,
           };
         });
 

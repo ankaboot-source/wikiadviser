@@ -23,6 +23,7 @@
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
+        :revision-comments="revisionCommentsMap"
         class="rounded-borders bg-secondary borders list-area"
       />
 
@@ -57,7 +58,14 @@ import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useUserStore } from 'src/stores/userStore';
-import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
+import {
+  ChangeItem,
+  Comment,
+  Enums,
+  Profile,
+  Tables,
+  User,
+} from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -78,6 +86,7 @@ const loading = ref(true);
 const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
 const changesList = ref<ChangeItem[]>([]);
+const revisionCommentsMap = ref<Map<string, Comment[]>>(new Map());
 const changesContent = ref<string | null>(null);
 const realtimeChannel: RealtimeChannel = supabaseClient.channel('db-changes');
 const article = computed(() => articlesStore.getArticleById(articleId.value));
@@ -116,7 +125,9 @@ watch(
 );
 
 async function applyChanges(htmlContent?: string) {
-  changesList.value = await getParsedChanges(articleId.value);
+  const parsed = await getParsedChanges(articleId.value);
+  changesList.value = parsed.changes;
+  revisionCommentsMap.value = parsed.revisionComments;
   if (htmlContent === undefined) {
     const { data } = await supabaseClient
       .from('articles')
@@ -148,6 +159,24 @@ async function handleCommentRealtime(
   payload: RealtimePostgresChangesPayload<Comment>,
 ) {
   const insertedComment = payload.new as Comment;
+
+  // Revision-level comment (no change_id, has revision_id).
+  if (insertedComment.revision_id && !insertedComment.change_id) {
+    const bucket =
+      revisionCommentsMap.value.get(insertedComment.revision_id) || [];
+    insertedComment.user = (
+      await supabaseClient
+        .from('profiles')
+        .select()
+        .eq('id', insertedComment.commenter_id)
+        .single()
+    ).data as Profile;
+    bucket.push(insertedComment);
+    revisionCommentsMap.value.set(insertedComment.revision_id, bucket);
+    revisionCommentsMap.value = new Map(revisionCommentsMap.value);
+    return;
+  }
+
   for (const change of changesList.value) {
     if (change.id === insertedComment.change_id) {
       insertedComment.user = (
@@ -234,7 +263,9 @@ onBeforeMount(async () => {
     activeViewStore.modeToggle = 'edit';
   }
 
-  changesList.value = await getParsedChanges(articleId.value);
+  const initialParsed = await getParsedChanges(articleId.value);
+  changesList.value = initialParsed.changes;
+  revisionCommentsMap.value = initialParsed.revisionComments;
   changesContent.value = parseArticleHtml(
     (
       await supabaseClient

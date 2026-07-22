@@ -4,6 +4,7 @@ export interface ChangeItem extends Tables<'changes'> {
   user: Profile;
   comments: Comment[];
   revision: {
+    id: string;
     revid: number;
     summary: string;
   };

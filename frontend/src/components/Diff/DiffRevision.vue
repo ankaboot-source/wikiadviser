@@ -49,15 +49,14 @@
     </template>
     <!-- Whole-revision comment thread (one comment for the whole revision,
          not change-by-change). Sits above the per-change items. -->
-    <q-item-section v-if="!viewerPermission" class="q-pt-sm q-px-md">
+    <div v-if="!viewerPermission" class="q-pt-sm q-px-md">
       <div class="row items-center q-gutter-x-sm">
         <q-icon name="forum" size="sm" />
         <div class="text-subtitle2">Comment on this revision</div>
       </div>
-      <q-scroll-area
+      <div
         v-if="revisionComments.length"
-        style="max-height: 9.5rem"
-        class="q-px-sm q-pb-sm q-mt-xs bg-secondary rounded-borders"
+        class="revision-comments-list q-px-sm q-pb-sm q-mt-xs bg-secondary rounded-borders"
       >
         <template v-for="comment in revisionComments" :key="comment.id">
           <q-chat-message
@@ -70,7 +69,7 @@
             :class="comment.user.email == email ? 'q-mr-xs' : ''"
           />
         </template>
-      </q-scroll-area>
+      </div>
       <q-input
         v-model="toSendRevisionComment"
         autogrow
@@ -93,8 +92,8 @@
           />
         </template>
       </q-input>
-    </q-item-section>
-    <q-separator class="q-mt-sm" />
+    </div>
+    <q-separator v-if="!viewerPermission" class="q-mt-sm" />
 
     <!-- Current Changes -->
     <q-list>
@@ -292,3 +291,10 @@ async function deleteRevision() {
   deleteRevisionDialog.value = false;
 }
 </script>
+
+<style scoped>
+.revision-comments-list {
+  max-height: 9.5rem;
+  overflow-y: auto;
+}
+</style>

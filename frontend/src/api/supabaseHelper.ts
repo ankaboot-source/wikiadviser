@@ -213,18 +213,20 @@ export async function getParsedChanges(
       user: Comment['user'];
     };
     if (!row.revision_id) continue;
-    const bucket = revisionComments.get(row.revision_id) || [];
-    bucket.push({
-      id: row.id,
-      created_at: row.created_at ? new Date(row.created_at) : new Date(),
-      user: row.user,
-      content: row.content,
-      commenter_id:
-        (row.user as { id?: string } | null)?.id ?? '',
-      change_id: null,
-      revision_id: row.revision_id,
-    });
-    revisionComments.set(row.revision_id, bucket);
+    const existing = revisionComments.get(row.revision_id) ?? [];
+    revisionComments.set(row.revision_id, [
+      ...existing,
+      {
+        id: row.id,
+        created_at: row.created_at ? new Date(row.created_at) : new Date(),
+        user: row.user,
+        content: row.content,
+        commenter_id:
+          (row.user as { id?: string } | null)?.id ?? '',
+        change_id: null,
+        revision_id: row.revision_id,
+      },
+    ]);
   }
 
   return { changes, revisionComments };

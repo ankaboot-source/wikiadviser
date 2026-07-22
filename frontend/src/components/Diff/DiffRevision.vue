@@ -37,7 +37,7 @@
           </q-item-section>
         </q-item-label>
 
-        <q-item-section class="word_break_all">
+        <q-item-section class="revision-summary-label">
           <q-item-label v-if="!expanded" caption lines="1">
             {{ summary }}
           </q-item-label>

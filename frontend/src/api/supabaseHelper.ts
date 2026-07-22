@@ -11,6 +11,21 @@ import {
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
 
+/**
+ * Returns true if the row is already present in the map (defensive against
+ * the server returning the same comment twice — e.g. if the query were
+ * re-run with overlapping windows).
+ */
+function dedupeRevisionComment(
+  map: Map<string, Comment[]>,
+  row: { id: string; revision_id: string | null },
+): boolean {
+  if (!row.revision_id) return false;
+  const bucket = map.get(row.revision_id);
+  if (!bucket) return false;
+  return bucket.some((c) => c.id === row.id);
+}
+
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data, error } = await supabaseClient.functions.invoke('get/users', {
     method: 'POST',
@@ -164,6 +179,24 @@ export async function updatePermission(
 }
 
 /**
+ * Wire shape returned by the `get/changes` Edge Function.
+ * Mirrored in `supabase/functions/get/handlers/getChanges.ts::GetChangesResponse`.
+ * Keep both sides in sync.
+ */
+interface GetChangesResponse {
+  changes: unknown[];
+  revisionComments: RevisionCommentRow[];
+}
+
+interface RevisionCommentRow {
+  id: string;
+  revision_id: string | null;
+  content: string | null;
+  created_at: string | null;
+  user: Comment['user'];
+}
+
+/**
  * Retrieves and parses changes from the database based on the provided ID.
  *
  * Returns the parsed change list plus a Map of revision-level comments
@@ -188,15 +221,17 @@ export async function getParsedChanges(
 
   if (error) throw new Error(error.message);
 
-  // Backward compat: older server returns a plain array.
+  // Backward compat: older server returns a plain array (pre-revision-comments).
   const rawChanges: unknown[] = Array.isArray(data)
     ? data
-    : Array.isArray(data?.changes)
-      ? data.changes
+    : Array.isArray((data as GetChangesResponse | null)?.changes)
+      ? (data as GetChangesResponse).changes
       : [];
 
-  const rawRevComments: unknown[] = Array.isArray(data?.revisionComments)
-    ? data.revisionComments
+  const rawRevComments: RevisionCommentRow[] = Array.isArray(
+    (data as GetChangesResponse | null)?.revisionComments
+  )
+    ? (data as GetChangesResponse).revisionComments
     : [];
 
   const changes = rawChanges.map((change) =>
@@ -204,15 +239,9 @@ export async function getParsedChanges(
   );
 
   const revisionComments = new Map<string, Comment[]>();
-  for (const c of rawRevComments) {
-    const row = c as {
-      revision_id: string | null;
-      content: string | null;
-      created_at: string | null;
-      id: string;
-      user: Comment['user'];
-    };
+  for (const row of rawRevComments) {
     if (!row.revision_id) continue;
+    if (dedupeRevisionComment(revisionComments, row)) continue;
     const existing = revisionComments.get(row.revision_id) ?? [];
     revisionComments.set(row.revision_id, [
       ...existing,

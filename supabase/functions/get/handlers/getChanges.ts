@@ -1,6 +1,23 @@
 import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
 
+/**
+ * Contract returned to the frontend. Mirrored in
+ * `frontend/src/api/supabaseHelper.ts::getParsedChanges` — keep them in sync.
+ */
+export interface GetChangesResponse {
+  changes: unknown[];
+  revisionComments: RevisionCommentRow[];
+}
+
+export interface RevisionCommentRow {
+  id: string;
+  revision_id: string;
+  content: string | null;
+  created_at: string | null;
+  user: unknown;
+}
+
 export async function getChanges(c: Context) {
   const supabaseAdmin = createSupabaseAdmin();
   const { id, single = false } = await c.req.json();
@@ -9,6 +26,10 @@ export async function getChanges(c: Context) {
     return c.json({ message: "id is required" }, 400);
   }
 
+  // NOTE: The `comments!comments_change_id_fkey` embed below pins the
+  // change-level comment join to the original FK constraint from
+  // 20230515153031_init.sql. If that constraint is ever renamed or dropped,
+  // this embed will silently break or 400.
   const { data, error } = await supabaseAdmin
     .from('changes')
     .select(
@@ -56,13 +77,7 @@ export async function getChanges(c: Context) {
     ),
   );
 
-  let revisionComments: Array<{
-    id: string;
-    revision_id: string;
-    content: string | null;
-    created_at: string | null;
-    user: unknown;
-  }> = [];
+  const revisionComments: RevisionCommentRow[] = [];
 
   if (revisionIds.length > 0) {
     const { data: revComments } = await supabaseAdmin
@@ -74,8 +89,11 @@ export async function getChanges(c: Context) {
       .is('change_id', null)
       .order('created_at', { ascending: true });
 
-    revisionComments = (revComments ?? []) as typeof revisionComments;
+    for (const row of revComments ?? []) {
+      revisionComments.push(row as RevisionCommentRow);
+    }
   }
 
-  return c.json({ changes: data, revisionComments });
+  const response: GetChangesResponse = { changes: data ?? [], revisionComments };
+  return c.json(response);
 }

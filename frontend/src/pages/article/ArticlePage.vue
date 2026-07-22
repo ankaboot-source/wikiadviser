@@ -168,6 +168,10 @@ async function handleCommentRealtime(
   ) {
     const existing =
       revisionCommentsMap.value.get(insertedComment.revision_id) ?? [];
+    // Dedupe: realtime is at-least-once; a re-fire would duplicate the bubble.
+    if (existing.some((c) => c.id === insertedComment.id)) {
+      return;
+    }
     if (!insertedComment.user) {
       const { data } = await supabaseClient
         .from('profiles')
@@ -187,6 +191,9 @@ async function handleCommentRealtime(
   if (insertedComment.change_id) {
     for (const change of changesList.value) {
       if (change.id === insertedComment.change_id) {
+        if (change.comments.some((c) => c.id === insertedComment.id)) {
+          break;
+        }
         if (!insertedComment.user) {
           insertedComment.user = (
             await supabaseClient

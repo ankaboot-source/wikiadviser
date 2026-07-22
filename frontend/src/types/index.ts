@@ -68,7 +68,6 @@ export interface Revision {
   summary: string;
   items: ChangeItem[];
   isRecent: boolean;
-  comments: Comment[];
 }
 
 export interface Profile {

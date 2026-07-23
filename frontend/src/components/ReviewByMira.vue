@@ -1,24 +1,24 @@
 <template>
   <div>
     <q-btn-dropdown
-      :icon="loading ? undefined : 'img:/icons/logo.svg'"
+      :icon="miraStore.loading ? undefined : 'img:/icons/logo.svg'"
       outline
       no-caps
       class="q-mr-xs q-px-md btn-no-icon-spacing review-btn-wrapper"
       content-class="no-shadow"
-      :disable="loading"
+      :disable="miraStore.loading"
       split
       @click="triggerReview"
     >
       <template #label>
-        <template v-if="loading">
+        <template v-if="miraStore.loading">
           <q-spinner size="1em" />
         </template>
         <span v-if="!$q.screen.lt.md" class="review-label">
           &nbsp;Review by&nbsp;<span
             class="prompt-name"
-            :class="{ 'prompt-name-active': selectedPrompt }"
-            >{{ selectedPrompt?.name }}</span
+            :class="{ 'prompt-name-active': miraStore.selectedPrompt }"
+            >{{ miraStore.selectedPrompt?.name }}</span
           >
         </span>
       </template>
@@ -29,12 +29,14 @@
           :key="prompt.id"
           v-close-popup
           clickable
-          @click="selectPrompt(prompt)"
+          @click="miraStore.selectPrompt(prompt)"
         >
           <q-item-section>
             <q-item-label
               class="flex items-center"
-              :class="{ 'text-primary': selectedPrompt?.id === prompt.id }"
+              :class="{
+                'text-primary': miraStore.selectedPrompt?.id === prompt.id,
+              }"
             >
               <span>{{ prompt.name }}</span>
             </q-item-label>
@@ -76,10 +78,8 @@
 
 <script setup lang="ts">
 import { useQuasar } from 'quasar';
-import supabaseClient from 'src/api/supabase';
 import PromptFormDialog from 'src/components/PromptFormDialog.vue';
-import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
-import { useUserStore } from 'src/stores/userStore';
+import { useMiraReviewStore, type Prompt } from 'src/stores/useMiraReviewStore';
 import { Article } from 'src/types';
 import { computed, onMounted, ref } from 'vue';
 
@@ -87,177 +87,27 @@ const props = defineProps<{
   article: Article;
 }>();
 
-const emit =
-  defineEmits<
-    (
-      e: 'review-complete',
-      data: { changeId?: string; success: boolean },
-    ) => void
-  >();
-
-interface ReviewItem {
-  change_id: string;
-  comment: string;
-  proposed_change: string;
-  has_improvement: boolean;
-}
-
-interface ReviewResponse {
-  summary: string;
-  total_reviewed: number;
-  total_improvements: number;
-  reviews: ReviewItem[];
-  trigger_diff_update: boolean;
-  mira_bot_id?: string;
-  old_revision?: number;
-  new_revision?: number;
-  error?: string;
-  change_id?: string;
-}
-
-interface Prompt {
-  id: string;
-  name: string;
-  prompt: string;
-  isCustom: boolean;
-}
-
-interface StoredPrompt {
-  id: string;
-  name: string;
-  prompt: string;
-}
-
-const defaultPrompts: Prompt[] = [
-  {
-    id: 'mira',
-    name: 'Mira',
-    prompt: '',
-    isCustom: false,
-  },
-];
-
 const miraStore = useMiraReviewStore();
-const userStore = useUserStore();
 const $q = useQuasar();
 
-const loading = ref(false);
-const reviews = ref<ReviewItem[]>([]);
-
-const prompts = ref<Prompt[]>([...defaultPrompts]);
-const selectedPrompt = ref<Prompt | null>(null);
 const promptDialog = ref(false);
 const editingPrompt = ref<Prompt | null>(null);
 const savingPrompt = ref(false);
 const deletingPrompt = ref(false);
 
 const sortedPrompts = computed(() => {
-  if (!selectedPrompt.value) return prompts.value;
-
-  const selected = prompts.value.find((p) => p.id === selectedPrompt.value?.id);
-  const others = prompts.value.filter((p) => p.id !== selectedPrompt.value?.id);
-
-  return selected ? [selected, ...others] : prompts.value;
+  const selected = miraStore.selectedPrompt;
+  if (!selected) return miraStore.prompts;
+  const others = miraStore.prompts.filter((p) => p.id !== selected.id);
+  return [selected, ...others];
 });
 
 onMounted(async () => {
-  await loadPromptsFromDB();
+  await miraStore.loadPromptsFromDB();
 });
 
-async function loadPromptsFromDB() {
-  try {
-    const userId = userStore.user?.id;
-    if (!userId) return;
-
-    const { data: profileData, error } = await supabaseClient
-      .from('profiles')
-      .select('llm_reviewer_config')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      console.error('Error loading prompts:', error);
-      return;
-    }
-
-    const config =
-      typeof profileData?.llm_reviewer_config === 'object' &&
-      profileData?.llm_reviewer_config !== null &&
-      !Array.isArray(profileData?.llm_reviewer_config)
-        ? (profileData.llm_reviewer_config as Record<string, unknown>)
-        : {};
-    const customPrompts: StoredPrompt[] =
-      (config.prompts as StoredPrompt[]) || [];
-    const customPromptObjects: Prompt[] = customPrompts.map((cp) => ({
-      id: cp.id,
-      name: cp.name,
-      prompt: cp.prompt,
-      isCustom: true,
-    }));
-
-    prompts.value = [...defaultPrompts, ...customPromptObjects];
-
-    const savedSelectedId = config.selected_prompt_id as string | undefined;
-    if (savedSelectedId) {
-      selectedPrompt.value =
-        prompts.value.find((p) => p.id === savedSelectedId) || prompts.value[0];
-    } else {
-      selectedPrompt.value = prompts.value[0];
-    }
-  } catch (error) {
-    console.error('Error in loadPromptsFromDB:', error);
-  }
-}
-
-async function savePromptsToDB() {
-  try {
-    const userId = userStore.user?.id;
-    if (!userId) return;
-
-    const { data: profileData } = await supabaseClient
-      .from('profiles')
-      .select('llm_reviewer_config')
-      .eq('id', userId)
-      .single();
-
-    const existingConfig =
-      typeof profileData?.llm_reviewer_config === 'object' &&
-      profileData?.llm_reviewer_config !== null &&
-      !Array.isArray(profileData?.llm_reviewer_config)
-        ? (profileData.llm_reviewer_config as Record<string, unknown>)
-        : {};
-
-    const customPrompts = prompts.value
-      .filter((p) => p.isCustom)
-      .map((p) => ({
-        id: p.id,
-        name: p.name,
-        prompt: p.prompt,
-      }));
-
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({
-        llm_reviewer_config: {
-          ...existingConfig,
-          prompts: customPrompts,
-          selected_prompt_id: selectedPrompt.value?.id || null,
-        },
-      })
-      .eq('id', userId);
-
-    if (error) throw error;
-
-    await userStore.fetchProfile();
-  } catch (error) {
-    console.error('Error saving prompts:', error);
-    throw error;
-  }
-}
-
-function selectPrompt(prompt: Prompt) {
-  selectedPrompt.value = prompt;
-  savePromptsToDB();
+function triggerReview() {
+  void miraStore.triggerReview(props.article.article_id);
 }
 
 function openAddDialog() {
@@ -278,12 +128,12 @@ async function savePrompt(data: { name: string; prompt: string }) {
   savingPrompt.value = true;
   try {
     if (editingPrompt.value) {
-      const index = prompts.value.findIndex(
+      const index = miraStore.prompts.findIndex(
         (p) => p.id === editingPrompt.value?.id,
       );
       if (index !== -1) {
-        prompts.value[index] = {
-          ...prompts.value[index],
+        miraStore.prompts[index] = {
+          ...miraStore.prompts[index],
           name: data.name,
           prompt: data.prompt,
         };
@@ -295,11 +145,11 @@ async function savePrompt(data: { name: string; prompt: string }) {
         prompt: data.prompt,
         isCustom: true,
       };
-      prompts.value.push(newPrompt);
-      selectedPrompt.value = newPrompt;
+      miraStore.prompts.push(newPrompt);
+      miraStore.selectPrompt(newPrompt);
     }
 
-    await savePromptsToDB();
+    await miraStore.savePromptsToDB();
 
     $q.notify({
       message: editingPrompt.value
@@ -329,19 +179,20 @@ async function deletePrompt() {
   deletingPrompt.value = true;
   try {
     const promptId = editingPrompt.value.id;
-    prompts.value = prompts.value.filter((p) => p.id !== promptId);
+    miraStore.prompts = miraStore.prompts.filter((p) => p.id !== promptId);
 
-    if (selectedPrompt.value?.id === promptId) {
-      selectedPrompt.value = prompts.value[0];
+    if (miraStore.selectedPrompt?.id === promptId) {
+      miraStore.selectPrompt(miraStore.prompts[0]);
     }
 
-    await savePromptsToDB();
+    await miraStore.savePromptsToDB();
 
     $q.notify({
       message: 'Prompt deleted successfully',
       icon: 'check',
       color: 'positive',
     });
+
     promptDialog.value = false;
     editingPrompt.value = null;
   } catch (error) {
@@ -353,105 +204,6 @@ async function deletePrompt() {
     });
   } finally {
     deletingPrompt.value = false;
-  }
-}
-
-function showNotification(type: 'success' | 'info' | 'error', message: string) {
-  const icons = {
-    success: 'check_circle',
-    info: 'info',
-    error: 'error',
-  };
-
-  const colors = {
-    success: 'positive',
-    info: 'positive',
-    error: 'negative',
-  };
-
-  $q.notify({
-    type: colors[type],
-    message,
-    icon: icons[type],
-    position: 'bottom',
-    timeout: 5000,
-    actions: [{ icon: 'close', color: 'white', round: true }],
-  });
-}
-
-async function triggerReview() {
-  loading.value = true;
-  reviews.value = [];
-
-  try {
-    const { data, error: fnError } =
-      await supabaseClient.functions.invoke<ReviewResponse>('ai-review', {
-        body: {
-          article_id: props.article.article_id,
-          language: props.article.language,
-          prompt: selectedPrompt.value?.isCustom
-            ? selectedPrompt.value.prompt
-            : undefined,
-        },
-      });
-
-    if (fnError) {
-      const errData = (fnError as Record<string, unknown>)?.context?.data as
-        | Record<string, unknown>
-        | undefined;
-      const details = errData?.details as string | undefined;
-      const errMsg = errData?.error as string | undefined;
-      const userMsg =
-        details?.includes('429') || details?.includes('quota')
-          ? 'AI provider quota exceeded — please wait or switch to a different model'
-          : details?.includes('API key') || details?.includes('apiKey')
-            ? 'AI provider configuration error — check your API key'
-            : details || errMsg || 'AI provider error';
-      showNotification('error', userMsg);
-      throw fnError;
-    }
-
-    if (data?.reviews && data.reviews.length > 0) {
-      reviews.value = data.reviews;
-    }
-
-    if (data?.change_id) {
-      miraStore.$reset();
-      emit('review-complete', { changeId: data.change_id, success: true });
-      showNotification(
-        'success',
-        data.summary || 'AI improvement added to changes list',
-      );
-    } else if (data?.was_empty && data?.mira_bot_id) {
-      miraStore.completeReview({
-        miraBotId: data.mira_bot_id,
-        oldRevid: 0,
-        newRevid: 0,
-      });
-      showNotification('success', data.summary);
-    } else if (
-      data?.trigger_diff_update &&
-      data?.mira_bot_id &&
-      data?.old_revision &&
-      data?.new_revision
-    ) {
-      miraStore.completeReview({
-        miraBotId: data.mira_bot_id,
-        oldRevid: data.old_revision,
-        newRevid: data.new_revision,
-      });
-      showNotification('success', data.summary);
-    } else {
-      miraStore.$reset();
-      showNotification('info', data?.summary as string);
-    }
-  } catch (error) {
-    if (!error) {
-      showNotification('error', 'An unexpected error occurred during review');
-    }
-    miraStore.$reset();
-  } finally {
-    loading.value = false;
   }
 }
 </script>

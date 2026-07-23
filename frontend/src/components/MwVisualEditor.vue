@@ -203,6 +203,9 @@ async function EventHandler(event: MessageEvent): Promise<void> {
 // reload the iframe with gotodiff=1 to navigate to the diff page.
 // For empty-article reviews, completeReview is called with 0/0 revids
 // and we just reload the VE so the user sees the newly generated content.
+// `immediate: true` ensures the watcher also fires when MwVisualEditor
+// mounts *after* a view-mode review trigger (e.g. the per-revision "Send
+// review" button), where isDiffUpdatePending is already true at mount.
 watch(
   () => miraStore.isDiffUpdatePending,
   (pending) => {
@@ -215,6 +218,7 @@ watch(
       navigateToDiff();
     }
   },
+  { immediate: true },
 );
 
 // Page loaded with pending_diff=true (e.g. user reloaded a wikiadviser

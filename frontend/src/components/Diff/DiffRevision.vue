@@ -109,6 +109,25 @@
     </q-list>
     <div v-if="$props.revision.isRecent" class="q-pb-md q-pr-xs text-right">
       <q-btn
+        v-if="USE_MIRA"
+        no-caps
+        outline
+        color="primary"
+        class="q-mr-sm"
+        icon="img:/icons/logo.svg"
+        :loading="miraStore.loading"
+        :disable="miraStore.loading || !miraStore.selectedPrompt"
+        label="Send review"
+        @click.stop="sendReview"
+      >
+        <q-tooltip v-if="miraStore.selectedPrompt">
+          Review the article using "{{ miraStore.selectedPrompt.name }}"
+        </q-tooltip>
+        <q-tooltip v-else>
+          No prompt selected — pick one in the toolbar
+        </q-tooltip>
+      </q-btn>
+      <q-btn
         no-caps
         unelevated
         flat
@@ -164,6 +183,7 @@
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
 import { insertRevisionComment } from 'src/api/supabaseHelper';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useUserStore } from 'src/stores/userStore';
 import {
@@ -175,8 +195,11 @@ import {
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import ENV from 'src/schema/env.schema';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
+
+const USE_MIRA = ENV.USE_MIRA;
 
 const props = defineProps<{
   role: Enums<'role'>;
@@ -188,6 +211,7 @@ const props = defineProps<{
 
 const store = useSelectedChangeStore();
 const userStore = useUserStore();
+const miraStore = useMiraReviewStore();
 const $q = useQuasar();
 
 const expanded = ref($q.screen.gt.sm || props.isFirst);
@@ -263,6 +287,11 @@ watch(
     );
   },
 );
+
+function sendReview() {
+  if (!miraStore.selectedPrompt) return;
+  void miraStore.triggerReview(props.articleId);
+}
 
 async function deleteRevision() {
   deletingRevision.value = true;

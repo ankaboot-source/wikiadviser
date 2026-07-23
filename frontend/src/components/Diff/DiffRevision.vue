@@ -186,12 +186,7 @@ import { insertRevisionComment } from 'src/api/supabaseHelper';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useUserStore } from 'src/stores/userStore';
-import {
-  Comment,
-  Enums,
-  Profile,
-  Revision,
-} from 'src/types';
+import { Comment, Enums, Profile, Revision } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';

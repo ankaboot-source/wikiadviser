@@ -219,17 +219,18 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     try {
       const { data, error: fnError } =
         await supabaseClient.functions.invoke<ReviewResponse>('ai-review', {
-        body: {
-          article_id: articleId,
-          prompt: selectedPrompt.value?.isCustom
-            ? selectedPrompt.value.prompt
-            : undefined,
-        },
+          body: {
+            article_id: articleId,
+            prompt: selectedPrompt.value?.isCustom
+              ? selectedPrompt.value.prompt
+              : undefined,
+          },
         });
 
       if (fnError) {
-        const errData = (fnError as Record<string, unknown>)?.context
-          ?.data as Record<string, unknown> | undefined;
+        const errData = (fnError as Record<string, unknown>)?.context?.data as
+          | Record<string, unknown>
+          | undefined;
         const details = errData?.details as string | undefined;
         const errMsg = errData?.error as string | undefined;
         const userMsg =

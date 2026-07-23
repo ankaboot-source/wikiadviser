@@ -58,14 +58,7 @@ import { useActiveViewStore } from 'src/stores/useActiveViewStore';
 import { useArticlesStore } from 'src/stores/useArticlesStore';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useUserStore } from 'src/stores/userStore';
-import {
-  ChangeItem,
-  Comment,
-  Enums,
-  Profile,
-  Tables,
-  User,
-} from 'src/types';
+import { ChangeItem, Comment, Enums, Profile, Tables, User } from 'src/types';
 import { computed, onBeforeMount, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 

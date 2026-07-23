@@ -229,7 +229,7 @@ export async function getParsedChanges(
       : [];
 
   const rawRevComments: RevisionCommentRow[] = Array.isArray(
-    (data as GetChangesResponse | null)?.revisionComments
+    (data as GetChangesResponse | null)?.revisionComments,
   )
     ? (data as GetChangesResponse).revisionComments
     : [];
@@ -250,8 +250,7 @@ export async function getParsedChanges(
         created_at: row.created_at ? new Date(row.created_at) : new Date(),
         user: row.user,
         content: row.content,
-        commenter_id:
-          (row.user as { id?: string } | null)?.id ?? '',
+        commenter_id: (row.user as { id?: string } | null)?.id ?? '',
         change_id: null,
         revision_id: row.revision_id,
       },

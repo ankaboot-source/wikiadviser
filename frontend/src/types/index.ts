@@ -4,6 +4,7 @@ export interface ChangeItem extends Tables<'changes'> {
   user: Profile;
   comments: Comment[];
   revision: {
+    id: string;
     revid: number;
     summary: string;
   };
@@ -46,7 +47,8 @@ export type Comment = {
   user: Profile;
   content: string | null;
   commenter_id: string;
-  change_id: string;
+  change_id: string | null;
+  revision_id: string | null;
 };
 
 export type Permission = {
@@ -60,6 +62,7 @@ export enum Status {
   EditRejected = 2,
 }
 export interface Revision {
+  id: string;
   revid: number;
   index: number;
   summary: string;

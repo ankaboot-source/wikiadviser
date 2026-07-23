@@ -23,6 +23,7 @@
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
+        :revision-comments="revisionCommentsMap"
         class="rounded-borders bg-secondary borders list-area"
       />
 
@@ -78,6 +79,7 @@ const loading = ref(true);
 const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
 const changesList = ref<ChangeItem[]>([]);
+const revisionCommentsMap = ref<Map<string, Comment[]>>(new Map());
 const changesContent = ref<string | null>(null);
 const realtimeChannel: RealtimeChannel = supabaseClient.channel('db-changes');
 const article = computed(() => articlesStore.getArticleById(articleId.value));
@@ -116,7 +118,9 @@ watch(
 );
 
 async function applyChanges(htmlContent?: string) {
-  changesList.value = await getParsedChanges(articleId.value);
+  const parsed = await getParsedChanges(articleId.value);
+  changesList.value = parsed.changes;
+  revisionCommentsMap.value = parsed.revisionComments;
   if (htmlContent === undefined) {
     const { data } = await supabaseClient
       .from('articles')
@@ -148,19 +152,61 @@ async function handleCommentRealtime(
   payload: RealtimePostgresChangesPayload<Comment>,
 ) {
   const insertedComment = payload.new as Comment;
-  for (const change of changesList.value) {
-    if (change.id === insertedComment.change_id) {
-      insertedComment.user = (
-        await supabaseClient
-          .from('profiles')
-          .select()
-          .eq('id', insertedComment.commenter_id)
-          .single()
-      ).data as Profile;
-      change.comments.push(insertedComment);
-      break;
+
+  // Revision-level comment (no change_id, has revision_id).
+  if (
+    typeof insertedComment.revision_id === 'string' &&
+    insertedComment.revision_id.length > 0 &&
+    !insertedComment.change_id
+  ) {
+    const existing =
+      revisionCommentsMap.value.get(insertedComment.revision_id) ?? [];
+    // Dedupe: realtime is at-least-once; a re-fire would duplicate the bubble.
+    if (existing.some((c) => c.id === insertedComment.id)) {
+      return;
     }
+    if (!insertedComment.user) {
+      const { data } = await supabaseClient
+        .from('profiles')
+        .select()
+        .eq('id', insertedComment.commenter_id)
+        .single();
+      insertedComment.user = data as Profile;
+    }
+    revisionCommentsMap.value.set(insertedComment.revision_id, [
+      ...existing,
+      insertedComment,
+    ]);
+    revisionCommentsMap.value = new Map(revisionCommentsMap.value);
+    return;
   }
+
+  if (insertedComment.change_id) {
+    for (const change of changesList.value) {
+      if (change.id === insertedComment.change_id) {
+        if (change.comments.some((c) => c.id === insertedComment.id)) {
+          break;
+        }
+        if (!insertedComment.user) {
+          insertedComment.user = (
+            await supabaseClient
+              .from('profiles')
+              .select()
+              .eq('id', insertedComment.commenter_id)
+              .single()
+          ).data as Profile;
+        }
+        change.comments.push(insertedComment);
+        break;
+      }
+    }
+    return;
+  }
+
+  console.warn(
+    'handleCommentRealtime: comment has neither change_id nor revision_id; ignoring',
+    insertedComment,
+  );
 }
 
 async function handlePermissionsRealtime(
@@ -234,7 +280,9 @@ onBeforeMount(async () => {
     activeViewStore.modeToggle = 'edit';
   }
 
-  changesList.value = await getParsedChanges(articleId.value);
+  const initialParsed = await getParsedChanges(articleId.value);
+  changesList.value = initialParsed.changes;
+  revisionCommentsMap.value = initialParsed.revisionComments;
   changesContent.value = parseArticleHtml(
     (
       await supabaseClient

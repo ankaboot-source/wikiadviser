@@ -1,8 +1,30 @@
 import supabaseClient from 'src/api/supabase';
 import { wikiadviserLanguage } from 'src/data/wikiadviserLanguages';
-import { Article, ChangeItem, Enums, Permission, User } from 'src/types';
+import {
+  Article,
+  ChangeItem,
+  Comment,
+  Enums,
+  Permission,
+  User,
+} from 'src/types';
 import { SHARE_LINK_DAY_LIMIT } from 'src/utils/consts';
 import { parseChangeHtml } from 'src/utils/parsing';
+
+/**
+ * Returns true if the row is already present in the map (defensive against
+ * the server returning the same comment twice — e.g. if the query were
+ * re-run with overlapping windows).
+ */
+function dedupeRevisionComment(
+  map: Map<string, Comment[]>,
+  row: { id: string; revision_id: string | null },
+): boolean {
+  if (!row.revision_id) return false;
+  const bucket = map.get(row.revision_id);
+  if (!bucket) return false;
+  return bucket.some((c) => c.id === row.id);
+}
 
 export async function getUsers(articleId: string): Promise<User[]> {
   const { data, error } = await supabaseClient.functions.invoke('get/users', {
@@ -157,7 +179,29 @@ export async function updatePermission(
 }
 
 /**
+ * Wire shape returned by the `get/changes` Edge Function.
+ * Mirrored in `supabase/functions/get/handlers/getChanges.ts::GetChangesResponse`.
+ * Keep both sides in sync.
+ */
+interface GetChangesResponse {
+  changes: unknown[];
+  revisionComments: RevisionCommentRow[];
+}
+
+interface RevisionCommentRow {
+  id: string;
+  revision_id: string | null;
+  content: string | null;
+  created_at: string | null;
+  user: Comment['user'];
+}
+
+/**
  * Retrieves and parses changes from the database based on the provided ID.
+ *
+ * Returns the parsed change list plus a Map of revision-level comments
+ * keyed by revision uuid, so callers can attach whole-revision comments
+ * to the matching revision group.
  *
  * @param id - The ID of the changes or the article ID depending on the context.
  * @param single - Retrieve single change or all, default "false"
@@ -166,7 +210,10 @@ export async function updatePermission(
 export async function getParsedChanges(
   id: string,
   single = false,
-): Promise<ChangeItem[]> {
+): Promise<{
+  changes: ChangeItem[];
+  revisionComments: Map<string, Comment[]>;
+}> {
   const { data, error } = await supabaseClient.functions.invoke('get/changes', {
     method: 'POST',
     body: { id, single },
@@ -174,7 +221,43 @@ export async function getParsedChanges(
 
   if (error) throw new Error(error.message);
 
-  return data.map((change) => parseChangeHtml(change as unknown as ChangeItem));
+  // Backward compat: older server returns a plain array (pre-revision-comments).
+  const rawChanges: unknown[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as GetChangesResponse | null)?.changes)
+      ? (data as GetChangesResponse).changes
+      : [];
+
+  const rawRevComments: RevisionCommentRow[] = Array.isArray(
+    (data as GetChangesResponse | null)?.revisionComments,
+  )
+    ? (data as GetChangesResponse).revisionComments
+    : [];
+
+  const changes = rawChanges.map((change) =>
+    parseChangeHtml(change as unknown as ChangeItem),
+  );
+
+  const revisionComments = new Map<string, Comment[]>();
+  for (const row of rawRevComments) {
+    if (!row.revision_id) continue;
+    if (dedupeRevisionComment(revisionComments, row)) continue;
+    const existing = revisionComments.get(row.revision_id) ?? [];
+    revisionComments.set(row.revision_id, [
+      ...existing,
+      {
+        id: row.id,
+        created_at: row.created_at ? new Date(row.created_at) : new Date(),
+        user: row.user,
+        content: row.content,
+        commenter_id: (row.user as { id?: string } | null)?.id ?? '',
+        change_id: null,
+        revision_id: row.revision_id,
+      },
+    ]);
+  }
+
+  return { changes, revisionComments };
 }
 
 export async function updateChange(
@@ -208,6 +291,24 @@ export async function insertComment(
 
   if (changeError) {
     throw new Error(changeError.message);
+  }
+}
+
+export async function insertRevisionComment(
+  revisionId: string,
+  commenterId: string,
+  articleId: string,
+  content: string,
+) {
+  const { error } = await supabaseClient.from('comments').insert({
+    revision_id: revisionId,
+    commenter_id: commenterId,
+    article_id: articleId,
+    content,
+  });
+
+  if (error) {
+    throw new Error(error.message);
   }
 }
 

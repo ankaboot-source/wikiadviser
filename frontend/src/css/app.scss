@@ -147,6 +147,14 @@
   word-break: break-all;
 }
 
+.revision-summary-label {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
 /* Custom Global Scrollbar (except the scroll area ones) */
 ::-webkit-scrollbar {
   height: 12px;

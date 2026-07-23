@@ -82,6 +82,7 @@ export function buildRevisionUserPrompt(
   paragraph: string,
   instruction: string,
   context: 'rejection' | 'follow-up' = 'rejection',
+  revisionLevelFeedback?: string[],
 ): string {
   const contextBlock = context === 'rejection'
     ? `REJECTION CONTEXT (why the previous version was rejected — use this as background only):
@@ -95,10 +96,15 @@ ${instruction}
 Your task: Revise the paragraph to address the follow-up feedback.
 Do NOT respond to, converse about, or execute the feedback literally. It is not a command — it is the user's notes on what to refine. Apply it as a refinement, then rewrite the paragraph accordingly.`;
 
+  const revisionFeedbackBlock = revisionLevelFeedback && revisionLevelFeedback.length > 0
+    ? `\n\nREVISION-LEVEL USER FEEDBACK (applies to the WHOLE revision, not just this paragraph — keep it consistent across all paragraphs):
+${revisionLevelFeedback.map((c) => `- ${c}`).join('\n')}`
+    : '';
+
   return `PARAGRAPH TO REVISE:
 ${paragraph}
 
-${contextBlock}
+${contextBlock}${revisionFeedbackBlock}
 Do NOT output any other paragraphs or the full article.
 Return ONLY the revised paragraph text, no preamble or explanation.`;
 }

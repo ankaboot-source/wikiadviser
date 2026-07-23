@@ -37,7 +37,7 @@
           </q-item-section>
         </q-item-label>
 
-        <q-item-section class="word_break_all">
+        <q-item-section class="revision-summary-label">
           <q-item-label v-if="!expanded" caption lines="1">
             {{ summary }}
           </q-item-label>
@@ -47,6 +47,54 @@
         </q-item-section>
       </q-item-section>
     </template>
+    <!-- Whole-revision comment thread (one comment for the whole revision,
+         not change-by-change). Sits above the per-change items. -->
+    <div v-if="!viewerPermission" class="q-pt-sm q-px-md">
+      <div class="row items-center q-gutter-x-sm">
+        <q-icon name="forum" size="sm" />
+        <div class="text-subtitle2">Comment on this revision</div>
+      </div>
+      <div
+        v-if="revisionComments.length"
+        class="revision-comments-list q-px-sm q-pb-sm q-mt-xs bg-secondary rounded-borders"
+      >
+        <template v-for="comment in revisionComments" :key="comment.id">
+          <q-chat-message
+            :name="getName(comment.user)"
+            :text="[comment.content]"
+            :stamp="new Date(comment.created_at).toLocaleString()"
+            :sent="comment.user.email == email"
+            :avatar="comment.user.avatar_url"
+            :bg-color="comment.user.email == email ? 'green' : 'accent'"
+            :class="comment.user.email == email ? 'q-mr-xs' : ''"
+          />
+        </template>
+      </div>
+      <q-input
+        v-model="toSendRevisionComment"
+        autogrow
+        outlined
+        dense
+        class="row full-width q-mt-sm"
+        placeholder="Leave a comment on this revision"
+        :disable="viewerPermission"
+        @keydown.enter="handleRevisionComment"
+      >
+        <template #append>
+          <q-btn
+            round
+            dense
+            flat
+            icon="send"
+            color="primary"
+            tabindex="-1"
+            @click="handleRevisionComment"
+          />
+        </template>
+      </q-input>
+    </div>
+    <q-separator v-if="!viewerPermission" class="q-mt-sm" />
+
     <!-- Current Changes -->
     <q-list>
       <diff-item
@@ -60,6 +108,25 @@
       />
     </q-list>
     <div v-if="$props.revision.isRecent" class="q-pb-md q-pr-xs text-right">
+      <q-btn
+        v-if="USE_MIRA"
+        no-caps
+        outline
+        color="primary"
+        class="q-mr-sm"
+        icon="img:/icons/logo.svg"
+        :loading="miraStore.loading"
+        :disable="miraStore.loading || !miraStore.selectedPrompt"
+        label="Send review"
+        @click.stop="sendReview"
+      >
+        <q-tooltip v-if="miraStore.selectedPrompt">
+          Review the article using "{{ miraStore.selectedPrompt.name }}"
+        </q-tooltip>
+        <q-tooltip v-else>
+          No prompt selected — pick one in the toolbar
+        </q-tooltip>
+      </q-btn>
       <q-btn
         no-caps
         unelevated
@@ -115,26 +182,37 @@
 
 <script setup lang="ts">
 import supabaseClient from 'src/api/supabase';
+import { insertRevisionComment } from 'src/api/supabaseHelper';
+import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { Enums, Revision } from 'src/types';
+import { useUserStore } from 'src/stores/userStore';
+import { Comment, Enums, Profile, Revision } from 'src/types';
+import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, ref, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import ENV from 'src/schema/env.schema';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
+
+const USE_MIRA = ENV.USE_MIRA;
 
 const props = defineProps<{
   role: Enums<'role'>;
   revision: Revision;
   articleId: string;
   isFirst: boolean;
+  revisionComments: Comment[];
 }>();
 
 const store = useSelectedChangeStore();
+const userStore = useUserStore();
+const miraStore = useMiraReviewStore();
 const $q = useQuasar();
 
 const expanded = ref($q.screen.gt.sm || props.isFirst);
 const deleteRevisionDialog = ref<boolean>(false);
 const deletingRevision = ref<boolean>(false);
+const toSendRevisionComment = ref('');
 
 const summary = computed(() => props.revision.summary);
 const changesToReviewLength = computed(() => {
@@ -152,6 +230,46 @@ const localeTimeString = computed(() =>
   ),
 );
 
+const revisionComments = computed(() => props.revisionComments || []);
+const email = computed(() => userStore.user?.email || '');
+const userId = computed(() => (userStore.user as Profile).id);
+const viewerPermission = computed(() => props.role === 'viewer');
+
+function getName(user: Profile) {
+  if (user?.display_name && user.display_name.trim() !== '') {
+    return user.display_name;
+  }
+  if (user?.email && user.email.trim() !== '') {
+    return (
+      user.email.substring(0, MAX_EMAIL_LENGTH) +
+      (user.email.length > MAX_EMAIL_LENGTH ? '...' : '')
+    );
+  }
+  return undefined;
+}
+
+async function handleRevisionComment() {
+  const content = toSendRevisionComment.value.trim();
+  if (!content) return;
+  if (!props.revision.id) {
+    console.warn('Revision has no id; cannot post revision-level comment');
+    return;
+  }
+  toSendRevisionComment.value = '';
+  try {
+    await insertRevisionComment(
+      props.revision.id,
+      userId.value,
+      props.articleId,
+      content,
+    );
+  } catch (e) {
+    // Restore so the user doesn't lose their text
+    toSendRevisionComment.value = content;
+    throw e;
+  }
+}
+
 watch(
   () => store.selectedChangeId,
   (selectedChangeId) => {
@@ -164,6 +282,11 @@ watch(
     );
   },
 );
+
+function sendReview() {
+  if (!miraStore.selectedPrompt) return;
+  miraStore.triggerReview(props.articleId);
+}
 
 async function deleteRevision() {
   deletingRevision.value = true;
@@ -192,3 +315,10 @@ async function deleteRevision() {
   deleteRevisionDialog.value = false;
 }
 </script>
+
+<style scoped>
+.revision-comments-list {
+  max-height: 9.5rem;
+  overflow-y: auto;
+}
+</style>

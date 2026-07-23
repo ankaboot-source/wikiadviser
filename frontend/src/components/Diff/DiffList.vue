@@ -27,6 +27,7 @@
         :role="role"
         :article-id="articleId"
         :is-first="index === 0"
+        :revision-comments="revisionCommentsFor(revision.id)"
       />
 
       <q-expansion-item
@@ -90,7 +91,7 @@
 
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
-import { ChangeItem, Enums } from 'src/types';
+import { ChangeItem, Comment, Enums } from 'src/types';
 import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
@@ -105,12 +106,19 @@ const props = defineProps<{
   articleId: string;
   role: Enums<'role'>;
   changesList: ChangeItem[];
+  revisionComments?: Map<string, Comment[]>;
 }>();
+
+function revisionCommentsFor(revisionId: string | undefined): Comment[] {
+  if (!revisionId || !props.revisionComments) return [];
+  return props.revisionComments.get(revisionId) || [];
+}
 
 const groupedChanges = computed(() => {
   const grouped = new Map<
     number,
     {
+      id: string;
       revid: number;
       summary: string;
       items: ChangeItem[];
@@ -122,6 +130,7 @@ const groupedChanges = computed(() => {
     const summary = item.revision.summary;
     if (!grouped.has(revid)) {
       grouped.set(revid, {
+        id: item.revision.id,
         revid,
         summary,
         items: [],

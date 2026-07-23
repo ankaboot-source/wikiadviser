@@ -41,15 +41,32 @@ export async function getChangeIdForNotification(
     notification.type === NotificationType.Comment &&
     notification.triggered_on
   ) {
-    const comment = await safeSingle<{ change_id: string }>(
+    const comment = await safeSingle<{
+      change_id: string | null;
+      revision_id: string | null;
+    }>(
       supabase
         .from('comments')
-        .select('change_id')
+        .select('change_id, revision_id')
         .eq('commenter_id', notification.triggered_on)
         .order('created_at', { ascending: false })
         .limit(1)
     );
-    return comment?.change_id ?? null;
+    if (comment?.change_id) return comment.change_id;
+    if (comment?.revision_id) {
+      // Revision-level comment: fall back to a change inside the same
+      // revision so the email deep-link lands on a useful diff.
+      const change = await safeSingle<{ id: string }>(
+        supabase
+          .from('changes')
+          .select('id')
+          .eq('revision_id', comment.revision_id)
+          .order('index', { ascending: false })
+          .limit(1)
+      );
+      return change?.id ?? null;
+    }
+    return null;
   }
 
   if (

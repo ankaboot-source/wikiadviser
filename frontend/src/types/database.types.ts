@@ -149,6 +149,7 @@ export type Database = {
           content: string | null;
           created_at: string | null;
           id: string;
+          revision_id: string | null;
         };
         Insert: {
           article_id: string;
@@ -157,6 +158,7 @@ export type Database = {
           content?: string | null;
           created_at?: string | null;
           id?: string;
+          revision_id?: string | null;
         };
         Update: {
           article_id?: string;
@@ -165,6 +167,7 @@ export type Database = {
           content?: string | null;
           created_at?: string | null;
           id?: string;
+          revision_id?: string | null;
         };
         Relationships: [
           {
@@ -186,6 +189,13 @@ export type Database = {
             columns: ['commenter_id'];
             isOneToOne: false;
             referencedRelation: 'profiles_view';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'comments_revision_id_fkey';
+            columns: ['revision_id'];
+            isOneToOne: false;
+            referencedRelation: 'revisions';
             referencedColumns: ['id'];
           },
           {

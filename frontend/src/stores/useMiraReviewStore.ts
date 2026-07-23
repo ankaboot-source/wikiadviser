@@ -1,8 +1,9 @@
+import { FunctionsHttpError } from '@supabase/supabase-js';
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
 import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import { useUserStore } from 'src/stores/userStore';
+import { ref } from 'vue';
 
 export interface Prompt {
   id: string;
@@ -228,9 +229,13 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
         });
 
       if (fnError) {
-        const errData = (fnError as Record<string, unknown>)?.context?.data as
-          | Record<string, unknown>
+        const errData = (fnError as FunctionsHttpError).context as
+          | {
+              details?: string;
+              error?: string;
+            }
           | undefined;
+
         const details = errData?.details as string | undefined;
         const errMsg = errData?.error as string | undefined;
         const userMsg =

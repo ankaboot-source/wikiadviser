@@ -285,7 +285,7 @@ watch(
 
 function sendReview() {
   if (!miraStore.selectedPrompt) return;
-  void miraStore.triggerReview(props.articleId);
+  miraStore.triggerReview(props.articleId);
 }
 
 async function deleteRevision() {

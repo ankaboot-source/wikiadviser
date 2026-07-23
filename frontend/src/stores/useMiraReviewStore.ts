@@ -209,7 +209,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
 
   function selectPrompt(prompt: Prompt) {
     selectedPrompt.value = prompt;
-    void savePromptsToDB();
+    savePromptsToDB();
   }
 
   async function triggerReview(articleId: string) {

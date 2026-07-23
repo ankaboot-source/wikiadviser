@@ -107,7 +107,7 @@ onMounted(async () => {
 });
 
 function triggerReview() {
-  void miraStore.triggerReview(props.article.article_id);
+  miraStore.triggerReview(props.article.article_id);
 }
 
 function openAddDialog() {

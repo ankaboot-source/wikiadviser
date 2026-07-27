@@ -37,7 +37,10 @@
           </q-item-section>
         </q-item-label>
 
-        <q-item-section class="full-width" style="min-width: 0; overflow: hidden">
+        <q-item-section
+          class="full-width"
+          style="min-width: 0; overflow: hidden"
+        >
           <q-item-label
             :caption="true"
             :style="

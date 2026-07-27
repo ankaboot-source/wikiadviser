@@ -56,7 +56,7 @@
                   }
             "
           >
-            {{ summary.repeat(20) }}
+            {{ summary }}
             <q-tooltip>{{ summary }}</q-tooltip>
           </q-item-label>
         </q-item-section>

@@ -37,12 +37,27 @@
           </q-item-section>
         </q-item-label>
 
-        <q-item-section class="revision-summary-label">
-          <q-item-label v-if="!expanded" caption lines="1">
-            {{ summary }}
-          </q-item-label>
-          <q-item-label v-else caption lines="3">
-            {{ summary }} <q-tooltip>{{ summary }}</q-tooltip>
+        <q-item-section class="full-width" style="min-width: 0; overflow: hidden">
+          <q-item-label
+            :caption="true"
+            :style="
+              expanded
+                ? {
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    '-webkit-box-orient': 'vertical',
+                    '-webkit-line-clamp': 3,
+                  }
+                : {
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    '-webkit-box-orient': 'vertical',
+                    '-webkit-line-clamp': 1,
+                  }
+            "
+          >
+            {{ summary.repeat(20) }}
+            <q-tooltip>{{ summary }}</q-tooltip>
           </q-item-label>
         </q-item-section>
       </q-item-section>
@@ -181,16 +196,16 @@
 </template>
 
 <script setup lang="ts">
+import { useQuasar } from 'quasar';
 import supabaseClient from 'src/api/supabase';
 import { insertRevisionComment } from 'src/api/supabaseHelper';
+import ENV from 'src/schema/env.schema';
 import { useMiraReviewStore } from 'src/stores/useMiraReviewStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { useUserStore } from 'src/stores/userStore';
 import { Comment, Enums, Profile, Revision } from 'src/types';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, ref, watch } from 'vue';
-import { useQuasar } from 'quasar';
-import ENV from 'src/schema/env.schema';
 import UserComponent from '../UserComponent.vue';
 import DiffItem from './DiffItem.vue';
 

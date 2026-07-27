@@ -1,6 +1,7 @@
 <template>
   <q-dialog
     :model-value="modelValue"
+    maximized
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <q-card
@@ -40,13 +41,14 @@
           outlined
           dense
           bg-color="white"
-          rows="8"
+          rows="17"
           counter
           maxlength="10000"
           :rules="[
             (val) => !!val || 'Prompt is required',
             (val) =>
-              val.length <= 10000 || 'Prompt must be less than 10000 characters',
+              val.length <= 10000 ||
+              'Prompt must be less than 10000 characters',
           ]"
         />
       </q-card-section>

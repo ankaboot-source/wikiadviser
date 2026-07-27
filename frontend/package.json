@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@nuxtbase/auth-ui-vue": "^0.3.6",
-    "@quasar/app-vite": "^1.7.1",
+    "@quasar/app-vite": "^2.6.2",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.106.2",
     "@types/node": "^20.11.0",

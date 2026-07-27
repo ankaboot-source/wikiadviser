@@ -40,12 +40,13 @@
           outlined
           dense
           bg-color="white"
-          rows="4"
+          rows="8"
           counter
-          maxlength="2000"
+          maxlength="10000"
           :rules="[
             (val) => !!val || 'Prompt is required',
-            (val) => val.length <= 2000 || 'Prompt must be less than 300 words',
+            (val) =>
+              val.length <= 10000 || 'Prompt must be less than 10000 characters',
           ]"
         />
       </q-card-section>
@@ -87,8 +88,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
 import { useQuasar } from 'quasar';
+import { computed, ref, watch } from 'vue';
 
 interface Prompt {
   id: string;
@@ -124,7 +125,7 @@ const isFormValid = computed(() => {
     form.value.name.trim().length > 0 &&
     form.value.name.length <= 100 &&
     form.value.prompt.trim().length > 0 &&
-    form.value.prompt.length <= 2000
+    form.value.prompt.length <= 10000
   );
 });
 

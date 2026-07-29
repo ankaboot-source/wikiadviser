@@ -15,8 +15,9 @@ export interface CommentImprovement {
   index: number | null;
   status: number;
   type_of_edit: number;
-  mode: 'rejection' | 'follow-up';
-  revision_feedback?: string[];
+  mode: 'rejection' | 'follow-up' | 'pending-with-feedback';
+  revision_feedback: string[];
+  custom_instructions: string | null;
 }
 
 export interface CommentReviewResult {
@@ -228,6 +229,7 @@ export async function processCommentedChanges(
           prompt,
           improvement.mode,
           improvement.revision_feedback,
+          improvement.custom_instructions ?? undefined,
         ),
         8192,
       );

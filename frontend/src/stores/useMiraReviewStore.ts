@@ -37,6 +37,7 @@ export interface ReviewResponse {
   error?: string;
   change_id?: string;
   was_empty?: boolean;
+  article_wide_applied?: boolean;
 }
 
 const DEFAULT_PROMPTS: Prompt[] = [
@@ -276,7 +277,10 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
           oldRevid: data.old_revision,
           newRevid: data.new_revision,
         });
-        showNotification('success', data.summary);
+        const message = data.article_wide_applied
+          ? `Applied revision feedback article-wide — ${data.summary}`
+          : data.summary;
+        showNotification('success', message);
       } else {
         $resetReviewTrigger();
         showNotification('info', (data?.summary as string) ?? '');

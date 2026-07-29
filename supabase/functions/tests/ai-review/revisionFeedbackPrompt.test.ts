@@ -47,6 +47,6 @@ Deno.test(
   () => {
     const result = buildRevisionFeedbackPrompt('Body.', ['Cleanup grammar']);
     assertStringIncludes(result, 'Copy ALL wikitext structural lines');
-    assertStringIncludes(result, '== Title ==');
+    assertStringIncludes(result, 'two or more equals signs');
   },
 );

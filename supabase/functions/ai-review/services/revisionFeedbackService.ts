@@ -62,10 +62,11 @@ export async function applyRevisionFeedback(
     true,
   );
 
-  const userPrompt =
-    (options.customInstructions?.trim()
-      ? `ADDITIONAL USER INSTRUCTIONS:\n${options.customInstructions.trim()}\n\n`
-      : '') + buildRevisionFeedbackPrompt(currentWikitext, revisionFeedback);
+  const userPrompt = buildRevisionFeedbackPrompt(
+    currentWikitext,
+    revisionFeedback,
+    options.customInstructions,
+  );
 
   const improvedWikitext = await reviewArticleSection(
     config,

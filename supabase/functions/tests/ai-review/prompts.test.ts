@@ -7,6 +7,7 @@ import {
   buildUserPrompt,
   buildRevisionSystemPrompt,
   buildRevisionUserPrompt,
+  buildRevisionFeedbackPrompt,
   buildEmptyArticlePrompt,
   cleanAIResponse,
   extractDisplayTitle,
@@ -125,7 +126,7 @@ Deno.test(
     assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
     assertStringIncludes(result, '- Use just one title');
     assertStringIncludes(result, '- Add infobox');
-    assertStringIncludes(result, 'applies to the WHOLE revision');
+    assertStringIncludes(result, 'applies to every paragraph');
   },
 );
 
@@ -153,6 +154,72 @@ Deno.test(
     );
     assertStringIncludes(result, 'REJECTION CONTEXT');
     assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt injects CUSTOM INSTRUCTIONS as origin context',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+      'Use British English',
+    );
+    assertStringIncludes(result, 'CUSTOM INSTRUCTIONS');
+    assertStringIncludes(result, 'Use British English');
+    assertStringIncludes(result, 'origin-level prompt');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt omits CUSTOM INSTRUCTIONS block when empty',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+      '',
+    );
+    assertEquals(result.includes('CUSTOM INSTRUCTIONS'), false);
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt supports pending-with-feedback context',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Tighten this paragraph',
+      'pending-with-feedback',
+    );
+    assertStringIncludes(result, 'CHANGE-LEVEL FEEDBACK');
+    assertStringIncludes(result, 'pending review');
+  },
+);
+
+Deno.test(
+  'buildRevisionFeedbackPrompt embeds custom instructions alongside revision feedback',
+  () => {
+    const result = buildRevisionFeedbackPrompt(
+      'Body.',
+      ['Use just one title'],
+      'Use British English',
+    );
+    assertStringIncludes(result, 'CUSTOM INSTRUCTIONS');
+    assertStringIncludes(result, 'Use British English');
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+    assertStringIncludes(result, 'Use just one title');
+  },
+);
+
+Deno.test(
+  'buildRevisionFeedbackPrompt omits custom instructions block when empty',
+  () => {
+    const result = buildRevisionFeedbackPrompt('Body.', ['X'], '');
+    assertEquals(result.includes('CUSTOM INSTRUCTIONS'), false);
   },
 );
 

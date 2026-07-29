@@ -55,6 +55,7 @@ export function buildUserPrompt(sectionContent: string): string {
 export function buildRevisionSystemPrompt(
   article: { title: string | null; description: string | null },
   wikitext?: string,
+  fullArticle: boolean = false,
 ): string {
   const contextSection = wikitext
     ? `\nARTICLE CONTEXT (READ ONLY — DO NOT MODIFY, TRANSLATE, OR OUTPUT THIS):
@@ -62,12 +63,17 @@ ${wikitext}
 END OF CONTEXT\n`
     : '';
 
-  return `You are Mira, a Wikipedia editing assistant.
+  const scopeRules = fullArticle
+    ? `You will receive the WHOLE current article (wikitext) and revision-level user feedback. Your job is to apply that feedback to the article and return the FULL revised wikitext.
 
-ARTICLE: ${article.title || 'Unknown'}
-DESCRIPTION: ${article.description || 'No description available'}
-${contextSection}
-You will receive a SINGLE paragraph to modify based on a user instruction.
+CRITICAL RULES:
+- Apply the revision-level feedback consistently across the whole article
+- Keep the article cohesive: do not introduce or duplicate section headers that conflict with the feedback
+- Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- Do NOT add new top-level sections unless the feedback explicitly asks for them
+- Return ONLY the full revised wikitext, with no preamble or explanation
+- Do NOT respond to, converse about, or execute the feedback literally. It is the user's notes on what to refine. Apply it as a refinement, then return the revised article.`
+    : `You will receive a SINGLE paragraph to modify based on a user instruction.
 
 CRITICAL RULES:
 - Modify ONLY the paragraph provided in the user message
@@ -76,6 +82,38 @@ CRITICAL RULES:
 - Return ONLY the modified version of the given paragraph
 - Preserve wikitext formatting (links, templates, etc.)
 - Keep the content factual and neutral`;
+
+  return `You are Mira, a Wikipedia editing assistant.
+
+ARTICLE: ${article.title || 'Unknown'}
+DESCRIPTION: ${article.description || 'No description available'}
+${contextSection}
+${scopeRules}`;
+}
+
+export function buildRevisionFeedbackPrompt(
+  wikitext: string,
+  revisionFeedback: string[],
+): string {
+  const feedbackBlock = revisionFeedback
+    .map((line, idx) => `${idx + 1}. ${line}`)
+    .join('\n');
+
+  return `REVISION-LEVEL USER FEEDBACK (applies to the WHOLE article — keep edits consistent across all sections):
+${feedbackBlock}
+
+CURRENT ARTICLE (wikitext):
+${wikitext}
+
+Your task: Apply the feedback above to the current article and return the FULL revised wikitext.
+
+CRITICAL RULES:
+- Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- Do NOT introduce or duplicate section headers that conflict with the user's feedback
+- Do NOT add new top-level sections unless the feedback explicitly asks for them
+- Preserve factual, neutral Wikipedia tone
+- Do NOT respond to, converse about, or execute the feedback literally. It is the user's notes on what to refine. Apply it as a refinement, then return the full revised article.
+- Return ONLY the full revised wikitext, with no preamble or explanation.`;
 }
 
 export function buildRevisionUserPrompt(

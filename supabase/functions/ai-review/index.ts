@@ -8,7 +8,9 @@ import {
 } from '../_shared/helpers/supabaseHelper.ts';
 import { reviewAndImproveArticle } from './services/reviewService.ts';
 import { processCommentedChanges } from './services/commentReviewService.ts';
+import { applyRevisionFeedback } from './services/revisionFeedbackService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
+import { buildProcessableChanges } from './services/reviewRouter.ts';
 
 const STATUS_LABELS: Record<number, string> = {
   0: 'pending',
@@ -59,7 +61,7 @@ app.post('/', async (c) => {
       .from('changes')
       .select('id, content, index, status, type_of_edit, revision_id')
       .eq('article_id', article_id)
-      .in('status', [1, 2]);
+      .in('status', [0, 1, 2]);
 
     if (!candidateError && candidateChanges && candidateChanges.length > 0) {
       const candidateIds = candidateChanges.map((c) => c.id);
@@ -104,20 +106,25 @@ app.post('/', async (c) => {
         revisionCommentsByRevisionId.set(comment.revision_id, existing);
       }
 
-      const processableChanges = candidateChanges.filter((c) => {
-        if (c.status === 2) return true;
-        if (c.status === 1) {
-          return (commentsByChangeId.get(c.id) || []).length > 0;
-        }
-        return false;
-      });
+      const routing = buildProcessableChanges(
+        candidateChanges,
+        commentsByChangeId,
+        revisionCommentsByRevisionId,
+      );
 
-      if (processableChanges.length > 0) {
-        const rejectedCount = processableChanges.filter(
+      const perParagraphChanges = routing.changes.filter(
+        (c) => c.mode === 'rejection' || c.mode === 'follow-up',
+      );
+      const perRevisionChanges = routing.changes.filter(
+        (c) => c.mode === 'revision-feedback-only',
+      );
+
+      if (perParagraphChanges.length > 0) {
+        const rejectedCount = perParagraphChanges.filter(
           (c) => c.status === 2,
         ).length;
         const approvedWithCommentsCount =
-          processableChanges.length - rejectedCount;
+          perParagraphChanges.length - rejectedCount;
         console.info(
           `[auto-retry] Processing ${rejectedCount} rejected and ${approvedWithCommentsCount} approved-with-comments change(s)`,
         );
@@ -132,12 +139,9 @@ app.post('/', async (c) => {
 
         const instruction = customInstructions?.trim() || 'Improve the text';
 
-        const improvements = processableChanges.map((change) => {
+        const improvements = perParagraphChanges.map((change) => {
           const changeComments = commentsByChangeId.get(change.id) || [];
-          const revisionFeedback =
-            (change.revision_id &&
-              revisionCommentsByRevisionId.get(change.revision_id)) ||
-            [];
+          const revisionFeedback = change.revision_feedback || [];
           const feedbackBlock = changeComments.length > 0
             ? `User feedback on this change:\n${changeComments.join('\n')}\n\n`
             : '';
@@ -213,6 +217,71 @@ app.post('/', async (c) => {
         console.info('[auto-retry] No improvements from retry');
         return c.json({
           summary: result.comment || 'Could not improve changes',
+          has_improvements: false,
+          trigger_diff_update: false,
+        });
+      } else if (perRevisionChanges.length > 0) {
+        const revisionIdsWithFeedback = Array.from(
+          new Set(perRevisionChanges.map((c) => c.revision_id).filter(
+            (rid): rid is string => typeof rid === 'string',
+          )),
+        );
+        const aggregatedFeedback: string[] = [];
+        for (const rid of revisionIdsWithFeedback) {
+          const items = revisionCommentsByRevisionId.get(rid) || [];
+          for (const item of items) aggregatedFeedback.push(item);
+        }
+
+        console.info(
+          `[revision-feedback] Applying ${aggregatedFeedback.length} revision-level comment(s) across ${revisionIdsWithFeedback.length} revision(s)`,
+        );
+
+        await addMiraBotPermission(article_id);
+        const config = await getLLMConfig(supabase, user.id, customInstructions);
+
+        if (!config) {
+          console.error('No AI configuration available');
+          return c.json({ error: 'No AI configuration available' }, 400);
+        }
+
+        const result = await applyRevisionFeedback(
+          article_id,
+          aggregatedFeedback,
+          config,
+          {
+            articleLanguage: article?.language,
+            customInstructions,
+          },
+        );
+
+        if (result.hasImprovements) {
+          try {
+            const admin = createSupabaseAdmin();
+            const { error: updateError } = await admin
+              .from('articles')
+              .update({ pending_diff: true })
+              .eq('id', article_id);
+            if (updateError) {
+              console.warn(
+                '[revision-feedback] pending_diff update error:',
+                updateError,
+              );
+            }
+          } catch (e) {
+            console.warn('[revision-feedback] Failed to save pending diff:', e);
+          }
+          return c.json({
+            summary: result.comment,
+            has_improvements: true,
+            old_revision: result.oldRevisionId,
+            new_revision: result.newRevisionId,
+            mira_bot_id: MIRA_BOT_ID,
+            trigger_diff_update: true,
+          });
+        }
+
+        return c.json({
+          summary: result.comment || 'Could not apply revision feedback',
           has_improvements: false,
           trigger_diff_update: false,
         });

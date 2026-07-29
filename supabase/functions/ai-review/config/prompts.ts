@@ -55,7 +55,7 @@ export function buildUserPrompt(sectionContent: string): string {
 export function buildRevisionSystemPrompt(
   article: { title: string | null; description: string | null },
   wikitext?: string,
-  fullArticle: boolean = false,
+  fullArticle = false,
 ): string {
   const contextSection = wikitext
     ? `\nARTICLE CONTEXT (READ ONLY — DO NOT MODIFY, TRANSLATE, OR OUTPUT THIS):

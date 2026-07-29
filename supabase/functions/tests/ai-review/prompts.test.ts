@@ -113,6 +113,61 @@ Deno.test('buildRevisionUserPrompt has the paragraph and instruction', () => {
   assertStringIncludes(result, 'Make it shorter.');
 });
 
+Deno.test(
+  'buildRevisionUserPrompt injects revision-level feedback block when provided',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      ['Use just one title', 'Add infobox'],
+    );
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+    assertStringIncludes(result, '- Use just one title');
+    assertStringIncludes(result, '- Add infobox');
+    assertStringIncludes(result, 'applies to the WHOLE revision');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt omits revision-level block when empty',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+    );
+    assertEquals(result.includes('REVISION-LEVEL USER FEEDBACK'), false);
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt rejection context still present when revision feedback added',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'rejection',
+      ['Refine the lede'],
+    );
+    assertStringIncludes(result, 'REJECTION CONTEXT');
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+  },
+);
+
+Deno.test(
+  'buildRevisionSystemPrompt per-paragraph mode forbids adding section headers',
+  () => {
+    const result = buildRevisionSystemPrompt({
+      title: 'Article',
+      description: 'Desc',
+    });
+    assertStringIncludes(result, 'DO NOT add, remove, or rename any');
+    assertStringIncludes(result, 'Preserve structural lines');
+  },
+);
+
 Deno.test('buildEmptyArticlePrompt has title and description', () => {
   const result = buildEmptyArticlePrompt({
     title: 'New Article',

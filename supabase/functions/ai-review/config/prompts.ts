@@ -81,7 +81,8 @@ CRITICAL RULES:
 - Do NOT output the full article or multiple paragraphs
 - Return ONLY the modified version of the given paragraph
 - Preserve wikitext formatting (links, templates, etc.)
-- Keep the content factual and neutral`;
+- Keep the content factual and neutral
+- DO NOT add, remove, or rename any section header (formatted as two or more equals signs wrapping the title), template, category, or magic word. Preserve structural lines character-for-character. If the user's feedback targets headings, ignore that aspect of it for this paragraph; it will be reconciled at the article-wide level.`;
 
   return `You are Mira, a Wikipedia editing assistant.
 

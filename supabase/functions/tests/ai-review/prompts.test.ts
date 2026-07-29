@@ -224,14 +224,32 @@ Deno.test(
 );
 
 Deno.test(
-  'buildRevisionSystemPrompt per-paragraph mode forbids adding section headers',
+  'buildRevisionSystemPrompt per-paragraph mode preserves templates/categories/magic words',
   () => {
     const result = buildRevisionSystemPrompt({
       title: 'Article',
       description: 'Desc',
     });
-    assertStringIncludes(result, 'DO NOT add, remove, or rename any');
-    assertStringIncludes(result, 'Preserve structural lines');
+    assertStringIncludes(result, 'Preserve wikitext formatting');
+    assertStringIncludes(result, 'templates, categories, magic words');
+  },
+);
+
+Deno.test(
+  'buildRevisionSystemPrompt per-paragraph mode does NOT restrict heading changes',
+  () => {
+    const result = buildRevisionSystemPrompt({
+      title: 'Article',
+      description: 'Desc',
+    });
+    assertEquals(
+      result.includes('DO NOT add, remove, or rename any section header'),
+      false,
+    );
+    assertEquals(
+      result.includes('reconciled at the article-wide level'),
+      false,
+    );
   },
 );
 

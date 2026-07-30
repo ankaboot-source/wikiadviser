@@ -7,6 +7,7 @@ import {
   buildUserPrompt,
   buildRevisionSystemPrompt,
   buildRevisionUserPrompt,
+  buildRevisionFeedbackPrompt,
   buildEmptyArticlePrompt,
   cleanAIResponse,
   extractDisplayTitle,
@@ -112,6 +113,145 @@ Deno.test('buildRevisionUserPrompt has the paragraph and instruction', () => {
   assertStringIncludes(result, 'The fox.');
   assertStringIncludes(result, 'Make it shorter.');
 });
+
+Deno.test(
+  'buildRevisionUserPrompt injects revision-level feedback block when provided',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      ['Use just one title', 'Add infobox'],
+    );
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+    assertStringIncludes(result, '- Use just one title');
+    assertStringIncludes(result, '- Add infobox');
+    assertStringIncludes(result, 'applies to every paragraph');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt omits revision-level block when empty',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+    );
+    assertEquals(result.includes('REVISION-LEVEL USER FEEDBACK'), false);
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt rejection context still present when revision feedback added',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'rejection',
+      ['Refine the lede'],
+    );
+    assertStringIncludes(result, 'REJECTION CONTEXT');
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt injects CUSTOM INSTRUCTIONS as origin context',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+      'Use British English',
+    );
+    assertStringIncludes(result, 'CUSTOM INSTRUCTIONS');
+    assertStringIncludes(result, 'Use British English');
+    assertStringIncludes(result, 'origin-level prompt');
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt omits CUSTOM INSTRUCTIONS block when empty',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Make it shorter.',
+      'follow-up',
+      [],
+      '',
+    );
+    assertEquals(result.includes('CUSTOM INSTRUCTIONS'), false);
+  },
+);
+
+Deno.test(
+  'buildRevisionUserPrompt supports pending-with-feedback context',
+  () => {
+    const result = buildRevisionUserPrompt(
+      'The fox.',
+      'Tighten this paragraph',
+      'pending-with-feedback',
+    );
+    assertStringIncludes(result, 'CHANGE-LEVEL FEEDBACK');
+    assertStringIncludes(result, 'pending review');
+  },
+);
+
+Deno.test(
+  'buildRevisionFeedbackPrompt embeds custom instructions alongside revision feedback',
+  () => {
+    const result = buildRevisionFeedbackPrompt(
+      'Body.',
+      ['Use just one title'],
+      'Use British English',
+    );
+    assertStringIncludes(result, 'CUSTOM INSTRUCTIONS');
+    assertStringIncludes(result, 'Use British English');
+    assertStringIncludes(result, 'REVISION-LEVEL USER FEEDBACK');
+    assertStringIncludes(result, 'Use just one title');
+  },
+);
+
+Deno.test(
+  'buildRevisionFeedbackPrompt omits custom instructions block when empty',
+  () => {
+    const result = buildRevisionFeedbackPrompt('Body.', ['X'], '');
+    assertEquals(result.includes('CUSTOM INSTRUCTIONS'), false);
+  },
+);
+
+Deno.test(
+  'buildRevisionSystemPrompt per-paragraph mode preserves templates/categories/magic words',
+  () => {
+    const result = buildRevisionSystemPrompt({
+      title: 'Article',
+      description: 'Desc',
+    });
+    assertStringIncludes(result, 'Preserve wikitext formatting');
+    assertStringIncludes(result, 'templates, categories, magic words');
+  },
+);
+
+Deno.test(
+  'buildRevisionSystemPrompt per-paragraph mode does NOT restrict heading changes',
+  () => {
+    const result = buildRevisionSystemPrompt({
+      title: 'Article',
+      description: 'Desc',
+    });
+    assertEquals(
+      result.includes('DO NOT add, remove, or rename any section header'),
+      false,
+    );
+    assertEquals(
+      result.includes('reconciled at the article-wide level'),
+      false,
+    );
+  },
+);
 
 Deno.test('buildEmptyArticlePrompt has title and description', () => {
   const result = buildEmptyArticlePrompt({

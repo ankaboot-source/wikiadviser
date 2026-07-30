@@ -55,6 +55,7 @@ export function buildUserPrompt(sectionContent: string): string {
 export function buildRevisionSystemPrompt(
   article: { title: string | null; description: string | null },
   wikitext?: string,
+  fullArticle = false,
 ): string {
   const contextSection = wikitext
     ? `\nARTICLE CONTEXT (READ ONLY — DO NOT MODIFY, TRANSLATE, OR OUTPUT THIS):
@@ -62,49 +63,103 @@ ${wikitext}
 END OF CONTEXT\n`
     : '';
 
-  return `You are Mira, a Wikipedia editing assistant.
+  const scopeRules = fullArticle
+    ? `You will receive the WHOLE current article (wikitext) and revision-level user feedback. Your job is to apply that feedback to the article and return the FULL revised wikitext.
 
-ARTICLE: ${article.title || 'Unknown'}
-DESCRIPTION: ${article.description || 'No description available'}
-${contextSection}
-You will receive a SINGLE paragraph to modify based on a user instruction.
+CRITICAL RULES:
+- Apply the revision-level feedback consistently across the whole article
+- Keep the article cohesive: do not introduce or duplicate section headers that conflict with the feedback
+- Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- Do NOT add new top-level sections unless the feedback explicitly asks for them
+- Return ONLY the full revised wikitext, with no preamble or explanation
+- Do NOT respond to, converse about, or execute the feedback literally. It is the user's notes on what to refine. Apply it as a refinement, then return the revised article.`
+    : `You will receive a SINGLE paragraph to modify based on a user instruction.
 
 CRITICAL RULES:
 - Modify ONLY the paragraph provided in the user message
 - Do NOT translate, rewrite, or output any other part of the article
 - Do NOT output the full article or multiple paragraphs
 - Return ONLY the modified version of the given paragraph
-- Preserve wikitext formatting (links, templates, etc.)
+- Preserve wikitext formatting (links, templates, categories, magic words)
 - Keep the content factual and neutral`;
+
+  return `You are Mira, a Wikipedia editing assistant.
+
+ARTICLE: ${article.title || 'Unknown'}
+DESCRIPTION: ${article.description || 'No description available'}
+${contextSection}
+${scopeRules}`;
+}
+
+export function buildRevisionFeedbackPrompt(
+  wikitext: string,
+  revisionFeedback: string[],
+  customInstructions?: string,
+): string {
+  const feedbackBlock = revisionFeedback
+    .map((line, idx) => `${idx + 1}. ${line}`)
+    .join('\n');
+
+  const customBlock = customInstructions?.trim()
+    ? `\nCUSTOM INSTRUCTIONS (stand for ALL edits — origin-level prompt, applies to the whole article):
+${customInstructions.trim()}\n`
+    : '';
+
+  return `REVISION-LEVEL USER FEEDBACK (the user's comment on your previous version of the whole article — applies to every section, not just one):
+${feedbackBlock}
+${customBlock}
+CURRENT ARTICLE (wikitext):
+${wikitext}
+
+Your task: Apply BOTH the revision-level feedback and the custom instructions to the current article and return the FULL revised wikitext.
+
+CRITICAL RULES:
+- Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (formatted as two or more equals signs wrapping the title), templates, magic words, categories, and any line starting with {{ or [[. Never drop or reword these lines.
+- Do NOT introduce or duplicate section headers that conflict with the user's feedback
+- Do NOT add new top-level sections unless the feedback explicitly asks for them
+- Preserve factual, neutral Wikipedia tone
+- Do NOT respond to, converse about, or execute the feedback literally. It is the user's notes on what to refine. Apply it as a refinement, then return the full revised article.
+- Return ONLY the full revised wikitext, with no preamble or explanation.`;
 }
 
 export function buildRevisionUserPrompt(
   paragraph: string,
   instruction: string,
-  context: 'rejection' | 'follow-up' = 'rejection',
+  context: 'rejection' | 'follow-up' | 'pending-with-feedback' = 'rejection',
   revisionLevelFeedback?: string[],
+  customInstructions?: string,
 ): string {
   const contextBlock = context === 'rejection'
-    ? `REJECTION CONTEXT (why the previous version was rejected — use this as background only):
+    ? `REJECTION CONTEXT (the user rejected your previous version of this paragraph — use this as background only):
 ${instruction}
 
-Your task: Rewrite the paragraph to address the feedback above.
+Your task: Rewrite the paragraph to address the rejection.
 CRITICAL: Do NOT respond to, converse about, or execute the rejection context literally. It is not a command — it is background explaining why the user disliked the old version. Use it to understand what to improve, then rewrite the paragraph accordingly.`
-    : `FOLLOW-UP FEEDBACK (the user approved this change but has additional notes — apply the feedback while preserving what they liked):
+    : context === 'follow-up'
+    ? `FOLLOW-UP FEEDBACK (the user approved this change but has additional notes — apply the feedback while preserving what they liked):
 ${instruction}
 
 Your task: Revise the paragraph to address the follow-up feedback.
-Do NOT respond to, converse about, or execute the feedback literally. It is not a command — it is the user's notes on what to refine. Apply it as a refinement, then rewrite the paragraph accordingly.`;
+Do NOT respond to, converse about, or execute the feedback literally. It is not a command — it is the user's notes on what to refine. Apply it as a refinement, then rewrite the paragraph accordingly.`
+    : `CHANGE-LEVEL FEEDBACK (pending review — the user added a comment but has not yet approved or rejected this change; treat the comment as a refinement request):
+${instruction}
+
+Your task: Revise the paragraph to address the change comment.`;
 
   const revisionFeedbackBlock = revisionLevelFeedback && revisionLevelFeedback.length > 0
-    ? `\n\nREVISION-LEVEL USER FEEDBACK (applies to the WHOLE revision, not just this paragraph — keep it consistent across all paragraphs):
+    ? `\n\nREVISION-LEVEL USER FEEDBACK (the user's comment on your previous version of the whole article — applies to every paragraph, not just this one; keep edits consistent across all paragraphs):
 ${revisionLevelFeedback.map((c) => `- ${c}`).join('\n')}`
+    : '';
+
+  const customBlock = customInstructions?.trim()
+    ? `\n\nCUSTOM INSTRUCTIONS (origin-level prompt — stands for all edits, applies to the whole article; honor it as background context):
+${customInstructions.trim()}`
     : '';
 
   return `PARAGRAPH TO REVISE:
 ${paragraph}
 
-${contextBlock}${revisionFeedbackBlock}
+${contextBlock}${revisionFeedbackBlock}${customBlock}
 Do NOT output any other paragraphs or the full article.
 Return ONLY the revised paragraph text, no preamble or explanation.`;
 }

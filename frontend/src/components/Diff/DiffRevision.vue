@@ -145,6 +145,15 @@
           No prompt selected — pick one in the toolbar
         </q-tooltip>
       </q-btn>
+      <div
+        v-if="
+          USE_MIRA && miraStore.selectedPrompt && revisionComments.length > 0
+        "
+        class="text-caption text-grey-7 q-mr-sm q-mt-xs"
+        style="max-width: 220px; display: inline-block; vertical-align: middle"
+      >
+        Will apply your revision comment article-wide.
+      </div>
       <q-btn
         no-caps
         unelevated

@@ -11,6 +11,7 @@ import { processCommentedChanges } from './services/commentReviewService.ts';
 import { applyRevisionFeedback } from './services/revisionFeedbackService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
 import { buildProcessableChanges } from './services/reviewRouter.ts';
+import { pickLatestRevisionId } from './services/revisionPicker.ts';
 
 const STATUS_LABELS: Record<number, string> = {
   0: 'pending',
@@ -61,25 +62,44 @@ app.post('/', async (c) => {
       await Promise.all([
         supabase
           .from('changes')
-          .select('id, content, index, status, type_of_edit, revision_id')
+          .select('id, content, index, status, type_of_edit, revision_id, archived, hidden')
           .eq('article_id', article_id)
           .in('status', [0, 1, 2]),
         supabase
           .from('revisions')
-          .select('id')
+          .select('id, created_at')
           .eq('article_id', article_id),
         getArticle(article_id),
       ]);
 
-    const candidateChanges = candidateChangesResp.data || [];
-    const allRevisionIds = (articleRevisionsResp.data || [])
-      .map((r) => r.id)
-      .filter((rid): rid is string => typeof rid === 'string');
+    const candidateChanges = (candidateChangesResp.data || []).filter((c) => {
+      if (c.archived === true || c.hidden === true) return false;
+      return true;
+    });
+
+    console.info(
+      `[ai-review] Fetched ${candidateChangesResp.data?.length ?? 0} changes, ${candidateChanges.length} after archived/hidden filter`,
+    );
+
+    const allRevisions = (articleRevisionsResp.data || []).filter(
+      (r): r is { id: string; created_at: string } =>
+        typeof r.id === 'string' && typeof r.created_at === 'string',
+    );
+
+    const activeRevisionId = pickLatestRevisionId(allRevisions);
 
     const candidateIds = candidateChanges.map((c) => c.id);
 
     const commentsByChangeId = new Map<string, string[]>();
     const revisionCommentsByRevisionId = new Map<string, string[]>();
+
+    const revisionCommentQuery = activeRevisionId
+      ? supabase
+          .from('comments')
+          .select('revision_id, content')
+          .eq('revision_id', activeRevisionId)
+          .is('change_id', null)
+      : Promise.resolve({ data: [], error: null });
 
     const [changeCommentsResp, revisionCommentsResp] = await Promise.all([
       candidateIds.length > 0
@@ -89,13 +109,7 @@ app.post('/', async (c) => {
             .in('change_id', candidateIds)
             .is('revision_id', null)
         : Promise.resolve({ data: [], error: null }),
-      allRevisionIds.length > 0
-        ? supabase
-            .from('comments')
-            .select('revision_id, content')
-            .in('revision_id', allRevisionIds)
-            .is('change_id', null)
-        : Promise.resolve({ data: [], error: null }),
+      revisionCommentQuery,
     ]);
 
     for (const comment of changeCommentsResp.data || []) {
@@ -119,14 +133,15 @@ app.post('/', async (c) => {
       customInstructions,
     );
 
-    const aggregatedRevisionFeedback: string[] = [];
-    for (const rid of routing.revisionsWithFeedback) {
-      const items = revisionCommentsByRevisionId.get(rid) || [];
-      for (const item of items) aggregatedRevisionFeedback.push(item);
-    }
+    const activeRevisionFeedback = activeRevisionId
+      ? (revisionCommentsByRevisionId.get(activeRevisionId) ?? [])
+      : [];
 
-    const hasArticleWideFeedback = routing.hasArticleWideFeedback &&
-      aggregatedRevisionFeedback.length > 0;
+    console.info(
+      `[ai-review] Active revision: ${activeRevisionId ?? '(none)'}; revision comments on it: ${activeRevisionFeedback.length}; processable changes: ${routing.changes.length}`,
+    );
+
+    const hasArticleWideFeedback = activeRevisionFeedback.length > 0;
     const hasPerParagraphWork = routing.changes.length > 0;
 
     if (hasArticleWideFeedback || hasPerParagraphWork) {
@@ -151,12 +166,12 @@ app.post('/', async (c) => {
 
       if (hasArticleWideFeedback) {
         console.info(
-          `[revision-feedback] Applying ${aggregatedRevisionFeedback.length} revision-level comment(s) article-wide (will trigger per-paragraph work afterward if any).`,
+          `[revision-feedback] Applying ${activeRevisionFeedback.length} latest-revision comment(s) article-wide (will trigger per-paragraph work afterward if any).`,
         );
 
         articleWideResult = await applyRevisionFeedback(
           article_id,
-          aggregatedRevisionFeedback,
+          activeRevisionFeedback,
           config,
           {
             articleLanguage: article?.language,
@@ -202,33 +217,15 @@ app.post('/', async (c) => {
         );
 
         const improvements = routing.changes.map((change) => {
-          const changeComment = change.change_comment || '';
-          const revisionFeedback = change.revision_feedback || [];
-          const feedbackBlock = changeComment
-            ? `User feedback on this change:\n${changeComment}\n\n`
-            : '';
-          const revisionFeedbackBlock = revisionFeedback.length > 0
-            ? `Revision-level feedback (applies to the whole article, not just this paragraph):\n${revisionFeedback.join('\n')}\n\n`
-            : '';
-          const contextLine = change.status === 2
-            ? 'The previous version was rejected by the user — produce a different version.'
-            : change.status === 1
-            ? 'The user approved this change but has follow-up feedback — apply it while preserving what they liked.'
-            : 'Pending review with a follow-up comment — apply the comment as a refinement.';
-          const instruction = customInstructions?.trim() ||
-            'Improve the text';
-          const promptWithFeedback =
-            `${revisionFeedbackBlock}${instruction}\n\n${contextLine}\n\n${feedbackBlock}`.trim();
-
           return {
             change_id: change.id,
-            prompt: promptWithFeedback,
+            change_comment: change.change_comment,
             content: change.content || '',
             index: change.index,
             status: change.status,
             type_of_edit: change.type_of_edit,
             mode: change.mode,
-            revision_feedback: revisionFeedback,
+            revision_feedback: change.revision_feedback || [],
             custom_instructions: change.custom_instructions,
           };
         });
@@ -237,7 +234,7 @@ app.post('/', async (c) => {
           `[auto-retry] improvements to process:\n${improvements
             .map(
               (i) =>
-                `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${STATUS_LABELS[i.status] ?? i.status} | mode: ${i.mode} | contentLen: ${i.content?.length ?? 0} | prompt: "${i.prompt.substring(0, 80)}"`,
+                `  change: ${i.change_id.substring(0, 8)} | index: ${i.index} | status: ${STATUS_LABELS[i.status] ?? i.status} | mode: ${i.mode} | contentLen: ${i.content?.length ?? 0} | change_comment: "${(i.change_comment ?? '').substring(0, 80)}"`,
             )
             .join('\n')}`,
         );

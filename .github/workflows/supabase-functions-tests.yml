@@ -20,7 +20,7 @@ jobs:
         with:
           deno-version: latest
       - name: Run unit tests
-        run: deno test supabase/functions --allow-all --coverage
+        run: deno test supabase/functions --allow-all --coverage --node-modules-dir=auto
       - name: Generate code coverage report
         run: deno coverage --lcov --output=cov.lcov
       - name: Report code coverage to Deepsource

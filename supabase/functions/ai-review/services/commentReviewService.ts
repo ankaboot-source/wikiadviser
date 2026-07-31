@@ -6,6 +6,12 @@ import {
   buildRevisionSystemPrompt,
   buildRevisionUserPrompt,
 } from '../config/prompts.ts';
+import {
+  extractDiffFragments,
+  findParagraphIndex,
+  findParagraphIndexInSet,
+  normalizeForMatch,
+} from '../utils/paragraphMatch.ts';
 import type { LLMConfig } from '../utils/types.ts';
 
 export interface CommentImprovement {
@@ -137,51 +143,92 @@ export async function processCommentedChanges(
   for (const improvement of validImprovements) {
     const { type_of_edit, index, content, change_id, change_comment } = improvement;
 
-    const plainText = content
-      .replaceAll(/<[^>]*>/g, ' ')
-      .replaceAll(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
+    const { inserted, removed, plainText } = extractDiffFragments(content || '');
     const plainTextPreview = plainText.length > 80
       ? plainText.substring(0, 80) + '...'
       : plainText;
 
-    let targetIndex: number;
+    const candidates = [inserted, removed, plainText].filter(
+      (f) => normalizeForMatch(f).length > 0,
+    );
+
+    const searchTargets: Array<{ name: string; paragraphs: string[] | null }> = [
+      { name: 'current', paragraphs: currentParagraphs },
+      { name: 'previous', paragraphs: previousParagraphs },
+    ];
+
+    let targetIndex = -1;
     let matchMethod = '';
 
-    if (type_of_edit === REMOVE_TYPE) {
-      if (index === null) {
-        console.warn(`[processCommented] Skipping change ${change_id}: removal has no index`);
-        continue;
-      }
-      targetIndex = Math.min(index, currentParagraphs.length - 1);
-      matchMethod = 'remove-clamp';
-    } else {
-      const changedMatch = [...changedIndices].find((i) =>
-        currentParagraphs[i]?.toLowerCase().includes(plainText),
-      );
-      if (changedMatch !== undefined) {
-        targetIndex = changedMatch;
-        matchMethod = 'changedIndices';
-      } else if (index !== null) {
-        targetIndex = Math.min(index, currentParagraphs.length - 1);
-        matchMethod = 'storedIdx';
-      } else {
-        targetIndex = currentParagraphs.findIndex((p) =>
-          p.toLowerCase().includes(plainText),
-        );
-        if (targetIndex === -1) {
-          console.warn(
-            `[processCommented] Skipping change ${change_id}: could not match to any paragraph`,
+    for (const target of searchTargets) {
+      if (!target.paragraphs) continue;
+
+      for (const fragment of candidates) {
+        if (type_of_edit === REMOVE_TYPE) {
+          targetIndex = findParagraphIndex(target.paragraphs, fragment, usedIndices);
+          if (targetIndex !== -1) {
+            matchMethod = `removal-${target.name}`;
+            break;
+          }
+        } else {
+          const changedMatch = findParagraphIndexInSet(
+            target.paragraphs,
+            changedIndices,
+            fragment,
+            usedIndices,
           );
-          continue;
+          if (changedMatch !== -1) {
+            targetIndex = changedMatch;
+            matchMethod = `changedIndices-${target.name}`;
+            break;
+          }
+
+          targetIndex = findParagraphIndex(target.paragraphs, fragment, usedIndices);
+          if (targetIndex !== -1) {
+            matchMethod = `fullSearch-${target.name}`;
+            break;
+          }
         }
-        matchMethod = 'fullSearch';
+      }
+      if (targetIndex !== -1) break;
+    }
+
+    if (matchMethod.includes('previous') && targetIndex !== -1) {
+      const currentPara = currentParagraphs[targetIndex];
+      const stillRelated = currentPara &&
+        candidates.some((f) =>
+          normalizeForMatch(currentPara).includes(normalizeForMatch(f)),
+        );
+      if (!stillRelated) {
+        console.warn(
+          `[processCommented] Change ${change_id.substring(0, 8)}: matched previous para[${targetIndex}] but current para is unrelated — treating as unmatched`,
+        );
+        targetIndex = -1;
+        matchMethod = '';
       }
     }
 
+    if (targetIndex === -1 && index !== null && currentParagraphs[index]) {
+      const storedPara = currentParagraphs[index];
+      if (candidates.some((f) =>
+        normalizeForMatch(storedPara).includes(normalizeForMatch(f)),
+      )) {
+        targetIndex = Math.min(index, currentParagraphs.length - 1);
+        matchMethod = 'storedIdx';
+      }
+    }
+
+    if (targetIndex === -1) {
+      console.warn(
+        `[processCommented] Skipping change ${change_id}: could not match to any paragraph ` +
+          `(type_of_edit: ${type_of_edit}, storedIdx: ${index}, inserted: "${inserted.substring(0, 80)}", ` +
+          `removed: "${removed.substring(0, 80)}", plainText: "${plainTextPreview}")`,
+      );
+      continue;
+    }
+
     console.info(
-      `[processCommented] Change ${change_id.substring(0, 8)} → method: ${matchMethod} | storedIdx: ${index} | resolvedIdx: ${targetIndex} | plainText: "${plainTextPreview}"`,
+      `[processCommented] Change ${change_id.substring(0, 8)} → method: ${matchMethod} | storedIdx: ${index} | resolvedIdx: ${targetIndex} | inserted: "${inserted.substring(0, 60)}" | removed: "${removed.substring(0, 60)}" | plainText: "${plainTextPreview}"`,
     );
 
     if (usedIndices.has(targetIndex)) {

@@ -80,6 +80,20 @@ app.post('/', async (c) => {
     console.info(
       `[ai-review] Fetched ${candidateChangesResp.data?.length ?? 0} changes, ${candidateChanges.length} after archived/hidden filter`,
     );
+    console.info(
+      `[ai-review] candidate changes: ${
+        JSON.stringify(
+          candidateChanges.map((c) => ({
+            id: c.id?.slice(0, 8),
+            status: c.status,
+            archived: c.archived,
+            hidden: c.hidden,
+            revision_id: c.revision_id?.slice(0, 8),
+            contentLen: c.content?.length ?? 0,
+          })),
+        )
+      }`,
+    );
 
     const allRevisions = (articleRevisionsResp.data || []).filter(
       (r): r is { id: string; created_at: string } =>
@@ -87,6 +101,10 @@ app.post('/', async (c) => {
     );
 
     const activeRevisionId = pickLatestRevisionId(allRevisions);
+
+    console.info(
+      `[ai-review] allRevisionsCount=${allRevisions.length}; activeRevisionId=${activeRevisionId ?? '(none)'}`,
+    );
 
     const candidateIds = candidateChanges.map((c) => c.id);
 
@@ -118,6 +136,10 @@ app.post('/', async (c) => {
       commentsByChangeId.set(comment.change_id, existing);
     }
 
+    console.info(
+      `[ai-review] change comments fetched: ${commentsByChangeId.size} change ids with comments`,
+    );
+
     for (const comment of revisionCommentsResp.data || []) {
       if (!comment.revision_id) continue;
       const existing =
@@ -140,9 +162,18 @@ app.post('/', async (c) => {
     console.info(
       `[ai-review] Active revision: ${activeRevisionId ?? '(none)'}; revision comments on it: ${activeRevisionFeedback.length}; processable changes: ${routing.changes.length}`,
     );
+    console.info(
+      `[ai-review] routing.changes modes: ${
+        JSON.stringify(routing.changes.map((c) => c.mode))
+      }`,
+    );
 
     const hasArticleWideFeedback = activeRevisionFeedback.length > 0;
     const hasPerParagraphWork = routing.changes.length > 0;
+
+    console.info(
+      `[ai-review] hasArticleWideFeedback=${hasArticleWideFeedback}; hasPerParagraphWork=${hasPerParagraphWork}`,
+    );
 
     if (hasArticleWideFeedback || hasPerParagraphWork) {
       await addMiraBotPermission(article_id);

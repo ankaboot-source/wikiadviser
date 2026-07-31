@@ -64,9 +64,7 @@ app.post('/', async (c) => {
           .from('changes')
           .select('id, content, index, status, type_of_edit, revision_id, archived, hidden')
           .eq('article_id', article_id)
-          .in('status', [0, 1, 2])
-          .or('archived.is.false,archived.is.null')
-          .or('hidden.is.false,hidden.is.null'),
+          .in('status', [0, 1, 2]),
         supabase
           .from('revisions')
           .select('id, created_at')
@@ -78,6 +76,10 @@ app.post('/', async (c) => {
       if (c.archived === true || c.hidden === true) return false;
       return true;
     });
+
+    console.info(
+      `[ai-review] Fetched ${candidateChangesResp.data?.length ?? 0} changes, ${candidateChanges.length} after archived/hidden filter`,
+    );
 
     const allRevisions = (articleRevisionsResp.data || []).filter(
       (r): r is { id: string; created_at: string } =>

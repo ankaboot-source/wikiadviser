@@ -3,5 +3,6 @@
     "cheerio": "npm:cheerio@^1.0.0",
     "hono": "npm:hono@4.7.4",
     "supabase": "https://esm.sh/@supabase/supabase-js@2"
-  }
+  },
+  "nodeModulesDir": "auto"
 }

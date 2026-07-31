@@ -10,7 +10,7 @@ import type { LLMConfig } from '../utils/types.ts';
 
 export interface CommentImprovement {
   change_id: string;
-  prompt: string;
+  change_comment: string | null;
   content: string;
   index: number | null;
   status: number;
@@ -135,7 +135,7 @@ export async function processCommentedChanges(
   let improvedCount = 0;
 
   for (const improvement of validImprovements) {
-    const { type_of_edit, index, content, change_id, prompt } = improvement;
+    const { type_of_edit, index, content, change_id, change_comment } = improvement;
 
     const plainText = content
       .replaceAll(/<[^>]*>/g, ' ')
@@ -226,7 +226,7 @@ export async function processCommentedChanges(
         systemPrompt,
         buildRevisionUserPrompt(
           sourceParagraph,
-          prompt,
+          change_comment ?? '',
           improvement.mode,
           improvement.revision_feedback,
           improvement.custom_instructions ?? undefined,

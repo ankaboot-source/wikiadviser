@@ -158,6 +158,21 @@ Deno.test(
 );
 
 Deno.test(
+  'buildRevisionUserPrompt rejection context uses change comment directly, not nested inside it',
+  () => {
+    const changeComment = 'use title "Cargo et logistique"';
+    const result = buildRevisionUserPrompt(
+      '=== Histoire ===\nContent',
+      changeComment,
+      'rejection',
+    );
+    assertStringIncludes(result, changeComment);
+    assertStringIncludes(result, 'REJECTION CONTEXT');
+    assertStringIncludes(result, changeComment);
+  },
+);
+
+Deno.test(
   'buildRevisionUserPrompt injects CUSTOM INSTRUCTIONS as origin context',
   () => {
     const result = buildRevisionUserPrompt(

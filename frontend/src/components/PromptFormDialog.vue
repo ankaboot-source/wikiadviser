@@ -43,12 +43,12 @@
           bg-color="white"
           rows="17"
           counter
-          maxlength="10000"
+          maxlength="20000"
           :rules="[
             (val) => !!val || 'Prompt is required',
             (val) =>
-              val.length <= 10000 ||
-              'Prompt must be less than 10000 characters',
+              val.length <= 20000 ||
+              'Prompt must be less than 20000 characters',
           ]"
         />
       </q-card-section>
@@ -127,7 +127,7 @@ const isFormValid = computed(() => {
     form.value.name.trim().length > 0 &&
     form.value.name.length <= 100 &&
     form.value.prompt.trim().length > 0 &&
-    form.value.prompt.length <= 10000
+    form.value.prompt.length <= 20000
   );
 });
 

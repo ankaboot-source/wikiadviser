@@ -1,9 +1,11 @@
 import {
   assertEquals,
+  assertNotEquals,
   assertStringIncludes,
 } from 'https://deno.land/std@0.208.0/assert/mod.ts';
 import {
   extractDiffFragments,
+  findParagraphIndex,
   normalizeForMatch,
 } from '../../ai-review/utils/paragraphMatch.ts';
 
@@ -251,3 +253,69 @@ Deno.test('matching by inserted text beats stored index pointing elsewhere', () 
   assertEquals(fullSearch, 1);
   assertEquals(staleRelated, false);
 });
+
+Deno.test(
+  'previous-revision match is honored when current paragraph is a same-index rewrite',
+  () => {
+    const currentParagraphs = [
+      'La Palestine est une région géographique d\'Asie occidentale, située entre la mer Méditerranée et le Jourdain. Le territoire est au cœur de l\'histoire de plusieurs religions majeures, et se caractérise par une identité culturelle arabe et une forte empreinte islamique.',
+      'L\'État de Palestine, qui revendique la Cisjordanie et la bande de Gaza, est reconnu comme un État souverain.',
+      'Historiquement, la région a connu des transformations majeures au XXe siècle, marquées par l\'établissement du mandat britannique sur la Palestine confié par la Société des Nations.',
+    ];
+    const previousParagraphs = [
+      'La Palestine est une région géographique d\'Asie occidentale, située entre la mer Méditerranée et le Jourdain. Le territoire est au cœur de l\'histoire de plusieurs religions majeures, et a été soumis à diverses administrations politiques.',
+      'L\'État de Palestine, qui revendique la Cisjordanie et la bande de Gaza, est reconnu comme un État souverain.',
+      'Historiquement, la région a connu des changements majeurs au XXe siècle. Après la Première Guerre mondiale, la Société des Nations a confié le mandat britannique sur la Palestine au Royaume-Uni en 1922.',
+    ];
+    const changedIndices = new Set([0, 2]);
+    const fragment = 'Historiquement, la région a connu des changements majeurs au XXe siècle.';
+
+    const currentMatch = findParagraphIndex(currentParagraphs, fragment);
+    const previousMatch = previousParagraphs.findIndex((p) =>
+      normalizeForMatch(p).includes(normalizeForMatch(fragment)),
+    );
+
+    assertEquals(currentMatch, -1);
+    assertEquals(previousMatch, 2);
+    assertEquals(changedIndices.has(previousMatch), true);
+
+    const sourceParagraph = currentParagraphs[previousMatch];
+    assertStringIncludes(sourceParagraph, 'transformations');
+    assertEquals(
+      normalizeForMatch(sourceParagraph).includes(
+        normalizeForMatch('changements majeurs'),
+      ),
+      false,
+    );
+    assertEquals(sourceParagraph, currentParagraphs[2]);
+    assertNotEquals(sourceParagraph, previousParagraphs[2]);
+  },
+);
+
+Deno.test(
+  'previous-revision match falls back to the same-index current paragraph as source',
+  () => {
+    const currentParagraphs = [
+      'La Palestine est une région géographique d\'Asie occidentale, située entre la mer Méditerranée et le Jourdain.',
+      'Historiquement, la région a connu des transformations majeures au XXe siècle, marquées par l\'établissement du mandat britannique.',
+    ];
+    const previousParagraphs = [
+      'La Palestine est une région géographique d\'Asie occidentale, située entre la mer Méditerranée et le Jourdain.',
+      'Historiquement, la région a connu des changements majeurs au XXe siècle. Après la Première Guerre mondiale, la Société des Nations a confié le mandat britannique sur la Palestine au Royaume-Uni en 1922.',
+    ];
+    const fragment = 'Historiquement, la région a connu des changements majeurs au XXe siècle.';
+
+    const previousMatch = previousParagraphs.findIndex((p) =>
+      normalizeForMatch(p).includes(normalizeForMatch(fragment)),
+    );
+    assertEquals(previousMatch, 1);
+
+    const prevPara = previousParagraphs[previousMatch];
+    const currentPara = currentParagraphs[previousMatch];
+    assertEquals(prevPara !== currentPara, true);
+
+    const sourceParagraph = currentPara;
+    assertStringIncludes(sourceParagraph, 'transformations');
+    assertEquals(sourceParagraph, currentParagraphs[previousMatch]);
+  },
+);

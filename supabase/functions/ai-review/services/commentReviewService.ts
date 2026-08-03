@@ -194,17 +194,16 @@ export async function processCommentedChanges(
     }
 
     if (matchMethod.includes('previous') && targetIndex !== -1) {
-      const currentPara = currentParagraphs[targetIndex];
-      const stillRelated = currentPara &&
+      const stillInCurrent = currentParagraphs[targetIndex] &&
         candidates.some((f) =>
-          normalizeForMatch(currentPara).includes(normalizeForMatch(f)),
+          normalizeForMatch(currentParagraphs[targetIndex]).includes(
+            normalizeForMatch(f),
+          ),
         );
-      if (!stillRelated) {
+      if (!stillInCurrent) {
         console.warn(
-          `[processCommented] Change ${change_id.substring(0, 8)}: matched previous para[${targetIndex}] but current para is unrelated — treating as unmatched`,
+          `[processCommented] Change ${change_id.substring(0, 8)}: matched previous para[${targetIndex}] — regenerating from current text`,
         );
-        targetIndex = -1;
-        matchMethod = '';
       }
     }
 
@@ -239,24 +238,7 @@ export async function processCommentedChanges(
     }
 
     const currentParagraph = currentParagraphs[targetIndex];
-
-    let sourceParagraph = currentParagraph;
-    if (previousParagraphs && targetIndex < previousParagraphs.length) {
-      const prevPara = previousParagraphs[targetIndex];
-      if (prevPara !== currentParagraph) {
-        sourceParagraph = prevPara;
-        const prevPreview = prevPara.length > 60
-          ? prevPara.substring(0, 60) + '...'
-          : prevPara;
-        console.info(
-          `[processCommented] Using PREVIOUS revision para[${targetIndex}]: "${prevPreview}"`,
-        );
-      } else {
-        console.info(
-          `[processCommented] Previous para[${targetIndex}] same as current — using current`,
-        );
-      }
-    }
+    const sourceParagraph = currentParagraph;
 
     const currPreview = currentParagraph.length > 60
       ? currentParagraph.substring(0, 60) + '...'

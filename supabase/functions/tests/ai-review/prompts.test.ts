@@ -316,3 +316,28 @@ Deno.test('defaultAiPrompt is a non-empty string mentioning Mira', () => {
   assertEquals(typeof defaultAiPrompt, 'string');
   assertStringIncludes(defaultAiPrompt, 'Mira');
 });
+
+Deno.test('buildSystemPrompt includes the refusal token instruction', () => {
+  const result = buildSystemPrompt('My Title', 'A description', defaultAiPrompt);
+  assertStringIncludes(result, 'MIRA_REFUSAL');
+});
+
+Deno.test('buildSystemPrompt with custom instructions includes the refusal token instruction', () => {
+  const result = buildSystemPrompt('My Title', 'A description', defaultAiPrompt, 'Translate to English');
+  assertStringIncludes(result, 'MIRA_REFUSAL');
+});
+
+Deno.test('buildRevisionSystemPrompt includes the refusal token instruction', () => {
+  const result = buildRevisionSystemPrompt({ title: 'My Title', description: null });
+  assertStringIncludes(result, 'MIRA_REFUSAL');
+});
+
+Deno.test('buildRevisionSystemPrompt (full article) includes the refusal token instruction', () => {
+  const result = buildRevisionSystemPrompt({ title: 'My Title', description: null }, 'Some wikitext', true);
+  assertStringIncludes(result, 'MIRA_REFUSAL');
+});
+
+Deno.test('buildEmptyArticlePrompt includes the refusal token instruction', () => {
+  const result = buildEmptyArticlePrompt({ title: 'My Title', description: null });
+  assertStringIncludes(result, 'MIRA_REFUSAL');
+});

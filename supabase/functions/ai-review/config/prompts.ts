@@ -1,3 +1,5 @@
+import { REFUSAL_INSTRUCTION } from '../utils/refusalDetection.ts';
+
 export function extractDisplayTitle(wikitext: string): string {
   return wikitext.match(/\{\{DISPLAYTITLE:[^}]*\}\}/i)?.[0] ?? '';
 }
@@ -43,7 +45,9 @@ For each section:
     hasCustomInstructions
       ? 'The CRITICAL INSTRUCTION MUST be applied to this section.'
       : 'If no improvements needed, return the original text exactly as provided'
-  }`;
+  }
+
+${REFUSAL_INSTRUCTION}`;
 
   return systemPrompt;
 }
@@ -88,7 +92,9 @@ CRITICAL RULES:
 ARTICLE: ${article.title || 'Unknown'}
 DESCRIPTION: ${article.description || 'No description available'}
 ${contextSection}
-${scopeRules}`;
+${scopeRules}
+
+${REFUSAL_INSTRUCTION}`;
 }
 
 export function buildRevisionFeedbackPrompt(
@@ -182,6 +188,8 @@ Requirements:
 2. Be factual and neutral
 3. Use proper wikitext formatting where appropriate
 4. Create coherent, well-structured content
+
+${REFUSAL_INSTRUCTION}
 
 Return ONLY the generated content, without any preamble or explanation.`;
 }

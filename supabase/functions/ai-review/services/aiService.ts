@@ -4,6 +4,7 @@ import { OpenAICompatibleProvider } from './providers/openai-compatible.ts';
 import { AnthropicProvider } from './providers/anthropic.ts';
 import { GeminiProvider } from './providers/gemini.ts';
 import { AIProvider } from './providers/types.ts';
+import { REFUSAL_INSTRUCTION } from '../utils/refusalDetection.ts';
 
 const PROVIDER_ENDPOINTS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1',
@@ -84,7 +85,8 @@ export async function generateRevisionSummary(
         'You summarise text edits in 3-7 words as a lowercase verb phrase. ' +
         'Examples: "translated introduction", "improved grammar and clarity", ' +
         '"expanded lead section", "fixed wikitext formatting". ' +
-        'Respond with ONLY the phrase, no punctuation.',
+        'Respond with ONLY the phrase, no punctuation.\n\n' +
+        REFUSAL_INSTRUCTION,
       userPrompt: `BEFORE:\n${oldText.slice(0, 800)}\n\nAFTER:\n${newText.slice(0, 800)}`,
       temperature: 0,
       maxTokens: 20,

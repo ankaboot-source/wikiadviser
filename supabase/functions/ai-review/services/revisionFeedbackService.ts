@@ -7,6 +7,10 @@ import {
 } from '../config/prompts.ts';
 import { generateRevisionSummary, reviewArticleSection } from './aiService.ts';
 import type { LLMConfig } from '../utils/types.ts';
+import {
+  AIRefusalError,
+  REFUSAL_USER_MESSAGE,
+} from '../utils/refusalDetection.ts';
 
 export interface RevisionFeedbackResult {
   hasImprovements: boolean;
@@ -68,12 +72,26 @@ export async function applyRevisionFeedback(
     options.customInstructions,
   );
 
-  const improvedWikitext = await reviewArticleSection(
-    config,
-    systemPrompt,
-    userPrompt,
-    8192,
-  );
+  let improvedWikitext: string;
+  try {
+    improvedWikitext = await reviewArticleSection(
+      config,
+      systemPrompt,
+      userPrompt,
+      8192,
+    );
+  } catch (error) {
+    if (error instanceof AIRefusalError) {
+      console.warn(`[revision-feedback] AI refused the request: ${error.message}`);
+      return {
+        hasImprovements: false,
+        comment: REFUSAL_USER_MESSAGE,
+        oldRevisionId: 0,
+        newRevisionId: 0,
+      };
+    }
+    throw error;
+  }
 
   const trimmed = improvedWikitext.trim();
   if (!trimmed || trimmed === currentWikitext.trim()) {

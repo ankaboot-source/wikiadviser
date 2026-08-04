@@ -13,6 +13,10 @@ import {
   normalizeForMatch,
 } from '../utils/paragraphMatch.ts';
 import type { LLMConfig } from '../utils/types.ts';
+import {
+  AIRefusalError,
+  REFUSAL_USER_MESSAGE,
+} from '../utils/refusalDetection.ts';
 
 export interface CommentImprovement {
   change_id: string;
@@ -139,6 +143,7 @@ export async function processCommentedChanges(
   const improvedParagraphs = [...currentParagraphs];
   const usedIndices = new Set<number>();
   let improvedCount = 0;
+  let refusalCount = 0;
 
   for (const improvement of validImprovements) {
     const { type_of_edit, index, content, change_id, change_comment } = improvement;
@@ -276,17 +281,26 @@ export async function processCommentedChanges(
         );
       }
     } catch (error) {
-      console.error(
-        `[processCommented] Failed to improve change ${change_id}:`,
-        error,
-      );
+      if (error instanceof AIRefusalError) {
+        refusalCount++;
+        console.warn(
+          `[processCommented] Change ${change_id.substring(0, 8)}: AI refused — skipping`,
+        );
+      } else {
+        console.error(
+          `[processCommented] Failed to improve change ${change_id}:`,
+          error,
+        );
+      }
     }
   }
 
   if (improvedCount === 0) {
     return {
       hasImprovements: false,
-      comment: 'No improvements were applied.',
+      comment: refusalCount > 0
+        ? REFUSAL_USER_MESSAGE
+        : 'No improvements were applied.',
       oldRevisionId: 0,
       newRevisionId: 0,
     };

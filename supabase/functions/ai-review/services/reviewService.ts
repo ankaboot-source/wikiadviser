@@ -11,6 +11,10 @@ import { generateRevisionSummary, reviewArticleSection } from './aiService.ts';
 import { splitArticleIntoSections } from './articleProcessor.ts';
 import type { LLMConfig } from '../utils/types.ts';
 import { getArticle } from '../../_shared/helpers/supabaseHelper.ts';
+import {
+  AIRefusalError,
+  REFUSAL_USER_MESSAGE,
+} from '../utils/refusalDetection.ts';
 
 export interface ReviewResult {
   hasImprovements: boolean;
@@ -169,43 +173,51 @@ export async function reviewAndImproveArticle(
   let improvedWikitext: string;
   let improvedSections: number;
 
-  if (isEmpty) {
-    if (!customInstructions?.trim()) {
-      return noImprovement(
-        'Article has no content. Add a custom prompt to generate content.',
+  try {
+    if (isEmpty) {
+      if (!customInstructions?.trim()) {
+        return noImprovement(
+          'Article has no content. Add a custom prompt to generate content.',
+        );
+      }
+      if (!article.title?.trim()) {
+        return noImprovement('Article has no title — cannot generate content.');
+      }
+
+      const generated = await generateEmptyArticleContent(
+        article,
+        config,
+        customInstructions,
+        wikitext,
       );
-    }
-    if (!article.title?.trim()) {
-      return noImprovement('Article has no title — cannot generate content.');
-    }
+      if (!generated) {
+        return noImprovement('Generated content was too short or empty.');
+      }
 
-    const generated = await generateEmptyArticleContent(
-      article,
-      config,
-      customInstructions,
-      wikitext,
-    );
-    if (!generated) {
-      return noImprovement('Generated content was too short or empty.');
+      improvedWikitext = generated;
+      improvedSections = 1;
+    } else {
+      console.log(
+        `Article: "${article.title}", wikitext length: ${wikitext.length} chars`,
+      );
+      const systemPrompt = buildSystemPrompt(
+        article.title,
+        article.description,
+        config.prompt,
+        customInstructions,
+      );
+      ({ improvedWikitext, improvedSections } = await buildImprovedWikitext(
+        wikitext,
+        config,
+        systemPrompt,
+      ));
     }
-
-    improvedWikitext = generated;
-    improvedSections = 1;
-  } else {
-    console.log(
-      `Article: "${article.title}", wikitext length: ${wikitext.length} chars`,
-    );
-    const systemPrompt = buildSystemPrompt(
-      article.title,
-      article.description,
-      config.prompt,
-      customInstructions,
-    );
-    ({ improvedWikitext, improvedSections } = await buildImprovedWikitext(
-      wikitext,
-      config,
-      systemPrompt,
-    ));
+  } catch (error) {
+    if (error instanceof AIRefusalError) {
+      console.warn(`[review] AI refused the request: ${error.message}`);
+      return noImprovement(REFUSAL_USER_MESSAGE);
+    }
+    throw error;
   }
 
   if (improvedSections === 0 || improvedWikitext.trim() === wikitext.trim()) {

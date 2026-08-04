@@ -5,6 +5,7 @@ export interface CandidateChange {
   status: number;
   type_of_edit: number | null;
   revision_id?: string | null;
+  updated_at?: string | null;
 }
 
 export type ProcessableMode =

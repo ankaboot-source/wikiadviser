@@ -292,6 +292,11 @@ export async function insertComment(
   if (changeError) {
     throw new Error(changeError.message);
   }
+
+  await supabaseClient
+    .from('changes')
+    .update({ updated_at: new Date().toISOString() })
+    .eq('id', changeId);
 }
 
 export async function insertRevisionComment(

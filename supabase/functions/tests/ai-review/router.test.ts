@@ -7,7 +7,7 @@ import {
   type CandidateChange,
 } from '../../ai-review/services/reviewRouter.ts';
 
-function candidate(overrides: Partial<CandidateChange>): CandidateChange {
+function candidate(overrides: Partial<CandidateChange> = {}): CandidateChange {
   return {
     id: overrides.id ?? 'change-1',
     content: overrides.content ?? 'Some paragraph content.',
@@ -16,6 +16,19 @@ function candidate(overrides: Partial<CandidateChange>): CandidateChange {
     type_of_edit: overrides.type_of_edit ?? 0,
     revision_id: overrides.revision_id ?? 'rev-1',
   };
+}
+
+function shouldIncludeApprovedChange(
+  status: number,
+  updatedAt: string | null,
+  latestCommentTs: string | null,
+): boolean {
+  if (status === 1) {
+    if (!latestCommentTs) return false;
+    const updated = updatedAt ? new Date(updatedAt) : null;
+    if (!updated || updated > new Date(latestCommentTs)) return false;
+  }
+  return true;
 }
 
 Deno.test(
@@ -209,5 +222,62 @@ Deno.test(
     assertEquals(result.changes[0].change_comment, 'Fix this');
     assertEquals(result.changes[0].revision_feedback, ['Use just one title']);
     assertEquals(result.changes[0].custom_instructions, 'Use British English');
+  },
+);
+
+Deno.test(
+  'approved change: updated_at after latest comment → excluded (already processed)',
+  () => {
+    assertEquals(
+      shouldIncludeApprovedChange(1, '2024-01-02T00:00:00Z', '2024-01-01T00:00:00Z'),
+      false,
+    );
+  },
+);
+
+Deno.test(
+  'approved change: updated_at before latest comment → included (new comment since last process)',
+  () => {
+    assertEquals(
+      shouldIncludeApprovedChange(1, '2024-01-01T00:00:00Z', '2024-01-02T00:00:00Z'),
+      true,
+    );
+  },
+);
+
+Deno.test(
+  'approved change: no comment → excluded',
+  () => {
+    assertEquals(shouldIncludeApprovedChange(1, '2024-01-02T00:00:00Z', null), false);
+  },
+);
+
+Deno.test(
+  'approved change: updated_at null → excluded',
+  () => {
+    assertEquals(
+      shouldIncludeApprovedChange(1, null, '2024-01-01T00:00:00Z'),
+      false,
+    );
+  },
+);
+
+Deno.test(
+  'rejected change (status=2): always included regardless of updated_at',
+  () => {
+    assertEquals(
+      shouldIncludeApprovedChange(2, '2024-01-01T00:00:00Z', '2024-01-01T00:00:00Z'),
+      true,
+    );
+  },
+);
+
+Deno.test(
+  'pending change (status=0): always included regardless of updated_at',
+  () => {
+    assertEquals(
+      shouldIncludeApprovedChange(0, null, null),
+      true,
+    );
   },
 );

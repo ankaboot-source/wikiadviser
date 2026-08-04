@@ -62,7 +62,7 @@ app.post('/', async (c) => {
       await Promise.all([
         supabase
           .from('changes')
-          .select('id, content, index, status, type_of_edit, revision_id, archived, hidden')
+          .select('id, content, index, status, type_of_edit, revision_id, archived, hidden, updated_at')
           .eq('article_id', article_id)
           .in('status', [0, 1, 2]),
         supabase
@@ -77,8 +77,32 @@ app.post('/', async (c) => {
       return true;
     });
 
+    const changeIds = candidateChanges.map((c) => c.id);
+    const latestCommentsResp = await supabase
+      .from('comments')
+      .select('change_id, created_at')
+      .in('change_id', changeIds)
+      .order('created_at', { ascending: false });
+
+    const latestCommentByChangeId = new Map<string, string>();
+    for (const row of latestCommentsResp.data || []) {
+      if (!latestCommentByChangeId.has(row.change_id)) {
+        latestCommentByChangeId.set(row.change_id, row.created_at);
+      }
+    }
+
+    const finalCandidates = candidateChanges.filter((c) => {
+      if (c.status === 1) {
+        const latestTs = latestCommentByChangeId.get(c.id);
+        if (!latestTs) return false;
+        const updatedAt = c.updated_at ? new Date(c.updated_at) : null;
+        if (!updatedAt || updatedAt <= new Date(latestTs)) return false;
+      }
+      return true;
+    });
+
     console.info(
-      `[ai-review] Fetched ${candidateChangesResp.data?.length ?? 0} changes, ${candidateChanges.length} after archived/hidden filter`,
+      `[ai-review] Fetched ${candidateChangesResp.data?.length ?? 0} changes, ${finalCandidates.length} after archived/hidden/new-comment filter`,
     );
 
     const allRevisions = (articleRevisionsResp.data || []).filter(
@@ -88,7 +112,7 @@ app.post('/', async (c) => {
 
     const activeRevisionId = pickLatestRevisionId(allRevisions);
 
-    const candidateIds = candidateChanges.map((c) => c.id);
+    const candidateIds = finalCandidates.map((c) => c.id);
 
     const commentsByChangeId = new Map<string, string[]>();
     const revisionCommentsByRevisionId = new Map<string, string[]>();
@@ -127,7 +151,7 @@ app.post('/', async (c) => {
     }
 
     const routing = buildProcessableChanges(
-      candidateChanges,
+      finalCandidates,
       commentsByChangeId,
       revisionCommentsByRevisionId,
       customInstructions,

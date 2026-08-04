@@ -4,7 +4,11 @@ import { OpenAICompatibleProvider } from './providers/openai-compatible.ts';
 import { AnthropicProvider } from './providers/anthropic.ts';
 import { GeminiProvider } from './providers/gemini.ts';
 import { AIProvider } from './providers/types.ts';
-import { REFUSAL_INSTRUCTION } from '../utils/refusalDetection.ts';
+import {
+  AIRefusalError,
+  assertNotRefusal,
+  REFUSAL_INSTRUCTION,
+} from '../utils/refusalDetection.ts';
 
 const PROVIDER_ENDPOINTS: Record<string, string> = {
   openrouter: 'https://openrouter.ai/api/v1',
@@ -55,8 +59,13 @@ export async function reviewArticleSection(
         ...(maxTokens ? { maxTokens } : {}),
       });
       console.log(`[AI Review] Successfully received response from ${config.provider} (${config.model})`);
+      assertNotRefusal(result);
       return result;
     } catch (error) {
+      if (error instanceof AIRefusalError) {
+        console.warn(`[AI Review] Refusal detected, not retrying: ${error.message}`);
+        throw error;
+      }
       lastError = error instanceof Error ? error : new Error(String(error));
       console.warn(
         `AI request attempt ${attempt}/${MAX_RETRIES} failed: ${lastError.message}`,
@@ -91,6 +100,7 @@ export async function generateRevisionSummary(
       temperature: 0,
       maxTokens: 20,
     });
+    assertNotRefusal(summary);
     return summary.toLowerCase();
   } catch {
     return 'reviewed article';

@@ -23,6 +23,7 @@
         :article-id="articleId"
         :role="role"
         :changes-list="changesList"
+        :article-html="changesContent"
         :revision-comments="revisionCommentsMap"
         class="rounded-borders bg-secondary borders list-area"
       />

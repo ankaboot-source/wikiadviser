@@ -41,6 +41,35 @@
             {{ previewDescription }}
           </q-tooltip>
         </q-item-label>
+        <!-- Collapsed legibility (issue #1426): type · size · section · reviewed -->
+        <q-item-label
+          v-if="!expanded"
+          caption
+          class="row items-center q-gutter-x-xs q-px-xs"
+        >
+          <q-badge
+            outline
+            rounded
+            size="sm"
+            class="text-capitalize"
+            :color="typeBadgeColor"
+            :label="typeLabel"
+          />
+          <span>{{ wordCount }} word{{ wordCount === 1 ? '' : 's' }}</span>
+          <template v-if="section">
+            <span>·</span>
+            <span class="text-grey-8">§{{ section }}</span>
+          </template>
+          <q-space />
+          <q-icon
+            v-if="reviewStore.isReviewed(props.item.id)"
+            name="task_alt"
+            size="xs"
+            color="grey-7"
+          >
+            <q-tooltip>Reviewed — you've visited this change</q-tooltip>
+          </q-icon>
+        </q-item-label>
       </q-item-section>
       <q-item-section
         v-if="expanded && !!pastChange"
@@ -287,9 +316,11 @@ import {
   insertComment,
   updateChange,
 } from 'src/api/supabaseHelper';
+import { useDiffReviewStore } from 'src/stores/useDiffReviewStore';
 import { useUserStore } from 'src/stores/userStore';
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Enums, Profile, Status } from 'src/types';
+import { categorizeChangeType, countWords } from 'src/utils/changeGrouping';
 import { MAX_EMAIL_LENGTH } from 'src/utils/consts';
 import { computed, nextTick, ref, watch } from 'vue';
 import ENV from 'src/schema/env.schema';
@@ -297,6 +328,7 @@ import ENV from 'src/schema/env.schema';
 const $q = useQuasar();
 const userStore = useUserStore();
 const store = useSelectedChangeStore();
+const reviewStore = useDiffReviewStore();
 const USE_CHANGE_DESCRIPTION = ENV.USE_CHANGE_DESCRIPTION;
 const props = defineProps<{
   item: ChangeItem;
@@ -307,8 +339,37 @@ const props = defineProps<{
     disable?: boolean;
   };
   isLastRecentItem?: boolean;
+  /** Section this change belongs to (issue #1426). */
+  section?: string;
+  /** Revision id, used to resolve collapse state from the review store. */
+  revisionId?: string;
+  /** Whether this change is the current navigation target. */
+  isCurrentNav?: boolean;
 }>();
-const expanded = ref(false);
+// Local fallback for changes with no revision (past/archived changes).
+const localExpanded = ref(false);
+/**
+ * Collapse state is owned by the review store for revision changes (so
+ * collapse-all/expand-all and navigation drive it), and falls back to a local
+ * ref for past changes that have no revision context.
+ */
+const expanded = computed<boolean>({
+  get() {
+    if (!props.revisionId) return localExpanded.value;
+    return !reviewStore.isCollapsed(
+      props.revisionId,
+      props.section ?? '',
+      props.item.id,
+    );
+  },
+  set(val: boolean) {
+    if (!props.revisionId) {
+      localExpanded.value = val;
+      return;
+    }
+    reviewStore.setChangeCollapsed(props.item.id, !val);
+  },
+});
 const toSendComment = ref('');
 const highlighted = ref(false);
 const expansionItem = ref();
@@ -399,6 +460,27 @@ const previewItem = computed(() => {
     : `${props.item.content}`;
 });
 
+// ---- Issue #1426: collapsed legibility ----
+const changeCategory = computed(() =>
+  categorizeChangeType(props.item.type_of_edit, props.item.content),
+);
+const typeLabel = computed(() => changeCategory.value);
+const typeBadgeColor = computed(() => {
+  switch (changeCategory.value) {
+    case 'insertion':
+      return 'green';
+    case 'deletion':
+      return 'red';
+    case 'replacement':
+      return 'blue';
+    case 'formatting':
+      return 'grey';
+    default:
+      return 'grey';
+  }
+});
+const wordCount = computed(() => countWords(props.item.content));
+
 async function handleComment() {
   if (toSendComment.value.trim().length > 0) {
     const comment = toSendComment.value.trim();
@@ -464,14 +546,27 @@ watch(
     if (selectedChangeId === '') {
       return;
     }
-    expanded.value = selectedChangeId === props.item.id;
-    if (expanded.value) {
+    if (selectedChangeId === props.item.id) {
+      expanded.value = true;
       scrollToItem(false);
       highlighted.value = true;
       setTimeout(() => {
         highlighted.value = false;
       }, 400);
       store.selectedChangeId = '';
+    }
+  },
+);
+
+// Issue #1426: when this change becomes the navigation target, expand it,
+// scroll it into view, and mark it reviewed so the reviewer can resume.
+watch(
+  () => props.isCurrentNav,
+  (isCurrent) => {
+    if (isCurrent) {
+      expanded.value = true;
+      reviewStore.markReviewed(props.item.id);
+      nextTick(() => scrollToItem(true));
     }
   },
 );
@@ -488,6 +583,8 @@ watch(expanded, () => {
       scrollChatToBottom();
     });
     store.setSelectedChange(props.item as ChangeItem);
+    // Issue #1426: track reviewed progress so the reviewer can resume.
+    reviewStore.markReviewed(props.item.id);
   } else {
     if (store.selectedChangeId === props.item.id) {
       store.setSelectedChange(null);

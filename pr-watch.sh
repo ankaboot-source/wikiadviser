@@ -85,21 +85,88 @@ echo "[pr-watch] State file: $STATE_FILE"
 
 TOKEN="$(get_token)"
 
-# Initialize state with the current latest comment ID so we don't respond
-# to old comments on first run.
+# On startup: check for unanswered /oc comments (comments with /oc that have
+# no subsequent 🤖 reply). Process them immediately, then set state.
 if [[ ! -f "$STATE_FILE" ]]; then
-  LATEST_ID=$(api_get "$TOKEN" \
-    "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100" \
-    | jq '[.[].id] | max // 0')
+  COMMENTS_JSON=$(api_get "$TOKEN" \
+    "https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments?per_page=100")
+
+  # Find the last 🤖 reply ID — anything after it is potentially unanswered
+  LAST_BOT_REPLY=$(echo "$COMMENTS_JSON" | jq -r --arg sig "$AGENT_SIGNATURE" \
+    'map(select(.body | startswith($sig))) | .[-1].id // 0')
+
+  # Find /oc comments after the last bot reply
+  UNANSWERED=$(echo "$COMMENTS_JSON" | jq -c --arg last_bot "$LAST_BOT_REPLY" --arg trig "$TRIGGER" --arg sig "$AGENT_SIGNATURE" \
+    'map(select(
+       .id > ($last_bot | tonumber)
+       and (.body | test($trig))
+       and (.body | startswith($sig) | not)
+     ))
+     | sort_by(.id)')
+
+  UNANSWERED_COUNT=$(echo "$UNANSWERED" | jq 'length')
+
+  if [[ "$UNANSWERED_COUNT" -gt 0 ]]; then
+    echo "[pr-watch] Found $UNANSWERED_COUNT unanswered /oc comment(s) from before startup"
+    echo "$UNANSWERED" | jq -c '.[]' | while read -r comment; do
+      COMMENT_ID=$(echo "$comment" | jq -r '.id')
+      AUTHOR=$(echo "$comment" | jq -r '.user.login')
+      BODY=$(echo "$comment" | jq -r '.body')
+      COMMENT_URL=$(echo "$comment" | jq -r '.html_url')
+
+      echo "[pr-watch] Processing backlog comment $COMMENT_ID from @$AUTHOR"
+      echo "[pr-watch] URL: $COMMENT_URL"
+      echo "[pr-watch] Body: ${BODY:0:120}..."
+
+      notify-send -u normal -t 10000 \
+        "🤖 /oc comment on PR #$PR_NUMBER" \
+        "@$AUTHOR: ${BODY:0:100}...\n\n$COMMENT_URL" 2>/dev/null || true
+
+      PROMPT="A comment was posted on PR #$PR_NUMBER by @$AUTHOR.
+
+Comment URL: $COMMENT_URL
+
+Comment body:
+---
+$BODY
+---
+
+You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown').
+
+CONTEXT: Read pr-context.md if it exists — it contains prior decisions, file changes, and open questions from the interactive session that built this PR. Use it to answer accurately without re-discovering everything.
+
+Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
+
+To post a reply, get the GitHub token by running:
+  printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | grep '^password=' | sed 's/password=//'
+
+Then POST to:
+  https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments
+with body: {\"body\": \"🤖 <your reply>\"}
+
+IMPORTANT: Prefix your reply comment body with '🤖 ' so the watcher knows it's from the agent and doesn't loop.
+
+AFTER answering: update pr-context.md with any new decisions, file changes, or open questions discovered during this exchange. Keep it concise — it's a working context file, not documentation. Commit it to the branch so it stays available for future /oc comments.
+
+If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting."
+
+      echo "[pr-watch] Dispatching to opencode (model: $OPENCODE_MODEL)..."
+      cd "$REPO_DIR"
+      "$OPENCODE_BIN" run -m "$OPENCODE_MODEL" "$PROMPT" 2>&1 | tail -30
+      echo "[pr-watch] opencode finished processing comment $COMMENT_ID"
+    done
+  fi
+
+  # Set state to the latest comment ID so the loop only picks up truly new ones
+  LATEST_ID=$(echo "$COMMENTS_JSON" | jq '[.[].id] | max // 0')
   echo "$LATEST_ID" > "$STATE_FILE"
-  echo "[pr-watch] Initialized. Last comment ID: $LATEST_ID (skipping history)"
+  echo "[pr-watch] Initialized. Last comment ID: $LATEST_ID"
 fi
 
 LAST_SEEN=$(cat "$STATE_FILE")
 
 while true; do
-  sleep "$INTERVAL"
-
+  # Check instantly on each iteration (not after a sleep first)
   # Refresh token in case it rotated
   TOKEN="$(get_token)"
 
@@ -120,6 +187,7 @@ while true; do
 
   COUNT=$(echo "$NEW_COMMENTS" | jq 'length')
   if [[ "$COUNT" -eq 0 ]]; then
+    sleep "$INTERVAL"
     continue
   fi
 
@@ -183,4 +251,5 @@ If the comment is a review suggestion or question about the code, investigate th
     echo "$LAST_SEEN" > "$STATE_FILE"
   done < <(echo "$NEW_COMMENTS" | jq -c '.[]')
 
+  sleep "$INTERVAL"
 done

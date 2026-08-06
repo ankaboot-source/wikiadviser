@@ -86,3 +86,12 @@ implemented in a single PR, not split into smaller PRs.
   angle is the **review surface over AI output**: collapse/group/nav/triage
   lets reviewers handle Mira's large revisions by structure instead of a
   flat list. AI produces the same revisions; reviewability at scale improved.
+- **#5206807354** "besides the feature, infrastructure wise, the changes
+  that are unrelated to the issue" → Answered: 3 infra items — (1) AGENTS.md
+  rewrite (301→70 lines, repo-rules-only sourced from config/sessions,
+  −231 net, biggest non-feature change), (2) Playwright E2E infra removed
+  (`playwright.config.ts`, `reviewable-revisions.spec.ts`, `@playwright/test`
+  dep — added in `ef9505eb` then removed in `09a45f35` same PR, net-zero on
+  tree but churn), (3) `pr-watch.sh` + `pr-context.md` tooling (already
+  covered). No migrations, edge-function, CI, docker, or MyVisualEditor
+  changes — infra footprint is docs + local tooling only.

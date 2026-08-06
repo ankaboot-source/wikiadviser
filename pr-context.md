@@ -95,3 +95,7 @@ implemented in a single PR, not split into smaller PRs.
   tree but churn), (3) `pr-watch.sh` + `pr-context.md` tooling (already
   covered). No migrations, edge-function, CI, docker, or MyVisualEditor
   changes — infra footprint is docs + local tooling only.
+- **#5207163909** "Can you update the PR Title?" → Asked for the desired
+  title. Current title is `feat(diff): make large AI-generated revisions
+  reviewable`; reviewer didn't specify a target, so awaiting the new title
+  before changing it.

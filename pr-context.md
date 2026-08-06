@@ -33,6 +33,19 @@ implemented in a single PR, not split into smaller PRs.
   matched, so collapse-all had no effect. Fixed by using the revid string
   consistently everywhere.
 
+### Agentic AI dimension: review surface over Mira output
+- This PR **does not modify Mira** itself — `supabase/functions/ai-review/`
+  is unchanged (model routing, refusal handling, free-model guard,
+  `pending_diff` all intact). No edge-function, prompt, or model change.
+- The Agentic AI change is the **human-review surface over AI output**:
+  collapse / group / navigate / triage let reviewers handle Mira's large
+  AI-generated revisions by article structure instead of a flat list. Mira
+  produces the same revisions; reviewability at scale is what improved.
+- Framing for `/oc` answers: this is the review layer over agentic output,
+  not a change to the agent. `changeGrouping.ts` is explicitly scoped to
+  "large AI-generated revisions" and buckets "AI noise" (formatting-only
+  changes) for collapse.
+
 ## Files changed
 
 - `frontend/src/utils/changeGrouping.ts` (new) — section attribution, type
@@ -99,3 +112,7 @@ implemented in a single PR, not split into smaller PRs.
   title. Current title is `feat(diff): make large AI-generated revisions
   reviewable`; reviewer didn't specify a target, so awaiting the new title
   before changing it.
+- **#5207618160** "include the fact that there are Agentic AI changes" →
+  Added an "Agentic AI dimension" subsection under Key decisions so future
+  `/oc` answers reflect that the PR's Agentic AI change is the review surface
+  over Mira output (Mira itself unchanged; `ai-review/` diff is empty).

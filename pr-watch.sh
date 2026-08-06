@@ -4,21 +4,18 @@
 # them to opencode (running locally) so the agent can respond automatically.
 #
 # Usage:
-#   ./pr-watch.sh <PR_NUMBER> [INTERVAL_SECONDS]
-#
-# Example:
-#   ./pr-watch.sh 1429 60
+#   ./pr-watch.sh              # auto-detect PR from current branch, 60s interval
+#   ./pr-watch.sh 1429         # specific PR, 60s interval
+#   ./pr-watch.sh 1429 30      # specific PR, 30s interval
 #
 # How it works:
-#   1. Polls the GitHub API for new comments on the PR every INTERVAL seconds.
-#   2. When a comment contains "/oc" (the trigger), it launches
-#      `opencode run` with the comment as context.
-#   3. opencode processes the comment (with full repo access) and posts a
+#   1. If no PR number is given, looks up the open PR matching the current
+#      git branch via the GitHub API.
+#   2. Polls the GitHub API for new comments on the PR every INTERVAL seconds.
+#   3. When a comment contains "/oc", it launches `opencode run` with the
+#      comment as context.
+#   4. opencode processes the comment (with full repo access) and posts a
 #      reply back to GitHub via the API.
-#
-# The "/oc" trigger avoids responding to every comment — only comments that
-# explicitly invoke the agent are processed. The agent's own responses are
-# prefixed with 🤖 so the watcher skips them (no loops).
 #
 # Requires:
 #   - opencode in PATH (or at ~/.opencode/bin/opencode)
@@ -35,20 +32,13 @@
 
 set -euo pipefail
 
-PR_NUMBER="${1:?Usage: $0 <PR_NUMBER> [INTERVAL_SECONDS]}"
-INTERVAL="${2:-60}"
 REPO="ankaboot-source/wikiadviser"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-STATE_FILE="$REPO_DIR/.pr-watch-state-${PR_NUMBER}.txt"
+INTERVAL="${2:-60}"
 OPENCODE_BIN="${OPENCODE_BIN:-$HOME/.opencode/bin/opencode}"
 OPENCODE_MODEL="${OPENCODE_MODEL:-openrouter/z-ai/glm-5.2}"
 TRIGGER="/oc"
 AGENT_SIGNATURE="🤖"
-
-echo "[pr-watch] Watching PR #$PR_NUMBER on $REPO every ${INTERVAL}s"
-echo "[pr-watch] Trigger: comments containing '$TRIGGER'"
-echo "[pr-watch] Model: $OPENCODE_MODEL"
-echo "[pr-watch] State file: $STATE_FILE"
 
 # --- helpers ---
 
@@ -61,6 +51,35 @@ api_get() {
   local token="$1"; local url="$2"
   curl -sS -H "Authorization: token $token" -H "Accept: application/vnd.github+json" "$url"
 }
+
+# --- auto-detect PR number from current branch if not given ---
+
+PR_NUMBER="${1:-}"
+
+if [[ -z "$PR_NUMBER" ]]; then
+  BRANCH=$(git -C "$REPO_DIR" branch --show-current)
+  if [[ -z "$BRANCH" ]]; then
+    echo "❌ Could not detect current branch. Specify a PR number: $0 <PR_NUMBER>"
+    exit 1
+  fi
+  echo "[pr-watch] No PR number given. Looking up open PR for branch: $BRANCH"
+  TOKEN="$(get_token)"
+  PR_NUMBER=$(api_get "$TOKEN" \
+    "https://api.github.com/repos/$REPO/pulls?head=ankaboot-source:$BRANCH&state=open" \
+    | jq -r '.[0].number // empty')
+  if [[ -z "$PR_NUMBER" ]]; then
+    echo "❌ No open PR found for branch '$BRANCH'. Specify a PR number: $0 <PR_NUMBER>"
+    exit 1
+  fi
+  echo "[pr-watch] Found PR #$PR_NUMBER for branch '$BRANCH'"
+fi
+
+STATE_FILE="$REPO_DIR/.pr-watch-state-${PR_NUMBER}.txt"
+
+echo "[pr-watch] Watching PR #$PR_NUMBER on $REPO every ${INTERVAL}s"
+echo "[pr-watch] Trigger: comments containing '$TRIGGER'"
+echo "[pr-watch] Model: $OPENCODE_MODEL"
+echo "[pr-watch] State file: $STATE_FILE"
 
 # --- main loop ---
 

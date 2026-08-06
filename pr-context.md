@@ -68,3 +68,21 @@ implemented in a single PR, not split into smaller PRs.
 - Bulk actions apply immediately to the DB; undo reverts them. There is no
   "submit revision" step that finalizes them — the undo is available as long
   as the action is in `pendingBulkActions`.
+
+## /oc exchanges
+- **#5206398194** "besides the fixed issue, what did this pr introduce?" →
+  Answered: 3 extras beyond the core #1426 fix — (1) collapse-default UX
+  change (`COLLAPSE_THRESHOLD = 15`, ≤15 expands by default vs. always
+  collapsed before), (2) collapse-key bug fix (revid string vs UUID mismatch
+  made collapse-all a no-op), (3) `pr-watch.sh` watcher tooling.
+- **#5206629501** "What does the isFormattingOnlyChange function do?" →
+  Answered: classifies a change as no-editorial-decision (markup/whitespace/
+  structural only) via 3 rules in `changeGrouping.ts:78`; used by
+  `categorizeChangeType` as an override to bucket such changes as
+  `'formatting'` regardless of `type_of_edit`.
+- **#5206781925** "agentic AI wise, whats up?" → Answered: PR doesn't touch
+  Mira (`supabase/functions/ai-review/` unchanged — model routing, refusal
+  handling, free-model guard, `pending_diff` all intact). The agentic-AI
+  angle is the **review surface over AI output**: collapse/group/nav/triage
+  lets reviewers handle Mira's large revisions by structure instead of a
+  flat list. AI produces the same revisions; reviewability at scale improved.

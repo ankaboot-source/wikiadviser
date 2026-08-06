@@ -63,7 +63,7 @@ See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command refe
 - **Email templates**: keep `supabase/email-templates/` and the Supabase dashboard templates in sync manually. _(docs/NOTES.md)_
 - **User deletion** reassigns contributions to `deleted-user@wikiadviser.io` and deletes owned articles — don't simplify this. _(docs/NOTES.md)_
 - **Minimal changes**: don't reinvent existing helpers (e.g. `gotodifflink`); reuse them. _(sessions ses_0c3ef16b, ses_2633dc7c)_
-- **`.pr-context-<PR>.md`**: working context files for the `pr-watch.sh` `/oc` responder. Committed to the branch so the fresh session can read it. **Before merging a PR, delete any `.pr-context-*.md` files** (`git rm`) and push — they are ephemeral working state, not product code.
+- **`pr-context.md`**: working context file for the `pr-watch.sh` `/oc` responder. **When creating a PR, generate this file automatically** — don't wait to be told. It captures key decisions, file changes, and open questions from the session. The watcher reads it when answering `/oc` comments. **Before merging a PR, delete it** (`git rm pr-context.md`) and push — it's ephemeral working state, not product code.
 
 ## Sources
 

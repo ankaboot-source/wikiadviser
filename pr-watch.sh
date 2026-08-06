@@ -119,6 +119,11 @@ while true; do
     echo "[pr-watch] URL: $COMMENT_URL"
     echo "[pr-watch] Body: ${BODY:0:120}..."
 
+    # Desktop notification that a new /oc comment was detected
+    notify-send -u normal -t 10000 \
+      "🤖 /oc comment on PR #$PR_NUMBER" \
+      "@$AUTHOR: ${BODY:0:100}...\n\n$COMMENT_URL" 2>/dev/null || true
+
     # Build the prompt — strip the /oc trigger and pass the rest as context
     PROMPT="A comment was posted on PR #$PR_NUMBER by @$AUTHOR.
 

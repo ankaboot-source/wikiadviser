@@ -129,7 +129,11 @@ Comment body:
 $BODY
 ---
 
-You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown'). Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
+You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown').
+
+CONTEXT: Read .pr-context-$PR_NUMBER.md if it exists — it contains prior decisions, file changes, and open questions from the interactive session that built this PR. Use it to answer accurately without re-discovering everything.
+
+Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
 
 To post a reply, get the GitHub token by running:
   printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | grep '^password=' | sed 's/password=//'
@@ -139,6 +143,8 @@ Then POST to:
 with body: {\"body\": \"🤖 <your reply>\"}
 
 IMPORTANT: Prefix your reply comment body with '🤖 ' so the watcher knows it's from the agent and doesn't loop.
+
+AFTER answering: update .pr-context-$PR_NUMBER.md with any new decisions, file changes, or open questions discovered during this exchange. Keep it concise — it's a working context file, not documentation. Commit it to the branch so it stays available for future /oc comments.
 
 If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting."
 

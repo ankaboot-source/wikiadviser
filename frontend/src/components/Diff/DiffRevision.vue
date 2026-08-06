@@ -147,7 +147,7 @@
           size="sm"
           icon="unfold_less"
           label="Collapse all"
-          @click="reviewStore.collapseAll(revision.id, allChangeIds)"
+          @click="reviewStore.collapseAll(revisionId, allChangeIds)"
         >
           <q-tooltip>Collapse every change in this revision</q-tooltip>
         </q-btn>
@@ -158,7 +158,7 @@
           size="sm"
           icon="unfold_more"
           label="Expand all"
-          @click="reviewStore.expandAll(revision.id, allChangeIds)"
+          @click="reviewStore.expandAll(revisionId, allChangeIds)"
         >
           <q-tooltip>Expand every change in this revision</q-tooltip>
         </q-btn>
@@ -275,7 +275,7 @@
         <div
           :ref="(el) => setSectionRef(group.section, el)"
           class="section-header row items-center q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
-          @click="reviewStore.toggleSection(revision.id, group.section)"
+          @click="reviewStore.toggleSection(revisionId, group.section)"
         >
           <q-icon
             :name="
@@ -553,7 +553,7 @@ watch(
 
 // ---- Issue #1426: reviewability ----
 
-const revisionId = computed(() => String(props.revision.revid));
+const revisionId = String(props.revision.revid);
 
 /** Items after applying the type + unreviewed filters. */
 const filteredItems = computed(() => {

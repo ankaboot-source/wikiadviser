@@ -135,7 +135,9 @@ IMPORTANT: Prefix your reply comment body with '$AGENT_SIGNATURE ' so the watche
 
 You are running locally, so use agent-browser (Chrome via CDP) — this is the working approach. Do NOT use scripts/screenshots.sh (that's for the cloud runner).
 
-1. Make sure the dev server is running (or start it: cd frontend && pnpm dev). Use the URL it serves (e.g. http://localhost:8080, or whatever port you see in the log).
+1. Make sure the dev server is running. If it isn't (or the live Supabase backend isn't up), start it with the mock backend so pages render real layouts with dummy data instead of the login redirect:
+   cd frontend && USE_MOCK_BACKEND=true pnpm dev
+   Use the URL it serves (e.g. http://localhost:8080, or whatever port you see in the log).
 2. Capture the affected page at desktop and mobile widths, saving to a LOCAL path inside the repo (already writable — no /tmp permission needed):
    agent-browser --args "--no-sandbox" open "<url>"
    agent-browser set viewport 1280 800

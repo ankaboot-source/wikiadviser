@@ -10,7 +10,7 @@ npm run install-deps                       # = pnpm i && pnpm i --prefix ./front
 
 # Verify — frontend (CI gates, run in this order): .github/workflows/ci-pr.yml
 cd frontend && pnpm run lint               # eslint . --ext .js,.ts,.vue  (0 errors; v-html warnings are known)
-cd frontend && pnpm run prettier           # prettier --check ...          (must be clean before commit)
+cd frontend && pnpm run prettier:fix           # prettier --check ...          (must be clean before commit)
 
 # Verify — edge functions (Deno): .github/workflows/supabase-functions-tests.yml
 deno test supabase/functions --allow-all --node-modules-dir=auto   # 107 tests

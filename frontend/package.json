@@ -34,7 +34,7 @@
     "@quasar/app-vite": "^1.7.1",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.112.0",
-    "@types/node": "^20.11.0",
+    "@types/node": "^26.1.2",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.18.1",
     "@vue/test-utils": "^2.4.11",

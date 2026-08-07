@@ -68,7 +68,7 @@ See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command refe
 - **User deletion** reassigns contributions to `deleted-user@wikiadviser.io` and deletes owned articles — don't simplify this. _(docs/NOTES.md)_
 - **Minimal changes**: don't reinvent existing helpers (e.g. `gotodifflink`); reuse them. _(sessions ses_0c3ef16b, ses_2633dc7c)_
 - **`pr-context.md`**: working context file for the `pr-watch.sh` `/oc` responder. **When creating a PR, generate this file automatically** — don't wait to be told. It captures key decisions, file changes, and open questions from the session. The watcher reads it when answering `/oc` comments. **Before merging a PR, delete it** (`git rm pr-context.md`) and push — it's ephemeral working state, not product code.
-- **`pr-watch.sh` `/oc` screenshots**: when the local agent takes a screenshot for a `/oc` reply, it saves to `/tmp/` and must read it back. In non-interactive `opencode run`, "ask" permissions auto-reject, so `~/.config/opencode/opencode.json` needs `"permission": { "external_directory": { "/tmp/*": "allow" } }` or the read fails with "permission requested: external_directory (/tmp/*); auto-rejecting".
+- **`pr-watch.sh` `/oc` screenshots**: when the local agent takes a screenshot for a `/oc` reply, save it to a local path inside the repo (e.g. `.opencode/<name>.png`) — already writable — and delete it after sharing so it's never committed. Avoid `/tmp/`: in non-interactive `opencode run`, "ask" permissions auto-reject external directories unless `~/.config/opencode/opencode.json` has `"permission": { "external_directory": { "/tmp/*": "allow" } }`.
 
 ## Sources
 

@@ -56,6 +56,15 @@ There is **no frontend test suite** — `frontend/package.json` `test` script is
 
 See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command reference.
 
+## PR workflow (when resolving an issue)
+
+Follow this end-to-end flow when resolving an issue, not just the code change:
+
+1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with **agent-browser** against a `USE_MOCK_BACKEND=true` dev server (see "Testing UI features") and capture a screenshot.
+2. **Open a PR** for the change (never push to `main` directly — PR-only). Use `gh pr create` with a Conventional Commit message and a body that references the issue (`Resolves #NN`).
+3. **Attach the UI screenshot directly to the PR** (description or a comment) — do **not** commit it to the repo. Use `gh pr comment <n> --body-file` with a markdown image reference, or attach via the PR body. If `gh` can't inline the image, fall back to the SHA-based raw-URL workflow documented under "Operational gotchas".
+4. **DB / data-model guard rails**: before shipping, check whether the change touches the data model (schema, migrations, `database.types.ts`, queries, RLS). If it does, **flag it explicitly for human review** — do not run risky migrations or data-model changes alone with no human supervision. Call out the possible breaking-model impact in the PR body. If the change needs **no** migration (e.g. ephemeral Realtime presence), say so explicitly so reviewers know it was considered.
+
 ## Operational gotchas
 
 - **Env**: `generate-env.sh` parses the Supabase startup log for keys and reads `docker/MW_CREDENTIALS.txt` for bot creds. Never commit `.env` (gitignored). CORS validates `Origin` by suffix against `ROOT_DOMAIN` — update it if the domain changes.
@@ -79,6 +88,8 @@ Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `front
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.
 - **Never push to `main` directly — it is PR-only.** When pushing a feature branch, use an explicit refspec: `git push -u origin HEAD:<branch-name>`. Don't rely on the branch's upstream tracking, which may point at `main` and cause accidental direct pushes. _(session: accidental `6f4cec4f` push to main)_
+- **General guard rails**: flag any change you are not confident about (uncertain behavior, guessed API usage, unverified edge case) explicitly in your report/PR so a reviewer can scrutinize it. Don't silently ship changes you can't vouch for.
+- **DB guard rails**: when a change touches the database layer (schema, migrations, `database.types.ts`, queries, RLS, or anything that could break the data model), the review must also consider possible breaking model impacts — e.g. column/type changes, dropped or renamed fields, RLS policy gaps, or queries that no longer match the schema. Call these out explicitly for review.
 
 ## Before every commit or push — checklist
 1. **Update `pr-context.md`** if any decision, file change, resolved question, or caveat happened since the last update. If nothing changed, confirm it's still current. Never commit with a stale `pr-context.md`.

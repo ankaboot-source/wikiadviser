@@ -194,9 +194,37 @@ export function createMockSupabaseClient() {
     },
     from: (table: string) => createMockQueryBuilder(table),
     channel: () => {
+      // Minimal presence support so the "who's connected" avatar stack renders
+      // in UI verification (USE_MOCK_BACKEND=true). The dummy user is reported
+      // as connected; the presence `sync` callback fires on subscribe.
+      const presenceCallbacks: Record<string, (payload?: unknown) => void> = {};
+      const presenceState: Record<string, unknown[]> = {
+        'dummy-key': [
+          {
+            user_id: DUMMY_USER_ID,
+            display_name: 'Dummy User',
+            avatar_url: null,
+          },
+        ],
+      };
       const channel = {
-        on: () => channel,
-        subscribe: () => ({ unsubscribe: () => {} }),
+        on: (event: string, opts: { event?: string }, cb?: unknown) => {
+          if (event === 'presence' && typeof cb === 'function') {
+            presenceCallbacks[opts?.event ?? 'sync'] = cb as (
+              payload?: unknown,
+            ) => void;
+          }
+          return channel;
+        },
+        track: async () => ({ status: 'ok' }),
+        untrack: async () => ({ status: 'ok' }),
+        presenceState: () => presenceState,
+        subscribe: (cb?: unknown) => {
+          presenceCallbacks['sync']?.();
+          if (typeof cb === 'function')
+            (cb as (s: string) => void)('SUBSCRIBED');
+          return { unsubscribe: () => {} };
+        },
       };
       return channel;
     },

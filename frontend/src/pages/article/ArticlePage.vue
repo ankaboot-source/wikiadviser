@@ -15,6 +15,7 @@
         :editor-permission="editorPermission"
         :users="users"
         :changes-list="changesList"
+        :connected-users="connectedUsers"
         class="toolbar-area"
       />
 
@@ -66,6 +67,12 @@ import { useRoute, useRouter } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { parseArticleHtml } from 'src/utils/parsing';
 
+interface ConnectedUser {
+  user_id: string;
+  display_name: string;
+  avatar_url?: string | null;
+}
+
 const route = useRoute();
 const router = useRouter();
 const articlesStore = useArticlesStore();
@@ -79,10 +86,12 @@ const articleId = ref('');
 const loading = ref(true);
 const userId = computed(() => (userStore.user as Profile).id);
 const users = ref<User[]>([]);
+const connectedUsers = ref<ConnectedUser[]>([]);
 const changesList = ref<ChangeItem[]>([]);
 const revisionCommentsMap = ref<Map<string, Comment[]>>(new Map());
 const changesContent = ref<string | null>(null);
 const realtimeChannel: RealtimeChannel = supabaseClient.channel('db-changes');
+let presenceChannel: RealtimeChannel | null = null;
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
@@ -338,10 +347,62 @@ onBeforeMount(async () => {
     )
     .subscribe();
 
+  setupPresence();
+
   loading.value = false;
 });
 
+function setupPresence() {
+  presenceChannel = supabaseClient.channel(`presence-${articleId.value}`);
+
+  presenceChannel
+    .on('presence', { event: 'sync' }, () => {
+      const state = presenceChannel?.presenceState() ?? {};
+      const users = Object.values(state)
+        .map((presence) => presence[0] as ConnectedUser)
+        .filter((u) => u?.user_id);
+      connectedUsers.value = dedupeConnectedUsers(users);
+    })
+    .on('presence', { event: 'join' }, ({ newPresence }) => {
+      const joined = newPresence as ConnectedUser;
+      if (!joined?.user_id) return;
+      if (connectedUsers.value.some((u) => u.user_id === joined.user_id))
+        return;
+      connectedUsers.value = [...connectedUsers.value, joined];
+    })
+    .on('presence', { event: 'leave' }, ({ leftPresence }) => {
+      const left = leftPresence as ConnectedUser;
+      if (!left?.user_id) return;
+      connectedUsers.value = connectedUsers.value.filter(
+        (u) => u.user_id !== left.user_id,
+      );
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        await presenceChannel?.track({
+          user_id: userId.value,
+          display_name:
+            userStore.user?.display_name ??
+            userStore.user?.name ??
+            'Unknown user',
+          avatar_url: userStore.user?.avatar_url,
+        });
+      }
+    });
+}
+
+function dedupeConnectedUsers(users: ConnectedUser[]) {
+  const seen = new Set<string>();
+  return users.filter((u) => {
+    if (seen.has(u.user_id)) return false;
+    seen.add(u.user_id);
+    return true;
+  });
+}
+
 onBeforeUnmount(() => {
+  presenceChannel?.untrack();
+  presenceChannel?.unsubscribe();
   realtimeChannel.unsubscribe();
 });
 </script>

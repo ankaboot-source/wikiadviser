@@ -23,7 +23,7 @@
 #   - curl, jq
 #
 # Config:
-#   OPENCODE_MODEL   — model in provider/model format (default: openrouter/z-ai/glm-5.2)
+#   OPENCODE_MODEL   — model in provider/model format (default: openrouter/deepseek/deepseek-v4-flash)
 #   OPENCODE_BIN     — path to opencode binary (default: ~/.opencode/bin/opencode)
 #
 # State:
@@ -36,7 +36,7 @@ REPO="ankaboot-source/wikiadviser"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 INTERVAL="${2:-60}"
 OPENCODE_BIN="${OPENCODE_BIN:-$HOME/.opencode/bin/opencode}"
-OPENCODE_MODEL="${OPENCODE_MODEL:-openrouter/z-ai/glm-5.2}"
+OPENCODE_MODEL="${OPENCODE_MODEL:-openrouter/deepseek/deepseek-v4-flash}"
 TRIGGER="/oc"
 AGENT_SIGNATURE="🤖"
 

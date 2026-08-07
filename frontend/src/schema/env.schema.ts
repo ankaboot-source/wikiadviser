@@ -37,6 +37,7 @@ const envSchema = z.object({
   POSTHOG_API_HOST: z.string().optional(),
   USE_MIRA: z.boolean().default(false),
   USE_CHANGE_DESCRIPTION: z.boolean().default(true),
+  USE_MOCK_BACKEND: z.boolean().default(false),
   AI_MODEL: z.string().default('openrouter/free'),
   AI_BOT_EMAIL: z.string().default('mira@wikiadviser.io'),
   AI_PROVIDER: z.string().default('openrouter'),
@@ -57,6 +58,8 @@ const envServer = envSchema.safeParse({
     process.env.USE_CHANGE_DESCRIPTION?.toLocaleLowerCase() === 'false'
       ? false
       : true,
+  USE_MOCK_BACKEND:
+    process.env.USE_MOCK_BACKEND?.toLocaleLowerCase() === 'true' ? true : false,
   AI_MODEL: process.env.AI_MODEL,
   AI_BOT_EMAIL: process.env.AI_BOT_EMAIL,
   AI_PROVIDER: process.env.AI_PROVIDER,

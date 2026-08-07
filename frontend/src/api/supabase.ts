@@ -2,8 +2,9 @@ import { Cookies } from 'quasar';
 import { createBrowserClient, CookieOptions } from '@supabase/ssr';
 import ENV from 'src/schema/env.schema';
 import { Database } from 'src/types';
+import { createMockSupabaseClient } from './supabase.mock';
 
-const supabaseClient = createBrowserClient<Database>(
+const realClient = createBrowserClient<Database>(
   ENV.SUPABASE_PROJECT_URL,
   ENV.SUPABASE_ANON_KEY,
   {
@@ -31,5 +32,12 @@ const supabaseClient = createBrowserClient<Database>(
     },
   },
 );
+
+// When USE_MOCK_BACKEND=true (UI verification / screenshots), swap in a mock
+// client that returns a dummy session + dummy data so pages render without a
+// live Supabase backend.
+const supabaseClient = ENV.USE_MOCK_BACKEND
+  ? (createMockSupabaseClient() as unknown as typeof realClient)
+  : realClient;
 
 export default supabaseClient;

@@ -101,7 +101,7 @@ WikiAdviser runs an OpenCode agent on GitHub Actions. Mention `/oc` (or `/openco
 
 **Limitations (v1)**
 
-- The runner has no Supabase backend, so authenticated routes render the login redirect in screenshots.
+- The runner has no Supabase backend; screenshots use a mock client (`USE_MOCK_BACKEND=true`) with a dummy user and dummy article/change data, so pages render real layouts but not real data.
 - No WIP limit or token accounting.
 
 ### Reporting Bugs

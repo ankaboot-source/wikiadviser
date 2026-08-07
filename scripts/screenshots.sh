@@ -71,6 +71,9 @@ export WIKIADVISER_LANGUAGES="${WIKIADVISER_LANGUAGES:-en}"
 export SHARE_LINK_DAY_LIMIT="${SHARE_LINK_DAY_LIMIT:-7}"
 export USE_MIRA="${USE_MIRA:-false}"
 export USE_CHANGE_DESCRIPTION="${USE_CHANGE_DESCRIPTION:-false}"
+# Render real pages with a dummy user + dummy article/change data instead of
+# the login redirect (no live Supabase backend on the runner).
+export USE_MOCK_BACKEND="${USE_MOCK_BACKEND:-true}"
 
 # --- dev server helpers ---
 start_dev_server() {

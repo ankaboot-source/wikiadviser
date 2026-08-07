@@ -44,7 +44,7 @@ Three independently-deployable surfaces:
 
 ## GitHub Actions runner (opencode `/oc`)
 
-The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions runner via `anomalyco/opencode/github@latest` with `use_github_token: true`. Local `~/.config/opencode` skills do **not** reach the runner — anything the agent needs must be in the repo (this file, `CONTRIBUTING.md`, scripts). After making UI changes, write the affected routes to `.opencode/screens.txt` (one per line) so the `scripts/screenshots.sh` step can capture them. The runner has no Supabase backend, so authenticated routes render the login redirect in screenshots.
+The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions runner via `anomalyco/opencode/github@latest` with `use_github_token: true`. Local `~/.config/opencode` skills do **not** reach the runner — anything the agent needs must be in the repo (this file, `CONTRIBUTING.md`, scripts). After making UI changes, write the affected routes to `.opencode/screens.txt` (one per line) so the `scripts/screenshots.sh` step can capture them. The runner has no Supabase backend, so `scripts/screenshots.sh` boots the dev server with `USE_MOCK_BACKEND=true`, which swaps in a mock Supabase client (`frontend/src/api/supabase.mock.ts`) returning a dummy user + dummy article/change data so real pages render instead of the login redirect.
 
 ## Testing UI features
 

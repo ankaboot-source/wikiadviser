@@ -25,4 +25,4 @@ None.
 
 ## /oc exchanges
 
-None yet.
+- **2026-08-07, PR #1431 comment:** Changed weekly report cron from 09:09 to 09:00 UTC (`"9 9 * * 1"` → `"0 9 * * 1"`).

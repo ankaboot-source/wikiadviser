@@ -72,4 +72,4 @@ Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `front
 ## General Guidelines
 - Refer to available skills when possible.
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
-- If you encounter something surprising or confusing in this project, flag it as a comment.
+- If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.

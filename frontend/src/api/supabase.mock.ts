@@ -113,6 +113,15 @@ const dummyChanges = [
   },
 ];
 
+// Article HTML returned by `from('articles').select('current_html_content')`.
+// Elements with `data-id` are annotated by `parseArticleHtml` using the
+// changes list, so the diff renders on the article page.
+const dummyArticleHtml = `
+<h1>Sample Article</h1>
+<p data-id="change-1">This is a newly added paragraph for the article.</p>
+<p>This is existing article content that stays unchanged.</p>
+`;
+
 // Minimal chainable query builder covering the `.from()` usage in the app.
 function createMockQueryBuilder(table: string) {
   const builder: Record<string, unknown> = {
@@ -123,6 +132,11 @@ function createMockQueryBuilder(table: string) {
     limit: () => builder,
     single: async () => {
       if (table === 'changes') return { data: dummyChanges[0], error: null };
+      if (table === 'articles')
+        return {
+          data: { current_html_content: dummyArticleHtml },
+          error: null,
+        };
       return { data: null, error: null };
     },
     update: async () => ({ data: null, error: null }),
@@ -179,9 +193,12 @@ export function createMockSupabaseClient() {
       return { data: null, error: null };
     },
     from: (table: string) => createMockQueryBuilder(table),
-    channel: () => ({
-      on: () => ({ subscribe: () => ({ unsubscribe: () => {} }) }),
-      subscribe: () => ({ unsubscribe: () => {} }),
-    }),
+    channel: () => {
+      const channel = {
+        on: () => channel,
+        subscribe: () => ({ unsubscribe: () => {} }),
+      };
+      return channel;
+    },
   };
 }

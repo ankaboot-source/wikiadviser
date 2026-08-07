@@ -36,6 +36,7 @@
           :key="user.role"
           :user="user"
           :role="role"
+          :connected-users="connectedUsers"
           @permission-emit="onPermissionChange"
         />
       </q-list>
@@ -131,6 +132,11 @@ const props = defineProps<{
   article: Article;
   role: Enums<'role'>;
   users?: User[];
+  connectedUsers?: {
+    user_id: string;
+    display_name: string;
+    avatar_url?: string | null;
+  }[];
 }>();
 
 const users = ref<User[]>(props.users ?? []);

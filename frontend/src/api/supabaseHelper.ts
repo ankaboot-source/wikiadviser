@@ -42,6 +42,7 @@ export async function getUsers(articleId: string): Promise<User[]> {
         name: permission.user?.display_name || permission.user?.email,
         role: permission.role,
         permissionId: permission.id,
+        last_seen: permission.user?.last_seen,
       }) as User,
   );
 

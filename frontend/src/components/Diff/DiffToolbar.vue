@@ -61,7 +61,12 @@
     >
       <div v-if="$q.screen.gt.sm" class="q-ml-xs">Share</div>
       <q-dialog v-model="shareDialog">
-        <share-card :article="article" :role :users />
+        <share-card
+          :article="article"
+          :role
+          :users
+          :connected-users="connectedUsers"
+        />
       </q-dialog>
     </q-btn>
   </q-toolbar>

@@ -92,6 +92,7 @@ const revisionCommentsMap = ref<Map<string, Comment[]>>(new Map());
 const changesContent = ref<string | null>(null);
 const realtimeChannel: RealtimeChannel = supabaseClient.channel('db-changes');
 let presenceChannel: RealtimeChannel | null = null;
+let lastSeenInterval: ReturnType<typeof setInterval> | null = null;
 const article = computed(() => articlesStore.getArticleById(articleId.value));
 const editorPermission = computed(
   () => article.value?.role === 'editor' || article.value?.role === 'owner',
@@ -348,9 +349,23 @@ onBeforeMount(async () => {
     .subscribe();
 
   setupPresence();
+  startLastSeenHeartbeat();
 
   loading.value = false;
 });
+
+async function heartbeatLastSeen() {
+  try {
+    await supabaseClient.functions.invoke('user/heartbeat', { method: 'POST' });
+  } catch {
+    // Heartbeat is best-effort; ignore failures (e.g. offline).
+  }
+}
+
+function startLastSeenHeartbeat() {
+  heartbeatLastSeen();
+  lastSeenInterval = setInterval(heartbeatLastSeen, 60_000);
+}
 
 function setupPresence() {
   presenceChannel = supabaseClient.channel(`presence-${articleId.value}`);
@@ -360,12 +375,13 @@ function setupPresence() {
       const state = presenceChannel?.presenceState() ?? {};
       const users = Object.values(state)
         .map((presence) => presence[0] as ConnectedUser)
-        .filter((u) => u?.user_id);
+        .filter((u) => u?.user_id && u.user_id !== userId.value);
       connectedUsers.value = dedupeConnectedUsers(users);
     })
     .on('presence', { event: 'join' }, ({ newPresence }) => {
       const joined = newPresence as ConnectedUser;
       if (!joined?.user_id) return;
+      if (joined.user_id === userId.value) return;
       if (connectedUsers.value.some((u) => u.user_id === joined.user_id))
         return;
       connectedUsers.value = [...connectedUsers.value, joined];
@@ -401,6 +417,7 @@ function dedupeConnectedUsers(users: ConnectedUser[]) {
 }
 
 onBeforeUnmount(() => {
+  if (lastSeenInterval) clearInterval(lastSeenInterval);
   presenceChannel?.untrack();
   presenceChannel?.unsubscribe();
   realtimeChannel.unsubscribe();

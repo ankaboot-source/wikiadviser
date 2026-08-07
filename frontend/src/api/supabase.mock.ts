@@ -182,7 +182,35 @@ export function createMockSupabaseClient() {
           case 'get/profile':
             return { data: { profile: dummyProfile }, error: null };
           case 'get/users':
-            return { data: [], error: null };
+            return {
+              data: [
+                {
+                  id: 'permission-1',
+                  role: 'editor',
+                  user: {
+                    id: DUMMY_USER_ID,
+                    email: DUMMY_EMAIL,
+                    avatar_url: null,
+                    display_name: 'Dummy User',
+                    last_seen: new Date().toISOString(),
+                  },
+                },
+                {
+                  id: 'permission-2',
+                  role: 'viewer',
+                  user: {
+                    id: 'other-user-id',
+                    email: 'jane@example.com',
+                    avatar_url: null,
+                    display_name: 'Jane Doe',
+                    last_seen: new Date(
+                      Date.now() - 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              ],
+              error: null,
+            };
           default:
             return { data: null, error: null };
         }
@@ -203,6 +231,15 @@ export function createMockSupabaseClient() {
           {
             user_id: DUMMY_USER_ID,
             display_name: 'Dummy User',
+            avatar_url: null,
+          },
+        ],
+        // A second user so the "who's connected" stack shows someone other
+        // than the current (dummy) user after self is filtered out.
+        'other-key': [
+          {
+            user_id: 'other-user-id',
+            display_name: 'Jane Doe',
             avatar_url: null,
           },
         ],

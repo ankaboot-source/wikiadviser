@@ -68,3 +68,8 @@ See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command refe
 ## Sources
 
 Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `frontend/.prettierrc`, `supabase/functions/*/deno.json`, `.github/workflows/*`, `.deepsource.toml`, `.qlty/qlty.toml`, `docs/NOTES.md`, `CONTRIBUTING.md`, `generate-env.sh`. Sessions: 57 WikiAdviser sessions in `~/.local/share/opencode/opencode.db` (cited inline as `ses_<id>`).
+
+## General Guidelines
+- Refer to available skills when possible.
+- Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
+- If you encounter something surprising or confusing in this project, flag it as a comment.

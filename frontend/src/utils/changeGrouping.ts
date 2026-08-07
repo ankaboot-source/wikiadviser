@@ -13,10 +13,7 @@ import { ChangeItem } from 'src/types';
 
 /** The four review-facing change kinds the reviewer sees. */
 export type ChangeTypeCategory =
-  | 'insertion'
-  | 'deletion'
-  | 'replacement'
-  | 'formatting';
+  'insertion' | 'deletion' | 'replacement' | 'formatting';
 
 export interface SectionGroup {
   section: string;

@@ -106,6 +106,14 @@ with body: {"body": "$AGENT_SIGNATURE <your reply>"}
 
 IMPORTANT: Prefix your reply comment body with '$AGENT_SIGNATURE ' so the watcher knows it's from the agent and doesn't loop.
 
+=== Commit code changes BEFORE updating pr-context.md ===
+
+If you made any code changes (formatting, lint fixes, edits, etc.), stage, commit, and push them FIRST:
+
+1. Run: git add -A
+2. Run: git commit -m "<descriptive message>"
+3. Run: git push
+
 === pr-context.md — update after EVERY response ===
 
 AFTER answering, ALWAYS update pr-context.md:

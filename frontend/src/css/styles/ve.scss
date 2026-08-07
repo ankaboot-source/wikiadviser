@@ -1469,8 +1469,8 @@ div.thumbinner {
     word-wrap: break-word;
   }
 
-  .mw-parser-output a.external.text[href^='//']:after,.mw-parser-output a.external.autonumber[href^='//']:after
-  {
+  .mw-parser-output a.external.text[href^='//']:after,
+  .mw-parser-output a.external.autonumber[href^='//']:after {
     content: ' (https:' attr(href) ')';
   }
 

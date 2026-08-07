@@ -42,6 +42,10 @@ Three independently-deployable surfaces:
 - **Commits**: Conventional Commits with scope (`feat(ai-review):`, `fix(revision-feedback):`, `ci:`, `docs:`). Git author is `Jaafoura` (not `jaafoura`). _(session ses_0a3a4091)_
 - **`database.types.ts`** is generated from Supabase schema — regenerate, don't hand-edit. Excluded from Qlty/DeepSource.
 
+## GitHub Actions runner (opencode `/oc`)
+
+The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions runner via `anomalyco/opencode/github@latest` with `use_github_token: true`. Local `~/.config/opencode` skills do **not** reach the runner — anything the agent needs must be in the repo (this file, `CONTRIBUTING.md`, scripts). After making UI changes, write the affected routes to `.opencode/screens.txt` (one per line) so the `scripts/screenshots.sh` step can capture them. The runner has no Supabase backend, so `scripts/screenshots.sh` boots the dev server with `USE_MOCK_BACKEND=true`, which swaps in a mock Supabase client (`frontend/src/api/supabase.mock.ts`) returning a dummy user + dummy article/change data so real pages render instead of the login redirect.
+
 ## Testing UI features
 
 There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI changes, verify with the **agent-browser** skill:
@@ -63,7 +67,8 @@ See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command refe
 - **Email templates**: keep `supabase/email-templates/` and the Supabase dashboard templates in sync manually. _(docs/NOTES.md)_
 - **User deletion** reassigns contributions to `deleted-user@wikiadviser.io` and deletes owned articles — don't simplify this. _(docs/NOTES.md)_
 - **Minimal changes**: don't reinvent existing helpers (e.g. `gotodifflink`); reuse them. _(sessions ses_0c3ef16b, ses_2633dc7c)_
-- **`pr-context.md`**: working context file for the `pr-watch.sh` `/oc` responder. **When creating a PR, generate this file automatically** — don't wait to be told. It captures key decisions, file changes, and open questions from the session. The watcher reads it when answering `/oc` comments. **Before merging a PR, delete it** (`git rm pr-context.md`) and push — it's ephemeral working state, not product code.
+- **`pr-context.md`** — **MUST stay current, never stale.** It is the working context file for the `pr-watch.sh` `/oc` responder. **Update it after EVERY decision, choice, or change** (new file, modified behavior, resolved question, new caveat) — not just at PR creation. Before **any** commit or push, verify `pr-context.md` reflects the latest state; if it doesn't, update it in the same commit. The watcher reads it when answering `/oc` comments, so a stale file makes the agent answer from outdated context. **Before merging a PR, delete it** (`git rm pr-context.md`) and push — it's ephemeral working state, not product code.
+- **`pr-watch.sh` `/oc` screenshots**: when the local agent takes a screenshot for a `/oc` reply, ALWAYS pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/screenshots/<name>.png`) so it saves inside the repo (already writable). To show it in the comment, commit it to the PR branch and reference a **SHA-based raw URL** (`https://raw.githubusercontent.com/$REPO/$SHA/.opencode/screenshots/<name>.png`) — this is the only reliable way to render an image in a GitHub comment (gist needs `gist` scope; the uploads endpoint rejects tokens). After posting, delete the files and commit the deletion (the SHA URL still works from git history). Gotchas: `.opencode/.gitignore` ignores `*.png`, so use `git add -f` to commit screenshots; and `agent-browser screenshot` ignores the explicit path when a daemon is already running (the file lands in `~/.agent-browser/tmp/screenshots/`), so `agent-browser close` first or copy the file from the temp dir. If run with no path, agent-browser saves to `~/.agent-browser/tmp/screenshots/`, an external directory that non-interactive `opencode run` auto-rejects unless `~/.config/opencode/opencode.json` has `"permission": { "external_directory": { "/tmp/*": "allow", "~/.agent-browser/tmp/screenshots/*": "allow" } }`.
 
 ## Sources
 
@@ -74,3 +79,8 @@ Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `front
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.
 - **Never push to `main` directly — it is PR-only.** When pushing a feature branch, use an explicit refspec: `git push -u origin HEAD:<branch-name>`. Don't rely on the branch's upstream tracking, which may point at `main` and cause accidental direct pushes. _(session: accidental `6f4cec4f` push to main)_
+
+## Before every commit or push — checklist
+1. **Update `pr-context.md`** if any decision, file change, resolved question, or caveat happened since the last update. If nothing changed, confirm it's still current. Never commit with a stale `pr-context.md`.
+2. Stage only intended files (never secrets, `.env`, or `.pr-watch-state-*.txt`).
+3. Conventional Commit message with scope (`feat(ci):`, `fix(pr-watch):`, `docs:`).

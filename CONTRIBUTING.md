@@ -78,6 +78,32 @@ Follow these steps to make your first code contribution:
 4. Push to the branch (`git push origin feature/fooBar`)
 5. Pull Request with a clear title and description.
 
+### Using the `/oc` GitHub Agent
+
+WikiAdviser runs an OpenCode agent on GitHub Actions. Mention `/oc` (or `/opencode`) in a comment on an issue or PR, and the agent will execute the request in a cloud runner and reply. It uses the runner's `GITHUB_TOKEN` (no bot account) and the `OPENROUTER_API_KEY` org secret.
+
+**Command vocabulary**
+
+| Command | What it does |
+| --- | --- |
+| `/oc explain <topic>` | Investigate and explain an issue or piece of code. |
+| `/oc fix <issue>` | Implement a fix and open a PR with the changes. |
+| `/oc <change>` on a PR | Implement the requested change and commit it to the same PR. |
+| `/oc <change>` on a code line | Reply to an inline review comment; the agent gets the file, line numbers, and diff context. |
+| `/oc merge` | Merge the PR (after removing `pr-context.md`). |
+
+**How it works**
+
+- The workflow triggers on `issue_comment` and `pull_request_review_comment` events containing `/oc`.
+- The agent follows `AGENTS.md` for build/test/lint commands and conventions.
+- After UI changes, the agent writes affected routes to `.opencode/screens.txt`; the workflow then captures before/after screenshots (desktop + mobile) via `scripts/screenshots.sh` and posts them as a build artifact with a link in the PR comment.
+- One pass per comment — a human triggers each hop. `GITHUB_TOKEN` events do not re-trigger workflows, so agent-to-agent chaining is not supported.
+
+**Limitations (v1)**
+
+- The runner has no Supabase backend; screenshots use a mock client (`USE_MOCK_BACKEND=true`) with a dummy user and dummy article/change data, so pages render real layouts but not real data.
+- No WIP limit or token accounting.
+
 ### Reporting Bugs
 
 #### Before Submitting a Bug Report

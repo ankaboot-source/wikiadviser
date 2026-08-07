@@ -36,4 +36,4 @@ Set up the OpenCode GitHub Actions integration on wikiadviser with UI verificati
 - "Before" screenshots are best-effort (PR base SHA); "after" is the agent's fixed state.
 - `OPENROUTER_API_KEY` must be added as an org/repo Actions secret for the workflow to run.
 - Sharing `/oc` screenshots in a GitHub comment requires a gist link (GitHub API can't upload images to comments); if the token lacks `gist` scope, the agent falls back to describing the screenshot.
-- Local `/tmp` external-directory access needs `"permission": { "external_directory": { "/tmp/*": "allow" } }` in `~/.config/opencode/opencode.json` (only if the agent ever needs `/tmp`; the local-path approach avoids it).
+- Local external-directory access needs `"permission": { "external_directory": { "/tmp/*": "allow", "~/.agent-browser/tmp/screenshots/*": "allow" } }` in `~/.config/opencode/opencode.json`. The agent should always pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/<name>.png`) so it saves inside the repo and avoids the external temp dir entirely.

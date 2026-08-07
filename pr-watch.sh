@@ -138,7 +138,7 @@ You are running locally, so use agent-browser (Chrome via CDP) — this is the w
 1. Make sure the dev server is running. If it isn't (or the live Supabase backend isn't up), start it with the mock backend so pages render real layouts with dummy data instead of the login redirect:
    cd frontend && USE_MOCK_BACKEND=true pnpm dev
    Use the URL it serves (e.g. http://localhost:8080, or whatever port you see in the log).
-2. Capture the affected page at desktop and mobile widths, saving to a LOCAL path inside the repo (already writable — no /tmp permission needed):
+2. Capture the affected page at desktop and mobile widths, saving to a LOCAL path inside the repo (already writable — no /tmp permission needed). IMPORTANT: ALWAYS pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/<name>-desktop.png`). If you run `agent-browser screenshot` with NO path, it saves to `~/.agent-browser/tmp/screenshots/`, which you cannot read back (external-directory permission). So always give the full path:
    agent-browser --args "--no-sandbox" open "<url>"
    agent-browser set viewport 1280 800
    agent-browser wait --load networkidle

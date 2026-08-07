@@ -175,6 +175,29 @@ notify_answered() {
   fi
 }
 
+# Run opencode, showing only the last 2 lines of output live so the user can
+# see what the agent is doing without flooding the terminal. Falls back to a
+# plain tail when stdout is not a TTY.
+run_opencode() {
+  local prompt="$1"
+  if [[ -t 1 ]]; then
+    local -a buf=()
+    local line
+    "$OPENCODE_BIN" run -m "$OPENCODE_MODEL" "$prompt" 2>&1 | while IFS= read -r line; do
+      line="${line:0:200}"
+      buf+=("$line")
+      if (( ${#buf[@]} > 2 )); then
+        buf=("${buf[@]: -2}")
+      fi
+      printf '\033[2K\r%s\n' "${buf[@]}"
+      printf '\033[%dA' "${#buf[@]}"
+    done
+    printf '\033[2K\r'
+  else
+    "$OPENCODE_BIN" run -m "$OPENCODE_MODEL" "$prompt" 2>&1 | tail -30
+  fi
+}
+
 # Process a batch of new /oc comments of a given type.
 process_comments() {
   local type="$1" token="$2" comments_json="$3"
@@ -220,7 +243,7 @@ process_comments() {
     # Launch opencode non-interactively with the comment
     echo "[pr-watch] Dispatching to opencode (model: $OPENCODE_MODEL)..."
     cd "$REPO_DIR"
-    "$OPENCODE_BIN" run -m "$OPENCODE_MODEL" "$PROMPT" 2>&1 | tail -30
+    run_opencode "$PROMPT"
     echo "[pr-watch] opencode finished processing $type comment $COMMENT_ID"
 
     # Notify when the AI has actually answered

@@ -12,26 +12,65 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
-    if: github.actor == 'dependabot[bot]'
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]')
     steps:
       - uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            const number = context.issue.number;
+            const VENDORED_PATH = 'docker/resources/extensions/MyVisualEditor/';
+            const COMMENT_BODY = [
+              'These npm dependencies are vendored dead weight \u2014 not installed or executed in the built image.',
+              'The `docker/resources/extensions/MyVisualEditor` directory is copied as-is into the MediaWiki container;',
+              'no `npm install` or `composer install` is ever run for it.',
+              '',
+              'Closing automatically. No action needed.'
+            ].join('\n');
 
-            await github.rest.issues.createComment({
-              owner, repo, issue_number: number,
-              body: [
-                'These npm dependencies are vendored dead weight — not installed or executed in the built image.',
-                'The `docker/resources/extensions/MyVisualEditor` directory is copied as-is into the MediaWiki container;',
-                'no `npm install` or `composer install` is ever run for it.',
-                '',
-                'Closing automatically. No action needed.'
-              ].join('\n')
-            });
+            async function closePullRequest(number) {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: number,
+                body: COMMENT_BODY
+              });
+              await github.rest.pulls.update({
+                owner, repo, pull_number: number,
+                state: 'closed'
+              });
+              core.info(`Closed PR #${number}`);
+            }
 
-            await github.rest.pulls.update({
-              owner, repo, pull_number: number,
-              state: 'closed'
-            });
+            async function getDependabotPullRequests() {
+              const prs = await github.paginate(
+                github.rest.pulls.list,
+                { owner, repo, state: 'open', per_page: 100 }
+              );
+              return prs.filter(pr => pr.user.login === 'dependabot[bot]');
+            }
+
+            async function prTouchesVendoredPath(number) {
+              const files = await github.paginate(
+                github.rest.pulls.listFiles,
+                { owner, repo, pull_number: number, per_page: 100 }
+              );
+              return files.some(f => f.filename.startsWith(VENDORED_PATH));
+            }
+
+            if (context.eventName === 'pull_request_target') {
+              const number = context.issue.number;
+              core.info(`pull_request_target for PR #${number}`);
+              await closePullRequest(number);
+            } else if (context.eventName === 'workflow_dispatch') {
+              core.info('workflow_dispatch: scanning open dependabot PRs...');
+              const prs = await getDependabotPullRequests();
+              core.info(`Found ${prs.length} open dependabot PR(s)`);
+
+              for (const pr of prs) {
+                if (await prTouchesVendoredPath(pr.number)) {
+                  await closePullRequest(pr.number);
+                } else {
+                  core.info(`PR #${pr.number} does not touch ${VENDORED_PATH} — skipping`);
+                }
+              }
+            }

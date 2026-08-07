@@ -131,6 +131,24 @@ with body: $reply_payload
 
 IMPORTANT: Prefix your reply comment body with '$AGENT_SIGNATURE ' so the watcher knows it's from the agent and doesn't loop.
 
+=== Screenshots — if the comment asks to share a screenshot ===
+
+You are running locally, so use agent-browser (Chrome via CDP) — this is the working approach. Do NOT use scripts/screenshots.sh (that's for the cloud runner).
+
+1. Make sure the dev server is running (or start it: cd frontend && pnpm dev). Use the URL it serves (e.g. http://localhost:8080, or whatever port you see in the log).
+2. Capture the affected page at desktop and mobile widths:
+   agent-browser --args "--no-sandbox" open "<url>"
+   agent-browser set viewport 1280 800
+   agent-browser wait --load networkidle
+   agent-browser screenshot /tmp/<name>-desktop.png
+   agent-browser set viewport 390 844
+   agent-browser wait --load networkidle
+   agent-browser screenshot /tmp/<name>-mobile.png
+   agent-browser close
+   (Use --args "--no-sandbox" if Chrome fails with a sandbox error.)
+3. Save screenshots to /tmp/ — you have read/write permission there.
+4. To share in the reply comment, upload the image to a gist via the GitHub API and link it. If gist upload isn't possible, describe what the screenshot shows and note the /tmp path.
+
 === Commit code changes BEFORE updating pr-context.md ===
 
 If you made any code changes (formatting, lint fixes, edits, etc.), stage, commit, and push them FIRST:

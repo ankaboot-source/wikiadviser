@@ -33,6 +33,7 @@
 set -euo pipefail
 
 REPO="ankaboot-source/wikiadviser"
+ORG="${REPO%%/*}"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 INTERVAL="${2:-60}"
 OPENCODE_BIN="${OPENCODE_BIN:-$HOME/.opencode/bin/opencode}"
@@ -50,6 +51,30 @@ get_token() {
 api_get() {
   local token="$1"; local url="$2"
   curl -sS -H "Authorization: token $token" -H "Accept: application/vnd.github+json" "$url"
+}
+
+# Check if a user is a member of the org that owns this repo.
+# Returns 0 (true) if member, 1 (false) otherwise.
+# Caches results per username to avoid redundant API calls.
+declare -A _ORG_MEMBER_CACHE
+is_org_member() {
+  local token="$1" username="$2"
+  if [[ -v _ORG_MEMBER_CACHE["$username"] ]]; then
+    return "${_ORG_MEMBER_CACHE["$username"]}"
+  fi
+  local status
+  status=$(curl -sS -o /dev/null -w "%{http_code}" \
+    -H "Authorization: token $token" \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/orgs/$ORG/members/$username")
+  if [[ "$status" == "204" ]]; then
+    _ORG_MEMBER_CACHE["$username"]=0
+    return 0
+  else
+    _ORG_MEMBER_CACHE["$username"]=1
+    echo "[pr-watch] ⚠️  @$username is not a member of $ORG — skipping" >&2
+    return 1
+  fi
 }
 
 # Build the prompt sent to opencode for a given /oc comment.
@@ -165,6 +190,12 @@ if [[ ! -f "$STATE_FILE" ]]; then
       BODY=$(echo "$comment" | jq -r '.body')
       COMMENT_URL=$(echo "$comment" | jq -r '.html_url')
 
+      # Only process comments from org members
+      if ! is_org_member "$TOKEN" "$AUTHOR"; then
+        echo "[pr-watch] Skipping comment $COMMENT_ID from non-member @$AUTHOR"
+        continue
+      fi
+
       echo "[pr-watch] Processing backlog comment $COMMENT_ID from @$AUTHOR"
       echo "[pr-watch] URL: $COMMENT_URL"
       echo "[pr-watch] Body: ${BODY:0:120}..."
@@ -226,6 +257,15 @@ while true; do
     AUTHOR=$(echo "$comment" | jq -r '.user.login')
     BODY=$(echo "$comment" | jq -r '.body')
     COMMENT_URL=$(echo "$comment" | jq -r '.html_url')
+
+    # Only process comments from org members
+    if ! is_org_member "$TOKEN" "$AUTHOR"; then
+      echo "[pr-watch] Skipping comment $COMMENT_ID from non-member @$AUTHOR"
+      # Still update state so we don't re-check this comment
+      LAST_SEEN="$COMMENT_ID"
+      echo "$LAST_SEEN" > "$STATE_FILE"
+      continue
+    fi
 
     echo "[pr-watch] Processing comment $COMMENT_ID from @$AUTHOR"
     echo "[pr-watch] URL: $COMMENT_URL"

@@ -2,6 +2,8 @@
 
 Resolves: https://github.com/ankaboot-source/wikiadviser/issues/71
 
+PR: https://github.com/ankaboot-source/wikiadviser/pull/1445 (branch `71-who-is-connected`)
+
 ## Goal
 
 Show currently-connected users on the article page's top bar (Etherpad/Google Drive style): a stack of overlapping avatars, each with a tooltip showing the username. Real-time presence via Supabase Realtime.

@@ -73,3 +73,4 @@ Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `front
 - Refer to available skills when possible.
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.
+- **Never push to `main` directly — it is PR-only.** When pushing a feature branch, use an explicit refspec: `git push -u origin HEAD:<branch-name>`. Don't rely on the branch's upstream tracking, which may point at `main` and cause accidental direct pushes. _(session: accidental `6f4cec4f` push to main)_

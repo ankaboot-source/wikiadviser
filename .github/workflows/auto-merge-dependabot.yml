@@ -1,0 +1,47 @@
+name: Auto-merge Dependabot minor/patch
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, labeled, unlabeled]
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: actions/github-script@v7
+        id: check
+        with:
+          result-encoding: string
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name);
+
+            // Skip major updates — they need manual migration review
+            if (labels.includes('semver:major')) {
+              return 'skip';
+            }
+
+            // Skip vendored dep PRs (caught by close-vendored-deps, but be safe)
+            const { data: files } = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            const isVendored = files.some(f =>
+              f.filename.startsWith('docker/resources/extensions/MyVisualEditor/')
+            );
+            if (isVendored) return 'skip';
+
+            return 'merge';
+
+      - name: Enable auto-merge
+        if: steps.check.outputs.result == 'merge'
+        run: |
+          gh pr merge --auto --squash "$PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}

@@ -1,0 +1,36 @@
+name: Close vendored dependency PRs
+on:
+  pull_request_target:
+    types: [opened, reopened]
+    paths:
+      - "docker/resources/extensions/MyVisualEditor/**"
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const number = context.issue.number;
+
+            await github.rest.issues.createComment({
+              owner, repo, issue_number: number,
+              body: [
+                'These npm dependencies are vendored dead weight — not installed or executed in the built image.',
+                'The `docker/resources/extensions/MyVisualEditor` directory is copied as-is into the MediaWiki container;',
+                'no `npm install` or `composer install` is ever run for it.',
+                '',
+                'Closing automatically. No action needed.'
+              ].join('\n')
+            });
+
+            await github.rest.pulls.update({
+              owner, repo, pull_number: number,
+              state: 'closed'
+            });

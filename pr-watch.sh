@@ -52,6 +52,57 @@ api_get() {
   curl -sS -H "Authorization: token $token" -H "Accept: application/vnd.github+json" "$url"
 }
 
+# Build the prompt sent to opencode for a given /oc comment.
+# Uses global: PR_NUMBER, REPO, REPO_DIR, AGENT_SIGNATURE, OPENCODE_MODEL
+build_prompt() {
+  local comment_id="$1" author="$2" body="$3" comment_url="$4"
+  cat <<PROMPT_EOF
+A comment was posted on PR #$PR_NUMBER by @$author.
+
+Comment URL: $comment_url
+
+Comment body:
+---
+$body
+---
+
+You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown').
+
+CONTEXT: Read pr-context.md if it exists — it contains prior decisions, file changes, and open questions from the interactive session that built this PR. Use it to answer accurately without re-discovering everything.
+
+Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
+
+To post a reply, get the GitHub token by running:
+  printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | grep '^password=' | sed 's/password=//'
+
+Then POST to:
+  https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments
+with body: {"body": "$AGENT_SIGNATURE <your reply>"}
+
+IMPORTANT: Prefix your reply comment body with '$AGENT_SIGNATURE ' so the watcher knows it's from the agent and doesn't loop.
+
+=== pr-context.md — update after EVERY response ===
+
+AFTER answering, ALWAYS update pr-context.md:
+
+1. Update the file with any new decisions, file changes, or open questions from this exchange. If nothing changed, update the timestamp/note to reflect it's still current. The file must always reflect the latest state.
+2. Commit and push the update to the branch.
+
+=== Merge handling — if the comment asks to merge ===
+
+If the comment says "/oc merge" or similar (approval to merge), do this BEFORE merging:
+
+1. Run: git rm pr-context.md
+2. Commit: git commit -m "chore: remove pr-context.md before merge"
+3. Push: git push
+4. Then merge the PR via the GitHub API (POST /repos/$REPO/pulls/$PR_NUMBER/merge)
+
+Do NOT merge without removing pr-context.md first.
+
+If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting.
+PROMPT_EOF
+}
+
 # --- auto-detect PR number from current branch if not given ---
 
 PR_NUMBER="${1:-}"
@@ -122,33 +173,7 @@ if [[ ! -f "$STATE_FILE" ]]; then
         "🤖 /oc comment on PR #$PR_NUMBER" \
         "@$AUTHOR: ${BODY:0:100}...\n\n$COMMENT_URL" 2>/dev/null || true
 
-      PROMPT="A comment was posted on PR #$PR_NUMBER by @$AUTHOR.
-
-Comment URL: $COMMENT_URL
-
-Comment body:
----
-$BODY
----
-
-You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown').
-
-CONTEXT: Read pr-context.md if it exists — it contains prior decisions, file changes, and open questions from the interactive session that built this PR. Use it to answer accurately without re-discovering everything.
-
-Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
-
-To post a reply, get the GitHub token by running:
-  printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | grep '^password=' | sed 's/password=//'
-
-Then POST to:
-  https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments
-with body: {\"body\": \"🤖 <your reply>\"}
-
-IMPORTANT: Prefix your reply comment body with '🤖 ' so the watcher knows it's from the agent and doesn't loop.
-
-AFTER answering: update pr-context.md with any new decisions, file changes, or open questions discovered during this exchange. Keep it concise — it's a working context file, not documentation. Commit it to the branch so it stays available for future /oc comments.
-
-If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting."
+      PROMPT=$(build_prompt "$COMMENT_ID" "$AUTHOR" "$BODY" "$COMMENT_URL")
 
       echo "[pr-watch] Dispatching to opencode (model: $OPENCODE_MODEL)..."
       cd "$REPO_DIR"
@@ -211,34 +236,8 @@ while true; do
       "🤖 /oc comment on PR #$PR_NUMBER" \
       "@$AUTHOR: ${BODY:0:100}...\n\n$COMMENT_URL" 2>/dev/null || true
 
-    # Build the prompt — strip the /oc trigger and pass the rest as context
-    PROMPT="A comment was posted on PR #$PR_NUMBER by @$AUTHOR.
-
-Comment URL: $COMMENT_URL
-
-Comment body:
----
-$BODY
----
-
-You are running in the WikiAdviser repo at $REPO_DIR on branch $(git branch --show-current 2>/dev/null || echo 'unknown').
-
-CONTEXT: Read pr-context.md if it exists — it contains prior decisions, file changes, and open questions from the interactive session that built this PR. Use it to answer accurately without re-discovering everything.
-
-Review the comment, check the relevant code if needed, and post a reply comment back to GitHub PR #$PR_NUMBER.
-
-To post a reply, get the GitHub token by running:
-  printf 'protocol=https\nhost=github.com\n\n' | git credential fill 2>/dev/null | grep '^password=' | sed 's/password=//'
-
-Then POST to:
-  https://api.github.com/repos/$REPO/issues/$PR_NUMBER/comments
-with body: {\"body\": \"🤖 <your reply>\"}
-
-IMPORTANT: Prefix your reply comment body with '🤖 ' so the watcher knows it's from the agent and doesn't loop.
-
-AFTER answering: update pr-context.md with any new decisions, file changes, or open questions discovered during this exchange. Keep it concise — it's a working context file, not documentation. Commit it to the branch so it stays available for future /oc comments.
-
-If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting."
+    # Build the prompt via the shared function
+    PROMPT=$(build_prompt "$COMMENT_ID" "$AUTHOR" "$BODY" "$COMMENT_URL")
 
     # Launch opencode non-interactively with the comment
     echo "[pr-watch] Dispatching to opencode (model: $OPENCODE_MODEL)..."

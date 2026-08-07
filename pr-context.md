@@ -19,7 +19,7 @@ Set up the OpenCode GitHub Actions integration on wikiadviser with UI verificati
 
 ## File changes
 
-- `.github/workflows/opencode.yml` — new. Triggers on `issue_comment` + `pull_request_review_comment` containing `/oc`. Runs opencode with `use_github_token: true`, then captures/upload/posts UI screenshots.
+- `.github/workflows/opencode.yml` — new. Triggers on `issue_comment` + `pull_request_review_comment` containing `/oc`. Runs opencode with `use_github_token: true`, then captures/upload/posts UI screenshots. **Only org members can trigger it**: a `Check org membership` step (`GET /orgs/ankaboot-source/members/{username}`, 204=member) gates the opencode + screenshot steps; non-members get a comment saying only org members can use `/oc`.
 - `scripts/screenshots.sh` — new. agent-browser screenshot script (desktop 1280×800 + mobile 390×844, before/after). Boots the dev server with `USE_MOCK_BACKEND=true`.
 - `frontend/src/api/supabase.mock.ts` — new. Mock Supabase client (dummy user + article/change data) for UI verification.
 - `frontend/src/api/supabase.ts` — uses the mock client when `USE_MOCK_BACKEND=true`.

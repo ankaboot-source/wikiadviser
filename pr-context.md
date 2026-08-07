@@ -29,6 +29,7 @@ Set up the OpenCode GitHub Actions integration on wikiadviser with UI verificati
 - `pr-watch.sh` — handles review comments + notifies when AI answered; live last-2-lines output; local-path `/oc` screenshots with mock-backend fallback.
 - `.gitignore` — ignore `.pr-watch-state-*.txt` local state.
 - `.opencode/.gitignore` — ignore `screens.txt` + `*.png` (agent runtime state).
+- `frontend/quasar.config.js` — added `USE_MOCK_BACKEND` to the build `env` block. **Bug fix uncovered during PR #1441 testing**: the env var was defined in the schema but not wired through quasar config, so `USE_MOCK_BACKEND=true` was silently ignored and pages redirected to `/auth` even with the mock flag set. (commit `2307b3a1`)
 
 ## Open questions / caveats
 
@@ -37,3 +38,4 @@ Set up the OpenCode GitHub Actions integration on wikiadviser with UI verificati
 - `OPENROUTER_API_KEY` must be added as an org/repo Actions secret for the workflow to run.
 - Sharing `/oc` screenshots in a GitHub comment requires a gist link (GitHub API can't upload images to comments); if the token lacks `gist` scope, the agent falls back to describing the screenshot.
 - Local external-directory access needs `"permission": { "external_directory": { "/tmp/*": "allow", "~/.agent-browser/tmp/screenshots/*": "allow" } }` in `~/.config/opencode/opencode.json`. The agent should always pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/<name>.png`) so it saves inside the repo and avoids the external temp dir entirely.
+- **PR #1441 `/oc` screenshot reply (2026-08-07)**: replied to a comment asking for an article-page screenshot. Verified the article page renders with the mock backend (desktop + mobile). Gist upload failed (token lacks `gist` scope) and the GitHub uploads endpoint rejected the image size, so the reply described the screenshots in text instead of linking them. The `USE_MOCK_BACKEND` quasar config bug was found and fixed during this test.

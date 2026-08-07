@@ -25,7 +25,7 @@ jobs:
               return 'skip';
             }
 
-            // Skip vendored dep PRs (caught by close-vendored-deps, but be safe)
+            // Skip vendored dep PRs (caught by dependabot-close-vendored-deps, but be safe)
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,

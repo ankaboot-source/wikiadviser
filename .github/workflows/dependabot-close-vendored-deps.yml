@@ -1,4 +1,4 @@
-name: Close vendored dependency PRs
+name: 'Dependabot: close vendored-dependency PRs'
 on:
   pull_request_target:
     types: [opened]
@@ -12,6 +12,10 @@ jobs:
     permissions:
       pull-requests: write
       contents: read
+    # Automatic (pull_request_target): triggered when dependabot opens a PR
+    # touching docker/resources/extensions/MyVisualEditor/ — closes just that PR.
+    # Manual (workflow_dispatch): scans ALL open dependabot PRs, checks each
+    # for vendored-path changes, and closes every match.
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request_target' && github.actor == 'dependabot[bot]')

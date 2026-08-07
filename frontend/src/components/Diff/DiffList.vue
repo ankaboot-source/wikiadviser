@@ -26,6 +26,7 @@
         :revision="revision"
         :role="role"
         :article-id="articleId"
+        :section-map="sectionMap"
         :is-first="index === 0"
         :revision-comments="revisionCommentsFor(revision.id)"
       />
@@ -92,6 +93,7 @@
 <script setup lang="ts">
 import { useSelectedChangeStore } from 'src/stores/useSelectedChangeStore';
 import { ChangeItem, Comment, Enums } from 'src/types';
+import { buildSectionMap } from 'src/utils/changeGrouping';
 import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
@@ -106,8 +108,12 @@ const props = defineProps<{
   articleId: string;
   role: Enums<'role'>;
   changesList: ChangeItem[];
+  articleHtml?: string | null;
   revisionComments?: Map<string, Comment[]>;
 }>();
+
+/** changeId -> section title, derived once from the parsed article HTML. */
+const sectionMap = computed(() => buildSectionMap(props.articleHtml ?? null));
 
 function revisionCommentsFor(revisionId: string | undefined): Comment[] {
   if (!revisionId || !props.revisionComments) return [];

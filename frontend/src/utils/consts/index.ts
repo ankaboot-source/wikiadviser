@@ -2,6 +2,13 @@ import ENV from 'src/schema/env.schema';
 
 export const SHARE_LINK_DAY_LIMIT = ENV.SHARE_LINK_DAY_LIMIT;
 
+/**
+ * Above this many changes in a single revision, changes are collapsed by
+ * default so the reviewer can grasp the revision's structure before diving in.
+ * See issue #1426.
+ */
+export const COLLAPSE_THRESHOLD = 15;
+
 export const MAX_EMAIL_LENGTH = 20;
 
 export const HOURS_IN_DAY = 24;

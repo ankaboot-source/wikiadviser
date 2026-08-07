@@ -42,6 +42,10 @@ Three independently-deployable surfaces:
 - **Commits**: Conventional Commits with scope (`feat(ai-review):`, `fix(revision-feedback):`, `ci:`, `docs:`). Git author is `Jaafoura` (not `jaafoura`). _(session ses_0a3a4091)_
 - **`database.types.ts`** is generated from Supabase schema — regenerate, don't hand-edit. Excluded from Qlty/DeepSource.
 
+## GitHub Actions runner (opencode `/oc`)
+
+The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions runner via `anomalyco/opencode/github@latest` with `use_github_token: true`. Local `~/.config/opencode` skills do **not** reach the runner — anything the agent needs must be in the repo (this file, `CONTRIBUTING.md`, scripts). After making UI changes, write the affected routes to `.opencode/screens.txt` (one per line) so the `scripts/screenshots.sh` step can capture them. The runner has no Supabase backend, so authenticated routes render the login redirect in screenshots.
+
 ## Testing UI features
 
 There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI changes, verify with the **agent-browser** skill:

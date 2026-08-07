@@ -3,3 +3,5 @@ node_modules
 /coverage
 /.worktrees
 /worktrees
+# Local pr-watch state (never commit)
+.pr-watch-state-*.txt

@@ -1,9 +1,10 @@
 name: Close vendored dependency PRs
 on:
   pull_request_target:
-    types: [opened, reopened]
+    types: [opened]
     paths:
       - "docker/resources/extensions/MyVisualEditor/**"
+  workflow_dispatch:
 
 jobs:
   close:

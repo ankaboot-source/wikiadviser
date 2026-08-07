@@ -138,18 +138,28 @@ You are running locally, so use agent-browser (Chrome via CDP) — this is the w
 1. Make sure the dev server is running. If it isn't (or the live Supabase backend isn't up), start it with the mock backend so pages render real layouts with dummy data instead of the login redirect:
    cd frontend && USE_MOCK_BACKEND=true pnpm dev
    Use the URL it serves (e.g. http://localhost:8080, or whatever port you see in the log).
-2. Capture the affected page at desktop and mobile widths, saving to a LOCAL path inside the repo (already writable — no /tmp permission needed). IMPORTANT: ALWAYS pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/<name>-desktop.png`). If you run `agent-browser screenshot` with NO path, it saves to `~/.agent-browser/tmp/screenshots/`, which you cannot read back (external-directory permission). So always give the full path:
+2. Capture the affected page at desktop and mobile widths, saving to `.opencode/screenshots/` inside the repo (already writable — no /tmp permission needed). IMPORTANT: ALWAYS pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/screenshots/<name>-desktop.png`). If you run `agent-browser screenshot` with NO path, it saves to `~/.agent-browser/tmp/screenshots/`, which you cannot read back (external-directory permission). So always give the full path:
    agent-browser --args "--no-sandbox" open "<url>"
    agent-browser set viewport 1280 800
    agent-browser wait --load networkidle
-   agent-browser screenshot .opencode/<name>-desktop.png
+   agent-browser screenshot .opencode/screenshots/<name>-desktop.png
    agent-browser set viewport 390 844
    agent-browser wait --load networkidle
-   agent-browser screenshot .opencode/<name>-mobile.png
+   agent-browser screenshot .opencode/screenshots/<name>-mobile.png
    agent-browser close
    (Use --args "--no-sandbox" if Chrome fails with a sandbox error.)
-3. To share in the reply comment, upload the image to a gist via the GitHub API and link it. If gist upload isn't possible, describe what the screenshot shows.
-4. AFTER sharing, delete the local screenshot files (rm .opencode/<name>-*.png) so they are never committed to the repo.
+3. To share in the reply comment, commit the screenshots to the PR branch and reference them via a SHA-based raw URL (this is the ONLY reliable way to show an image in a GitHub comment — gist needs `gist` scope and the uploads endpoint rejects tokens):
+   - git add .opencode/screenshots/<name>-*.png
+   - git commit -m "chore: add UI screenshot for review"
+   - git push
+   - SHA=\$(git rev-parse HEAD)
+   - Post the reply comment with the image links:
+     ![desktop](https://raw.githubusercontent.com/$REPO/\$SHA/.opencode/screenshots/<name>-desktop.png)
+     ![mobile](https://raw.githubusercontent.com/$REPO/\$SHA/.opencode/screenshots/<name>-mobile.png)
+4. AFTER posting, delete the screenshot files and commit the deletion (the SHA-based raw URL still works from git history, so the image keeps rendering):
+   - git rm .opencode/screenshots/<name>-*.png
+   - git commit -m "chore: remove UI screenshot"
+   - git push
 
 === Commit code changes BEFORE updating pr-context.md ===
 

@@ -91,6 +91,13 @@ Any change that touches the data model (schema, migrations, `database.types.ts`,
 Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `frontend/.prettierrc`, `supabase/functions/*/deno.json`, `.github/workflows/*`, `.deepsource.toml`, `.qlty/qlty.toml`, `docs/NOTES.md`, `CONTRIBUTING.md`, `generate-env.sh`. Sessions: 57 WikiAdviser sessions in `~/.local/share/opencode/opencode.db` (cited inline as `ses_<id>`).
 
 ## General Guidelines
+- **🚨 Human-in-the-loop approval is MANDATORY for any high-risk action.** Before performing any of the following, get explicit human approval and do not proceed without it:
+  - Destructive/irreversible commands (e.g. `supabase db reset`/`drop`, deleting data, force-push, dropping/recreating DB objects).
+  - Applying migrations or schema changes to prod/staging.
+  - Merging a DB-impactful PR to `main`.
+  - Pushing to `main` directly.
+  - Anything that could lose data or break the data model.
+  If you are unsure whether an action is high-risk, treat it as high-risk and ask first.
 - Refer to available skills when possible.
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.

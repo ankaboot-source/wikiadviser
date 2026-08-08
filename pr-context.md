@@ -29,6 +29,10 @@ This branch contains the index migration (a real DB change). The guard should **
 - **`scripts/supabase-db.sh`**: safe wrapper that refuses `reset`/`drop` unless `--confirm-destructive` is passed (tested: blocks reset/drop, allows migration up).
 - **`docs/db-change-checklist.md`**: validation step requires using the safe wrapper / never running destructive commands without approval.
 
+## D. Human-in-the-loop approval (general, mandatory)
+
+- **AGENTS.md General Guidelines**: added a prominent rule — human-in-the-loop approval is MANDATORY for any high-risk action (destructive/irreversible commands, applying migrations to prod/staging, merging DB-impactful PRs, pushing to main, anything that could lose data or break the data model). If unsure whether an action is high-risk, treat it as high-risk and ask first.
+
 ## Other notes
 - The earlier `last_seen` migration from #1445 is on `main` but NOT applied to prod; still needs human review before any prod apply.
 - Typescript pin (`^5.9.2`) from #1445 is on main (workaround for #1446).

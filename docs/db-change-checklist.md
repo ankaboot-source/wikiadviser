@@ -32,6 +32,7 @@ Risk level: `LOW` / `HIGH`
 ## 4. Validate (evidence)
 
 - [ ] Applied to a **local/staging DB**; schema + queries verified.
+- [ ] **Never** ran `supabase db reset`/`drop` without explicit user approval (they wipe local data). Used `supabase migration up` (non-destructive) or `scripts/supabase-db.sh` to apply pending migrations.
 - [ ] Edge-function tests pass (`deno test supabase/functions --allow-all --node-modules-dir=auto`).
 - [ ] End-to-end against a **real DB** (not just mock).
 - [ ] Post-apply verification queries run (see below).

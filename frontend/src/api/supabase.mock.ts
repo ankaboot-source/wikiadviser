@@ -199,12 +199,51 @@ export function createMockSupabaseClient() {
                   id: 'permission-2',
                   role: 'viewer',
                   user: {
-                    id: 'other-user-id',
+                    id: 'user-jane',
                     email: 'jane@example.com',
                     avatar_url: null,
                     display_name: 'Jane Doe',
                     last_seen: new Date(
                       Date.now() - 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+                {
+                  id: 'permission-3',
+                  role: 'editor',
+                  user: {
+                    id: 'user-bob',
+                    email: 'bob@example.com',
+                    avatar_url: null,
+                    display_name: 'Bob Smith',
+                    last_seen: new Date(
+                      Date.now() - 2 * 60 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+                {
+                  id: 'permission-4',
+                  role: 'viewer',
+                  user: {
+                    id: 'user-alice',
+                    email: 'alice@example.com',
+                    avatar_url: null,
+                    display_name: 'Alice Johnson',
+                    last_seen: new Date(
+                      Date.now() - 3 * 24 * 60 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+                {
+                  id: 'permission-5',
+                  role: 'reviewer',
+                  user: {
+                    id: 'user-charlie',
+                    email: 'charlie@example.com',
+                    avatar_url: null,
+                    display_name: 'Charlie Brown',
+                    last_seen: new Date(
+                      Date.now() - 60 * 24 * 60 * 60 * 1000,
                     ).toISOString(),
                   },
                 },
@@ -234,12 +273,19 @@ export function createMockSupabaseClient() {
             avatar_url: null,
           },
         ],
-        // A second user so the "who's connected" stack shows someone other
-        // than the current (dummy) user after self is filtered out.
-        'other-key': [
+        // Multiple connected users so the "who's connected" stack shows several
+        // avatars (the current/dummy user is filtered out of the toolbar).
+        'jane-key': [
           {
-            user_id: 'other-user-id',
+            user_id: 'user-jane',
             display_name: 'Jane Doe',
+            avatar_url: null,
+          },
+        ],
+        'bob-key': [
+          {
+            user_id: 'user-bob',
+            display_name: 'Bob Smith',
             avatar_url: null,
           },
         ],

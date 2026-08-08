@@ -15,6 +15,18 @@ WikiAdviser has **no frontend test suite** (`frontend/package.json` `test` is a 
 - You need a screenshot to attach to a PR.
 - Realtime features need presence data (the mock reports a dummy user + a second user, so the connected-users stack renders).
 
+## Cover the different possibilities (mandatory for UI work)
+
+UI verification must reflect **realistic, varied states** — not just a single happy path. When testing/screenshotting a UI feature, cover the different possibilities and options:
+
+- **Multiple users** — the mock (`frontend/src/api/supabase.mock.ts`) provides several users with **different `last_seen` timestamps** (online, minutes/hours/days/months ago) and different roles. Use them to show the full range of states.
+- **Varied states** — e.g. for presence/last-seen: "Online now", "Last seen X min/hr/day(s) ago", and a **date** for very old timestamps (≥ 30 days).
+- **Edge cases** — empty lists, no avatar (initials fallback), long names, many connected users (avatar stack overlap), a user with no `last_seen`.
+- **Responsive** — capture desktop and mobile widths where layout changes.
+- **Before/after** — where a change alters behavior, show both.
+
+If the mock doesn't already cover a state you need, extend `supabase.mock.ts` so the scenario is reproducible, then screenshot it. Do not ship a UI change verified only against a single-user, single-state screenshot.
+
 ## Setup: mock-backend dev server
 
 Boot a dev server with the mock backend so pages render without a live Supabase backend or login:

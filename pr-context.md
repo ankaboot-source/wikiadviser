@@ -33,6 +33,12 @@ This branch contains the index migration (a real DB change). The guard should **
 
 - **AGENTS.md General Guidelines**: added a prominent rule — human-in-the-loop approval is MANDATORY for any high-risk action (destructive/irreversible commands, applying migrations to prod/staging, merging DB-impactful PRs, pushing to main, anything that could lose data or break the data model). If unsure whether an action is high-risk, treat it as high-risk and ask first.
 
+## E. Multi-user mock + UI testing coverage
+
+- **`frontend/src/api/supabase.mock.ts`**: `get/users` now returns 5 users with **varied `last_seen`** (online, 5 min, 2 hr, 3 days, 60 days) and different roles; presence reports 3 connected users so the toolbar stack shows multiple avatars (after filtering self).
+- **`.opencode/skills/e2e-testing/SKILL.md`**: added "Cover the different possibilities (mandatory for UI work)" — test/screenshot multiple users, varied states (Online now / X min/hr/day(s) ago / date for ≥30 days), edge cases (no avatar, empty, long names), responsive widths.
+- Verified in browser (mock): toolbar shows 2 avatars (JD, BS); Share shows Dummy/Jane/Bob "Online now", Alice "Last seen 3 days ago", Charlie date "6/9/2026". Screenshot: `/tmp/opencode/share-multiuser.png`.
+
 ## Other notes
 - The earlier `last_seen` migration from #1445 is on `main` but NOT applied to prod; still needs human review before any prod apply.
 - Typescript pin (`^5.9.2`) from #1445 is on main (workaround for #1446).

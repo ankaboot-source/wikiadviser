@@ -17,6 +17,9 @@ Risk level: `LOW` / `HIGH`
 - [ ] Explicit human approval obtained **before** writing the migration
       (mandatory for HIGH risk).
 - [ ] Migration will **not** be applied to prod/staging by the agent unsupervised.
+- [ ] The agent will **not merge** this PR itself — a human reviews and merges it.
+- [ ] `db-approved` label added by a human after review (required to pass the
+      automated **DB change guard** check, `.github/workflows/db-change-guard.yml`).
 
 ## 3. Write safely
 

@@ -25,39 +25,29 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Check org membership
+      - name: Check repo access
         id: check
         uses: actions/github-script@v7
-        env:
-          # PAT with `read:org` scope. The GITHUB_TOKEN cannot check org
-          # membership (no permission key grants read:org), so use a dedicated
-          # token. Missing secret => check fails closed (treated as non-member).
-          ORG_MEMBERSHIP_TOKEN: ${{ secrets.ORG_MEMBERSHIP_TOKEN }}
         with:
           script: |
+            // The repo is public, so the GITHUB_TOKEN (any authenticated user)
+            // can query repository permissions — no dedicated PAT/secret needed.
+            // Only users who can write to the repo may trigger /oc.
             const username = context.payload.comment.user.login;
-            if (!process.env.ORG_MEMBERSHIP_TOKEN) {
-              console.log('ORG_MEMBERSHIP_TOKEN secret not set; treating as non-member');
-              core.setOutput('is_member', 'false');
-            } else {
-              // `github` in the script context is already an Octokit instance
-              // (no getOctokit method in github-script@v7), so build a second
-              // client for the PAT via the @actions/github factory.
-              const { getOctokit } = require('@actions/github');
-              const octokit = getOctokit(process.env.ORG_MEMBERSHIP_TOKEN);
-              try {
-                await octokit.rest.orgs.checkMembershipForUser({
-                  org: 'ankaboot-source',
-                  username,
-                });
-                core.setOutput('is_member', 'true');
-              } catch (e) {
-                core.setOutput('is_member', 'false');
-              }
+            try {
+              const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username,
+              });
+              const allowed = ['admin', 'maintain', 'write'];
+              core.setOutput('can_trigger', String(allowed.includes(data.permission)));
+            } catch (e) {
+              core.setOutput('can_trigger', 'false');
             }
 
       - name: Run opencode
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         uses: anomalyco/opencode/github@77fc88c8ade8e5a620ebbe1197f3a572d29ae91a
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -80,7 +70,7 @@ jobs:
             - Post a concise reply comment back to the issue/PR summarizing what you did.
 
       - name: Notify non-member
-        if: steps.check.outputs.is_member != 'true'
+        if: steps.check.outputs.can_trigger != 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -88,34 +78,34 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: 'Only members of the ankaboot-source org can use /oc on this repo.',
+              body: 'Only users with write access to this repo can use /oc on it.',
             });
 
       - name: Setup pnpm
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Setup Node
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install frontend dependencies
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         run: cd frontend && pnpm install
 
       - name: Capture UI screenshots
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         run: bash scripts/screenshots.sh
         env:
           PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}
           GITHUB_TOKEN: ${{ github.token }}
 
       - name: Upload screenshots
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ui-screenshots
@@ -123,7 +113,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Post screenshots comment
-        if: steps.check.outputs.is_member == 'true'
+        if: steps.check.outputs.can_trigger == 'true'
         uses: actions/github-script@v7
         with:
           script: |

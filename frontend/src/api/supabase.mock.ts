@@ -170,7 +170,7 @@ export function createMockSupabaseClient() {
       }),
     },
     functions: {
-      invoke: async (name: string) => {
+      invoke: (name: string) => {
         switch (name) {
           case 'get/articles':
             return { data: dummyArticles, error: null };
@@ -182,21 +182,90 @@ export function createMockSupabaseClient() {
           case 'get/profile':
             return { data: { profile: dummyProfile }, error: null };
           case 'get/users':
-            return { data: [], error: null };
+            return {
+              data: [
+                {
+                  id: 'permission-1',
+                  role: 'editor',
+                  user: {
+                    id: DUMMY_USER_ID,
+                    email: DUMMY_EMAIL,
+                    avatar_url: null,
+                    display_name: 'Dummy User',
+                    last_seen: new Date().toISOString(),
+                  },
+                },
+                {
+                  id: 'permission-2',
+                  role: 'viewer',
+                  user: {
+                    id: 'other-user-id',
+                    email: 'jane@example.com',
+                    avatar_url: null,
+                    display_name: 'Jane Doe',
+                    last_seen: new Date(
+                      Date.now() - 5 * 60 * 1000,
+                    ).toISOString(),
+                  },
+                },
+              ],
+              error: null,
+            };
           default:
             return { data: null, error: null };
         }
       },
     },
-    rpc: async (name: string) => {
+    rpc: (name: string) => {
       if (name === 'is_article_exists') return { data: true, error: null };
       return { data: null, error: null };
     },
     from: (table: string) => createMockQueryBuilder(table),
     channel: () => {
+      // Minimal presence support so the "who's connected" avatar stack renders
+      // in UI verification (USE_MOCK_BACKEND=true). The dummy user is reported
+      // as connected; the presence `sync` callback fires on subscribe.
+      const presenceCallbacks: Record<string, (payload?: unknown) => void> = {};
+      const presenceState: Record<string, unknown[]> = {
+        'dummy-key': [
+          {
+            user_id: DUMMY_USER_ID,
+            display_name: 'Dummy User',
+            avatar_url: null,
+          },
+        ],
+        // A second user so the "who's connected" stack shows someone other
+        // than the current (dummy) user after self is filtered out.
+        'other-key': [
+          {
+            user_id: 'other-user-id',
+            display_name: 'Jane Doe',
+            avatar_url: null,
+          },
+        ],
+      };
       const channel = {
-        on: () => channel,
-        subscribe: () => ({ unsubscribe: () => {} }),
+        on: (event: string, opts: { event?: string }, cb?: unknown) => {
+          if (event === 'presence' && typeof cb === 'function') {
+            presenceCallbacks[opts?.event ?? 'sync'] = cb as (
+              payload?: unknown,
+            ) => void;
+          }
+          return channel;
+        },
+        track: () => Promise.resolve({ status: 'ok' }),
+        untrack: () => Promise.resolve({ status: 'ok' }),
+        presenceState: () => presenceState,
+        subscribe: (cb?: unknown) => {
+          presenceCallbacks['sync']?.();
+          if (typeof cb === 'function')
+            (cb as (s: string) => void)('SUBSCRIBED');
+          return {
+            unsubscribe: () => {
+              delete presenceCallbacks['sync'];
+            },
+          };
+        },
       };
       return channel;
     },

@@ -1,44 +1,75 @@
-# PR Context — opencode GitHub Actions + pr-watch enhancements
+# PR Context — Who's connected (issue #71)
 
-Resolves: https://github.com/ankaboot-source/wikiadviser/issues/1425
+Resolves: https://github.com/ankaboot-source/wikiadviser/issues/71
+
+PR: https://github.com/ankaboot-source/wikiadviser/pull/1445 (branch `71-who-is-connected`)
+
+> This file is ephemeral per-PR working state. It is auto-deleted from `main` by
+> `.github/workflows/cleanup-pr-context.yml` after the PR merges. Do not delete
+> it manually before merging.
 
 ## Goal
 
-Set up the OpenCode GitHub Actions integration on wikiadviser with UI verification, and enhance the local `pr-watch.sh` watcher.
+1. Show currently-connected users on the article page's top bar (Etherpad/Google Drive style): an overlapping avatar stack, each with a tooltip showing the username. Real-time presence via Supabase Realtime.
+2. In the Share dialog, show each user's last-seen time (or "Online now").
 
 ## Key decisions
 
-- **Auth**: `use_github_token: true` (runner's `GITHUB_TOKEN`) — no OpenCode App install, no bot account. Matches issue #1425. Trade-off: `GITHUB_TOKEN` events don't re-trigger workflows, so no agent-to-agent chaining (accepted for v1).
-- **Screenshots**: use the **agent-browser** CLI (Chrome via CDP, no Playwright) instead of adding Playwright. Installed on the runner via `npm i -g agent-browser && agent-browser install`.
-- **Screenshot visibility**: upload as a build artifact + post a PR comment linking to it (GITHUB_TOKEN can't create gists for inline images).
-- **Affected routes**: the agent writes them to `.opencode/screens.txt` (one per line); `scripts/screenshots.sh` reads it.
-- **No backend needed for screenshots**: `scripts/screenshots.sh` boots the dev server with `USE_MOCK_BACKEND=true`, which swaps in a mock Supabase client (`frontend/src/api/supabase.mock.ts`) returning a dummy user + dummy article/change data, so real pages render instead of the login redirect.
-- **pr-watch.sh**: now watches both issue comments and inline review comments, and notifies when the AI has actually answered.
-- **pr-watch live output**: `run_opencode` shows the last 2 lines of the agent's output live (rolling display, 200-char truncation) instead of nothing until `tail -30`; falls back to `tail -30` when stdout isn't a TTY.
-- **pr-watch `/oc` screenshots (local)**: the agent uses agent-browser directly (NOT `scripts/screenshots.sh`, which is for the cloud runner). Saves to `.opencode/screenshots/<name>-*.png` (already writable, avoids the `/tmp` external-directory permission), commits them to the PR branch, and shares via a **SHA-based raw URL** (`https://raw.githubusercontent.com/$REPO/$SHA/.opencode/screenshots/<name>.png`) — the only reliable way to render an image in a GitHub comment (gist needs `gist` scope; the uploads endpoint rejects tokens). After posting, deletes the files and commits the deletion (the SHA URL still works from git history). If the live server/backend isn't up, starts the dev server with `USE_MOCK_BACKEND=true pnpm dev` so pages render real layouts with dummy data.
+- **Approach**: Supabase Realtime **presence** (approved by user) — a `presence-<articleId>` channel per article. Each viewer `.track()`s their own presence and listens for `sync`/`join`/`leave` events.
+- **Don't show self**: the current user is filtered out of the connected stack (they don't need to see themselves). Verified with a second mock user.
+- **Presence payload**: `{ user_id, display_name, avatar_url }`, deduped by `user_id`.
+- **UI**: overlapping `q-avatar` stack in `DiffToolbar.vue`; each avatar wrapped in a `q-tooltip` showing `display_name`; initials fallback when no avatar.
+- **Last-seen (DB migration, approved by user)**: added a `last_seen timestamptz` column to `profiles` and exposed it via `profiles_view`. Updated by a new `user/heartbeat` edge function (admin client) called from the article page on mount + every 60s. The browser RLS grant on `profiles` is column-restricted (avatar_url, default_avatar, llm_reviewer_config), so `last_seen` is NOT writable directly from the browser — it goes through the admin client.
+- **Share display**: `ShareUser.vue` shows "Online now" for connected users (via `connectedUsers` passed from the toolbar) and "Last seen X ago" for others.
 
 ## File changes
 
-- `.github/workflows/opencode.yml` — new. Triggers on `issue_comment` + `pull_request_review_comment` containing `/oc`. Runs opencode with `use_github_token: true`, then captures/upload/posts UI screenshots. **Only org members can trigger it**: a `Check org membership` step (`GET /orgs/ankaboot-source/members/{username}`, 204=member) gates the opencode + screenshot steps; non-members get a comment saying only org members can use `/oc`.
-- `scripts/screenshots.sh` — new. agent-browser screenshot script (desktop 1280×800 + mobile 390×844, before/after). Boots the dev server with `USE_MOCK_BACKEND=true`.
-- `frontend/src/api/supabase.mock.ts` — new. Mock Supabase client (dummy user + article/change data) for UI verification.
-- `frontend/src/api/supabase.ts` — uses the mock client when `USE_MOCK_BACKEND=true`.
-- `frontend/src/schema/env.schema.ts` — added `USE_MOCK_BACKEND` flag.
-- `AGENTS.md` — added runner note (no local skills; write routes to `.opencode/screens.txt`; mock backend for screenshots), the `/tmp` permission gotcha, and a "Before every commit or push" checklist that requires `pr-context.md` to stay current.
-- `CONTRIBUTING.md` — added `/oc` command vocabulary + how-it-works + v1 limitations.
-- `pr-watch.sh` — handles review comments + notifies when AI answered; live last-2-lines output; local-path `/oc` screenshots with mock-backend fallback.
-- `.gitignore` — ignore `.pr-watch-state-*.txt` local state.
-- `.opencode/.gitignore` — ignore `screens.txt` + `*.png` (agent runtime state).
-- `frontend/quasar.config.js` — added `USE_MOCK_BACKEND` to the build `env` block. **Bug fix uncovered during PR #1441 testing**: the env var was defined in the schema but not wired through quasar config, so `USE_MOCK_BACKEND=true` was silently ignored and pages redirected to `/auth` even with the mock flag set. (commit `2307b3a1`)
+- `frontend/src/pages/article/ArticlePage.vue` — presence channel (sync/join/leave, dedupe, filter out self); `user/heartbeat` last-seen heartbeat (mount + 60s interval, cleared on unmount); passes `connected-users` to toolbar.
+- `frontend/src/components/Diff/DiffToolbar.vue` — `connectedUsers` prop; avatar stack with tooltips; passes `connected-users` to ShareCard.
+- `frontend/src/components/Share/ShareCard.vue` — accepts `connectedUsers`, passes to ShareUser.
+- `frontend/src/components/Share/ShareUser.vue` — shows "Online now" / "Last seen X ago" under each user; emits kebab-case `permission-emit`.
+- `frontend/src/api/supabaseHelper.ts` — `getUsers` maps `last_seen`.
+- `frontend/src/types/index.ts` — `User` gains `last_seen?: string | null`.
+- `frontend/src/types/database.types.ts` — `profiles` gains `last_seen` (Row/Insert/Update).
+- `frontend/src/api/supabase.mock.ts` — presence reports a second dummy user (so the stack shows someone other than self); `get/users` returns users with `last_seen`.
+- `supabase/functions/user/lastSeenHelper.ts` — NEW: `setLastSeen` heartbeat handler (admin client).
+- `supabase/functions/user/index.ts` — registers `POST /heartbeat`.
+- `supabase/functions/get/handlers/getUsers.ts` — selects `last_seen` from `profiles_view`.
+- `supabase/migrations/20260807120000_add_last_seen_to_profiles.sql` — NEW: adds `last_seen` column + recreates `profiles_view` to expose it.
+- `.opencode/skills/e2e-testing/SKILL.md` — NEW: project-level skill extracted from AGENTS.md covering e2e/UI verification.
+- `.github/workflows/cleanup-pr-context.yml` — NEW: auto-deletes `pr-context.md` from main after merge.
+- `AGENTS.md` — PR workflow + guard rails; "Testing UI features" points to the `e2e-testing` skill; pr-context lifecycle documented; **new "DB change safety (agentic AI)" section** (Steps 0–6: classify risk, human approval gate, write safely, validate, rollback, human review).
+- `docs/db-change-checklist.md` — NEW: reusable per-change checklist for any DB-impactful change.
+- `frontend/package.json` / `pnpm-lock.yaml` — pinned `typescript` back to `^5.9.2` (typescript 7.0.2 breaks lint; tracked in issue #1446).
+
+## DB / data-model guard rail — FLAG FOR HUMAN REVIEW
+
+This PR includes a **migration** (`20260807120000_add_last_seen_to_profiles.sql`):
+- Adds `last_seen timestamptz` to `profiles`.
+- Drops and recreates `profiles_view` to include `last_seen` (view stays admin-only, REVOKE ALL from PUBLIC).
+
+**Validated against the local Supabase DB** (see Verification) but **NOT applied to prod/staging**. A human must review and apply it to prod (or supervise) with backup + rollback ready. Rollback: `ALTER TABLE profiles DROP COLUMN IF EXISTS last_seen;` + restore `profiles_view` from git.
+
+## Verification
+
+- `cd frontend && pnpm run prettier:fix` — clean.
+- `cd frontend && pnpm run lint` — 0 errors (4 pre-existing `v-html` warnings).
+- `deno test supabase/functions --allow-all --node-modules-dir=auto` — 107 passed, 0 failed.
+- **Real-DB validation (local Supabase, `supabase db reset` applied all 55 migrations incl. the new one):**
+  - `profiles.last_seen` exists (nullable `timestamptz`).
+  - `profiles_view` exposes `last_seen`; all existing columns intact; view queries work.
+  - `user/heartbeat` edge function updates `last_seen` in the real DB (verified via psql: null → timestamp).
+  - `get/users` returns `last_seen` in its response (verified via real API call).
+  - Browser end-to-end against the real backend: Share dialog shows "dbtest@wikiadviser.io — Last seen 6 min ago". Screenshot: `/tmp/opencode/db-share-lastseen.png`.
+- Browser check against `USE_MOCK_BACKEND=true` dev server:
+  - Article toolbar stack shows the second user ("JD" / Jane Doe), NOT the current user.
+  - Share dialog shows "Dummy User — Last seen just now" and "Jane Doe — Online now".
+- PR #1445 is MERGEABLE / CLEAN (all CI checks pass).
 
 ## Open questions / caveats
 
-- Screenshots use a mock client with dummy data — pages render real layouts but not real data.
-- "Before" screenshots are best-effort (PR base SHA); "after" is the agent's fixed state.
-- `OPENROUTER_API_KEY` must be added as an org/repo Actions secret for the workflow to run.
-- Sharing `/oc` screenshots in a GitHub comment uses a **SHA-based raw URL** (commit the screenshot to the PR branch, reference `raw.githubusercontent.com/$REPO/$SHA/...`, then delete the file in a follow-up commit — the URL still works from git history). Gist upload fails (token lacks `gist` scope) and GitHub's uploads endpoint rejects tokens ("Bad Size"), so raw-URL is the reliable path.
-- Local external-directory access needs `"permission": { "external_directory": { "/tmp/*": "allow", "~/.agent-browser/tmp/screenshots/*": "allow" } }` in `~/.config/opencode/opencode.json`. The agent should always pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/<name>.png`) so it saves inside the repo and avoids the external temp dir entirely.
-- **PR #1441 `/oc` screenshot reply (2026-08-07, first attempt)**: replied to a comment asking for an article-page screenshot. Gist upload failed (token lacks `gist` scope) and the GitHub uploads endpoint rejected the image size. The USE_MOCK_BACKEND quasar config bug was found and fixed during this test.
-- **PR #1441 `/oc` screenshot reply (2026-08-07, second attempt)**: replied to `/oc reply with a screenshot of the article page`. Used the SHA-based raw URL workflow (commit → push → post comment → delete → commit deletion). The reply posted successfully with desktop and mobile screenshots rendering via `raw.githubusercontent.com/ankaboot-source/wikiadviser/${SHA}/.opencode/screenshots/article-*.png`. The `.opencode/.gitignore` ignores `*.png`, so `git add -f` is required to force-add the screenshot files. The agent-browser `screenshot` command ignores the explicit path argument when a daemon is already running — the file goes to `~/.agent-browser/tmp/screenshots/` and must be copied to the repo manually.
-- **PR #1441 article page empty (2026-08-07)**: the article-page screenshot looked empty. Root cause: the mock's `from('articles').select('current_html_content').single()` returned `null`, so `parseArticleHtml` produced no content. Fixed by returning dummy article HTML with `data-id` elements (annotated by `parseArticleHtml` from the changes list) so the diff renders. Also fixed the mock's `channel()` to support chained `.on(...).on(...)` (the article page chains realtime listeners) — previously it threw `realtimeChannel.on(...).on is not a function`. Verified the article page now renders the article with changes (revision, accept/reject sections) and no errors.
-- **PR #1441 `/oc` screenshot reply (2026-08-07, third attempt)**: replied to `/oc reply with a screenshot of the article page`. Followed the same SHA-based raw URL workflow. The article page URL is `/articles/Sample_Article` (the route param is `article_id`, not the permission `id`). Dev server ran on port 9000 (Quasar default), not 8080. Screenshot files were saved to `~/.agent-browser/tmp/screenshots/` (daemon-already-running gotcha: explicit path ignored), so copied to `.opencode/screenshots/` manually. Reply posted successfully at `https://github.com/ankaboot-source/wikiadviser/pull/1441#issuecomment-5218448590`.
+- **Subagent model config**: `~/.config/opencode/oh-my-opencode-slim.json` was edited so all subagents use `openrouter/~deepseek/deepseek-v4-flash-latest` instead of the nonexistent `openai/gpt-5.4-mini`. Local machine change, not part of this PR; only takes effect after a full opencode backend restart.
+- The current user shows "Last seen just now" (not "Online now") in Share because they're filtered out of `connectedUsers`. Acceptable — they know they're online.
+- Presence is inherently multi-user; the mock reports the dummy user + one second user. Real multi-user presence needs a live Supabase backend.
+- **`profiles_view` ACL note**: local dev shows `anon`/`authenticated` grants on `profiles_view` (Supabase local default grants). This matches the original `secure_profiles_view.sql` behavior (`REVOKE ALL FROM PUBLIC` only) — not a regression from this migration — but worth confirming the prod grants are locked down.
+- No frontend test suite exists — verification is lint/prettier/types + browser check.

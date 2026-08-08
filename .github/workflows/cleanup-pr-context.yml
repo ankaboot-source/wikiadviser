@@ -1,0 +1,38 @@
+name: Cleanup pr-context
+
+# pr-context.md is ephemeral per-PR working state (read by agents while a PR is
+# open). It must never accumulate on main. This workflow removes it from main
+# after a PR is merged. It self-heals: if the file is already gone it no-ops.
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  remove-pr-context:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Check pr-context.md
+        id: check
+        run: |
+          if [ -f pr-context.md ]; then
+            echo "needs_cleanup=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_cleanup=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Delete pr-context.md
+        if: steps.check.outputs.needs_cleanup == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm pr-context.md
+          git commit -m "ci: remove pr-context.md (ephemeral per-PR working state)"
+          git push origin "${{ github.event.pull_request.base.ref }}"

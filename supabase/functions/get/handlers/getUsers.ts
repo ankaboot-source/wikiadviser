@@ -17,7 +17,7 @@ export async function getUsers(c: Context) {
       id,
       article_id,
       role,
-      user: profiles_view(id, email, avatar_url, display_name)
+      user: profiles_view(id, email, avatar_url, display_name, last_seen)
       `,
     )
     .order('created_at')

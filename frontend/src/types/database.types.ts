@@ -346,6 +346,7 @@ export type Database = {
           default_avatar: boolean | null;
           email: string | null;
           id: string;
+          last_seen: string | null;
           llm_reviewer_config?: {
             prompt?: string | null;
             model?: string | null;
@@ -362,6 +363,7 @@ export type Database = {
           default_avatar?: boolean | null;
           email?: string | null;
           id: string;
+          last_seen?: string | null;
           llm_reviewer_config?: {
             prompt?: string | null;
             model?: string | null;
@@ -378,6 +380,7 @@ export type Database = {
           default_avatar?: boolean | null;
           email?: string | null;
           id?: string;
+          last_seen?: string | null;
           llm_reviewer_config?: {
             prompt?: string | null;
             model?: string | null;

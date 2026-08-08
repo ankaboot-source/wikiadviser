@@ -19,10 +19,6 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
-      # Allows orgs.checkMembershipForUser to verify the comment author is an
-      # org member. Without it the GITHUB_TOKEN is denied (403), the catch block
-      # treats every author as a non-member, and the opencode step never runs.
-      members: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -32,17 +28,28 @@ jobs:
       - name: Check org membership
         id: check
         uses: actions/github-script@v7
+        env:
+          # PAT with `read:org` scope. The GITHUB_TOKEN cannot check org
+          # membership (no permission key grants read:org), so use a dedicated
+          # token. Missing secret => check fails closed (treated as non-member).
+          ORG_MEMBERSHIP_TOKEN: ${{ secrets.ORG_MEMBERSHIP_TOKEN }}
         with:
           script: |
             const username = context.payload.comment.user.login;
-            try {
-              await github.rest.orgs.checkMembershipForUser({
-                org: 'ankaboot-source',
-                username,
-              });
-              core.setOutput('is_member', 'true');
-            } catch (e) {
+            if (!process.env.ORG_MEMBERSHIP_TOKEN) {
+              console.log('ORG_MEMBERSHIP_TOKEN secret not set; treating as non-member');
               core.setOutput('is_member', 'false');
+            } else {
+              const octokit = github.getOctokit(process.env.ORG_MEMBERSHIP_TOKEN);
+              try {
+                await octokit.rest.orgs.checkMembershipForUser({
+                  org: 'ankaboot-source',
+                  username,
+                });
+                core.setOutput('is_member', 'true');
+              } catch (e) {
+                core.setOutput('is_member', 'false');
+              }
             }
 
       - name: Run opencode

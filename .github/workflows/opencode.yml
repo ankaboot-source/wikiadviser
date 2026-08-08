@@ -19,6 +19,10 @@ jobs:
       contents: write
       pull-requests: write
       issues: write
+      # Allows orgs.checkMembershipForUser to verify the comment author is an
+      # org member. Without it the GITHUB_TOKEN is denied (403), the catch block
+      # treats every author as a non-member, and the opencode step never runs.
+      members: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

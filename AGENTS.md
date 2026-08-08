@@ -48,13 +48,27 @@ The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions
 
 ## Testing UI features
 
-There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI changes, verify with the **agent-browser** skill:
+There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI/e2e verification, use the **`e2e-testing`** skill (project-level, `.opencode/skills/e2e-testing/`): it covers booting the `USE_MOCK_BACKEND=true` dev server, driving pages with **agent-browser** (`open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`), asserting, and attaching screenshots to a PR via SHA-based raw URLs.
 
-1. Ensure the dev stack is running (`npm run dev:all` or `./start.sh` for full bootstrap).
-2. Use `agent-browser` to navigate, interact, and assert: `agent-browser open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`.
-3. For PRs with UI changes, attach screenshots directly to the PR description/comments — do **not** commit them to the repo.
+## PR workflow (when resolving an issue)
 
-See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command reference.
+Follow this end-to-end flow when resolving an issue, not just the code change:
+
+1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with the **`e2e-testing`** skill (against a `USE_MOCK_BACKEND=true` dev server) and capture a screenshot.
+2. **Open a PR** for the change (never push to `main` directly — PR-only). Use `gh pr create` with a Conventional Commit message and a body that references the issue (`Resolves #NN`).
+3. **Attach the UI screenshot directly to the PR** (description or a comment) — do **not** commit it to the repo. Use `gh pr comment <n> --body-file` with a markdown image reference, or attach via the PR body. If `gh` can't inline the image, fall back to the SHA-based raw-URL workflow documented under "Operational gotchas".
+4. **DB / data-model guard rails**: before shipping, check whether the change touches the data model (schema, migrations, `database.types.ts`, queries, RLS). If it does, **flag it explicitly for human review** — do not run risky migrations or data-model changes alone with no human supervision. Call out the possible breaking-model impact in the PR body. If the change needs **no** migration (e.g. ephemeral Realtime presence), say so explicitly so reviewers know it was considered.
+
+## DB change safety (agentic AI)
+
+Any change that touches the data model (schema, migrations, `database.types.ts`, queries, RLS, seed data) follows this process. Use `docs/db-change-checklist.md` as the per-change checklist.
+
+1. **Classify risk.** Additive (new nullable column/table/index/view) = **low**. Breaking (drop/rename column, type change, `NOT NULL`, RLS change, data backfill, dropping/recreating objects existing code depends on) = **high**.
+2. **Human approval gate.** Get explicit human approval before writing the migration (mandatory for high-risk). The agent **never** applies migrations to prod/staging unsupervised.
+3. **Write safely.** Append-only timestamp-prefixed migration; idempotent where possible (`IF NOT EXISTS`); prefer additive over destructive; explicit RLS for new browser-reachable objects; regenerate `database.types.ts` (don't hand-edit).
+4. **Validate (evidence).** Apply to a local/staging DB and verify schema + queries; run the edge-function tests; end-to-end against a real DB (not just mock); post-apply verification queries.
+5. **Rollback plan.** Document reverse SQL for every migration; take a pre-change backup/PITR before applying to prod.
+6. **Human review + supervised apply.** Flag the migration in the PR body (what it does, risk, rollback). A human applies to prod (or supervises) with backup + rollback ready.
 
 ## Operational gotchas
 
@@ -67,7 +81,7 @@ See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command refe
 - **Email templates**: keep `supabase/email-templates/` and the Supabase dashboard templates in sync manually. _(docs/NOTES.md)_
 - **User deletion** reassigns contributions to `deleted-user@wikiadviser.io` and deletes owned articles — don't simplify this. _(docs/NOTES.md)_
 - **Minimal changes**: don't reinvent existing helpers (e.g. `gotodifflink`); reuse them. _(sessions ses_0c3ef16b, ses_2633dc7c)_
-- **`pr-context.md`** — **MUST stay current, never stale.** It is the working context file for the `pr-watch.sh` `/oc` responder. **Update it after EVERY decision, choice, or change** (new file, modified behavior, resolved question, new caveat) — not just at PR creation. Before **any** commit or push, verify `pr-context.md` reflects the latest state; if it doesn't, update it in the same commit. The watcher reads it when answering `/oc` comments, so a stale file makes the agent answer from outdated context. **Before merging a PR, delete it** (`git rm pr-context.md`) and push — it's ephemeral working state, not product code.
+- **`pr-context.md`** — **MUST stay current, never stale.** It is the working context file for the `pr-watch.sh` `/oc` responder. **Update it after EVERY decision, choice, or change** (new file, modified behavior, resolved question, new caveat) — not just at PR creation. Before **any** commit or push, verify `pr-context.md` reflects the latest state; if it doesn't, update it in the same commit. The watcher reads it when answering `/oc` comments, so a stale file makes the agent answer from outdated context. It is ephemeral per-PR working state: it lives on the PR branch while the PR is open, and `.github/workflows/cleanup-pr-context.yml` auto-deletes it from `main` after the PR merges — do **not** delete it manually before merging. If you run `git merge origin/main` (conflict resolution) and main still has a stale `pr-context.md` (race window before the cleanup workflow runs), delete it first to avoid an `add/add` conflict.
 - **`pr-watch.sh` `/oc` screenshots**: when the local agent takes a screenshot for a `/oc` reply, ALWAYS pass an explicit path to `agent-browser screenshot` (e.g. `.opencode/screenshots/<name>.png`) so it saves inside the repo (already writable). To show it in the comment, commit it to the PR branch and reference a **SHA-based raw URL** (`https://raw.githubusercontent.com/$REPO/$SHA/.opencode/screenshots/<name>.png`) — this is the only reliable way to render an image in a GitHub comment (gist needs `gist` scope; the uploads endpoint rejects tokens). After posting, delete the files and commit the deletion (the SHA URL still works from git history). Gotchas: `.opencode/.gitignore` ignores `*.png`, so use `git add -f` to commit screenshots; and `agent-browser screenshot` ignores the explicit path when a daemon is already running (the file lands in `~/.agent-browser/tmp/screenshots/`), so `agent-browser close` first or copy the file from the temp dir. If run with no path, agent-browser saves to `~/.agent-browser/tmp/screenshots/`, an external directory that non-interactive `opencode run` auto-rejects unless `~/.config/opencode/opencode.json` has `"permission": { "external_directory": { "/tmp/*": "allow", "~/.agent-browser/tmp/screenshots/*": "allow" } }`.
 
 ## Sources
@@ -79,6 +93,8 @@ Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `front
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.
 - **Never push to `main` directly — it is PR-only.** When pushing a feature branch, use an explicit refspec: `git push -u origin HEAD:<branch-name>`. Don't rely on the branch's upstream tracking, which may point at `main` and cause accidental direct pushes. _(session: accidental `6f4cec4f` push to main)_
+- **General guard rails**: flag any change you are not confident about (uncertain behavior, guessed API usage, unverified edge case) explicitly in your report/PR so a reviewer can scrutinize it. Don't silently ship changes you can't vouch for.
+- **DB guard rails**: when a change touches the database layer (schema, migrations, `database.types.ts`, queries, RLS, or anything that could break the data model), the review must also consider possible breaking model impacts — e.g. column/type changes, dropped or renamed fields, RLS policy gaps, or queries that no longer match the schema. Call these out explicitly for review.
 
 ## Before every commit or push — checklist
 1. **Update `pr-context.md`** if any decision, file change, resolved question, or caveat happened since the last update. If nothing changed, confirm it's still current. Never commit with a stale `pr-context.md`.

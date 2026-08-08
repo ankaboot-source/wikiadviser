@@ -12,6 +12,28 @@
       class="borders"
     />
     <q-space />
+    <div
+      v-if="connectedUsers.length"
+      class="connected-users q-mr-sm"
+      aria-label="Connected users"
+    >
+      <q-avatar
+        v-for="user in connectedUsers"
+        :key="user.user_id"
+        size="28px"
+        class="connected-avatar borders"
+        color="grey-3"
+        text-color="grey-8"
+      >
+        <img
+          v-if="user.avatar_url"
+          :src="user.avatar_url"
+          referrerpolicy="no-referrer"
+        />
+        <span v-else>{{ initials(user.display_name) }}</span>
+        <q-tooltip>{{ user.display_name }}</q-tooltip>
+      </q-avatar>
+    </div>
     <q-btn
       v-if="$q.screen.gt.md"
       icon="open_in_new"
@@ -39,7 +61,12 @@
     >
       <div v-if="$q.screen.gt.sm" class="q-ml-xs">Share</div>
       <q-dialog v-model="shareDialog">
-        <share-card :article="article" :role :users />
+        <share-card
+          :article="article"
+          :role
+          :users
+          :connected-users="connectedUsers"
+        />
       </q-dialog>
     </q-btn>
   </q-toolbar>
@@ -66,9 +93,23 @@ const props = defineProps<{
   role: Enums<'role'>;
   editorPermission: boolean | null;
   users: User[];
+  connectedUsers: {
+    user_id: string;
+    display_name: string;
+    avatar_url?: string | null;
+  }[];
 }>();
 
 const shareDialog = ref(false);
+
+function initials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {
@@ -94,3 +135,14 @@ const toggleOptions = computed(() => {
     : [viewButton, editButton];
 });
 </script>
+
+<style scoped>
+.connected-users {
+  display: flex;
+  align-items: center;
+}
+
+.connected-avatar + .connected-avatar {
+  margin-left: -8px;
+}
+</style>

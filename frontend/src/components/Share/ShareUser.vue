@@ -9,6 +9,9 @@
       <q-item-label caption class="ellipsis">
         {{ props.user.name }}
       </q-item-label>
+      <q-item-label v-if="statusText" caption class="ellipsis text-grey-7">
+        {{ statusText }}
+      </q-item-label>
     </q-item-section>
     <q-select
       v-model="roleModel"
@@ -39,12 +42,38 @@
 
 <script setup lang="ts">
 import { Enums, User } from 'src/types';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
   user: User;
   role: Enums<'role'>;
+  connectedUsers?: {
+    user_id: string;
+    display_name: string;
+    avatar_url?: string | null;
+  }[];
 }>();
+
+const isOnline = computed(
+  () => props.connectedUsers?.some((u) => u.user_id === props.user.id) ?? false,
+);
+
+const statusText = computed(() => {
+  if (isOnline.value) return 'Online now';
+  if (props.user.last_seen) return `Last seen ${timeAgo(props.user.last_seen)}`;
+  return '';
+});
+
+function timeAgo(iso: string) {
+  const seconds = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hr ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? 's' : ''} ago`;
+}
 
 const roleModel = ref({
   label: props.user.role,
@@ -77,19 +106,19 @@ if (roleModel.value.value === 'owner') {
 const removed = ref(false);
 const ownerPermission = props.role === 'owner';
 
-const emit = defineEmits(['permissionEmit']);
+const emit = defineEmits(['permission-emit']);
 function emitPermission() {
   const permissionId = props.user.permissionId;
   const role = roleModel.value.value;
   if (role !== props.user.role) {
     // Different new role: Add it
-    emit('permissionEmit', {
+    emit('permission-emit', {
       permissionId,
       role,
     });
   } else {
     // Duplicate: Remove it
-    emit('permissionEmit', {
+    emit('permission-emit', {
       permissionId,
       role,
       duplicate: true,
@@ -100,7 +129,7 @@ function emitPermission() {
 function removePermission() {
   removed.value = true;
   const permissionId = props.user.permissionId;
-  emit('permissionEmit', {
+  emit('permission-emit', {
     permissionId,
     remove: true,
   });

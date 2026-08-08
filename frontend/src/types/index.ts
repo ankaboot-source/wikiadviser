@@ -22,6 +22,7 @@ export type User = {
   name: string;
   role: Enums<'role'>;
   permissionId: string;
+  last_seen?: string | null;
 };
 
 export type Article = {

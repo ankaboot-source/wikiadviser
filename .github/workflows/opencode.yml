@@ -40,7 +40,11 @@ jobs:
               console.log('ORG_MEMBERSHIP_TOKEN secret not set; treating as non-member');
               core.setOutput('is_member', 'false');
             } else {
-              const octokit = github.getOctokit(process.env.ORG_MEMBERSHIP_TOKEN);
+              // `github` in the script context is already an Octokit instance
+              // (no getOctokit method in github-script@v7), so build a second
+              // client for the PAT via the @actions/github factory.
+              const { getOctokit } = require('@actions/github');
+              const octokit = getOctokit(process.env.ORG_MEMBERSHIP_TOKEN);
               try {
                 await octokit.rest.orgs.checkMembershipForUser({
                   org: 'ankaboot-source',

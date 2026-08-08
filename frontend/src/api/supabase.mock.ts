@@ -170,7 +170,7 @@ export function createMockSupabaseClient() {
       }),
     },
     functions: {
-      invoke: async (name: string) => {
+      invoke: (name: string) => {
         switch (name) {
           case 'get/articles':
             return { data: dummyArticles, error: null };
@@ -216,7 +216,7 @@ export function createMockSupabaseClient() {
         }
       },
     },
-    rpc: async (name: string) => {
+    rpc: (name: string) => {
       if (name === 'is_article_exists') return { data: true, error: null };
       return { data: null, error: null };
     },
@@ -253,14 +253,18 @@ export function createMockSupabaseClient() {
           }
           return channel;
         },
-        track: async () => ({ status: 'ok' }),
-        untrack: async () => ({ status: 'ok' }),
+        track: () => Promise.resolve({ status: 'ok' }),
+        untrack: () => Promise.resolve({ status: 'ok' }),
         presenceState: () => presenceState,
         subscribe: (cb?: unknown) => {
           presenceCallbacks['sync']?.();
           if (typeof cb === 'function')
             (cb as (s: string) => void)('SUBSCRIBED');
-          return { unsubscribe: () => {} };
+          return {
+            unsubscribe: () => {
+              delete presenceCallbacks['sync'];
+            },
+          };
         },
       };
       return channel;

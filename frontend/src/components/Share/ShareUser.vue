@@ -106,19 +106,19 @@ if (roleModel.value.value === 'owner') {
 const removed = ref(false);
 const ownerPermission = props.role === 'owner';
 
-const emit = defineEmits(['permissionEmit']);
+const emit = defineEmits(['permission-emit']);
 function emitPermission() {
   const permissionId = props.user.permissionId;
   const role = roleModel.value.value;
   if (role !== props.user.role) {
     // Different new role: Add it
-    emit('permissionEmit', {
+    emit('permission-emit', {
       permissionId,
       role,
     });
   } else {
     // Duplicate: Remove it
-    emit('permissionEmit', {
+    emit('permission-emit', {
       permissionId,
       role,
       duplicate: true,
@@ -129,7 +129,7 @@ function emitPermission() {
 function removePermission() {
   removed.value = true;
   const permissionId = props.user.permissionId;
-  emit('permissionEmit', {
+  emit('permission-emit', {
     permissionId,
     remove: true,
   });

@@ -37,6 +37,7 @@
           :user="user"
           :role="role"
           :connected-users="connectedUsers"
+          :current-user-id="currentUserId"
           @permission-emit="onPermissionChange"
         />
       </q-list>
@@ -137,6 +138,7 @@ const props = defineProps<{
     display_name: string;
     avatar_url?: string | null;
   }[];
+  currentUserId?: string;
 }>();
 
 const users = ref<User[]>(props.users ?? []);

@@ -16,6 +16,7 @@
         :users="users"
         :changes-list="changesList"
         :connected-users="connectedUsers"
+        :current-user-id="userId"
         class="toolbar-area"
       />
 

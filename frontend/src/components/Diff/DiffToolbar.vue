@@ -66,6 +66,7 @@
           :role
           :users
           :connected-users="connectedUsers"
+          :current-user-id="currentUserId"
         />
       </q-dialog>
     </q-btn>
@@ -98,6 +99,7 @@ const props = defineProps<{
     display_name: string;
     avatar_url?: string | null;
   }[];
+  currentUserId?: string;
 }>();
 
 const shareDialog = ref(false);

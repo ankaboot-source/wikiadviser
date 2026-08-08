@@ -38,7 +38,8 @@ PR: https://github.com/ankaboot-source/wikiadviser/pull/1445 (branch `71-who-is-
 - `supabase/migrations/20260807120000_add_last_seen_to_profiles.sql` — NEW: adds `last_seen` column + recreates `profiles_view` to expose it.
 - `.opencode/skills/e2e-testing/SKILL.md` — NEW: project-level skill extracted from AGENTS.md covering e2e/UI verification.
 - `.github/workflows/cleanup-pr-context.yml` — NEW: auto-deletes `pr-context.md` from main after merge.
-- `AGENTS.md` — PR workflow + guard rails; "Testing UI features" points to the `e2e-testing` skill; pr-context lifecycle documented.
+- `AGENTS.md` — PR workflow + guard rails; "Testing UI features" points to the `e2e-testing` skill; pr-context lifecycle documented; **new "DB change safety (agentic AI)" section** (Steps 0–6: classify risk, human approval gate, write safely, validate, rollback, human review).
+- `docs/db-change-checklist.md` — NEW: reusable per-change checklist for any DB-impactful change.
 - `frontend/package.json` / `pnpm-lock.yaml` — pinned `typescript` back to `^5.9.2` (typescript 7.0.2 breaks lint; tracked in issue #1446).
 
 ## DB / data-model guard rail — FLAG FOR HUMAN REVIEW
@@ -47,13 +48,19 @@ This PR includes a **migration** (`20260807120000_add_last_seen_to_profiles.sql`
 - Adds `last_seen timestamptz` to `profiles`.
 - Drops and recreates `profiles_view` to include `last_seen` (view stays admin-only, REVOKE ALL from PUBLIC).
 
-**Do not run this migration unsupervised.** It touches the data model (new column + view recreation). A human should review it before applying. The migration is append-only and timestamp-prefixed per repo convention; it has NOT been applied to any environment.
+**Validated against the local Supabase DB** (see Verification) but **NOT applied to prod/staging**. A human must review and apply it to prod (or supervise) with backup + rollback ready. Rollback: `ALTER TABLE profiles DROP COLUMN IF EXISTS last_seen;` + restore `profiles_view` from git.
 
 ## Verification
 
 - `cd frontend && pnpm run prettier:fix` — clean.
 - `cd frontend && pnpm run lint` — 0 errors (4 pre-existing `v-html` warnings).
 - `deno test supabase/functions --allow-all --node-modules-dir=auto` — 107 passed, 0 failed.
+- **Real-DB validation (local Supabase, `supabase db reset` applied all 55 migrations incl. the new one):**
+  - `profiles.last_seen` exists (nullable `timestamptz`).
+  - `profiles_view` exposes `last_seen`; all existing columns intact; view queries work.
+  - `user/heartbeat` edge function updates `last_seen` in the real DB (verified via psql: null → timestamp).
+  - `get/users` returns `last_seen` in its response (verified via real API call).
+  - Browser end-to-end against the real backend: Share dialog shows "dbtest@wikiadviser.io — Last seen 6 min ago". Screenshot: `/tmp/opencode/db-share-lastseen.png`.
 - Browser check against `USE_MOCK_BACKEND=true` dev server:
   - Article toolbar stack shows the second user ("JD" / Jane Doe), NOT the current user.
   - Share dialog shows "Dummy User — Last seen just now" and "Jane Doe — Online now".
@@ -64,4 +71,5 @@ This PR includes a **migration** (`20260807120000_add_last_seen_to_profiles.sql`
 - **Subagent model config**: `~/.config/opencode/oh-my-opencode-slim.json` was edited so all subagents use `openrouter/~deepseek/deepseek-v4-flash-latest` instead of the nonexistent `openai/gpt-5.4-mini`. Local machine change, not part of this PR; only takes effect after a full opencode backend restart.
 - The current user shows "Last seen just now" (not "Online now") in Share because they're filtered out of `connectedUsers`. Acceptable — they know they're online.
 - Presence is inherently multi-user; the mock reports the dummy user + one second user. Real multi-user presence needs a live Supabase backend.
+- **`profiles_view` ACL note**: local dev shows `anon`/`authenticated` grants on `profiles_view` (Supabase local default grants). This matches the original `secure_profiles_view.sql` behavior (`REVOKE ALL FROM PUBLIC` only) — not a regression from this migration — but worth confirming the prod grants are locked down.
 - No frontend test suite exists — verification is lint/prettier/types + browser check.

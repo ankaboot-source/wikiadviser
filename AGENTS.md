@@ -59,6 +59,17 @@ Follow this end-to-end flow when resolving an issue, not just the code change:
 3. **Attach the UI screenshot directly to the PR** (description or a comment) — do **not** commit it to the repo. Use `gh pr comment <n> --body-file` with a markdown image reference, or attach via the PR body. If `gh` can't inline the image, fall back to the SHA-based raw-URL workflow documented under "Operational gotchas".
 4. **DB / data-model guard rails**: before shipping, check whether the change touches the data model (schema, migrations, `database.types.ts`, queries, RLS). If it does, **flag it explicitly for human review** — do not run risky migrations or data-model changes alone with no human supervision. Call out the possible breaking-model impact in the PR body. If the change needs **no** migration (e.g. ephemeral Realtime presence), say so explicitly so reviewers know it was considered.
 
+## DB change safety (agentic AI)
+
+Any change that touches the data model (schema, migrations, `database.types.ts`, queries, RLS, seed data) follows this process. Use `docs/db-change-checklist.md` as the per-change checklist.
+
+1. **Classify risk.** Additive (new nullable column/table/index/view) = **low**. Breaking (drop/rename column, type change, `NOT NULL`, RLS change, data backfill, dropping/recreating objects existing code depends on) = **high**.
+2. **Human approval gate.** Get explicit human approval before writing the migration (mandatory for high-risk). The agent **never** applies migrations to prod/staging unsupervised.
+3. **Write safely.** Append-only timestamp-prefixed migration; idempotent where possible (`IF NOT EXISTS`); prefer additive over destructive; explicit RLS for new browser-reachable objects; regenerate `database.types.ts` (don't hand-edit).
+4. **Validate (evidence).** Apply to a local/staging DB and verify schema + queries; run the edge-function tests; end-to-end against a real DB (not just mock); post-apply verification queries.
+5. **Rollback plan.** Document reverse SQL for every migration; take a pre-change backup/PITR before applying to prod.
+6. **Human review + supervised apply.** Flag the migration in the PR body (what it does, risk, rollback). A human applies to prod (or supervises) with backup + rollback ready.
+
 ## Operational gotchas
 
 - **Env**: `generate-env.sh` parses the Supabase startup log for keys and reads `docker/MW_CREDENTIALS.txt` for bot creds. Never commit `.env` (gitignored). CORS validates `Origin` by suffix against `ROOT_DOMAIN` — update it if the domain changes.

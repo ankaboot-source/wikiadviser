@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# pr-watch.sh — watch a GitHub PR for comments mentioning "/oc" and dispatch
+# pr-watch.sh — watch a GitHub PR for comments mentioning "/oc-local" and dispatch
 # them to opencode (running locally) so the agent can respond automatically.
 #
 # Usage:
@@ -14,7 +14,7 @@
 #   2. Polls the GitHub API for new comments on the PR every INTERVAL seconds.
 #      Watches BOTH issue comments (/issues/{pr}/comments) and inline review
 #      comments (/pulls/{pr}/comments).
-#   3. When a comment contains "/oc", it launches `opencode run` with the
+#   3. When a comment contains "/oc-local", it launches `opencode run` with the
 #      comment as context.
 #   4. opencode processes the comment (with full repo access) and posts a
 #      reply back to GitHub via the API.
@@ -44,7 +44,7 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 INTERVAL="${2:-60}"
 OPENCODE_BIN="${OPENCODE_BIN:-$HOME/.opencode/bin/opencode}"
 OPENCODE_MODEL="${OPENCODE_MODEL:-openrouter/deepseek/deepseek-v4-flash}"
-TRIGGER="/oc"
+TRIGGER="/oc-local"
 AGENT_SIGNATURE="🤖"
 
 # --- helpers ---
@@ -93,7 +93,7 @@ fetch_comments() {
   fi
 }
 
-# Build the prompt sent to opencode for a given /oc comment.
+# Build the prompt sent to opencode for a given /oc-local comment.
 # Uses global: PR_NUMBER, REPO, REPO_DIR, AGENT_SIGNATURE, OPENCODE_MODEL
 build_prompt() {
   local type="$1" comment_id="$2" author="$3" body="$4" comment_url="$5" context="${6:-}"
@@ -178,7 +178,7 @@ AFTER answering, ALWAYS update pr-context.md:
 
 === Merge handling — if the comment asks to merge ===
 
-If the comment says "/oc merge" or similar (approval to merge), do this BEFORE merging:
+If the comment says "/oc-local merge" or similar (approval to merge), do this BEFORE merging:
 
 1. Run: git rm pr-context.md
 2. Commit: git commit -m "chore: remove pr-context.md before merge"
@@ -228,7 +228,7 @@ run_opencode() {
   fi
 }
 
-# Process a batch of new /oc comments of a given type.
+# Process a batch of new /oc-local comments of a given type.
 process_comments() {
   local type="$1" token="$2" comments_json="$3"
   local count
@@ -236,7 +236,7 @@ process_comments() {
   if [[ "$count" -eq 0 ]]; then
     return 0
   fi
-  echo "[pr-watch] $count new /oc $type comment(s) on PR #$PR_NUMBER"
+  echo "[pr-watch] $count new /oc-local $type comment(s) on PR #$PR_NUMBER"
 
   while IFS= read -r comment; do
     [[ -z "$comment" ]] && continue
@@ -262,9 +262,9 @@ process_comments() {
     echo "[pr-watch] URL: $COMMENT_URL"
     echo "[pr-watch] Body: ${BODY:0:120}..."
 
-    # Desktop notification that a new /oc comment was detected
+    # Desktop notification that a new /oc-local comment was detected
     notify-send -u normal -t 10000 \
-      "🤖 /oc comment on PR #$PR_NUMBER" \
+      "🤖 /oc-local comment on PR #$PR_NUMBER" \
       "@$AUTHOR: ${BODY:0:100}...\n\n$COMMENT_URL" 2>/dev/null || true
 
     # Build the prompt via the shared function
@@ -281,7 +281,7 @@ process_comments() {
   done < <(echo "$comments_json" | jq -c '.[]')
 }
 
-# On startup: check for unanswered /oc comments (comments with /oc that have
+# On startup: check for unanswered /oc-local comments (comments with /oc-local that have
 # no subsequent 🤖 reply). Process them immediately, then set state.
 startup_backlog() {
   local type="$1" token="$2" state_file="$3"
@@ -296,7 +296,7 @@ startup_backlog() {
   last_bot_reply=$(echo "$comments" | jq -r --arg sig "$AGENT_SIGNATURE" \
     'map(select(.body | startswith($sig))) | .[-1].id // 0')
 
-  # Find /oc comments after the last bot reply
+  # Find /oc-local comments after the last bot reply
   local unanswered
   unanswered=$(echo "$comments" | jq -c --arg last_bot "$last_bot_reply" --arg trig "$TRIGGER" --arg sig "$AGENT_SIGNATURE" \
     'map(select(
@@ -310,7 +310,7 @@ startup_backlog() {
   count=$(echo "$unanswered" | jq 'length')
 
   if [[ "$count" -gt 0 ]]; then
-    echo "[pr-watch] Found $count unanswered /oc $type comment(s) from before startup"
+    echo "[pr-watch] Found $count unanswered /oc-local $type comment(s) from before startup"
     process_comments "$type" "$token" "$unanswered"
   fi
 
@@ -321,7 +321,7 @@ startup_backlog() {
   echo "[pr-watch] Initialized $type state. Last comment ID: $latest"
 }
 
-# Poll one comment type for new /oc comments and process them.
+# Poll one comment type for new /oc-local comments and process them.
 check_type() {
   local type="$1" token="$2" state_file="$3"
   local last_seen
@@ -331,7 +331,7 @@ check_type() {
   comments=$(fetch_comments "$type" "$token")
 
   # Get new comments (ID > LAST_SEEN) that:
-  #  - contain the "/oc" trigger
+  #  - contain the "/oc-local" trigger
   #  - are NOT the agent's own responses (prefixed with 🤖)
   local new_comments
   new_comments=$(echo "$comments" | jq -c --arg last "$last_seen" --arg trig "$TRIGGER" --arg sig "$AGENT_SIGNATURE" \
@@ -384,7 +384,7 @@ echo "[pr-watch] State files: $STATE_FILE_ISSUE, $STATE_FILE_REVIEW"
 
 TOKEN="$(get_token)"
 
-# On startup: process any unanswered /oc comments from before startup
+# On startup: process any unanswered /oc-local comments from before startup
 startup_backlog "issue" "$TOKEN" "$STATE_FILE_ISSUE"
 startup_backlog "review" "$TOKEN" "$STATE_FILE_REVIEW"
 

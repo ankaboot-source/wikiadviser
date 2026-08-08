@@ -32,7 +32,8 @@ PR: https://github.com/ankaboot-source/wikiadviser/pull/1445 (branch `71-who-is-
 - `supabase/functions/user/index.ts` — registers `POST /heartbeat`.
 - `supabase/functions/get/handlers/getUsers.ts` — selects `last_seen` from `profiles_view`.
 - `supabase/migrations/20260807120000_add_last_seen_to_profiles.sql` — NEW: adds `last_seen` column + recreates `profiles_view` to expose it.
-- `AGENTS.md` — added PR workflow + general/db guard rails.
+- `.opencode/skills/e2e-testing/SKILL.md` — NEW: project-level skill extracted from AGENTS.md covering e2e/UI verification (mock-backend dev server, agent-browser workflow, PR screenshot attachment).
+- `AGENTS.md` — added PR workflow + general/db guard rails; "Testing UI features" now points to the `e2e-testing` skill.
 
 ## DB / data-model guard rail — FLAG FOR HUMAN REVIEW
 

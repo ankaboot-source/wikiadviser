@@ -48,19 +48,13 @@ The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions
 
 ## Testing UI features
 
-There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI changes, verify with the **agent-browser** skill:
-
-1. Ensure the dev stack is running (`npm run dev:all` or `./start.sh` for full bootstrap).
-2. Use `agent-browser` to navigate, interact, and assert: `agent-browser open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`.
-3. For PRs with UI changes, attach screenshots directly to the PR description/comments — do **not** commit them to the repo.
-
-See `~/.config/opencode/skills/agent-browser/SKILL.md` for the full command reference.
+There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI/e2e verification, use the **`e2e-testing`** skill (project-level, `.opencode/skills/e2e-testing/`): it covers booting the `USE_MOCK_BACKEND=true` dev server, driving pages with **agent-browser** (`open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`), asserting, and attaching screenshots to a PR via SHA-based raw URLs.
 
 ## PR workflow (when resolving an issue)
 
 Follow this end-to-end flow when resolving an issue, not just the code change:
 
-1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with **agent-browser** against a `USE_MOCK_BACKEND=true` dev server (see "Testing UI features") and capture a screenshot.
+1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with the **`e2e-testing`** skill (against a `USE_MOCK_BACKEND=true` dev server) and capture a screenshot.
 2. **Open a PR** for the change (never push to `main` directly — PR-only). Use `gh pr create` with a Conventional Commit message and a body that references the issue (`Resolves #NN`).
 3. **Attach the UI screenshot directly to the PR** (description or a comment) — do **not** commit it to the repo. Use `gh pr comment <n> --body-file` with a markdown image reference, or attach via the PR body. If `gh` can't inline the image, fall back to the SHA-based raw-URL workflow documented under "Operational gotchas".
 4. **DB / data-model guard rails**: before shipping, check whether the change touches the data model (schema, migrations, `database.types.ts`, queries, RLS). If it does, **flag it explicitly for human review** — do not run risky migrations or data-model changes alone with no human supervision. Call out the possible breaking-model impact in the PR body. If the change needs **no** migration (e.g. ephemeral Realtime presence), say so explicitly so reviewers know it was considered.

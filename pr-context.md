@@ -34,7 +34,7 @@ PR: https://github.com/ankaboot-source/wikiadviser/pull/1445 (branch `71-who-is-
 - `frontend/src/api/supabase.mock.ts` — presence reports a second dummy user (so the stack shows someone other than self); `get/users` returns users with `last_seen`.
 - `supabase/functions/user/lastSeenHelper.ts` — NEW: `setLastSeen` heartbeat handler (admin client).
 - `supabase/functions/user/index.ts` — registers `POST /heartbeat`.
-- `supabase/functions/get/handlers/getUsers.ts` — selects `last_seen` from `profiles_view`.
+- `supabase/functions/get/handlers/getUsers.ts` — selects `last_seen` from `profiles_view`; **security fix (H2)**: authenticates the caller (401) and verifies the caller holds a permission on the article (403) before returning the collaborator list — previously callable unauthenticated with the anon key.
 - `supabase/migrations/20260807120000_add_last_seen_to_profiles.sql` — NEW: adds `last_seen` column + recreates `profiles_view` to expose it.
 - `.opencode/skills/e2e-testing/SKILL.md` — NEW: project-level skill extracted from AGENTS.md covering e2e/UI verification.
 - `.github/workflows/cleanup-pr-context.yml` — NEW: auto-deletes `pr-context.md` from main after merge.
@@ -61,6 +61,7 @@ This PR includes a **migration** (`20260807120000_add_last_seen_to_profiles.sql`
   - `user/heartbeat` edge function updates `last_seen` in the real DB (verified via psql: null → timestamp).
   - `get/users` returns `last_seen` in its response (verified via real API call).
   - Browser end-to-end against the real backend: Share dialog shows "dbtest@wikiadviser.io — Last seen 6 min ago". Screenshot: `/tmp/opencode/db-share-lastseen.png`.
+  - `get/users` security fix (H2): no auth → 401, authed + has permission → 200, authed + no permission → 403 (verified against live local backend).
 - Browser check against `USE_MOCK_BACKEND=true` dev server:
   - Article toolbar stack shows the second user ("JD" / Jane Doe), NOT the current user.
   - Share dialog shows "Dummy User — Last seen just now" and "Jane Doe — Online now".

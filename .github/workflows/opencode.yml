@@ -46,6 +46,14 @@ jobs:
               core.setOutput('can_trigger', 'false');
             }
 
+      - name: Configure git identity
+        if: steps.check.outputs.can_trigger == 'true'
+        run: |
+          # The runner has no git identity; without this the agent cannot commit/
+          # push its changes on the PR branch ("Please tell me who you are").
+          git config user.name "opencode[bot]"
+          git config user.email "opencode[bot]@users.noreply.github.com"
+
       - name: Run opencode
         if: steps.check.outputs.can_trigger == 'true'
         uses: anomalyco/opencode/github@77fc88c8ade8e5a620ebbe1197f3a572d29ae91a

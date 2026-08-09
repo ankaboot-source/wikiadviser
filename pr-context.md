@@ -42,3 +42,11 @@ This branch contains the index migration (a real DB change). The guard should **
 ## Other notes
 - The earlier `last_seen` migration from #1445 is on `main` but NOT applied to prod; still needs human review before any prod apply.
 - Typescript pin (`^5.9.2`) from #1445 is on main (workaround for #1446).
+## F. Real-replica e2e verification (isolated, dev data untouched)
+
+Ran a browser e2e on the last_seen feature against an **isolated Supabase replica** (separate local instance, ports 54331+; never touches the dev 54321/54322).
+
+- **Replica**: fresh schema from all migrations (incl. last_seen column + index) + seed; verified dev instance data intact afterward.
+- **Backend**: `user/heartbeat` wrote `last_seen` (null → timestamp) on the replica; `get/users` → 401/200/403 (auth + permission check).
+- **Browser (agent-browser, real login)**: Share dialog shows full range on the replica — e2e user "Online now", Jane "Last seen 5 min ago", Bob "Last seen 2 hr ago", Charlie date "6/10/2026" (≥30-day fallback). Screenshot `/tmp/opencode/e2e-share-multiuser.png`.
+- **Reusable tooling (this PR)**: `scripts/e2e-env.sh` (start/stop/drop/env for the isolated replica + e2e frontend) and `docs/e2e-workflow.md` — so any feature can be browser-tested the same way without risking dev data.

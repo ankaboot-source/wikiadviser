@@ -1,0 +1,26 @@
+name: code-review-graph
+
+# Automated impact-aware PR reviews via code-review-graph
+# (https://github.com/tirth8205/code-review-graph): builds a Tree-sitter
+# structural graph of the repo on the runner and posts a review with the
+# minimal context needed (callers/dependents/tests affected by the change).
+# Local-first: the graph is built/queried entirely on the CI runner.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Comment-only review (no fail-on-risk merge gate — merges are human-only
+      # in this repo). Pin to a semantic version tag; consider SHA-pinning if
+      # supply-chain policy requires it.
+      - uses: tirth8205/code-review-graph@v2.3.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}

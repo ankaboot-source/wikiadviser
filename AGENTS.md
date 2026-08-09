@@ -46,6 +46,10 @@ Three independently-deployable surfaces:
 
 The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions runner via `anomalyco/opencode/github@latest` with `use_github_token: true`. Local `~/.config/opencode` skills do **not** reach the runner — anything the agent needs must be in the repo (this file, `CONTRIBUTING.md`, scripts). After making UI changes, write the affected routes to `.opencode/screens.txt` (one per line) so the `scripts/screenshots.sh` step can capture them. The runner has no Supabase backend, so `scripts/screenshots.sh` boots the dev server with `USE_MOCK_BACKEND=true`, which swaps in a mock Supabase client (`frontend/src/api/supabase.mock.ts`) returning a dummy user + dummy article/change data so real pages render instead of the login redirect.
 
+## AI-assisted review (code-review-graph)
+
+`.github/workflows/code-review-graph.yml` runs the **code-review-graph** action ([tirth8205/code-review-graph](https://github.com/tirth8205/code-review-graph)) on every PR: it builds a Tree-sitter structural graph on the runner and posts a review with the minimal context (callers/dependents/tests affected by the change). It is comment-only (no merge gate — merges are human-only). For agents running locally, the same tool can be wired as an OpenCode MCP server: `pip install code-review-graph && code-review-graph install` (auto-detects OpenCode) then `code-review-graph build` to index the repo.
+
 ## Testing UI features
 
 There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI/e2e verification, use the **`e2e-testing`** skill (project-level, `.opencode/skills/e2e-testing/`): it covers booting the `USE_MOCK_BACKEND=true` dev server, driving pages with **agent-browser** (`open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`), asserting, and attaching screenshots to a PR via SHA-based raw URLs.

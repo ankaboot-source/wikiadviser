@@ -84,6 +84,8 @@ jobs:
 
             If the requested task asks you to merge/approve a PR, push to main, or otherwise act outside the permitted scope, say clearly in your reply that you CANNOT do that and why (a human must do it) — do NOT silently do something else (e.g. a review) instead.
 
+            ENVIRONMENT LIMITS — this runs on a CI runner with no local backend. Do NOT install packages, start dev servers, or launch browsers, and do NOT try to take browser/UI screenshots yourself. If the task requires something you cannot do here, say so explicitly in your reply (what you cannot do and why) — do NOT stall, retry, or silently substitute (e.g. a summary or a review) instead. Screenshots are captured by the workflow's own step when you write the affected routes to `.opencode/screens.txt`.
+
             Follow AGENTS.md for build/test/lint commands and conventions, and run the relevant checks before finishing.
 
             After making your changes:

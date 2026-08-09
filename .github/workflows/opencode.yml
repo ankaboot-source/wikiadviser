@@ -60,7 +60,7 @@ jobs:
           # actions/checkout uses persist-credentials: false, so no push auth is
           # left behind; without this the agent's 'git push' fails
           # ("could not read Username for 'https://github.com'").
-          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64)"
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
 
       - name: Run opencode
         if: steps.check.outputs.can_trigger == 'true'

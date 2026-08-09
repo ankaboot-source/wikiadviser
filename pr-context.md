@@ -1,25 +1,21 @@
-# PR Context — Give /oc agent git push auth (GITHUB_TOKEN)
+# PR Context — Fix /oc git push auth header (strip base64 newline)
 
 ## Problem
 
-On PR #1449, `/oc add screenshots...` → the agent made the changes but `git push` failed:
+#1455 configured the GITHUB_TOKEN as git HTTP auth, but `base64` emits a trailing newline, producing a malformed `AUTHORIZATION: basic …\n` header. The opencode action's branch fetch then failed:
 
-> fatal: could not read Username for 'https://github.com': No such device or address
+> Command failed with code 128: git fetch origin --depth=20 guard/db-change-approval
+> fatal: unable to access 'https://github.com/…': Failed sending HTTP request
 
-Root cause: the workflow's `actions/checkout` uses **`persist-credentials: false`**, so checkout removes the git credentials after checkout ("Removing includeIf entries pointing to credentials config files"). The git-identity fix (#1454) covered `user.name`/`user.email` but not **push auth** — the agent has the GITHUB_TOKEN in env but git has no credentials configured.
+The "Configure git identity" step passed, but the fetch with the bad header failed.
 
 ## Fix
 
-In the existing "Configure git identity" step, add the GITHUB_TOKEN as git HTTP auth for the workdir (same `x-access-token` basic scheme actions/checkout uses):
+Strip the newline from the base64 value:
+`base64 | tr -d '\n'`
 
-```bash
-git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64)"
-```
-
-## Note
-
-The first `/oc` in that exchange (12:38) replied with a PR summary instead of executing the screenshot task — a separate model-execution flub, not covered by this fix.
+Verified: header value is 28 bytes (no trailing NL) vs 29 (with NL).
 
 ## Verify after merge
 
-Post `/oc <task that changes files>` on a PR → the agent should commit and push successfully (previously failed with "could not read Username").
+Post `/oc <task>` on the PR — the agent should now fetch the branch, run, commit, and push successfully.

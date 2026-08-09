@@ -50,11 +50,17 @@ jobs:
 
       - name: Configure git identity
         if: steps.check.outputs.can_trigger == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
-          # The runner has no git identity; without this the agent cannot commit/
-          # push its changes on the PR branch ("Please tell me who you are").
+          # The runner has no git identity; without this the agent cannot commit
+          # ("Please tell me who you are").
           git config user.name "opencode[bot]"
           git config user.email "opencode[bot]@users.noreply.github.com"
+          # actions/checkout uses persist-credentials: false, so no push auth is
+          # left behind; without this the agent's 'git push' fails
+          # ("could not read Username for 'https://github.com'").
+          git config --local http.https://github.com/.extraheader "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64)"
 
       - name: Run opencode
         if: steps.check.outputs.can_trigger == 'true'

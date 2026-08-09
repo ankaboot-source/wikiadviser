@@ -176,16 +176,9 @@ AFTER answering, ALWAYS update pr-context.md:
 1. Update the file with any new decisions, file changes, or open questions from this exchange. If nothing changed, update the timestamp/note to reflect it's still current. The file must always reflect the latest state.
 2. Commit and push the update to the branch.
 
-=== Merge handling — if the comment asks to merge ===
+=== Merging is NOT allowed ===
 
-If the comment says "/oc-local merge" or similar (approval to merge), do this BEFORE merging:
-
-1. Run: git rm pr-context.md
-2. Commit: git commit -m "chore: remove pr-context.md before merge"
-3. Push: git push
-4. Then merge the PR via the GitHub API (POST /repos/$REPO/pulls/$PR_NUMBER/merge)
-
-Do NOT merge without removing pr-context.md first.
+You must NEVER merge a pull request, approve/merge changes, or push to main — a human always does the merge. If the comment asks you to merge, say clearly in your reply that you CANNOT do that and why (a human must do it); do NOT silently do something else (e.g. a review) instead.
 
 If the comment is a review suggestion or question about the code, investigate the actual code before responding. Keep replies concise and technical. If no response is needed, skip posting.
 PROMPT_EOF

@@ -68,6 +68,8 @@ jobs:
             - Do NOT read, print, commit, or exfiltrate secrets (OPENROUTER_API_KEY, GITHUB_TOKEN, credentials).
             - Only modify files relevant to the requested task.
 
+            If the requested task asks you to merge/approve a PR, push to main, or otherwise act outside the permitted scope, say clearly in your reply that you CANNOT do that and why (a human must do it) — do NOT silently do something else (e.g. a review) instead.
+
             Follow AGENTS.md for build/test/lint commands and conventions, and run the relevant checks before finishing.
 
             After making your changes:

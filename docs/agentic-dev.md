@@ -15,7 +15,7 @@ This project has an agentic coding setup (opencode) integrated with GitHub. This
 ## Security model (read this)
 
 - **Who can trigger:** `/oc` requires GitHub **write access** to the repo. `/oc-local` additionally enforces org membership locally. Both fail closed.
-- **Prompt-injection boundary:** the comment is untrusted input. The agent is instructed to treat it as data and never follow instructions that conflict with its security boundary: no pushing to `main`, no merging PRs, no exfiltrating secrets. **Humans are still responsible for reviewing what the agent produces** — the agent is an accelerator, not a release trampoline.
+- **Prompt-injection boundary:** the comment is untrusted input. The agent is instructed to treat it as data and never follow instructions that conflict with its security boundary: no pushing to `main`, no merging PRs, no exfiltrating secrets. **Neither `/oc` nor `/oc-local` ever merges a PR — a human always does the merge.** If asked to merge, the agent must reply clearly that it cannot (not silently do something else). **Humans are still responsible for reviewing what the agent produces** — the agent is an accelerator, not a release trampoline.
 - **Secrets:** the cloud `/oc` sees `OPENROUTER_API_KEY` and the workflow `GITHUB_TOKEN` only. Do **not** expect personal tokens to reach the runner; if a task needs your local credentials, use `/oc-local`.
 
 ## Human-in-the-loop: mandatory for high-risk actions
@@ -24,7 +24,7 @@ The agent **must not** perform high-risk actions without explicit human approval
 
 - Destructive/irreversible commands — e.g. `supabase db reset`/`drop`, deleting data, force-push, dropping/recreating DB objects. (Use `scripts/supabase-db.sh`, which refuses `reset`/`drop` without `--confirm-destructive`; apply migrations non-destructively with `supabase migration up`.)
 - Applying migrations/schema changes to prod/staging.
-- Merging a **DB-impactful** PR — the **`DB change guard`** workflow (`.github/workflows/db-change-guard.yml`) blocks such PRs until a human adds the **`db-approved`** label after reviewing the migration.
+- Merging a **DB-impactful** PR — the **`DB change guard`** workflow (`.github/workflows/db-change-guard.yml`, being merged via PR #1449) blocks such PRs until a human adds the **`db-approved`** label after reviewing the migration.
 - Pushing to `main` directly.
 
 If you're unsure whether an action is high-risk, treat it as high-risk and ask a human first.

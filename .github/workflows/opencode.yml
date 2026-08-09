@@ -9,10 +9,12 @@ on:
 jobs:
   opencode:
     if: |
-      contains(github.event.comment.body, ' /oc') ||
-      startsWith(github.event.comment.body, '/oc') ||
-      contains(github.event.comment.body, ' /opencode') ||
-      startsWith(github.event.comment.body, '/opencode')
+      !contains(github.event.comment.body, '/oc-local') && (
+        contains(github.event.comment.body, ' /oc') ||
+        startsWith(github.event.comment.body, '/oc') ||
+        contains(github.event.comment.body, ' /opencode') ||
+        startsWith(github.event.comment.body, '/opencode')
+      )
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -46,6 +48,14 @@ jobs:
               core.setOutput('can_trigger', 'false');
             }
 
+      - name: Configure git identity
+        if: steps.check.outputs.can_trigger == 'true'
+        run: |
+          # The runner has no git identity; without this the agent cannot commit/
+          # push its changes on the PR branch ("Please tell me who you are").
+          git config user.name "opencode[bot]"
+          git config user.email "opencode[bot]@users.noreply.github.com"
+
       - name: Run opencode
         if: steps.check.outputs.can_trigger == 'true'
         uses: anomalyco/opencode/github@77fc88c8ade8e5a620ebbe1197f3a572d29ae91a
@@ -65,6 +75,8 @@ jobs:
             - Do NOT merge pull requests, approve/merge changes, or change branch protection.
             - Do NOT read, print, commit, or exfiltrate secrets (OPENROUTER_API_KEY, GITHUB_TOKEN, credentials).
             - Only modify files relevant to the requested task.
+
+            If the requested task asks you to merge/approve a PR, push to main, or otherwise act outside the permitted scope, say clearly in your reply that you CANNOT do that and why (a human must do it) — do NOT silently do something else (e.g. a review) instead.
 
             Follow AGENTS.md for build/test/lint commands and conventions, and run the relevant checks before finishing.
 

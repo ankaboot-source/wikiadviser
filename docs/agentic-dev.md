@@ -51,7 +51,7 @@ Mandatory coverage: **multiple users, varied states** (e.g. online / minutes / h
 ## `pr-context.md` lifecycle (per-PR working state)
 
 - While a PR is open, `pr-context.md` on the PR branch records key decisions, file changes, open questions, and caveats — so other agents (via `/oc`) act from current context.
-- On PR **merge**, `.github/workflows/cleanup-pr-context.yml` **auto-deletes it from `main`**. Do not delete it manually before merging.
+- When the PR is **approved** (`/approve` or an Approved review), `.github/workflows/cleanup-pr-context.yml` **deletes it from the PR branch** (pre-merge), so it **never reaches `main`**. A post-merge cleanup isn't possible — `main` is branch-protected (direct pushes rejected), so the removal must happen on the branch before merging. Do not delete it manually.
 
 ## Practical workflow
 
@@ -59,6 +59,7 @@ Mandatory coverage: **multiple users, varied states** (e.g. online / minutes / h
 2. Want a quick review/explainer/fix without local setup? Post **`/oc`** on the PR.
 3. Need the agent to use your local env, run the dev stack, or handle something long? Post **`/oc-local`** and keep `pr-watch.sh` running (`./pr-watch.sh`).
 4. If the PR touches the DB, a human reviews the migration and submits an **Approved** review before merging.
+5. **AI-created PRs are labeled `agent-generated`** and gated by `human-approval-gate` — approve one of two ways: submit an **Approved review** (org member with repo write+), or comment exactly **`/approve`** (an `approve-handler` adds `human-approved`, which passes the gate). The AI cannot approve or merge its own PRs; a human always does.
 5. Review the agent's changes and merge — you own the final call.
 
 ## Troubleshooting / gotchas

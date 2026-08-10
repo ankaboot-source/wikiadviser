@@ -35,8 +35,7 @@ approval_footer='
 ---
 <!-- agent-generated-pr -->
 
-> 🤖 This PR was created by the AI agent (labeled `agent-generated`; the `human-approval-gate` applies).
-> **To approve & merge:** review the changes, then comment exactly **`/approve`** (must be an org member, this adds `human-approved` and the gate passes).
+> 🤖 This PR was created by the AI agent (labeled `agent-generated`; the `human-approval-gate` applies). To merge: review & approve the changes (submit an Approved review), or comment exactly **`/approve`** (must be an org member — this adds `human-approved` and the gate passes).
 
 '
 

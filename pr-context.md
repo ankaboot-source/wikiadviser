@@ -1,15 +1,17 @@
-# PR Context — approve-handler refinements (exact /approve + footer)
+# PR Context — hybrid pr-context cleanup (pre-merge on approval + [skip ci] net)
 
 ## What
 
-- **`.github/workflows/approve-handler.yml`**: require the comment to be **EXACTLY `/approve`** (trimmed), and the commenter to be a **repo admin/maintain/write** (deterministic org-member bar via GITHUB_TOKEN; strict org-membership tracked in issue #1460).
-- **`scripts/open-pr.sh`**: appends an **approval-reminder footer** to every AI-opened PR (how to `/approve` + merge), so devs can see it without digging.
+Rework `.github/workflows/cleanup-pr-context.yml` so pr-context.md never causes unnecessary post-merge workflow runs:
 
-## Purpose
+- **pre-merge job**: when a PR is approved (`human-approved` label OR an Approved review from a repo admin), delete `pr-context.md` from the **PR branch** → the merge carries no pr-context.md to main (no post-merge push in the normal flow).
+- **post-merge-net job**: if pr-context.md still lands on main (PR merged without an approval signal), delete it with a **`[skip ci]`** commit so the 6 push-based workflows (ci.yml, QA functions/MediaWiki/demo deploys, supabase-migrations-qa) do NOT re-run.
+- Both commits use the `github-actions[bot]` identity; pre-merge job skips fork PRs.
 
-This PR doubles as the **end-to-end test** of the approval flow on `main`:
-1. It is AI-created → `scripts/open-pr.sh` labels it `agent-generated` (+ footer).
-2. `human-approval-gate` should **fail** it until someone comments `/approve`.
-3. A human org member commenting `/approve` → `approve-handler` adds `human-approved` → the gate passes → merge.
+## Why
 
-Workflow + docs only (no DB paths).
+Before: the closed-merge cleanup pushed a plain commit to main, re-triggering ci + all QA deploys + QA DB migrations on every merge for a one-line doc deletion. Now the deletion happens pre-merge (normal flow does zero post-merge work) and, if it ever slips through, `[skip ci]` makes the fallback free.
+
+## Verify after merge
+
+Open a PR via `scripts/open-pr.sh`, have a human `/approve` it → the pre-merge job should delete pr-context.md from the branch; the merge then carries no pr-context.md and no extra main-push workflows run.

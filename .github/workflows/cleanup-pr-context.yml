@@ -1,38 +1,99 @@
 name: Cleanup pr-context
 
 # pr-context.md is ephemeral per-PR working state (read by agents while a PR is
-# open). It must never accumulate on main. This workflow removes it from main
-# after a PR is merged. It self-heals: if the file is already gone it no-ops.
+# open). Hybrid cleanup so it never accumulates on main AND never causes
+# unnecessary post-merge workflow runs:
+#
+#   - pre-merge: as soon as a PR is approved (the `human-approved` label OR an
+#     Approved review from a repo admin), remove pr-context.md from the PR
+#     branch, so the merge carries no pr-context.md to main.
+#   - post-merge-net: if pr-context.md still lands on main (a PR merged without
+#     an approval signal), delete it from main with a `[skip ci]` commit so no
+#     push-triggered workflows (ci, QA deploys, supabase-migrations-qa, ...)
+#     re-run on the cleanup.
 on:
   pull_request:
-    types: [closed]
+    types: [closed, labeled, ready_for_review]
+  pull_request_review:
+    types: [submitted]
+
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
-  remove-pr-context:
-    if: github.event.pull_request.merged == true
+  pre-merge:
+    # Skip forks (we can't push to their branch) and only act on same-repo PRs.
+    if: >
+      github.event.pull_request.merged != true &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !(github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name != 'human-approved')
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout base branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Check pr-context.md
+      - name: Check approved
         id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            let approved = (pr.labels || []).some((l) => l.name === 'human-approved');
+            if (!approved) {
+              const { data: reviews } = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+              for (const r of reviews.filter((x) => x.state === 'APPROVED')) {
+                try {
+                  const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    username: r.user.login,
+                  });
+                  if (['admin', 'maintain', 'write'].includes(perm.permission)) {
+                    approved = true;
+                    break;
+                  }
+                } catch (e) {
+                  // Not a repo collaborator; ignore this reviewer.
+                }
+              }
+            }
+            core.setOutput('approved', String(approved));
+
+      - name: Delete pr-context.md from PR branch (approved)
+        if: steps.check.outputs.approved == 'true'
         run: |
           if [ -f pr-context.md ]; then
-            echo "needs_cleanup=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "needs_cleanup=false" >> "$GITHUB_OUTPUT"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git rm pr-context.md
+            git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
+            git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
           fi
 
-      - name: Delete pr-context.md
-        if: steps.check.outputs.needs_cleanup == 'true'
+  post-merge-net:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - name: Delete pr-context.md from base ([skip ci])
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm pr-context.md
-          git commit -m "ci: remove pr-context.md (ephemeral per-PR working state)"
-          git push origin "${{ github.event.pull_request.base.ref }}"
+          if [ -f pr-context.md ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git rm pr-context.md
+            git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
+            git push origin "${{ github.event.pull_request.base.ref }}"
+          fi

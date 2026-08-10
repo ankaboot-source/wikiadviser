@@ -1,19 +1,14 @@
 name: Cleanup pr-context
 
 # pr-context.md is ephemeral per-PR working state (read by agents while a PR is
-# open). Hybrid cleanup so it never accumulates on main AND never causes
-# unnecessary post-merge workflow runs:
-#
-#   - pre-merge: as soon as a PR is approved — the `human-approved` label, an
-#     Approved review from a repo admin, or an EXACT `/approve` comment from a
-#     repo admin — remove pr-context.md from the PR branch so the merge carries
-#     nothing to main.
-#   - post-merge-net: if pr-context.md still lands on main (a PR merged without
-#     an approval signal), delete it with a `[skip ci]` commit so no push-
-#     triggered workflows (ci, QA deploys, supabase-migrations-qa, ...) re-run.
+# open). It must never reach main. Because `main` is branch-protected (direct
+# pushes rejected), deletion happens PRE-MERGE ONLY: as soon as a PR is approved
+# — the `human-approved` label, an Approved review from a repo admin, or an
+# EXACT `/approve` comment from a repo admin — remove pr-context.md from the PR
+# branch (contents API), so the merge carries nothing to main.
 on:
   pull_request:
-    types: [closed, labeled, ready_for_review]
+    types: [labeled, ready_for_review]
   pull_request_review:
     types: [submitted]
   issue_comment:
@@ -149,22 +144,3 @@ jobs:
                 throw e;
               }
             }
-
-  post-merge-net:
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
-      - name: Delete pr-context.md from base ([skip ci])
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
-        run: |
-          if [ -f pr-context.md ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git rm pr-context.md
-            git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
-            git push origin "${BASE_REF}"
-          fi

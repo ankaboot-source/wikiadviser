@@ -90,7 +90,7 @@ jobs:
 
             After making your changes:
             - If you changed UI, write the list of affected routes (URL paths) to `.opencode/screens.txt`, one per line, so the screenshot step can capture them.
-            - If you create a pull request, add the `generated` label to it (see AGENTS.md PR workflow) — the `human-approval-gate` check requires it until a human approves.
+            - If you create a pull request, use `scripts/open-pr.sh` (it always adds the `generated` label — the `human-approval-gate` check requires it until a human approves). Never call `gh pr create` directly for AI PRs.
             - Post a concise reply comment back to the issue/PR summarizing what you did.
 
       - name: Notify non-member

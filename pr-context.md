@@ -1,15 +1,18 @@
-# PR Context — human-approval-gate for generated (AI) PRs
+# PR Context — human-approval-gate (folds in the DB change guard) + open-pr.sh
 
 ## What
 
-Deterministic human approval for AI-created PRs (branch protection can't scope by author/label; this gates at merge):
+Deterministic human approval at merge (branch protection can't scope by author/label, so this gates via a required check):
 
-- **`.github/workflows/approval-gate.yml`** — required status check: PRs labeled **`generated`** FAIL until an **Approved review from a human repo admin** (admin/maintain/write) exists; the github-actions bot is not a repo admin, so it cannot forge the approval. Non-`generated` PRs pass trivially.
-- **`generated` label** created (red).
-- **AGENTS.md** PR workflow + **`/oc` prompt**: AI-created PRs MUST be labeled `generated`.
-- **User action:** add **`human-approval-gate`** to the `main` branch rule's **required status checks** for it to hard-block.
+- **`.github/workflows/human-approval-gate.yml`** (previously `approval-gate.yml`) — a single required status check that **fails** until a human submits an **Approved review from a repo admin** (admin/maintain/write; the `github-actions` bot is not an admin, so it can't forge it) when the PR is **`generated`** (AI-created) **or** **DB-impactful** (migrations, `database.types.ts`, `supabase/functions/`, any `.sql`). Human, non-DB PRs pass trivially.
+- **Folds in the former `db-change-guard.yml`** (deleted) — DB changes now gate on the same Approved-review mechanism instead of the `db-approved` label.
+- **`generated` label** (red) created.
+- **`scripts/open-pr.sh`** — the ONLY supported way the AI opens PRs; it **always** adds the `generated` label (deterministic label application, Option B).
+- **AGENTS.md** PR workflow + **`/oc` prompt**: AI PRs go through `scripts/open-pr.sh` → labeled `generated`.
+
+## User action
+- Add **`human-approval-gate`** to the `main` branch rule's **required status checks** (and remove any `guard`/`db-approved`-based requirement — the old `db-change-guard` check disappears with its file).
 
 ## Notes
-
-- This PR itself is AI-created → will be labeled `generated` and the gate will fail until a human approves (intended).
-- Workflow + docs only (no DB paths) → DB change guard passes.
+- This PR is AI-created → labeled `generated` → the gate fails until a human Approved review (intended proof).
+- Workflow + docs only (no DB paths).

@@ -33,6 +33,13 @@ jobs:
             const labels = (pr.labels || []).map((l) => l.name);
             const isGenerated = labels.includes('generated');
 
+            // A human-approved PR (via Approved review OR a human `/approve`
+            // comment that added the `human-approved` label) passes.
+            if (labels.includes('human-approved')) {
+              console.log('human-approved label present; passing.');
+              return;
+            }
+
             const dbPattern = /^(supabase\/migrations\/|frontend\/src\/types\/database\.types\.ts|supabase\/functions\/)/;
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,

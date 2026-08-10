@@ -20,7 +20,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  gate:
+  approval-gate:
     runs-on: ubuntu-latest
     steps:
       - name: Enforce human approval for generated PRs

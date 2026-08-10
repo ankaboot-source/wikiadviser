@@ -1,4 +1,4 @@
-name: approval-gate
+name: human-approval-gate
 
 # Human approval gate for AI-generated PRs.
 #
@@ -20,7 +20,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  approval-gate:
+  human-approval-gate:
     runs-on: ubuntu-latest
     steps:
       - name: Enforce human approval for generated PRs

@@ -16,6 +16,10 @@ name: human-approval-gate
 on:
   pull_request:
     types: [opened, synchronize, labeled, unlabeled, ready_for_review, reopened]
+  # Re-run when a review is submitted/dismissed so an approval can turn the
+  # check green without waiting for another code push.
+  pull_request_review:
+    types: [submitted, dismissed, edited]
 
 permissions:
   contents: read

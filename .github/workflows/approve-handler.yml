@@ -1,9 +1,13 @@
 name: approve-handler
 
-# A HUMAN repo admin commenting `/approve` on a PR adds the `human-approved`
-# label, which makes the `human-approval-gate` check pass (same as an Approved
-# review). The github-actions bot is not a repo admin, so it cannot trigger it —
-# and the AI agents are forbidden (AGENTS.md + prompt) from posting `/approve`.
+# A human org member commenting EXACTLY `/approve` on a PR adds the
+# `human-approved` label, which makes the `human-approval-gate` check pass.
+# Requirements:
+#   - comment body is EXACTLY `/approve` (trimmed)
+#   - the commenter is NOT a bot (github-actions bot cannot approve)
+#   - the commenter is a repo admin/maintain/write (the deterministic bar for
+#     "org member with repo approval authority" achievable with the GITHUB_TOKEN;
+#     strict org-membership needs a PAT — see issue #1460).
 on:
   issue_comment:
     types: [created]
@@ -14,19 +18,24 @@ permissions:
 
 jobs:
   approve:
-    if: github.event.issue.pull_request && startsWith(github.event.comment.body, '/approve')
+    if: github.event.issue.pull_request
     runs-on: ubuntu-latest
     steps:
-      - name: Add human-approved for a human /approve
+      - name: Add human-approved for an exact human /approve
         uses: actions/github-script@v7
         with:
           script: |
+            const body = (context.payload.comment.body || '').trim();
+            if (body !== '/approve') {
+              console.log('not an exact /approve; ignoring.');
+              return;
+            }
             const author = context.payload.comment.user.login;
             if (author === 'github-actions[bot]') {
               core.setFailed('Bots cannot /approve.');
               return;
             }
-            // The approver must be a repo admin/maintain/write (the human bar).
+            // Approver bar: repo admin/maintain/write (deterministic with GITHUB_TOKEN).
             const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
               owner: context.repo.owner,
               repo: context.repo.repo,

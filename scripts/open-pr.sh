@@ -30,7 +30,20 @@ done
 
 head="${head:-$(git branch --show-current)}"
 
-url=$(gh pr create --base "$base" --head "$head" --title "$title" --body-file "$body_file")
+# Append an approval-reminder footer so reviewers know how to approve.
+approval_footer='
+---
+<!-- generated-pr -->
+
+> 🤖 This PR was created by the AI agent (labeled `generated`; the `human-approval-gate` applies and the AI cannot approve or merge it).
+> **To approve & merge:** review the changes, then comment exactly **`/approve`** (must be an org member / repo admin — this adds `human-approved` and the gate passes) — then merge.
+
+'
+
+{ cat "$body_file"; printf '%s' "$approval_footer"; } > "${body_file}.with-footer"
+
+url=$(gh pr create --base "$base" --head "$head" --title "$title" --body-file "${body_file}.with-footer")
+rm -f "${body_file}.with-footer"
 echo "opened: $url"
 # Deterministic: always label AI-created PRs `generated`.
 pr_num=$(basename "$url")

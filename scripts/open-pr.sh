@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # scripts/open-pr.sh — the ONLY supported way for the AI agent to open a pull
-# request. Guarantees every AI-created PR carries the `generated` label so the
+# request. Guarantees every AI-created PR carries the `agent-generated` label so the
 # human-approval-gate check applies deterministically (the label is what the
 # gate keys on). Never call `gh pr create` directly for AI work.
 #
@@ -33,10 +33,10 @@ head="${head:-$(git branch --show-current)}"
 # Append an approval-reminder footer so reviewers know how to approve.
 approval_footer='
 ---
-<!-- generated-pr -->
+<!-- agent-generated-pr -->
 
-> 🤖 This PR was created by the AI agent (labeled `generated`; the `human-approval-gate` applies and the AI cannot approve or merge it).
-> **To approve & merge:** review the changes, then comment exactly **`/approve`** (must be an org member / repo admin — this adds `human-approved` and the gate passes) — then merge.
+> 🤖 This PR was created by the AI agent (labeled `agent-generated`; the `human-approval-gate` applies).
+> **To approve & merge:** review the changes, then comment exactly **`/approve`** (must be an org member, this adds `human-approved` and the gate passes).
 
 '
 
@@ -45,7 +45,7 @@ approval_footer='
 url=$(gh pr create --base "$base" --head "$head" --title "$title" --body-file "${body_file}.with-footer")
 rm -f "${body_file}.with-footer"
 echo "opened: $url"
-# Deterministic: always label AI-created PRs `generated`.
+# Deterministic: always label AI-created PRs `agent-generated`.
 pr_num=$(basename "$url")
-gh pr edit "$pr_num" --add-label "generated"
-echo "labeled generated: $pr_num"
+gh pr edit "$pr_num" --add-label "agent-generated"
+echo "labeled agent-generated: $pr_num"

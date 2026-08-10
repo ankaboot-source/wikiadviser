@@ -8,7 +8,7 @@
 ## Purpose
 
 This PR doubles as the **end-to-end test** of the approval flow on `main`:
-1. It is AI-created → `scripts/open-pr.sh` labels it `generated` (+ footer).
+1. It is AI-created → `scripts/open-pr.sh` labels it `agent-generated` (+ footer).
 2. `human-approval-gate` should **fail** it until someone comments `/approve`.
 3. A human org member commenting `/approve` → `approve-handler` adds `human-approved` → the gate passes → merge.
 

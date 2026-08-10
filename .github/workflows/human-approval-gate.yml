@@ -4,7 +4,7 @@ name: human-approval-gate
 # guard into it).
 #
 # A PR FAILS until a human approves when EITHER:
-#   - it is labeled `generated` (AI-created), OR
+#   - it is labeled `agent-generated` (AI-created), OR
 #   - it changes DB-impactful paths (migrations, database.types.ts,
 #     supabase/functions/, or any .sql).
 # Approval = an "Approved" review from a repo admin (admin/maintain/write)
@@ -35,7 +35,7 @@ jobs:
   human-approval-gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Enforce human approval for generated / DB-change PRs
+      - name: Enforce human approval for agent-generated / DB-change PRs
         uses: actions/github-script@v7
         with:
           script: |
@@ -49,7 +49,7 @@ jobs:
               pull_number: prNumber,
             });
             const labels = (pr.labels || []).map((l) => l.name);
-            const isGenerated = labels.includes('generated');
+            const isGenerated = labels.includes('agent-generated');
 
             // An EXACT `/approve` comment from a repo admin (not a bot) is approval.
             if (isComment) {
@@ -88,8 +88,8 @@ jobs:
             }
 
             const reason = isGenerated && isDbChange
-              ? 'generated + DB-impactful'
-              : isGenerated ? 'generated' : 'DB-impactful';
+              ? 'agent-generated + DB-impactful'
+              : isGenerated ? 'agent-generated' : 'DB-impactful';
             console.log(`Gate applies: ${reason} PR. Requiring human approval.`);
 
             const { data: reviews } = await github.rest.pulls.listReviews({

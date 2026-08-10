@@ -1,5 +1,16 @@
 # PR Context — hybrid pr-context cleanup (pre-merge on approval + [skip ci] net)
 
+## Review fixes (applied)
+
+- **issue_comment trigger + /approve evaluation**: the /approve path now fires the pre-merge job (handler's token label-add doesn't fire `labeled`).
+- **No `[skip ci]` on the pre-merge commit** (would leave the required gate check Pending and block the merge); `[skip ci]` stays only on the post-merge net.
+- **No untrusted checkout** — pre-merge deletes pr-context.md via the contents API (CodeQL `untrusted-checkout` clean).
+- Guards: only open PRs; skip when the latest review is `CHANGES_REQUESTED`.
+
+## Head-commit gate note
+
+A `/approve` `issue_comment` run isn't attached to the PR head commit, so it doesn't turn the required `human-approval-gate` check green by itself — a head-commit change (the pre-merge deletion, or this push) re-runs the gate on the head. Once this PR merges, the pre-merge deletion provides that head-commit re-run automatically.
+
 ## What
 
 Rework `.github/workflows/cleanup-pr-context.yml` so pr-context.md never causes unnecessary post-merge workflow runs:

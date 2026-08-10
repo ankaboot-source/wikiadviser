@@ -1,0 +1,63 @@
+name: approval-gate
+
+# Human approval gate for AI-generated PRs.
+#
+# PRs labeled `generated` (created by the AI agent) are BLOCKED until there is
+# an "Approved" review from a human repo admin (admin/maintain/write). The
+# github-actions bot is not a repo admin, so it cannot forge the approval —
+# this is a deterministic human gate.
+#
+# PRs WITHOUT the `generated` label pass trivially (normal human PR flow).
+#
+# NOTE: add this workflow as a REQUIRED status check in the `main` branch
+# protection rule for it to hard-block merges.
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled, ready_for_review, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce human approval for generated PRs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = (pr.labels || []).map((l) => l.name);
+            if (!labels.includes('generated')) {
+              console.log('Not a generated PR; passing.');
+              return;
+            }
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+            const approvers = reviews.filter((r) => r.state === 'APPROVED').map((r) => r.user.login);
+            if (approvers.length === 0) {
+              core.setFailed('generated PR requires a human Approved review before merge.');
+              return;
+            }
+            for (const login of approvers) {
+              try {
+                const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  username: login,
+                });
+                if (['admin', 'maintain', 'write'].includes(data.permission)) {
+                  console.log(`Approved by ${login} (${data.permission}); passing.`);
+                  return;
+                }
+              } catch (e) {
+                // Not a repo collaborator; ignore this approver.
+              }
+            }
+            core.setFailed(
+              'generated PR requires an Approved review from a human repo admin (admin/maintain/write).',
+            );

@@ -24,7 +24,7 @@ The agent **must not** perform high-risk actions without explicit human approval
 
 - Destructive/irreversible commands — e.g. `supabase db reset`/`drop`, deleting data, force-push, dropping/recreating DB objects. (Use `scripts/supabase-db.sh`, which refuses `reset`/`drop` without `--confirm-destructive`; apply migrations non-destructively with `supabase migration up`.)
 - Applying migrations/schema changes to prod/staging.
-- Merging a **DB-impactful** PR — the **`DB change guard`** workflow (`.github/workflows/db-change-guard.yml`, being merged via PR #1449) blocks such PRs until a human adds the **`db-approved`** label after reviewing the migration.
+- Merging a **DB-impactful** PR — the **`human-approval-gate`** check (`.github/workflows/human-approval-gate.yml`) blocks such PRs until a human submits an **Approved** review after reviewing the migration.
 - Pushing to `main` directly.
 
 If you're unsure whether an action is high-risk, treat it as high-risk and ask a human first.
@@ -40,7 +40,7 @@ Every DB-touching change follows the process in `AGENTS.md` → "DB change safet
 5. **Rollback plan** — document reverse SQL; backup/PITR before prod.
 6. **Human review + supervised apply** — a human applies to prod with backup + rollback ready.
 
-The **`db-approved`** label, when a human adds it after reviewing, is what makes the automated `DB change guard` check pass.
+A human **Approved** review, after reviewing, is what makes the automated `human-approval-gate` check pass.
 
 ## UI changes: always cover the different possibilities
 
@@ -58,7 +58,7 @@ Mandatory coverage: **multiple users, varied states** (e.g. online / minutes / h
 1. Open a PR (never push to `main` directly).
 2. Want a quick review/explainer/fix without local setup? Post **`/oc`** on the PR.
 3. Need the agent to use your local env, run the dev stack, or handle something long? Post **`/oc-local`** and keep `pr-watch.sh` running (`./pr-watch.sh`).
-4. If the PR touches the DB, a human reviews the migration and adds **`db-approved`** before merging.
+4. If the PR touches the DB, a human reviews the migration and submits an **Approved** review before merging.
 5. Review the agent's changes and merge — you own the final call.
 
 ## Troubleshooting / gotchas

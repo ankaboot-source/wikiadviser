@@ -17,6 +17,9 @@ Risk level: `LOW` / `HIGH`
 - [ ] Explicit human approval obtained **before** writing the migration
       (mandatory for HIGH risk).
 - [ ] Migration will **not** be applied to prod/staging by the agent unsupervised.
+- [ ] The agent will **not merge** this PR itself — a human reviews and merges it.
+- [ ] `db-approved` label added by a human after review (required to pass the
+      automated **DB change guard** check, `.github/workflows/db-change-guard.yml`).
 
 ## 3. Write safely
 
@@ -29,6 +32,7 @@ Risk level: `LOW` / `HIGH`
 ## 4. Validate (evidence)
 
 - [ ] Applied to a **local/staging DB**; schema + queries verified.
+- [ ] **Never** ran `supabase db reset`/`drop` without explicit user approval (they wipe local data). Used `supabase migration up` (non-destructive) or `scripts/supabase-db.sh` to apply pending migrations.
 - [ ] Edge-function tests pass (`deno test supabase/functions --allow-all --node-modules-dir=auto`).
 - [ ] End-to-end against a **real DB** (not just mock).
 - [ ] Post-apply verification queries run (see below).

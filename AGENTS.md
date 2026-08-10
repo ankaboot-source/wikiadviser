@@ -69,8 +69,10 @@ Follow this end-to-end flow when resolving an issue, not just the code change:
 
 Any change that touches the data model (schema, migrations, `database.types.ts`, queries, RLS, seed data) follows this process. Use `docs/db-change-checklist.md` as the per-change checklist.
 
+> **🚫 NEVER run destructive local DB commands without explicit user approval.** This includes `supabase db reset`, `supabase db drop`, and any command that drops/recreates the local database — they **wipe local data**. To apply new migrations to the running local DB **non-destructively**, use `supabase migration up` (applies only pending migrations, keeps data). If you must reset, get explicit approval first and confirm the user has a backup. Use `scripts/supabase-db.sh` for local DB operations — it refuses destructive commands unless `--confirm-destructive` is passed.
+
 1. **Classify risk.** Additive (new nullable column/table/index/view) = **low**. Breaking (drop/rename column, type change, `NOT NULL`, RLS change, data backfill, dropping/recreating objects existing code depends on) = **high**.
-2. **Human approval gate.** Get explicit human approval before writing the migration (mandatory for high-risk). The agent **never** applies migrations to prod/staging unsupervised.
+2. **Human approval gate.** Get explicit human approval before writing the migration (mandatory for high-risk). The agent **never** applies migrations to prod/staging unsupervised, and **never merges a DB-impactful PR to `main` itself** — a human reviews and merges it. This is enforced automatically: PRs touching DB paths (migrations, `database.types.ts`, `supabase/functions/`, any `.sql`) fail the **`DB change guard`** check (`.github/workflows/db-change-guard.yml`) until a human adds the `db-approved` label after reviewing the migration.
 3. **Write safely.** Append-only timestamp-prefixed migration; idempotent where possible (`IF NOT EXISTS`); prefer additive over destructive; explicit RLS for new browser-reachable objects; regenerate `database.types.ts` (don't hand-edit).
 4. **Validate (evidence).** Apply to a local/staging DB and verify schema + queries; run the edge-function tests; end-to-end against a real DB (not just mock); post-apply verification queries.
 5. **Rollback plan.** Document reverse SQL for every migration; take a pre-change backup/PITR before applying to prod.
@@ -95,6 +97,13 @@ Any change that touches the data model (schema, migrations, `database.types.ts`,
 Config: `package.json`, `frontend/package.json`, `frontend/.eslintrc.js`, `frontend/.prettierrc`, `supabase/functions/*/deno.json`, `.github/workflows/*`, `.deepsource.toml`, `.qlty/qlty.toml`, `docs/NOTES.md`, `CONTRIBUTING.md`, `generate-env.sh`. Sessions: 57 WikiAdviser sessions in `~/.local/share/opencode/opencode.db` (cited inline as `ses_<id>`).
 
 ## General Guidelines
+- **🚨 Human-in-the-loop approval is MANDATORY for any high-risk action.** Before performing any of the following, get explicit human approval and do not proceed without it:
+  - Destructive/irreversible commands (e.g. `supabase db reset`/`drop`, deleting data, force-push, dropping/recreating DB objects).
+  - Applying migrations or schema changes to prod/staging.
+  - Merging a DB-impactful PR to `main`.
+  - Pushing to `main` directly.
+  - Anything that could lose data or break the data model.
+  If you are unsure whether an action is high-risk, treat it as high-risk and ask first.
 - Refer to available skills when possible.
 - Use Context7 MCP when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask.
 - If you encounter something surprising or confusing in this project, flag it as a comment. If you discover a non-obvious gotcha, convention, or landmine that isn't documented here, add it to AGENTS.md so future agents don't rediscover it.

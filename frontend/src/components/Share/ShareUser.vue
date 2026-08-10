@@ -52,10 +52,13 @@ const props = defineProps<{
     display_name: string;
     avatar_url?: string | null;
   }[];
+  currentUserId?: string;
 }>();
 
 const isOnline = computed(
-  () => props.connectedUsers?.some((u) => u.user_id === props.user.id) ?? false,
+  () =>
+    props.connectedUsers?.some((u) => u.user_id === props.user.id) ||
+    props.currentUserId === props.user.id,
 );
 
 const statusText = computed(() => {
@@ -72,6 +75,7 @@ function timeAgo(iso: string) {
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} hr ago`;
   const days = Math.floor(hours / 24);
+  if (days >= 30) return new Date(iso).toLocaleDateString();
   return `${days} day${days > 1 ? 's' : ''} ago`;
 }
 

@@ -4,18 +4,20 @@ name: Cleanup pr-context
 # open). Hybrid cleanup so it never accumulates on main AND never causes
 # unnecessary post-merge workflow runs:
 #
-#   - pre-merge: as soon as a PR is approved (the `human-approved` label OR an
-#     Approved review from a repo admin), remove pr-context.md from the PR
-#     branch, so the merge carries no pr-context.md to main.
+#   - pre-merge: as soon as a PR is approved — the `human-approved` label, an
+#     Approved review from a repo admin, or an EXACT `/approve` comment from a
+#     repo admin — remove pr-context.md from the PR branch so the merge carries
+#     nothing to main.
 #   - post-merge-net: if pr-context.md still lands on main (a PR merged without
-#     an approval signal), delete it from main with a `[skip ci]` commit so no
-#     push-triggered workflows (ci, QA deploys, supabase-migrations-qa, ...)
-#     re-run on the cleanup.
+#     an approval signal), delete it with a `[skip ci]` commit so no push-
+#     triggered workflows (ci, QA deploys, supabase-migrations-qa, ...) re-run.
 on:
   pull_request:
     types: [closed, labeled, ready_for_review]
   pull_request_review:
     types: [submitted]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: write
@@ -23,35 +25,63 @@ permissions:
 
 jobs:
   pre-merge:
-    # Skip forks (we can't push to their branch) and only act on same-repo PRs.
+    # Handle all three event shapes safely: PR events carry `pull_request`;
+    # issue_comment carries `issue` and is gated on being a PR comment. Skip
+    # forks (we can't push to their branch).
     if: >
-      github.event.pull_request.merged != true &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      !(github.event_name == 'pull_request' && github.event.action == 'labeled' && github.event.label.name != 'human-approved')
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null) ||
+      (github.event_name != 'issue_comment' &&
+       github.event.pull_request.merged != true &&
+       github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Check approved
+      - name: Check approved + resolve head
         id: check
         uses: actions/github-script@v7
         with:
           script: |
-            const prNumber = context.payload.pull_request.number;
+            const isComment = context.eventName === 'issue_comment';
+            if (isComment) {
+              const body = (context.payload.comment.body || '').trim();
+              if (body !== '/approve') {
+                console.log('not an exact /approve; skipping.');
+                core.setOutput('approved', 'false');
+                return;
+              }
+            }
+            const prNumber = isComment
+              ? context.payload.issue.number
+              : context.payload.pull_request.number;
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber,
             });
-            let approved = (pr.labels || []).some((l) => l.name === 'human-approved');
+            if (pr.state !== 'open') {
+              console.log('PR not open; skipping.');
+              core.setOutput('approved', 'false');
+              return;
+            }
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('head_ref', pr.head.ref);
+
+            const labels = (pr.labels || []).map((l) => l.name);
+            let approved = labels.includes('human-approved');
+
+            // A contested PR (latest review is CHANGES_REQUESTED) should not be auto-removed.
+            const { data: reviews } = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+            const latestReview = reviews[reviews.length - 1];
+            if (latestReview && latestReview.state === 'CHANGES_REQUESTED' && !approved) {
+              console.log('latest review requests changes; skipping.');
+              core.setOutput('approved', 'false');
+              return;
+            }
+
             if (!approved) {
-              const { data: reviews } = await github.rest.pulls.listReviews({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-              });
               for (const r of reviews.filter((x) => x.state === 'APPROVED')) {
                 try {
                   const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
@@ -68,20 +98,42 @@ jobs:
                 }
               }
             }
+            if (!approved && isComment) {
+              // The exact /approve comment itself counts, if by a repo admin.
+              const author = context.payload.comment.user.login;
+              if (author !== 'github-actions[bot]') {
+                try {
+                  const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    username: author,
+                  });
+                  if (['admin', 'maintain', 'write'].includes(perm.permission)) approved = true;
+                } catch (e) {
+                  // Not a collaborator.
+                }
+              }
+            }
             core.setOutput('approved', String(approved));
+
+      - name: Checkout head
+        if: steps.check.outputs.approved == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.check.outputs.head_sha }}
 
       - name: Delete pr-context.md from PR branch (approved)
         if: steps.check.outputs.approved == 'true'
         env:
           # Untrusted context must not be interpolated into the shell directly
           # (CodeQL code-injection); pass it via an env var instead.
-          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_REF: ${{ steps.check.outputs.head_ref }}
         run: |
           if [ -f pr-context.md ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git rm pr-context.md
-            git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
+            git commit -m "ci: remove pr-context.md (ephemeral per-PR working state)"
             git push origin "HEAD:${HEAD_REF}"
           fi
 

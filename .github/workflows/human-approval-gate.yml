@@ -3,23 +3,29 @@ name: human-approval-gate
 # Human approval gate (single required check that folds the former DB change
 # guard into it).
 #
-# A PR FAILS until it has an "Approved" review from a human repo admin
-# (admin/maintain/write) when EITHER:
-#   - it is labeled `generated` (AI-created), OR
+# A PR FAILS until a human approves when EITHER:
+#   - it is labeled `agent-generated` (AI-created), OR
 #   - it changes DB-impactful paths (migrations, database.types.ts,
 #     supabase/functions/, or any .sql).
-# The github-actions bot is not a repo admin, so it cannot forge the approval —
-# this is a deterministic human gate. Human, non-DB PRs pass trivially.
+# Approval = an "Approved" review from a repo admin (admin/maintain/write)
+#            OR the `human-approved` label
+#            OR an EXACT `/approve` comment (same bar).
+# The github-actions bot is not a repo admin, so it cannot forge approval.
+# Human, non-DB PRs pass trivially.
 #
 # NOTE: add this workflow as a REQUIRED status check (named `human-approval-gate`)
 # in the `main` branch protection rule for it to hard-block merges.
 on:
   pull_request:
     types: [opened, synchronize, labeled, unlabeled, ready_for_review, reopened]
-  # Re-run when a review is submitted/dismissed so an approval can turn the
-  # check green without waiting for another code push.
+  # Re-run when a review or `/approve` comment arrives so an approval turns the
+  # check green without a code push. (A label added by a workflow's GITHUB_TOKEN
+  # does NOT fire a `labeled` event, so the gate also evaluates `/approve`
+  # comments directly.)
   pull_request_review:
     types: [submitted, dismissed, edited]
+  issue_comment:
+    types: [created]
 
 permissions:
   contents: read
@@ -29,16 +35,38 @@ jobs:
   human-approval-gate:
     runs-on: ubuntu-latest
     steps:
-      - name: Enforce human approval for generated / DB-change PRs
+      - name: Enforce human approval for agent-generated / DB-change PRs
         uses: actions/github-script@v7
         with:
           script: |
-            const pr = context.payload.pull_request;
+            const isComment = context.eventName === 'issue_comment';
+            const prNumber = isComment
+              ? context.payload.issue.number
+              : context.payload.pull_request.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
             const labels = (pr.labels || []).map((l) => l.name);
-            const isGenerated = labels.includes('generated');
+            const isGenerated = labels.includes('agent-generated');
 
-            // A human-approved PR (via Approved review OR a human `/approve`
-            // comment that added the `human-approved` label) passes.
+            // An EXACT `/approve` comment from a repo admin (not a bot) is approval.
+            if (isComment) {
+              const body = (context.payload.comment.body || '').trim();
+              const author = context.payload.comment.user.login;
+              if (body === '/approve' && author !== 'github-actions[bot]') {
+                const { data: perm } = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner: context.repo.owner, repo: context.repo.repo, username: author,
+                });
+                if (['admin', 'maintain', 'write'].includes(perm.permission)) {
+                  console.log(`/approve by ${author} (${perm.permission}); passing.`);
+                  return;
+                }
+              }
+            }
+
+            // `human-approved` label present -> pass (UI-added label or prior /approve).
             if (labels.includes('human-approved')) {
               console.log('human-approved label present; passing.');
               return;
@@ -48,7 +76,7 @@ jobs:
             const { data: files } = await github.rest.pulls.listFiles({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pr.number,
+              pull_number: prNumber,
             });
             const isDbChange = files.some(
               (f) => dbPattern.test(f.filename) || f.filename.endsWith('.sql'),
@@ -60,20 +88,20 @@ jobs:
             }
 
             const reason = isGenerated && isDbChange
-              ? 'generated + DB-impactful'
-              : isGenerated ? 'generated' : 'DB-impactful';
-            console.log(`Gate applies: ${reason} PR. Requiring human Approved review.`);
+              ? 'agent-generated + DB-impactful'
+              : isGenerated ? 'agent-generated' : 'DB-impactful';
+            console.log(`Gate applies: ${reason} PR. Requiring human approval.`);
 
             const { data: reviews } = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pr.number,
+              pull_number: prNumber,
             });
             const approvers = reviews
               .filter((r) => r.state === 'APPROVED')
               .map((r) => r.user.login);
             if (approvers.length === 0) {
-              core.setFailed(`${reason} PR requires a human Approved review before merge.`);
+              core.setFailed(`${reason} PR requires a human Approved review, /approve comment, or the human-approved label before merge.`);
               return;
             }
             for (const login of approvers) {

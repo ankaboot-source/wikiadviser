@@ -72,13 +72,17 @@ jobs:
 
       - name: Delete pr-context.md from PR branch (approved)
         if: steps.check.outputs.approved == 'true'
+        env:
+          # Untrusted context must not be interpolated into the shell directly
+          # (CodeQL code-injection); pass it via an env var instead.
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           if [ -f pr-context.md ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git rm pr-context.md
             git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
-            git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
+            git push origin "HEAD:${HEAD_REF}"
           fi
 
   post-merge-net:
@@ -89,11 +93,13 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
       - name: Delete pr-context.md from base ([skip ci])
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           if [ -f pr-context.md ]; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git rm pr-context.md
             git commit -m "ci: remove pr-context.md (ephemeral per-PR working state) [skip ci]"
-            git push origin "${{ github.event.pull_request.base.ref }}"
+            git push origin "${BASE_REF}"
           fi

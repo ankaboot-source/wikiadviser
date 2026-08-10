@@ -73,8 +73,11 @@ start() {
 stop() {
   pkill -f "$E2E_DIR" 2>/dev/null || true
   pkill -f "functions serve.*$E2E_DIR" 2>/dev/null || true
-  # e2e frontend: match its specific port.
-  pkill -f "PORT=$FRONTEND_PORT" 2>/dev/null || true
+  # Kill the e2e frontend by its port (env var is not in argv, so pkill on
+  # "PORT=..." never matches).
+  local pid
+  pid=$(ss -tlnp 2>/dev/null | grep ":$FRONTEND_PORT " | grep -oP 'pid=\K[0-9]+' | head -1)
+  [[ -n "${pid:-}" ]] && kill "$pid" 2>/dev/null || true
   echo "stopped e2e servers (frontend :$FRONTEND_PORT, functions)."
 }
 

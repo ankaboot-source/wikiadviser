@@ -7,7 +7,7 @@
 # migrations NON-destructively, use: supabase migration up
 #
 # Usage:
-#   scripts/supabase-db.sh migration up          # safe: applies pending migrations
+#   scripts/supabase-db.sh migration up         # safe: applies pending migrations
 #   scripts/supabase-db.sh reset --confirm-destructive   # only with explicit confirmation
 #
 set -euo pipefail
@@ -17,6 +17,13 @@ CONFIRM_FLAG="--confirm-destructive"
 
 cmd="${1:-}"
 
+# Strip the confirmation flag from the args passed to the CLI.
+args=()
+for a in "$@"; do
+  [[ "$a" == "$CONFIRM_FLAG" ]] && continue
+  args+=("$a")
+done
+
 if [[ " ${DESTRUCTIVE[*]} " =~ " $cmd " ]]; then
   if [[ "$*" != *"$CONFIRM_FLAG"* ]]; then
     echo "ERROR: 'supabase db $cmd' is DESTRUCTIVE — it drops/recreates the local database and wipes data." >&2
@@ -25,6 +32,13 @@ if [[ " ${DESTRUCTIVE[*]} " =~ " $cmd " ]]; then
     exit 1
   fi
   echo "WARNING: running destructive 'supabase db $cmd' with explicit confirmation." >&2
+  exec supabase db "${args[@]}"
 fi
 
-exec supabase db "$@"
+# `supabase migration up` is a top-level command, NOT `supabase db migration`.
+if [[ "$cmd" == "migration" ]]; then
+  exec supabase "${args[@]}"
+fi
+
+# Default: `supabase db <...>` (diff, dump, lint, pull, push, start, ...).
+exec supabase db "${args[@]}"

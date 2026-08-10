@@ -35,6 +35,10 @@ agent-browser screenshot /tmp/out.png
 
 Assert via `snapshot`/`get text`/`eval` (not by reading the PNG). Take screenshots for the PR.
 
+### Cover every state (state-matrix method)
+
+Before screenshotting, enumerate the UI's render dimensions (data states, roles, identity, interactions, responsive, edge inputs), fill a **state matrix**, and capture a **screenshot per meaningful cell** — labelled with the state. Coverage is done only when every meaningful cell has a screenshot. See the **`e2e-testing`** skill (`.opencode/skills/e2e-testing/SKILL.md`) for the full method and a worked example.
+
 ## Attaching screenshots to a PR
 
 Do **not** commit PNGs as product code. Use the SHA-based raw-URL workflow: copy to `.opencode/screenshots/<name>.png`, `git add -f`, push, reference `https://raw.githubusercontent.com/$REPO/$SHA/.opencode/screenshots/<name>.png` in a PR comment, then delete the file (the URL still works from history).

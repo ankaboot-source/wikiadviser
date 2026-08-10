@@ -15,17 +15,38 @@ WikiAdviser has **no frontend test suite** (`frontend/package.json` `test` is a 
 - You need a screenshot to attach to a PR.
 - Realtime features need presence data (the mock reports a dummy user + a second user, so the connected-users stack renders).
 
-## Cover the different possibilities (mandatory for UI work)
+## Cover the different possibilities — the state-matrix method (mandatory for UI work)
 
-UI verification must reflect **realistic, varied states** — not just a single happy path. When testing/screenshotting a UI feature, cover the different possibilities and options:
+UI verification must reflect **every state the UI can render**, not just a single happy path. Use the **state-matrix method** so coverage is systematic and provable, not ad-hoc:
 
-- **Multiple users** — the mock (`frontend/src/api/supabase.mock.ts`) provides several users with **different `last_seen` timestamps** (online, minutes/hours/days/months ago) and different roles. Use them to show the full range of states.
-- **Varied states** — e.g. for presence/last-seen: "Online now", "Last seen X min/hr/day(s) ago", and a **date** for very old timestamps (≥ 30 days).
-- **Edge cases** — empty lists, no avatar (initials fallback), long names, many connected users (avatar stack overlap), a user with no `last_seen`.
-- **Responsive** — capture desktop and mobile widths where layout changes.
-- **Before/after** — where a change alters behavior, show both.
+### 1. Enumerate the render dimensions
+List every axis that changes what the UI shows. Common dimensions:
 
-If the mock doesn't already cover a state you need, extend `supabase.mock.ts` so the scenario is reproducible, then screenshot it. Do not ship a UI change verified only against a single-user, single-state screenshot.
+- **Data states** — empty / minimal / typical / maximal (e.g. 0, 1, many users; no `last_seen`; online; minutes/hours/days/months ago).
+- **Roles / permissions** — viewer / editor / reviewer / owner (what the viewer sees changes).
+- **Identity** — "you" vs "others" (e.g. self is filtered from the presence stack).
+- **Interactions** — default / hovered (tooltip) / focused / dialog open.
+- **Responsive** — desktop / tablet / mobile widths.
+- **Edge inputs** — no avatar (initials fallback), long names, unicode, null fields.
+
+### 2. Fill a state matrix
+A table: rows = dimensions, columns = the distinct values you will capture. Mark each cell **meaningful** (renders differently) or **N/A**. Example for presence/last-seen:
+
+| Dimension | Values to capture |
+|---|---|
+| last_seen | online · 5 min · 2 hr · 3 days · ≥30 days (date) · none |
+| presence stack | 0 others · 1 other · many · tooltip on hover |
+| roles | viewer · editor · reviewer |
+| responsive | desktop · mobile |
+| avatar | has avatar · no avatar (initials) |
+
+### 3. Capture a screenshot per meaningful cell
+For each meaningful cell, drive the UI to that state (extend `supabase.mock.ts` or seed the replica if needed) and screenshot it, **labelled** with the state (e.g. `share-lastseen-30d.png`).
+
+### 4. Coverage gate — do not ship without it
+Coverage is **done only when every meaningful cell has a screenshot**. Before finishing, re-check the matrix and confirm each row's values are represented. Do **not** ship a UI change verified only against a single-user, single-state screenshot.
+
+If the mock/replica doesn't cover a state you need, extend it so the scenario is reproducible, then screenshot it.
 
 ## Setup: mock-backend dev server
 

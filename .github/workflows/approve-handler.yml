@@ -13,6 +13,7 @@ on:
     types: [created]
 
 permissions:
+  actions: write
   pull-requests: write
   issues: write
 
@@ -52,3 +53,32 @@ jobs:
               labels: ['human-approved'],
             });
             console.log(`added human-approved to #${context.payload.issue.number} via @${author}`);
+
+            // Re-run ONLY the human-approval-gate check on the head commit. A
+            // token-added label doesn't fire `labeled`, and issue_comment runs
+            // aren't attached to the head — so re-run the gate's head-attached
+            // run directly (no new commit, no full CI re-run).
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number,
+            });
+            const headSha = pr.head.sha;
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'human-approval-gate.yml',
+              head_sha: headSha,
+              per_page: 1,
+            });
+            const run = runs.workflow_runs && runs.workflow_runs[0];
+            if (run) {
+              await github.rest.actions.reRunWorkflow({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: run.id,
+              });
+              console.log(`re-ran human-approval-gate run ${run.id} on ${headSha}`);
+            } else {
+              console.log('no human-approval-gate run on head; skipping re-run');
+            }

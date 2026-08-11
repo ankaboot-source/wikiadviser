@@ -13,6 +13,7 @@ on:
     types: [created]
 
 permissions:
+  contents: write
   pull-requests: write
   issues: write
 
@@ -52,3 +53,39 @@ jobs:
               labels: ['human-approved'],
             });
             console.log(`added human-approved to #${context.payload.issue.number} via @${author}`);
+
+            // Push a head commit so the gate re-runs on the head commit. A
+            // token-added label doesn't fire `labeled`, and issue_comment runs
+            // aren't attached to the head — a synchronize (head commit) is what
+            // turns the required `human-approval-gate` check green.
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number,
+            });
+            const branch = pr.head.ref;
+            const content = Buffer.from(
+              `approved by ${author} at ${new Date().toISOString()}\n`,
+            ).toString('base64');
+            let sha;
+            try {
+              const { data: existing } = await github.rest.repos.getContent({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: '.opencode/approved',
+                ref: branch,
+              });
+              sha = existing.sha;
+            } catch (e) {
+              // 404 -> create the marker.
+            }
+            await github.rest.repos.createOrUpdateFileContents({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              path: '.opencode/approved',
+              message: 'ci: record human approval',
+              content,
+              branch,
+              ...(sha ? { sha } : {}),
+            });
+            console.log(`pushed approval marker to ${branch}`);

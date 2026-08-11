@@ -59,7 +59,7 @@ Mandatory coverage: **multiple users, varied states** (e.g. online / minutes / h
 2. Want a quick review/explainer/fix without local setup? Post **`/oc`** on the PR.
 3. Need the agent to use your local env, run the dev stack, or handle something long? Post **`/oc-local`** and keep `pr-watch.sh` running (`./pr-watch.sh`).
 4. If the PR touches the DB, a human reviews the migration and submits an **Approved** review before merging.
-5. **AI-created PRs are labeled `agent-generated`** and gated by `human-approval-gate` — approve one of two ways: submit an **Approved review** (org member with repo write+), or comment exactly **`/approve`** (an `approve-handler` adds `human-approved`, which passes the gate). The AI cannot approve or merge its own PRs; a human always does.
+5. **AI-created PRs are labeled `agent-generated`** and gated by `human-approval-gate` — approve one of two ways: submit an **Approved review** (org member with repo write+), or comment exactly **`/approve`** (an `approve-handler` adds `human-approved`, which passes the gate). The AI cannot approve or merge its own PRs; a human always does. `/approve` also re-runs the gate on the head commit (only the gate, not the full CI suite).
 5. Review the agent's changes and merge — you own the final call.
 
 ## Troubleshooting / gotchas

@@ -42,18 +42,19 @@ jobs:
           username: ${{ secrets.WIKIADVISER_USERNAME }}
           envs: POSTHOG_API_KEY,POSTHOG_API_HOST,USE_MIRA,USE_CHANGE_DESCRIPTION,X_API_KEY,MEDIAWIKI_DEV_ENDPOINT,MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_ANON_KEY,SUPABASE_PROJECT_URL,WIKIPEDIA_PROXY,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV
           script: |
+            set -euo pipefail
             wikiadviser_path="$HOME/wikiadviser"
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
                 cd $wikiadviser_path
-                git pull
+                git remote prune origin && git pull --ff-only
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
 
-            cd $wikiadviser_path; docker compose -f docker-compose.demo.yml down; git pull
+            cd $wikiadviser_path; docker compose -f docker-compose.demo.yml down; git remote prune origin; git pull --ff-only
 
             # Prepare .env file
             echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" > $wikiadviser_path/.env

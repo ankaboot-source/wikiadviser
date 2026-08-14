@@ -244,10 +244,10 @@ async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
   return map;
 }
 
-async function loadNotificationsForUser(userId: string) {
+async function loadNotificationsForUser() {
   const { data, error } = await supabaseClient.functions.invoke(
     'get/notifications',
-    { method: 'POST', body: { userId } },
+    { method: 'POST', body: {} },
   );
 
   if (error) {
@@ -414,7 +414,7 @@ onMounted(async () => {
     currentUser.value.id = user.id;
     currentUser.value.email = (user.email as string) ?? '';
 
-    await loadNotificationsForUser(user.id);
+    await loadNotificationsForUser();
 
     supabaseClient
       .channel('notifs')

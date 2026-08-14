@@ -9,11 +9,6 @@ import createSupabaseClient from "../../_shared/supabaseClient.ts";
  * - List case: `{ notifications: NotificationRow[] }` (unread, for the caller)
  * - Single case: `{ notification: NotificationRow | null }`
  */
-export interface GetNotificationsResponse {
-  notifications?: unknown[];
-  notification?: unknown;
-}
-
 export async function getNotifications(c: Context) {
   // Authenticate the caller so notifications are derived from the session's
   // user, never from a caller-supplied id (security: IDOR / data exposure).
@@ -56,7 +51,9 @@ export async function getNotifications(c: Context) {
       .eq("id", id)
       .single();
 
-    if (error) {
+    // PGRST116 = no rows matched (a legitimately-missing notification). Treat
+    // it as `{ notification: null }` rather than a server error.
+    if (error && error.code !== "PGRST116") {
       throw new Error(error?.message ?? "Could not get notifications");
     }
 

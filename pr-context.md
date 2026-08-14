@@ -16,7 +16,8 @@ functions, so the browser query couldn't reach it.
   **Authenticates the caller** via `auth.getUser()` and derives the target from
   `user.id` (never a body-supplied id); the single-notification path enforces
   ownership (`notification.user_id === user.id`). Fixes an IDOR where the anon
-  key could read any user's notifications (found in code review).
+  key could read any user's notifications (found in code review). A missing
+  notification (PGRST116) returns `{ notification: null }` instead of a 500.
 - **Frontend** `NotificationsBell.vue`: calls the edge function instead of a
   direct browser query; shows `display_name` falling back to email, then
   "Someone". `DiffItem.vue`: author line uses `getName()` (display name).

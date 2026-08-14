@@ -13,6 +13,10 @@ functions, so the browser query couldn't reach it.
   (`notifications_triggered_by_fkey`, `notifications_triggered_on_fkey`) to avoid
   PGRST201 ambiguity. Mounted at `POST /get/notifications` in `get/index.ts`.
   Returns `{ notifications }` (list) or `{ notification }` (single).
+  **Authenticates the caller** via `auth.getUser()` and derives the target from
+  `user.id` (never a body-supplied id); the single-notification path enforces
+  ownership (`notification.user_id === user.id`). Fixes an IDOR where the anon
+  key could read any user's notifications (found in code review).
 - **Frontend** `NotificationsBell.vue`: calls the edge function instead of a
   direct browser query; shows `display_name` falling back to email, then
   "Someone". `DiffItem.vue`: author line uses `getName()` (display name).

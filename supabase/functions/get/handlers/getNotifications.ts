@@ -1,12 +1,13 @@
 import { Context } from "npm:hono@4.7.4";
 import createSupabaseAdmin from "../../_shared/supabaseAdmin.ts";
+import createSupabaseClient from "../../_shared/supabaseClient.ts";
 
 /**
  * Contract returned to the frontend. Mirrored in
  * `frontend/src/components/NotificationsBell.vue` — keep them in sync.
  *
- * - List case (userId provided): `{ notifications: NotificationRow[] }`
- * - Single case (id provided): `{ notification: NotificationRow | null }`
+ * - List case: `{ notifications: NotificationRow[] }` (unread, for the caller)
+ * - Single case: `{ notification: NotificationRow | null }`
  */
 export interface GetNotificationsResponse {
   notifications?: unknown[];
@@ -14,12 +15,19 @@ export interface GetNotificationsResponse {
 }
 
 export async function getNotifications(c: Context) {
-  const supabaseAdmin = createSupabaseAdmin();
-  const { userId, id } = await c.req.json();
+  // Authenticate the caller so notifications are derived from the session's
+  // user, never from a caller-supplied id (security: IDOR / data exposure).
+  const supabaseClient = createSupabaseClient(c.req.header("Authorization"));
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
 
-  if (!userId && !id) {
-    return c.json({ message: "userId or id is required" }, 400);
+  if (!user) {
+    return c.json({ message: "Unauthorized" }, 401);
   }
+
+  const supabaseAdmin = createSupabaseAdmin();
+  const { id } = await c.req.json();
 
   // NOTE: `notifications` has TWO FKs to profiles
   // (`notifications_triggered_by_fkey`, `notifications_triggered_on_fkey`), so
@@ -52,13 +60,18 @@ export async function getNotifications(c: Context) {
       throw new Error(error?.message ?? "Could not get notifications");
     }
 
+    // Ownership check: the notification must belong to the caller.
+    if (data?.user_id !== user.id) {
+      return c.json({ notification: null });
+    }
+
     return c.json({ notification: data });
   }
 
   const { data, error } = await supabaseAdmin
     .from("notifications")
     .select(select)
-    .eq("user_id", userId)
+    .eq("user_id", user.id)
     .eq("is_read", false)
     .order("created_at", { ascending: false });
 

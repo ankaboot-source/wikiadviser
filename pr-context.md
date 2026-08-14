@@ -20,7 +20,9 @@ functions, so the browser query couldn't reach it.
   notification (PGRST116) returns `{ notification: null }` instead of a 500.
 - **Frontend** `NotificationsBell.vue`: calls the edge function instead of a
   direct browser query; shows `display_name` falling back to email, then
-  "Someone". `DiffItem.vue`: author line uses `getName()` (display name).
+  "Someone" via `displayNameOrEmail()` (trims the name, so a whitespace-only
+  display_name falls back to email — mirrors `getName()` in `DiffItem.vue`).
+  `DiffItem.vue`: author line uses `getName()` (display name).
 - **Auth cookie fix** `frontend/src/api/supabase.ts`: `secure` cookie only over
   HTTPS (dev runs on plain HTTP localhost, where a `secure` cookie is rejected
   and breaks auth).

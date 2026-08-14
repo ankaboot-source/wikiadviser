@@ -177,23 +177,28 @@ function getNotificationIcon(notification: NotificationData): string {
   }
 }
 
+// Show the display name when set (non-blank), else fall back to email, else
+// "Someone". Mirrors getName() in DiffItem.vue — a whitespace-only display name
+// is treated as unset so it falls back to the email instead of rendering blank.
+function displayNameOrEmail(profile?: {
+  display_name?: string | null;
+  email?: string | null;
+}): string {
+  const name = profile?.display_name?.trim();
+  if (name) return name;
+  const email = profile?.email?.trim();
+  if (email) return email;
+  return 'Someone';
+}
+
 function getNotificationMessage(notification: NotificationData): string {
   const type = notification.type;
   const action = notification.action;
   const articleTitle = notification.article?.title ?? 'an article';
-  const subject =
-    notification.triggered_on_profile?.display_name ||
-    notification.triggered_on_profile?.email ||
-    'Someone';
+  const subject = displayNameOrEmail(notification.triggered_on_profile);
   const role = notification.triggered_on_role ?? '';
-  const revisionAuthor =
-    notification.triggered_by_profile?.display_name ||
-    notification.triggered_by_profile?.email ||
-    'Someone';
-  const actorEmail =
-    notification.triggered_by_profile?.display_name ||
-    notification.triggered_by_profile?.email ||
-    'Someone';
+  const revisionAuthor = displayNameOrEmail(notification.triggered_by_profile);
+  const actorEmail = displayNameOrEmail(notification.triggered_by_profile);
   const changeOwnerId = notification.triggered_on;
   const currentUserId = currentUser.value.id;
   const key = `${type}.${action}`;

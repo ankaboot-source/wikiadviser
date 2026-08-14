@@ -12,8 +12,8 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4
       '@quasar/extras':
-        specifier: ^1.17.0
-        version: 1.17.0
+        specifier: ^2.0.3
+        version: 2.0.3
       '@sentry/vue':
         specifier: ^10.69.0
         version: 10.69.0(pinia@2.3.1(typescript@5.9.3)(vue@3.5.40(typescript@5.9.3)))(vue@3.5.40(typescript@5.9.3))
@@ -401,8 +401,8 @@ packages:
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
-  '@quasar/extras@1.17.0':
-    resolution: {integrity: sha512-KqAHdSJfIDauiR1nJ8rqHWT0diqD0QradZKoVIZJAilHAvgwyPIY7MbyR2z4RIMkUIMUSqBZcbshMpEw+9A30w==}
+  '@quasar/extras@2.0.3':
+    resolution: {integrity: sha512-tTw+5+2ZOugCpkagP20e/LJf7BgQyAQPlwyRwMYe2UpN1F4zYCZhvoAPio1hG2hr5FOlEiJVxSINJHhpdx5NZA==}
 
   '@quasar/render-ssr-error@1.0.3':
     resolution: {integrity: sha512-A8RF99q6/sOSe1Ighnh5syEIbliD3qUYEJd2HyfFyBPSMF+WYGXon5dmzg4nUoK662NgOggInevkDyBDJcZugg==}
@@ -3100,7 +3100,7 @@ snapshots:
       open: 11.0.0
       update-notifier: 7.3.1
 
-  '@quasar/extras@1.17.0': {}
+  '@quasar/extras@2.0.3': {}
 
   '@quasar/render-ssr-error@1.0.3':
     dependencies:

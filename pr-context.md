@@ -38,7 +38,14 @@ functions, so the browser query couldn't reach it.
 - `frontend`: `pnpm run lint` 0 errors; `pnpm run prettier:fix` clean.
 - Edge functions: `deno test supabase/functions --allow-all --node-modules-dir=auto`
   → 107 passed, 0 failed.
-- E2E against the `supabase-agent/` replica: signed in as `bob@example.com`,
-  notifications bell shows unread badge "2", display name ("Alice Smith") and
-  email fallback ("bob@example.com") both render, empty state shows
-  "No notifications". `scripts/supabase-agent.sh verify` → VERIFY OK.
+- E2E against the `supabase-agent/` replica (signed in as `bob@example.com`):
+  - Notifications bell: unread badge "2"; display name ("Alice Smith") and email
+    fallback ("bob@example.com") both render; empty state shows "No notifications".
+  - DiffItem author line: "Alice Smith" (display_name) and "bob@example.com"
+    (email fallback) both render for archived changes.
+  - Single-notification click: navigates to the article with `?change=<id>`,
+    marks that notification read (other stays unread).
+  - `scripts/supabase-agent.sh verify` → VERIFY OK.
+  - Screenshots (not committed): `.opencode/screenshots/{notifications-bell,
+    notifications-empty,diffitem-displayname,diffitem-emailfallback,
+    notification-click-navigate}.png`.

@@ -1,0 +1,17 @@
+# Runtime state — never commit
+.branches
+.temp
+.env
+
+# Generated at start by scripts/supabase-agent.sh (prepare) from the real
+# supabase/config.toml with offset ports. Never commit a static copy — it
+# would drift from the real config. The script is the source of truth.
+config.toml
+
+# Symlinks to the real migrations/seed/functions are recreated by the script
+# on every start (relative targets). Not committed: they'd be Windows-incompatible
+# and are redundant since the script regenerates them. The script is the source
+# of truth for the replica layout.
+migrations
+seed.sql
+functions

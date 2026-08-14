@@ -179,6 +179,8 @@ export function createMockSupabaseClient() {
               data: { changes: dummyChanges, revisionComments: [] },
               error: null,
             };
+          case 'get/notifications':
+            return { data: { notifications: [] }, error: null };
           case 'get/profile':
             return { data: { profile: dummyProfile }, error: null };
           case 'get/users':

@@ -130,8 +130,8 @@ type NotificationData = Tables<'notifications'> & {
   triggered_by: string;
   triggered_on: string | null;
   article?: { title?: string };
-  triggered_by_profile?: { email?: string };
-  triggered_on_profile?: { email?: string };
+  triggered_by_profile?: { email?: string; display_name?: string | null };
+  triggered_on_profile?: { email?: string; display_name?: string | null };
   triggered_on_role?: string | null;
 };
 
@@ -181,10 +181,19 @@ function getNotificationMessage(notification: NotificationData): string {
   const type = notification.type;
   const action = notification.action;
   const articleTitle = notification.article?.title ?? 'an article';
-  const subject = notification.triggered_on_profile?.email ?? 'Someone';
+  const subject =
+    notification.triggered_on_profile?.display_name ||
+    notification.triggered_on_profile?.email ||
+    'Someone';
   const role = notification.triggered_on_role ?? '';
-  const revisionAuthor = notification.triggered_by_profile?.email ?? 'Someone';
-  const actorEmail = notification.triggered_by_profile?.email ?? 'Someone';
+  const revisionAuthor =
+    notification.triggered_by_profile?.display_name ||
+    notification.triggered_by_profile?.email ||
+    'Someone';
+  const actorEmail =
+    notification.triggered_by_profile?.display_name ||
+    notification.triggered_by_profile?.email ||
+    'Someone';
   const changeOwnerId = notification.triggered_on;
   const currentUserId = currentUser.value.id;
   const key = `${type}.${action}`;
@@ -236,34 +245,18 @@ async function fetchPermissionsMap(articleIds: string[], userIds: string[]) {
 }
 
 async function loadNotificationsForUser(userId: string) {
-  const { data, error } = await supabaseClient
-    .from('notifications')
-    .select(
-      `
-      id,
-      user_id,
-      type,
-      action,
-      article_id,
-      triggered_by,
-      triggered_on,
-      is_read,
-      created_at,
-      article:articles ( title ),
-      triggered_by_profile:profiles!notifications_triggered_by_fkey ( email ),
-      triggered_on_profile:profiles!notifications_triggered_on_fkey ( email )
-    `,
-    )
-    .eq('user_id', userId)
-    .eq('is_read', false)
-    .order('created_at', { ascending: false });
+  const { data, error } = await supabaseClient.functions.invoke(
+    'get/notifications',
+    { method: 'POST', body: { userId } },
+  );
 
   if (error) {
     console.error('Error fetching notifications:', error);
     return;
   }
 
-  const rows = (data ?? []) as unknown as NotificationData[];
+  // Edge function returns `{ notifications: NotificationRow[] }` for the list case.
+  const rows = (data?.notifications ?? []) as unknown as NotificationData[];
 
   const articleIds = Array.from(
     new Set(
@@ -287,33 +280,18 @@ async function loadNotificationsForUser(userId: string) {
 }
 
 async function fetchNotificationById(id: string) {
-  const { data, error } = await supabaseClient
-    .from('notifications')
-    .select(
-      `
-      id,
-      user_id,
-      type,
-      action,
-      article_id,
-      triggered_by,
-      triggered_on,
-      is_read,
-      created_at,
-      article:articles ( title ),
-      triggered_by_profile:profiles!notifications_triggered_by_fkey ( email ),
-      triggered_on_profile:profiles!notifications_triggered_on_fkey ( email )
-    `,
-    )
-    .eq('id', id)
-    .single();
+  const { data, error } = await supabaseClient.functions.invoke(
+    'get/notifications',
+    { method: 'POST', body: { id } },
+  );
 
   if (error) {
     console.error('Error fetching single notification:', error);
     return null;
   }
 
-  const row = data as unknown as NotificationData;
+  // Edge function returns `{ notification: NotificationRow }` for the single case.
+  const row = data?.notification as unknown as NotificationData;
   if (!row) return null;
 
   if (row.article_id && row.triggered_on) {

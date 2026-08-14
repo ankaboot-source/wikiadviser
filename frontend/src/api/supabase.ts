@@ -15,7 +15,9 @@ const realClient = createBrowserClient<Database>(
       set(name: string, value: string, options: CookieOptions) {
         Cookies.set(name, value, {
           ...options,
-          secure: true,
+          // Secure only over HTTPS. Dev runs on plain HTTP localhost, where a
+          // `secure` cookie is rejected by the browser and breaks auth.
+          secure: window.location.protocol === 'https:',
           sameSite: 'Lax',
           path: '/',
           expires: options.maxAge

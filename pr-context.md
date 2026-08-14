@@ -1,27 +1,44 @@
-# PR context — demo deploy stale-ref hardening
+# PR context — display-name changes notifications + e2e replica workflow
 
 ## Problem
-QA demo deploy (`wikiadviser-deploy-demo.yml`) silently failed to update the server.
-The server's `git pull` errored every run because a stale remote-tracking ref
-`refs/remotes/origin/fix` (from a deleted `fix` branch) collided with newer
-`fix/*` branches, so the pull aborted and the server kept building old
-TypeScript-7 code (eslint `@typescript-eslint`/`Intrinsic` crash). The deploy job
-reported green because the script had no `set -e` and the SSH action ignores the
-remote exit code.
+Notification messages and the diff author line showed raw **emails** instead of
+the user's display name. Also, the notifications query ran directly from the
+browser against `profiles` — but `profiles_view` (which carries `display_name`)
+is security-sensitive and queryable **only via the admin client** in edge
+functions, so the browser query couldn't reach it.
 
 ## Change
-In `.github/workflows/wikiadviser-deploy-demo.yml`:
-- Added `set -euo pipefail` so any failed pull/build fails the job red.
-- Replaced both `git pull` with `git remote prune origin && git pull --ff-only`
-  so stale refs are pruned each deploy and can't block the pull again.
+- **Edge function** `supabase/functions/get/handlers/getNotifications.ts` (new):
+  queries `notifications` embedding `profiles_view` via explicit FK hints
+  (`notifications_triggered_by_fkey`, `notifications_triggered_on_fkey`) to avoid
+  PGRST201 ambiguity. Mounted at `POST /get/notifications` in `get/index.ts`.
+  Returns `{ notifications }` (list) or `{ notification }` (single).
+- **Frontend** `NotificationsBell.vue`: calls the edge function instead of a
+  direct browser query; shows `display_name` falling back to email, then
+  "Someone". `DiffItem.vue`: author line uses `getName()` (display name).
+- **Auth cookie fix** `frontend/src/api/supabase.ts`: `secure` cookie only over
+  HTTPS (dev runs on plain HTTP localhost, where a `secure` cookie is rejected
+  and breaks auth).
+- **Mock** `supabase.mock.ts`: added `get/notifications` case.
+- **E2E replica workflow** (new, reusable): `scripts/supabase-agent.sh`
+  (start/stop/drop/reset/env/verify) manages the in-repo disposable replica at
+  `supabase-agent/` (ports 54121+, project `agent`). Migrations/seed/functions
+  are **symlinked** to the real files; `config.toml` is regenerated from the
+  real one with offset ports. `verify` deterministically asserts symlinks +
+  config + replica. Docs: `docs/e2e-workflow.md`, `.opencode/skills/e2e-testing/`,
+  `AGENTS.md`.
 
 ## Scope / non-changes
-- Prod workflow untouched (out of scope for this PR).
-- No frontend/`package.json` change — TypeScript already pinned to `^5.9.2` on main.
-- Not DB-impactful; no UI change.
+- `deno.lock` gained `npm:supabase`/`cheerio` — side effect of running the deno
+  test suite (used by pre-existing `ai-review`/`parsingHelper`), not this feature.
+- No migration added (notifications schema unchanged). Not DB-impactful.
+- No UI screenshot committed (attached to PR via SHA URL instead).
 
 ## Verification
-- CI lint/prettier green.
-- Deploy workflow is in `paths-ignore: [".github/workflows/**"]`, so merging won't
-  auto-deploy. QA recovery is the server-side `git fetch --prune origin &&
-  git reset --hard origin/main` already performed.
+- `frontend`: `pnpm run lint` 0 errors; `pnpm run prettier:fix` clean.
+- Edge functions: `deno test supabase/functions --allow-all --node-modules-dir=auto`
+  → 107 passed, 0 failed.
+- E2E against the `supabase-agent/` replica: signed in as `bob@example.com`,
+  notifications bell shows unread badge "2", display name ("Alice Smith") and
+  email fallback ("bob@example.com") both render, empty state shows
+  "No notifications". `scripts/supabase-agent.sh verify` → VERIFY OK.

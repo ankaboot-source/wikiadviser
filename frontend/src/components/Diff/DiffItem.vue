@@ -84,7 +84,7 @@
               referrerpolicy="no-referrer"
             />
           </q-avatar>
-          {{ props.item?.user.email }}
+          {{ getName(props.item?.user) }}
         </div>
         <div style="size: 0.5rem">
           {{ localeDateString }} at {{ localeTimeString }}

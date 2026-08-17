@@ -80,13 +80,14 @@ stop() {
   fi
   echo "stopping pid $pid on :$PORT..."
   kill "$pid" 2>/dev/null || true
-  # Backstop: kill any leftover quasar/vite children (match the quasar CLI binary
-  # path actually in argv, which is what gets run via node_modules/.bin/quasar).
+  # Backstop: kill any leftover quasar/vite children for THIS port only (match
+  # the quasar CLI binary path + port actually in argv, so a concurrent server
+  # on another port is never touched).
   sleep 1
-  [[ -n "$(port_pid)" ]] && pkill -f "quasar.js dev" 2>/dev/null || true
+  [[ -n "$(port_pid)" ]] && pkill -f "quasar.js dev -p $PORT" 2>/dev/null || true
   sleep 1
   if [[ -n "$(port_pid)" ]]; then
-    echo "warning: :$PORT still in use after stop; try: pkill -9 -f 'quasar.js dev'"
+    echo "warning: :$PORT still in use after stop; try: pkill -9 -f 'quasar.js dev -p $PORT'"
   else
     echo "stopped. (logs retained at $LOG_FILE)"
   fi

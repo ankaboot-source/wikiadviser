@@ -14,6 +14,13 @@ Upgrade the frontend build tooling to `@quasar/app-vite@2.6.2` and `@quasar/extr
 - `scripts/frontend-dev.sh` (new): centralized lifecycle manager for the frontend dev server (`start` mock / `start:real` / `stop` / `status` / `logs` live `tail -f`; default port 9000; logs at `${TMPDIR:-/tmp}/frontend-dev-<port>.log`). Added as a separate commit under the same PR. `stop` backstop is port-scoped (`pkill -f "quasar.js dev -p $PORT"`) so concurrent servers on other ports are never touched.
 - `AGENTS.md`: documented `scripts/frontend-dev.sh` and corrected the CI Node note to 22.x.
 
+## Merge with main (resolved)
+- Merged `origin/main` into this branch. Conflicts in `frontend/package.json` and `frontend/pnpm-lock.yaml` resolved:
+  - Kept this PR's `@quasar/app-vite ^2.6.2` and `@quasar/extras ^2.0.3`.
+  - Took main's newer versions for other deps: `@quasar/cli ^5.0.6`, `@sentry/vue ^10.70.0`, `posthog-js ^1.417.1`, `quasar ^2.24.0`, `vue ^3.5.41`, `@supabase/supabase-js ^2.112.3`, `@types/node ^26.2.0`.
+  - Lockfile regenerated via `pnpm install` (not hand-merged).
+  - Verified after merge: lint 0 errors, prettier clean, `quasar build` succeeds.
+
 ## Deliberately kept (low-risk)
 - `require('dotenv').config()` stays in config (works fine in `.cjs`).
 - `quasar/wrappers` imports stay (deprecated but fully functional in v2).

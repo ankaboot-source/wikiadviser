@@ -18,9 +18,10 @@ deno test supabase/functions --allow-all --node-modules-dir=auto   # 107 tests
 # Dev
 npm run dev:all                            # frontend + supabase functions
 ./start.sh                                 # full bootstrap (MW + Supabase + env)
+scripts/frontend-dev.sh start|stop|status|logs [port]   # lifecycle for the frontend dev server (mock by default; `start:real` for the real backend; logs are LIVE `tail -f` at ${TMPDIR:-/tmp}/frontend-dev-<port>.log)
 ```
 
-CI uses pnpm 10, Node 20.x (`ci-pr.yml`). `frontend/package.json` `test` script is a no-op placeholder — there is **no frontend test suite**; don't claim frontend tests pass.
+CI uses pnpm 10, Node 22.x (`ci-pr.yml`). `frontend/package.json` `test` script is a no-op placeholder — there is **no frontend test suite**; don't claim frontend tests pass.
 
 ## Architecture (boundaries filenames don't reveal)
 

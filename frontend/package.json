@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@quasar/cli": "^5.0.6",
-    "@quasar/extras": "^1.17.0",
+    "@quasar/extras": "^2.0.3",
     "@sentry/vue": "^10.70.0",
     "@supabase/ssr": "^0.12.4",
     "cheerio": "^1.2.0",
@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@nuxtbase/auth-ui-vue": "^0.3.6",
-    "@quasar/app-vite": "^1.7.1",
+    "@quasar/app-vite": "^2.6.2",
     "@supabase/auth-ui-shared": "^0.1.8",
     "@supabase/supabase-js": "^2.112.3",
     "@types/node": "^26.2.0",
@@ -46,7 +46,7 @@
     "typescript": "^5.9.2"
   },
   "engines": {
-    "node": "^24 || ^22 || ^20 || ^18 || ^16 || ^14.19",
+    "node": "^24 || ^22",
     "npm": ">= 6.13.4",
     "yarn": ">= 1.21.1",
     "pnpm": ">= 9.15.9"

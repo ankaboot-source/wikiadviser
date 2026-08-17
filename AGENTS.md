@@ -54,13 +54,17 @@ The `.github/workflows/opencode.yml` workflow runs the agent on a GitHub Actions
 
 ## Testing UI features
 
-There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI/e2e verification, use the **`e2e-testing`** skill (project-level, `.opencode/skills/e2e-testing/`): it covers booting the `USE_MOCK_BACKEND=true` dev server, driving pages with **agent-browser** (`open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`), asserting, and attaching screenshots to a PR via SHA-based raw URLs.
+There is **no frontend test suite** — `frontend/package.json` `test` script is a no-op. For UI/e2e verification, use the **`e2e-testing`** skill (project-level, `.opencode/skills/e2e-testing/`): it covers driving pages with **agent-browser** (`open`, `snapshot -i`, `click`, `fill`, `get text`, `screenshot`), asserting, and attaching screenshots to a PR via SHA-based raw URLs.
+
+**Two e2e paths** (see `docs/e2e-workflow.md`):
+- **Real-data replica (preferred for DB-touching features)** — `scripts/supabase-agent.sh start` boots the in-repo disposable replica at `supabase-agent/` (ports 54121+, project `agent`). Migrations/seed/functions are **symlinked** to the real files, so schema + edge-function changes live in their real locations, but the *database* that gets reset/seed/dropped is the replica's — your local dev DB (54321/54322) is **never touched**. The agent may freely `db reset`/`drop` this replica.
+- **Mock backend (quick UI-only checks)** — `USE_MOCK_BACKEND=true` swaps in `frontend/src/api/supabase.mock.ts` (dummy session + data) so pages render without a live backend or login.
 
 ## PR workflow (when resolving an issue)
 
 Follow this end-to-end flow when resolving an issue, not just the code change:
 
-1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with the **`e2e-testing`** skill (against a `USE_MOCK_BACKEND=true` dev server) and capture a screenshot.
+1. **Determine if it's a UI change.** If the issue touches user-facing UI, verify it with the **`e2e-testing`** skill (against the `supabase-agent/` real-data replica for DB-touching features, or a `USE_MOCK_BACKEND=true` dev server for quick UI-only checks) and capture a screenshot.
 2. **Open a PR** for the change (never push to `main` directly — PR-only). Use `gh pr create` with a Conventional Commit message and a body that references the issue (`Resolves #NN`). **AI-created PRs MUST be labeled `agent-generated`** (e.g. `gh pr edit <n> --add-label agent-generated`) — the `human-approval-gate` required check blocks unapproved `agent-generated` PRs, and human PRs pass without it. **The AI must NEVER remove a `agent-generated` label, post `/approve`, or merge a PR** — only the human does. Interim (same account, issue #1460): after reviewing a `agent-generated` PR in the UI, the human either comments `/approve` (an `approve-handler` workflow adds the `human-approved` label, which the gate accepts) or removes the `agent-generated` label, then merges.
 3. **Attach the UI screenshot directly to the PR** (description or a comment) — do **not** commit it to the repo. Use `gh pr comment <n> --body-file` with a markdown image reference, or attach via the PR body. If `gh` can't inline the image, fall back to the SHA-based raw-URL workflow documented under "Operational gotchas".
 4. **DB / data-model guard rails**: before shipping, check whether the change touches the data model (schema, migrations, `database.types.ts`, queries, RLS). If it does, **flag it explicitly for human review** — do not run risky migrations or data-model changes alone with no human supervision. Call out the possible breaking-model impact in the PR body. If the change needs **no** migration (e.g. ephemeral Realtime presence), say so explicitly so reviewers know it was considered.

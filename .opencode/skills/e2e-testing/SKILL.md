@@ -48,6 +48,25 @@ Coverage is **done only when every meaningful cell has a screenshot**. Before fi
 
 If the mock/replica doesn't cover a state you need, extend it so the scenario is reproducible, then screenshot it.
 
+## Two ways to run e2e
+
+1. **Real-data replica (preferred for DB-touching features)** — the in-repo disposable Supabase replica at `supabase-agent/` (ports 54121+). Migrations/seed/functions are symlinked to the real files, so schema + edge-function changes live in their real locations, but the *database* that gets reset/seed/dropped is the replica's — your local dev DB (54321/54322) is never touched. See `docs/e2e-workflow.md` for the full workflow.
+2. **Mock backend (quick UI-only checks)** — `USE_MOCK_BACKEND=true` swaps in `frontend/src/api/supabase.mock.ts` (dummy session + data) so pages render without a live backend or login. Good for pure-render checks; not for DB/edge-function behavior.
+
+### Real-data replica setup
+
+```bash
+scripts/supabase-agent.sh start [frontend_port]   # default 9000; boots replica + applies migrations/seed + frontend
+scripts/supabase-agent.sh verify                  # deterministically assert symlinks + config + replica are correct
+scripts/supabase-agent.sh env                     # print API/DB URLs + anon key
+scripts/supabase-agent.sh reset                   # fresh schema + seed
+scripts/supabase-agent.sh drop                    # full cleanup (dev instance untouched)
+```
+
+- Frontend always serves on **9000** (Quasar ignores `PORT`).
+- Seed users exist (`alice@example.com`, `bob@example.com`, ...) with random passwords — set a known one via the admin API (`PUT /auth/v1/admin/users/<id>` with `{"password":"..."}`) to sign in.
+- Insert test rows (article, permissions, notifications, last_seen) directly into `postgresql://postgres:postgres@127.0.0.1:54422/postgres`.
+
 ## Setup: mock-backend dev server
 
 Boot a dev server with the mock backend so pages render without a live Supabase backend or login:

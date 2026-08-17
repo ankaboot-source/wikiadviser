@@ -4,6 +4,7 @@ import { getProfile } from "./handlers/getProfile.ts";
 import { getUsers } from "./handlers/getUsers.ts";
 import { getArticles } from "./handlers/getArticles.ts";
 import { getChanges } from "./handlers/getChanges.ts";
+import { getNotifications } from "./handlers/getNotifications.ts";
 
 const functionName = "get"; // these queries use `profiles_view` which is only queryable from the supabase admin client for security reasons
 
@@ -15,6 +16,7 @@ app.post("/profile", getProfile);
 app.post("/users", getUsers);
 app.post("/articles", getArticles);
 app.post("/changes", getChanges);
+app.post("/notifications", getNotifications);
 
 Deno.serve((req) => {
   return app.fetch(req);

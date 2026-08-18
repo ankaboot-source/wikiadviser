@@ -145,22 +145,21 @@
           dense
           no-caps
           size="sm"
-          icon="unfold_less"
-          label="Collapse all"
-          @click="reviewStore.collapseAll(revisionId, allChangeIds)"
+          :icon="isAllExpanded.value ? 'unfold_less' : 'unfold_more'"
+          :label="isAllExpanded.value ? 'Collapse all' : 'Expand all'"
+          @click="
+            isAllExpanded.value
+              ? reviewStore.collapseAll(revisionId, allChangeIds)
+              : reviewStore.expandAll(revisionId, allChangeIds)
+          "
         >
-          <q-tooltip>Collapse every change in this revision</q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          no-caps
-          size="sm"
-          icon="unfold_more"
-          label="Expand all"
-          @click="reviewStore.expandAll(revisionId, allChangeIds)"
-        >
-          <q-tooltip>Expand every change in this revision</q-tooltip>
+          <q-tooltip>
+            {{
+              isAllExpanded.value
+                ? 'Collapse every change in this revision'
+                : 'Expand every change in this revision'
+            }}
+          </q-tooltip>
         </q-btn>
       </div>
 
@@ -644,6 +643,16 @@ const navPositionLabel = computed(() => {
   const total = filteredItems.value.length;
   if (total === 0) return '0 / 0';
   return `${navIndex.value + 1} / ${total}`;
+});
+
+/** Whether every change in this revision is currently expanded. */
+const isAllExpanded = computed(() => {
+  if (filteredItems.value.length === 0) return true;
+  return !sectionGroups.value.some((group) =>
+    group.items.some((item) =>
+      reviewStore.isCollapsed(revisionId, group.section, item.id),
+    ),
+  );
 });
 
 function navigatePrev() {

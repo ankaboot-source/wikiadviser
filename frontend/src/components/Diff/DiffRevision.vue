@@ -577,6 +577,18 @@ const sectionGroups = computed(() =>
 /** All change ids in this revision (for collapse-all/expand-all clearing). */
 const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
 
+// Applying a filter should reveal the matching changes, not hide them behind
+// collapsed sections (default collapses when items > COLLAPSE_THRESHOLD).
+watch(
+  () => [reviewStore.typeFilter, reviewStore.unreviewedOnly] as const,
+  ([typeFilter, unreviewedOnly]) => {
+    if (typeFilter !== 'all' || unreviewedOnly) {
+      reviewStore.expandAll(revisionId, allChangeIds.value);
+    }
+  },
+  { immediate: true },
+);
+
 const revisionSummary = computed(() => summarizeRevision(props.revision.items));
 
 const typeCountBadges = computed(() => {

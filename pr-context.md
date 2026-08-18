@@ -12,6 +12,9 @@ Refactors the reviewable-large-revisions "changes filtering" feature (issue #142
 3. **Stale `isRecent`** (`DiffList.vue`): `isRecent` was computed before filtering, so if the newest revision's items were all archived/unindexed, the next-older revision became the first visible group but kept `isRecent: false` (Mira "Send review" button + last-recent-item divider broke). Now recomputed after filtering in `groupedIndexedChanges`.
 4. **Misleading bulk-action message**: "Undo available above until you submit." → "Undo available above." (actions commit immediately; the undo ledger is in-memory and lost on reload — doc comments updated to say so).
 
+### UX fix (from screenshot state-matrix pass)
+5. **Auto-expand on filter** (`DiffRevision.vue`): with sections collapsed (default when > COLLAPSE_THRESHOLD), applying a type filter or Unreviewed-only showed an **empty list** — the matching items were hidden behind collapsed sections while the section chips updated to filtered counts. A watcher on `[typeFilter, unreviewedOnly]` now calls `expandAll` when a filter is active (immediate:true so revisions mounting under an active filter reveal items too). Clearing the filter leaves the expansion state as-is; nav position tracks the filtered list (1/40 → 1/56 on clear).
+
 ### Dead code removed (`useDiffReviewStore.ts`)
 `toggleChange`, `toggleRevision`, `unmarkReviewed`, `hasPendingBulkActions` (defined + exported but never consumed).
 

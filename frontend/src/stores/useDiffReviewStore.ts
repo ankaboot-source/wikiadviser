@@ -112,11 +112,11 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   /** Drop per-section collapse overrides for a revision (keys `rev::section`). */
   function clearSectionOverrides(revisionId: string) {
     const prefix = `${revisionId}::`;
-    const next = { ...sectionCollapse.value };
-    for (const key of Object.keys(next)) {
-      if (key.startsWith(prefix)) delete next[key];
-    }
-    sectionCollapse.value = next;
+    sectionCollapse.value = Object.fromEntries(
+      Object.entries(sectionCollapse.value).filter(
+        ([key]) => !key.startsWith(prefix),
+      ),
+    );
   }
 
   // ---- Filters ----

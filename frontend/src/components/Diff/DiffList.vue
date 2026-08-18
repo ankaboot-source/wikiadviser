@@ -151,16 +151,19 @@ const groupedChanges = computed(() => {
   );
 
   return sortedGrouped.map((item, index) => ({
-    isRecent: index === 0,
     index: sortedGrouped.length - index,
     ...item,
   }));
 });
 
+// isRecent is computed AFTER filtering: if the newest revision's items are all
+// archived/unindexed and it drops out, the next-older revision becomes the
+// first visible group and must be treated as the recent one.
 const groupedIndexedChanges = computed(() =>
   groupedChanges.value
-    .map((groupedItem) => ({
+    .map((groupedItem, index) => ({
       ...groupedItem,
+      isRecent: index === 0,
       items: groupedItem.items.filter(
         (item) => item.index !== null && !item.archived,
       ),

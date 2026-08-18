@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { ChangeTypeCategory } from 'src/utils/changeGrouping';
 import { COLLAPSE_THRESHOLD } from 'src/utils/consts';
 
-/** A staged bulk accept/reject, undoable until the revision is submitted. */
+/** A bulk accept/reject with an in-memory undo ledger (lost on reload). */
 export interface PendingBulkAction {
   id: string;
   /** Human description, e.g. "Accept 12 formatting changes in §3". */
@@ -18,8 +18,8 @@ export interface PendingBulkAction {
  * State for the reviewable-large-revisions feature (issue #1426).
  *
  * Holds collapse state (per revision / section / change), filters, the set of
- * locally-reviewed changes (so the reviewer can resume), and staged bulk
- * accept/reject actions that are undoable until the revision is submitted.
+ * locally-reviewed changes (so the reviewer can resume), and bulk accept/reject
+ * actions with an in-memory undo ledger (undo is lost on reload).
  *
  * Navigation position (prev/next, `n / total`) is owned by `DiffRevision`
  * because it depends on the filtered, visible change list which the component
@@ -81,11 +81,6 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     return revisionDefault.value[revisionId] === true;
   }
 
-  function toggleChange(changeId: string) {
-    const cur = changeCollapse.value[changeId];
-    changeCollapse.value = { ...changeCollapse.value, [changeId]: !cur };
-  }
-
   function setChangeCollapsed(changeId: string, collapsed: boolean) {
     changeCollapse.value = { ...changeCollapse.value, [changeId]: collapsed };
   }
@@ -96,18 +91,14 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     sectionCollapse.value = { ...sectionCollapse.value, [sKey]: !cur };
   }
 
-  function toggleRevision(revisionId: string) {
-    const cur = revisionCollapse.value[revisionId];
-    const next = cur === undefined ? true : undefined;
-    revisionCollapse.value = { ...revisionCollapse.value, [revisionId]: next };
-  }
-
   function collapseAll(revisionId: string, changeIds: string[] = []) {
     revisionCollapse.value = { ...revisionCollapse.value, [revisionId]: true };
-    // Clear per-change overrides so the revision-level collapse applies to all.
+    // Clear per-change and per-section overrides so the revision-level
+    // collapse applies to all changes in this revision.
     const next = { ...changeCollapse.value };
     for (const id of changeIds) delete next[id];
     changeCollapse.value = next;
+    clearSectionOverrides(revisionId);
   }
 
   function expandAll(revisionId: string, changeIds: string[] = []) {
@@ -115,6 +106,17 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     const next = { ...changeCollapse.value };
     for (const id of changeIds) delete next[id];
     changeCollapse.value = next;
+    clearSectionOverrides(revisionId);
+  }
+
+  /** Drop per-section collapse overrides for a revision (keys `rev::section`). */
+  function clearSectionOverrides(revisionId: string) {
+    const prefix = `${revisionId}::`;
+    const next = { ...sectionCollapse.value };
+    for (const key of Object.keys(next)) {
+      if (key.startsWith(prefix)) delete next[key];
+    }
+    sectionCollapse.value = next;
   }
 
   // ---- Filters ----
@@ -129,12 +131,6 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   // ---- Reviewed marker ----
   function markReviewed(changeId: string) {
     reviewedChangeIds.value = new Set(reviewedChangeIds.value).add(changeId);
-  }
-
-  function unmarkReviewed(changeId: string) {
-    const next = new Set(reviewedChangeIds.value);
-    next.delete(changeId);
-    reviewedChangeIds.value = next;
   }
 
   function isReviewed(changeId: string): boolean {
@@ -152,10 +148,6 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     );
   }
 
-  const hasPendingBulkActions = computed(
-    () => pendingBulkActions.value.length > 0,
-  );
-
   return {
     revisionCollapse,
     sectionCollapse,
@@ -165,19 +157,15 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     unreviewedOnly,
     reviewedChangeIds,
     pendingBulkActions,
-    hasPendingBulkActions,
     registerRevisionDefault,
     isCollapsed,
-    toggleChange,
     setChangeCollapsed,
     toggleSection,
-    toggleRevision,
     collapseAll,
     expandAll,
     setTypeFilter,
     setUnreviewedOnly,
     markReviewed,
-    unmarkReviewed,
     isReviewed,
     stageBulkAction,
     removeBulkAction,

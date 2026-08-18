@@ -615,7 +615,7 @@ function toggleTypeFilter(cat: ChangeTypeCategory) {
 
 // ---- Section collapse ----
 function isSectionCollapsed(section: string): boolean {
-  return reviewStore.isCollapsed(revisionId.value, section, '');
+  return reviewStore.isCollapsed(revisionId, section, '');
 }
 
 // ---- Navigation ----
@@ -738,7 +738,7 @@ async function applyBulkAction(
     reviewStore.stageBulkAction(action);
     $q.notify({
       message: label,
-      caption: 'Undo available above until you submit.',
+      caption: 'Undo available above.',
       color: 'positive',
       icon: verb === 'Accept' ? 'thumb_up' : 'thumb_down',
       timeout: 4000,

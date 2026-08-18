@@ -29,6 +29,7 @@ Refactors the reviewable-large-revisions "changes filtering" feature (issue #142
 - `COLLAPSE_THRESHOLD` default registration stays setup-time (not recomputed on item changes — minor, out of scope).
 - Bulk-action undo is session-only (in-memory ledger); reload loses undo while committed status changes persist. True pre-submit staging was considered but not implemented — messaging now honest.
 - No DB/migration changes in this PR.
+- Screenshot URLs in the PR body must use `![alt](https://github.com/$REPO/raw/$SHA/...)` form — bare `raw.githubusercontent.com` URLs render as plain links in tables, not images (discovered during attachment; AGENTS.md gotcha updated).
 
 ## Test data (dev backend, not committed)
 - User: `e2e-filter@example.com` / `testpass123`

@@ -142,11 +142,10 @@
         <q-space />
         <q-btn
           flat
+          round
           dense
-          no-caps
           size="sm"
           :icon="isAllExpanded.value ? 'unfold_less' : 'unfold_more'"
-          :label="isAllExpanded.value ? 'Collapse all' : 'Expand all'"
           @click="
             isAllExpanded.value
               ? reviewStore.collapseAll(revisionId, allChangeIds)

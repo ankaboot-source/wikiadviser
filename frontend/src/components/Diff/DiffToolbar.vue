@@ -115,7 +115,8 @@ function initials(name: string) {
 
 const toggleOptions = computed(() => {
   function getLabel(value: string, text: string) {
-    return $q.screen.gt.sm || activeViewStore.modeToggle === value ? text : '';
+    // Icon-only on mobile; text label only on larger screens.
+    return $q.screen.gt.sm ? text : '';
   }
   const viewButton = {
     label: getLabel('view', 'Review changes'),

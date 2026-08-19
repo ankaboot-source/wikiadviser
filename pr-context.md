@@ -30,6 +30,13 @@ Refactors the reviewable-large-revisions "changes filtering" feature (issue #142
 - Bulk-action undo is session-only (in-memory ledger); reload loses undo while committed status changes persist. True pre-submit staging was considered but not implemented — messaging now honest.
 - No DB/migration changes in this PR.
 - Screenshot URLs in the PR body must use `![alt](https://github.com/$REPO/raw/$SHA/...)` form — bare `raw.githubusercontent.com` URLs render as plain links in tables, not images (discovered during attachment; AGENTS.md gotcha updated).
+- The screenshots live in git history at SHA `07924cc7` (committed `07924cc7`, deleted `9173cab4`); PR body URLs must reference `07924cc7`, not the branch head — at later SHAs the files 404 and images break (fixed in the PR body).
+
+## UI/UX polish round (review feedback)
+- **Overflow**: previous "fix" had *duplicated* the collapsed-legibility block in `DiffItem.vue` (regression) — removed the duplicate; added `word_break_all` to the type-3 content div and `min-width: 0` to the content `q-item-section` so long diff content wraps inside the card instead of overflowing right.
+- **Toggle**: collapse/expand is a single icon-only `q-btn` (round, no label) in `DiffRevision.vue` — icon flips `unfold_less`/`unfold_more` per `isAllExpanded`; tooltip explains the action.
+- **Mobile label**: `getLabel()` in `DiffToolbar.vue` now returns `''` on `$q.screen.lt.sm` regardless of active mode — "Edit article"/"Review changes" tabs are icon-only on mobile.
+- Lint 0 errors (4 pre-existing v-html warnings), prettier clean.
 
 ## Test data (dev backend, not committed)
 - User: `e2e-filter@example.com` / `testpass123`

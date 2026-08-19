@@ -70,35 +70,6 @@
             <q-tooltip>Reviewed — you've visited this change</q-tooltip>
           </q-icon>
         </q-item-label>
-        <!-- Issue #1 (overflow): ensure long diff content wraps within the item card -->
-        <q-item-label
-          v-if="!expanded"
-          caption
-          class="row items-center q-gutter-x-xs q-px-xs overflow-wrap"
-        >
-          <q-badge
-            outline
-            rounded
-            size="sm"
-            class="text-capitalize"
-            :color="typeBadgeColor"
-            :label="typeLabel"
-          />
-          <span>{{ wordCount }} word{{ wordCount === 1 ? '' : 's' }}</span>
-          <template v-if="section">
-            <span>·</span>
-            <span class="text-grey-8">§{{ section }}</span>
-          </template>
-          <q-space />
-          <q-icon
-            v-if="reviewStore.isReviewed(props.item.id)"
-            name="task_alt"
-            size="xs"
-            color="grey-7"
-          >
-            <q-tooltip>Reviewed — you've visited this change</q-tooltip>
-          </q-icon>
-        </q-item-label>
       </q-item-section>
       <q-item-section
         v-if="expanded && !!pastChange"
@@ -135,11 +106,11 @@
 
     <q-separator />
 
-    <q-item-section>
+    <q-item-section style="min-width: 0">
       <div class="q-pt-md q-pr-md q-pb-md">
         <div
           v-if="props.item.type_of_edit === 3"
-          class="row justify-center"
+          class="row justify-center word_break_all"
           @click="preventLinkVisit($event)"
           v-html="props.item.content"
         />

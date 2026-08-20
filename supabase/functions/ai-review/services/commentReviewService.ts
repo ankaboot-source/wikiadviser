@@ -140,6 +140,18 @@ export async function processCommentedChanges(
   const usedIndices = new Set<number>();
   let improvedCount = 0;
 
+  // Phase A — resolve matches sequentially (preserves usedIndices claiming order)
+  const workItems: Array<{
+    change_id: string;
+    targetIndex: number;
+    sourceParagraph: string;
+    change_comment: string | null;
+    mode: CommentImprovement['mode'];
+    revision_feedback: string[];
+    custom_instructions: string | null;
+    currentParagraph: string;
+  }> = [];
+
   for (const improvement of validImprovements) {
     const { type_of_edit, index, content, change_id, change_comment } = improvement;
 
@@ -267,36 +279,82 @@ export async function processCommentedChanges(
 
     usedIndices.add(targetIndex);
 
-    try {
-      const improved = await reviewArticleSection(
-        config,
-        systemPrompt,
-        buildRevisionUserPrompt(
-          sourceParagraph,
-          change_comment ?? '',
-          improvement.mode,
-          improvement.revision_feedback,
-          improvement.custom_instructions ?? undefined,
-        ),
-        8192,
-      );
+    workItems.push({
+      change_id,
+      targetIndex,
+      sourceParagraph,
+      change_comment,
+      mode: improvement.mode,
+      revision_feedback: improvement.revision_feedback,
+      custom_instructions: improvement.custom_instructions,
+      currentParagraph,
+    });
+  }
 
-      const trimmed = improved.trim();
-      if (trimmed && trimmed !== currentParagraph) {
-        improvedParagraphs[targetIndex] = trimmed;
-        improvedCount++;
-        console.info(
-          `[processCommented] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: improved`,
-        );
-      } else {
-        console.info(
-          `[processCommented] Change ${change_id.substring(0, 8)} → paragraph ${targetIndex}: no change`,
-        );
-      }
-    } catch (error) {
-      console.error(
-        `[processCommented] Failed to improve change ${change_id}:`,
-        error,
+  // Phase B — parallel LLM calls with bounded concurrency
+  const BATCH_SIZE = 4;
+  const results: Array<{
+    change_id: string;
+    targetIndex: number;
+    currentParagraph: string;
+    trimmed: string | null;
+    errored: boolean;
+  }> = [];
+
+  for (let i = 0; i < workItems.length; i += BATCH_SIZE) {
+    const batch = workItems.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (item) => {
+        try {
+          const improved = await reviewArticleSection(
+            config,
+            systemPrompt,
+            buildRevisionUserPrompt(
+              item.sourceParagraph,
+              item.change_comment ?? '',
+              item.mode,
+              item.revision_feedback,
+              item.custom_instructions ?? undefined,
+            ),
+            8192,
+          );
+          return {
+            change_id: item.change_id,
+            targetIndex: item.targetIndex,
+            currentParagraph: item.currentParagraph,
+            trimmed: improved.trim(),
+            errored: false,
+          };
+        } catch (error) {
+          console.error(
+            `[processCommented] Failed to improve change ${item.change_id}:`,
+            error,
+          );
+          return {
+            change_id: item.change_id,
+            targetIndex: item.targetIndex,
+            currentParagraph: item.currentParagraph,
+            trimmed: null,
+            errored: true,
+          };
+        }
+      }),
+    );
+    results.push(...batchResults);
+  }
+
+  // Phase C — apply results sequentially in original order
+  for (const result of results) {
+    if (result.errored) continue;
+    if (result.trimmed && result.trimmed !== result.currentParagraph) {
+      improvedParagraphs[result.targetIndex] = result.trimmed;
+      improvedCount++;
+      console.info(
+        `[processCommented] Change ${result.change_id.substring(0, 8)} → paragraph ${result.targetIndex}: improved`,
+      );
+    } else {
+      console.info(
+        `[processCommented] Change ${result.change_id.substring(0, 8)} → paragraph ${result.targetIndex}: no change`,
       );
     }
   }

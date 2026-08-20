@@ -23,6 +23,7 @@ const app = new Hono().basePath('/ai-review');
 app.use('*', corsMiddleware);
 
 app.post('/', async (c) => {
+  let activeModel: string | null = null;
   try {
     console.info('AI review request received');
 
@@ -156,6 +157,8 @@ app.post('/', async (c) => {
         console.error('No AI configuration available');
         return c.json({ error: 'No AI configuration available' }, 400);
       }
+
+      activeModel = config.model;
 
       let articleWideResult: {
         hasImprovements: boolean;
@@ -334,6 +337,8 @@ app.post('/', async (c) => {
       return c.json({ error: 'No AI configuration available' }, 400);
     }
 
+    activeModel = config.model;
+
     console.info('LLM config retrieved', {
       provider: config.provider,
       model: config.model,
@@ -394,10 +399,12 @@ app.post('/', async (c) => {
     });
   } catch (error) {
     console.error('AI review failed:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return c.json(
       {
         error: 'Failed to process review',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        details: message,
+        model: activeModel,
       },
       500,
     );

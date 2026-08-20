@@ -9,6 +9,7 @@ export class AnthropicProvider implements AIProvider {
 
     const response = await fetch(url, {
       method: 'POST',
+      signal: AbortSignal.timeout(30_000),
       headers: {
         'x-api-key': params.apiKey,
         'anthropic-version': '2023-06-01',

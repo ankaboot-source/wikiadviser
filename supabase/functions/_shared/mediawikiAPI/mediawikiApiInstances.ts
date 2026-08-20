@@ -10,6 +10,7 @@ const mediawikiApiInstances = new Map<
 for (const language of ENV.WIKIADVISER_LANGUAGES) {
   const axiosInstance = axios.create({
     baseURL: `${ENV.MEDIAWIKI_ENDPOINT}/${language}/api.php`,
+    timeout: 30_000,
     httpsAgent: new https.Agent({
       rejectUnauthorized: false,
     }),

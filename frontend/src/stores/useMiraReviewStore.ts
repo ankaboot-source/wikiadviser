@@ -108,7 +108,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       message,
       icon: icons[type],
       position: 'bottom',
-      timeout: 5000,
+      timeout: 0,
       actions: [{ icon: 'close', color: 'white', round: true }],
     });
   }
@@ -234,17 +234,26 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
           | {
               details?: string;
               error?: string;
+              model?: string;
             }
           | undefined;
 
         const details = errData?.details as string | undefined;
         const errMsg = errData?.error as string | undefined;
-        const userMsg =
+        let userMsg =
           details?.includes('429') || details?.includes('quota')
             ? 'AI provider quota exceeded — please wait or switch to a different model'
             : details?.includes('API key') || details?.includes('apiKey')
               ? 'AI provider configuration error — check your API key'
-              : details || errMsg || 'AI provider error';
+              : details?.includes('timeout') ||
+                  details?.includes('timed out') ||
+                  details?.includes('AbortError')
+                ? 'AI review timed out — the model is too slow or unresponsive. Try a different model or check your API key.'
+                : details || errMsg || 'AI provider error';
+        const modelName = errData?.model as string | undefined;
+        if (modelName) {
+          userMsg = `${userMsg} (model: ${modelName})`;
+        }
         showNotification('error', userMsg);
         throw fnError;
       }

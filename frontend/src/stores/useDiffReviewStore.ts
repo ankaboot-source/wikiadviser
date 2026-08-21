@@ -117,16 +117,6 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     changeCollapse.value = next;
   }
 
-  function toggleAll(revisionId: string, changeIds: string[] = []) {
-    const cur = revisionCollapse.value[revisionId];
-    // If explicitly collapsed or default-collapsed → expand. Otherwise → collapse.
-    if (cur === true || (cur === undefined && revisionDefault.value[revisionId])) {
-      expandAll(revisionId, changeIds);
-    } else {
-      collapseAll(revisionId, changeIds);
-    }
-  }
-
   // ---- Filters ----
   function setTypeFilter(filter: ChangeTypeCategory | 'all') {
     typeFilter.value = filter;
@@ -184,7 +174,6 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     toggleRevision,
     collapseAll,
     expandAll,
-    toggleAll,
     setTypeFilter,
     setUnreviewedOnly,
     markReviewed,

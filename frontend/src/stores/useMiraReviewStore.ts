@@ -325,7 +325,8 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
         startChainProgress('Reviewing...', totalBatches);
         showNotification('info', 'Review in progress, you will be notified when complete');
         pollForChainCompletion(chainId, articleId, () => {
-          $resetReviewTrigger();
+          // Non-zero revids to trigger navigateToDiff (MwVisualEditor watcher)
+          completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });
           showNotification('success', 'Review complete — changes applied');
           loading.value = false;
         });
@@ -414,6 +415,9 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     chainActive,
     chainProgress,
     chainTotalBatches,
+    chainCurrentBatch,
+    startChainProgress,
+    pollForChainCompletion,
     stopChainProgress,
     loadPromptsFromDB,
     selectPrompt,

@@ -145,22 +145,13 @@
           dense
           no-caps
           size="sm"
-          icon="unfold_less"
-          label="Collapse all"
-          @click="reviewStore.collapseAll(revisionId, allChangeIds)"
+          :icon="allCollapsed ? 'unfold_more' : 'unfold_less'"
+          :label="allCollapsed ? 'Expand all' : 'Collapse all'"
+          @click="reviewStore.toggleAll(revisionId, allChangeIds)"
         >
-          <q-tooltip>Collapse every change in this revision</q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          no-caps
-          size="sm"
-          icon="unfold_more"
-          label="Expand all"
-          @click="reviewStore.expandAll(revisionId, allChangeIds)"
-        >
-          <q-tooltip>Expand every change in this revision</q-tooltip>
+          <q-tooltip>{{
+            allCollapsed ? 'Expand every change in this revision' : 'Collapse every change in this revision'
+          }}</q-tooltip>
         </q-btn>
       </div>
 
@@ -576,6 +567,14 @@ const sectionGroups = computed(() =>
 
 /** All change ids in this revision (for collapse-all/expand-all clearing). */
 const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
+
+/** True when every change in this revision is collapsed (for toggle-all icon). */
+const allCollapsed = computed(() => {
+  const rev = revisionId;
+  return props.revision.items.every((item) =>
+    reviewStore.isCollapsed(rev, props.sectionMap.get(item.id) ?? '', item.id),
+  );
+});
 
 const revisionSummary = computed(() => summarizeRevision(props.revision.items));
 

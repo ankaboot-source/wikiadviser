@@ -358,11 +358,16 @@ app.post('/', async (c) => {
     // Check if result is a chain signal
     if ('chainState' in result) {
       console.info('[chain] Starting chain — returning 202');
-      const chainUrl = `${Deno.env.get('SUPABASE_URL')!}/functions/v1/ai-review/chain`;
-      // Fire first chain link in background
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const chainUrl = `${supabaseUrl}/functions/v1/ai-review/chain`;
+      // Fire first chain link in background (authenticated with service role key)
       fetch(chainUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceRoleKey}`,
+        },
         body: JSON.stringify({ chain_token: result.chainToken }),
       }).catch((err) =>
         console.error('[chain] Failed to fire first link:', err)
@@ -469,12 +474,16 @@ app.post('/chain', async (c) => {
     );
 
     if (chainState) {
-      // Schedule next chain link
+      // Schedule next chain link (authenticated with service role key)
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       const chainUrl = `${supabaseUrl}/functions/v1/ai-review/chain`;
       fetch(chainUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${serviceRoleKey}`,
+        },
         body: JSON.stringify({ chain_token }),
       }).catch((err) =>
         console.error('[chain] Failed to schedule next link:', err)

@@ -6,9 +6,9 @@
       no-caps
       class="q-mr-xs q-px-md btn-no-icon-spacing review-btn-wrapper"
       content-class="no-shadow"
-      :disable="miraStore.loading || miraStore.chainActive"
+      :disable="miraStore.loading"
       split
-      @click="triggerReview"
+      @click="miraStore.chainActive ? undefined : triggerReview"
     >
       <template #label>
         <template v-if="miraStore.chainActive">

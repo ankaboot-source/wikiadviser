@@ -52,6 +52,52 @@ export function buildUserPrompt(sectionContent: string): string {
   return sectionContent;
 }
 
+export function buildWholeArticleSystemPrompt(
+  title: string,
+  description: string,
+  basePrompt: string,
+  customInstructions?: string,
+): string {
+  let systemPrompt = basePrompt;
+
+  systemPrompt += '\n\nHere the article title and description:';
+  systemPrompt += `\nTitle: ${title}`;
+
+  if (description?.trim()) {
+    systemPrompt += `\nDescription: ${description}`;
+  } else {
+    systemPrompt += '\nDescription: No description available';
+  }
+
+  const hasCustomInstructions = !!customInstructions?.trim();
+
+  if (hasCustomInstructions) {
+    systemPrompt += `\n\nCRITICAL INSTRUCTION (takes priority over ALL other rules): ${customInstructions}`;
+  }
+
+  systemPrompt += `\n\nAlways provide only the requested output exactly as I ask. Do not repeat the user prompt. Do not include greetings, sign-offs, introductions, explanations, commentary, or extra text. Format the response so I can copy and use it directly without editing.
+
+You will receive the WHOLE article (wikitext) in the user message.
+Review the entire article and improve it.
+- CRITICAL: Copy ALL wikitext structural lines into your response character-for-character — this includes section headers (== Title ==, === Sub ===), templates ({{DISPLAYTITLE:...}}, {{Short description|...}}, {{Infobox...}}), magic words (__TOC__, __NOTOC__), categories ([[Category:...]]), and any line starting with {{ or [[. Never drop or reword these lines.
+- ${
+    hasCustomInstructions
+      ? 'Apply the CRITICAL INSTRUCTION across the whole article. The CRITICAL INSTRUCTION takes priority over all other rules, including wikitext structural preservation rules.'
+      : 'Improve only the prose content between structural lines'
+  }
+- Return ONLY the sections you changed, each prefixed with its EXACT original section header (e.g. "== History =="), followed by the improved content of that section.
+- Do NOT return unchanged sections.
+- Do NOT return the full article.
+- Do NOT repeat the article title, description, or section number.
+- ${
+    hasCustomInstructions
+      ? 'The CRITICAL INSTRUCTION MUST be applied to the whole article.'
+      : 'If no improvements needed, return an empty response.'
+  }`;
+
+  return systemPrompt;
+}
+
 export function buildRevisionSystemPrompt(
   article: { title: string | null; description: string | null },
   wikitext?: string,

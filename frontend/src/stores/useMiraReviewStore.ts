@@ -38,6 +38,8 @@ export interface ReviewResponse {
   change_id?: string;
   was_empty?: boolean;
   article_wide_applied?: boolean;
+  accepted?: boolean;
+  chain_state?: { chainId: string; batchIndex: number; totalBatches: number };
 }
 
 const DEFAULT_PROMPTS: Prompt[] = [
@@ -72,6 +74,68 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   const loading = ref(false);
   const reviews = ref<ReviewItem[]>([]);
   const promptsLoaded = ref(false);
+
+  // --- Chain review progress (self-chaining section-wise fallback) ---
+  const chainActive = ref(false);
+  const chainProgress = ref<string>('');
+  const chainTotalBatches = ref(0);
+  const chainCurrentBatch = ref(0);
+  let chainPollTimer: number | null = null;
+
+  function startChainProgress(message: string, totalBatches: number) {
+    chainActive.value = true;
+    chainProgress.value = message;
+    chainTotalBatches.value = totalBatches;
+    chainCurrentBatch.value = 0;
+  }
+
+  function stopChainProgress() {
+    chainActive.value = false;
+    chainProgress.value = '';
+    chainTotalBatches.value = 0;
+    chainCurrentBatch.value = 0;
+    if (chainPollTimer !== null) {
+      clearInterval(chainPollTimer);
+      chainPollTimer = null;
+    }
+  }
+
+  // Poll review_chains table for live batch progress, then pending_diff on completion.
+  function pollForChainCompletion(
+    cId: string,
+    articleId: string,
+    onComplete: () => void,
+  ) {
+    const poll = async () => {
+      try {
+        // First check batch progress
+        const { data: chain } = await supabaseClient
+          .from('review_chains')
+          .select('batch_index, status, improved_count')
+          .eq('id', cId)
+          .single();
+        if (chain) {
+          chainCurrentBatch.value = chain.batch_index + 1;
+          if (chain.improved_count > 0) {
+            chainProgress.value = `Reviewing... batch ${chainCurrentBatch.value}/${chainTotalBatches.value}`;
+          }
+        }
+        // If pending_diff is set, we're done
+        const { data } = await supabaseClient
+          .from('articles')
+          .select('pending_diff')
+          .eq('id', articleId)
+          .single();
+        if (data?.pending_diff === true) {
+          stopChainProgress();
+          onComplete();
+        }
+      } catch (err) {
+        console.error('Error polling chain progress:', err);
+      }
+    };
+    chainPollTimer = window.setInterval(poll, 5000);
+  }
 
   function completeReview(data: {
     miraBotId: string;
@@ -108,7 +172,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       message,
       icon: icons[type],
       position: 'bottom',
-      timeout: 5000,
+      timeout: 0,
       actions: [{ icon: 'close', color: 'white', round: true }],
     });
   }
@@ -234,19 +298,46 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
           | {
               details?: string;
               error?: string;
+              model?: string;
             }
           | undefined;
 
         const details = errData?.details as string | undefined;
         const errMsg = errData?.error as string | undefined;
-        const userMsg =
+        let userMsg =
           details?.includes('429') || details?.includes('quota')
             ? 'AI provider quota exceeded — please wait or switch to a different model'
             : details?.includes('API key') || details?.includes('apiKey')
               ? 'AI provider configuration error — check your API key'
-              : details || errMsg || 'AI provider error';
+              : details?.includes('timeout') ||
+                  details?.includes('timed out') ||
+                  details?.includes('AbortError')
+                ? 'AI review timed out — the model is too slow or unresponsive. Try a different model or check your API key.'
+                : details || errMsg || 'AI provider error';
+        const modelName = errData?.model as string | undefined;
+        if (modelName) {
+          userMsg = `${userMsg} (model: ${modelName})`;
+        }
         showNotification('error', userMsg);
         throw fnError;
+      }
+
+      // 202 Accepted — chain review in progress
+      if (data?.accepted === true) {
+        const totalBatches = data?.chain_state?.totalBatches ?? 0;
+        const chainId = data?.chain_state?.chainId ?? '';
+        startChainProgress('Reviewing...', totalBatches);
+        showNotification(
+          'info',
+          'Review in progress, you will be notified when complete',
+        );
+        pollForChainCompletion(chainId, articleId, () => {
+          // Non-zero revids to trigger navigateToDiff (MwVisualEditor watcher)
+          completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });
+          showNotification('success', 'Review complete — changes applied');
+          loading.value = false;
+        });
+        return;
       }
 
       if (data?.reviews && data.reviews.length > 0) {
@@ -291,7 +382,9 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       }
       $resetReviewTrigger();
     } finally {
-      loading.value = false;
+      if (!chainActive.value) {
+        loading.value = false;
+      }
     }
   }
 
@@ -325,6 +418,14 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     loading,
     reviews,
     promptsLoaded,
+    // chain progress state
+    chainActive,
+    chainProgress,
+    chainTotalBatches,
+    chainCurrentBatch,
+    startChainProgress,
+    pollForChainCompletion,
+    stopChainProgress,
     loadPromptsFromDB,
     selectPrompt,
     savePromptsToDB,

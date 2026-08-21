@@ -292,6 +292,25 @@ onBeforeMount(async () => {
     activeViewStore.modeToggle = 'edit';
   }
 
+  // Check for an active chain review (tab-close persistence)
+  const { data: activeChain } = await supabaseClient
+    .from('review_chains')
+    .select('id, batch_index, total_batches, improved_count, status')
+    .eq('article_id', articleId.value)
+    .eq('status', 'active')
+    .single();
+  if (activeChain) {
+    console.log('[ArticlePage] Found active chain review, resuming progress');
+    miraStore.startChainProgress('Reviewing...', activeChain.total_batches);
+    miraStore.pollForChainCompletion(activeChain.id, articleId.value, () => {
+      miraStore.completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });
+      miraStore.showNotification(
+        'success',
+        'Review complete — changes applied',
+      );
+    });
+  }
+
   const initialParsed = await getParsedChanges(articleId.value);
   changesList.value = initialParsed.changes;
   revisionCommentsMap.value = initialParsed.revisionComments;

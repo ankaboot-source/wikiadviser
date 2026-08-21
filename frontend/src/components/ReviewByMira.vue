@@ -6,20 +6,28 @@
       no-caps
       class="q-mr-xs q-px-md btn-no-icon-spacing review-btn-wrapper"
       content-class="no-shadow"
-      :disable="miraStore.loading"
+      :disable="miraStore.loading || miraStore.chainActive"
       split
       @click="triggerReview"
     >
       <template #label>
-        <template v-if="miraStore.loading">
+        <template v-if="miraStore.chainActive">
+          <q-spinner size="1em" />
+        </template>
+        <template v-else-if="miraStore.loading">
           <q-spinner size="1em" />
         </template>
         <span v-if="!$q.screen.lt.md" class="review-label">
-          &nbsp;Review by&nbsp;<span
-            class="prompt-name"
-            :class="{ 'prompt-name-active': miraStore.selectedPrompt }"
-            >{{ miraStore.selectedPrompt?.name }}</span
-          >
+          <template v-if="miraStore.chainActive">
+            &nbsp;{{ miraStore.chainProgress }}
+          </template>
+          <template v-else>
+            &nbsp;Review by&nbsp;<span
+              class="prompt-name"
+              :class="{ 'prompt-name-active': miraStore.selectedPrompt }"
+              >{{ miraStore.selectedPrompt?.name }}</span
+            >
+          </template>
         </span>
       </template>
 

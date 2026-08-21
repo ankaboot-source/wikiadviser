@@ -13,7 +13,7 @@ export class OpenAICompatibleProvider implements AIProvider {
 
     const response = await fetch(url, {
       method: 'POST',
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(60_000),
       headers: {
         Authorization: `Bearer ${params.apiKey}`,
         'Content-Type': 'application/json',

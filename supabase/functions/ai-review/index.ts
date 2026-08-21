@@ -6,7 +6,8 @@ import {
   getArticle,
   addMiraBotPermission,
 } from '../_shared/helpers/supabaseHelper.ts';
-import { reviewAndImproveArticle } from './services/reviewService.ts';
+import { reviewAndImproveArticle, processChainBatch, startChainReview, ChainState } from './services/reviewService.ts';
+import type { LLMConfig } from './utils/types.ts';
 import { processCommentedChanges } from './services/commentReviewService.ts';
 import { applyRevisionFeedback } from './services/revisionFeedbackService.ts';
 import { getLLMConfig, getMiraBotId } from './services/configService.ts';
@@ -351,7 +352,27 @@ app.post('/', async (c) => {
       config,
       MIRA_BOT_ID,
       customInstructions,
+      true, // chainMode = true
     );
+
+    // Check if result is a chain signal
+    if ('chainState' in result) {
+      console.info('[chain] Starting chain — returning 202');
+      const chainUrl = `${Deno.env.get('SUPABASE_URL')!}/functions/v1/ai-review/chain`;
+      // Fire first chain link in background
+      fetch(chainUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chain_token: result.chainToken }),
+      }).catch((err) =>
+        console.error('[chain] Failed to fire first link:', err)
+      );
+      return c.json({
+        accepted: true,
+        message: 'Review accepted, processing in batches',
+        chain_state: result.chainState,
+      }, 202);
+    }
 
     if (!result.hasImprovements) {
       console.info('No improvements made');
@@ -408,6 +429,73 @@ app.post('/', async (c) => {
       },
       500,
     );
+  }
+});
+
+// ── Self-chaining route (no auth — authenticated by chain_token) ──
+app.post('/chain', async (c) => {
+  try {
+    const { chain_token } = await c.req.json();
+    if (!chain_token) {
+      return c.json({ error: 'Missing chain_token' }, 400);
+    }
+
+    const admin = createSupabaseAdmin();
+    const { data: chain, error } = await admin
+      .from('review_chains')
+      .select('*')
+      .eq('chain_token', chain_token)
+      .eq('status', 'active')
+      .single();
+
+    if (error || !chain) {
+      console.warn('[chain] Invalid or expired chain_token');
+      return c.json({ error: 'Chain not found or expired' }, 404);
+    }
+
+    const config = chain.config_json as LLMConfig;
+
+    const { chainState, comment } = await processChainBatch(
+      chain.id,
+      chain.batch_index,
+      chain.total_batches,
+      chain.wikitext,
+      chain.improved_count,
+      chain.language,
+      config,
+      chain.system_prompt,
+      chain.custom_instructions,
+      chain.article_id,
+    );
+
+    if (chainState) {
+      // Schedule next chain link
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const chainUrl = `${supabaseUrl}/functions/v1/ai-review/chain`;
+      fetch(chainUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chain_token }),
+      }).catch((err) =>
+        console.error('[chain] Failed to schedule next link:', err)
+      );
+
+      return c.json({
+        accepted: true,
+        comment,
+        chain_state: chainState,
+      });
+    }
+
+    return c.json({
+      accepted: true,
+      comment,
+      chain_state: null,
+    });
+  } catch (error) {
+    console.error('[chain] Chain processing failed:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return c.json({ error: 'Chain processing failed', details: message }, 500);
   }
 });
 

@@ -38,6 +38,7 @@ export interface ReviewResponse {
   change_id?: string;
   was_empty?: boolean;
   article_wide_applied?: boolean;
+  accepted?: boolean;
 }
 
 const DEFAULT_PROMPTS: Prompt[] = [
@@ -72,6 +73,45 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   const loading = ref(false);
   const reviews = ref<ReviewItem[]>([]);
   const promptsLoaded = ref(false);
+
+  // --- Chain review progress (self-chaining section-wise fallback) ---
+  const chainActive = ref(false);
+  const chainProgress = ref<string>( '');
+  let chainPollTimer: number | null = null;
+
+  function startChainProgress(message: string) {
+    chainActive.value = true;
+    chainProgress.value = message;
+  }
+
+  function stopChainProgress() {
+    chainActive.value = false;
+    chainProgress.value = '';
+    if (chainPollTimer !== null) {
+      clearInterval(chainPollTimer);
+      chainPollTimer = null;
+    }
+  }
+
+  // Poll the article's pending_diff flag until the chain finishes.
+  function pollForChainCompletion(articleId: string, onComplete: () => void) {
+    const poll = async () => {
+      try {
+        const { data } = await supabaseClient
+          .from('articles')
+          .select('pending_diff')
+          .eq('id', articleId)
+          .single();
+        if (data?.pending_diff === true) {
+          stopChainProgress();
+          onComplete();
+        }
+      } catch (err) {
+        console.error('Error polling chain progress:', err);
+      }
+    };
+    chainPollTimer = window.setInterval(poll, 5000);
+  }
 
   function completeReview(data: {
     miraBotId: string;
@@ -258,6 +298,18 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
         throw fnError;
       }
 
+      // 202 Accepted — chain review in progress
+      if (data?.accepted === true) {
+        startChainProgress('Review accepted — processing in batches...');
+        showNotification('info', 'Review in progress, you will be notified when complete');
+        pollForChainCompletion(articleId, () => {
+          $resetReviewTrigger();
+          showNotification('success', 'Review complete — changes applied');
+          loading.value = false;
+        });
+        return;
+      }
+
       if (data?.reviews && data.reviews.length > 0) {
         reviews.value = data.reviews;
       }
@@ -300,7 +352,9 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       }
       $resetReviewTrigger();
     } finally {
-      loading.value = false;
+      if (!chainActive.value) {
+        loading.value = false;
+      }
     }
   }
 
@@ -334,6 +388,10 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     loading,
     reviews,
     promptsLoaded,
+    // chain progress state
+    chainActive,
+    chainProgress,
+    stopChainProgress,
     loadPromptsFromDB,
     selectPrompt,
     savePromptsToDB,

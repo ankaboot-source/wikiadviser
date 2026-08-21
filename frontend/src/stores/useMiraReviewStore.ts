@@ -39,7 +39,7 @@ export interface ReviewResponse {
   was_empty?: boolean;
   article_wide_applied?: boolean;
   accepted?: boolean;
-  chain_state?: { batchIndex: number; totalBatches: number };
+  chain_state?: { chainId: string; batchIndex: number; totalBatches: number };
 }
 
 const DEFAULT_PROMPTS: Prompt[] = [
@@ -79,28 +79,44 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   const chainActive = ref(false);
   const chainProgress = ref<string>('');
   const chainTotalBatches = ref(0);
+  const chainCurrentBatch = ref(0);
   let chainPollTimer: number | null = null;
 
   function startChainProgress(message: string, totalBatches: number) {
     chainActive.value = true;
     chainProgress.value = message;
     chainTotalBatches.value = totalBatches;
+    chainCurrentBatch.value = 0;
   }
 
   function stopChainProgress() {
     chainActive.value = false;
     chainProgress.value = '';
     chainTotalBatches.value = 0;
+    chainCurrentBatch.value = 0;
     if (chainPollTimer !== null) {
       clearInterval(chainPollTimer);
       chainPollTimer = null;
     }
   }
 
-  // Poll the article's pending_diff flag until the chain finishes.
-  function pollForChainCompletion(articleId: string, onComplete: () => void) {
+  // Poll review_chains table for live batch progress, then pending_diff on completion.
+  function pollForChainCompletion(cId: string, articleId: string, onComplete: () => void) {
     const poll = async () => {
       try {
+        // First check batch progress
+        const { data: chain } = await supabaseClient
+          .from('review_chains')
+          .select('batch_index, status, improved_count')
+          .eq('id', cId)
+          .single();
+        if (chain) {
+          chainCurrentBatch.value = chain.batch_index + 1;
+          if (chain.improved_count > 0) {
+            chainProgress.value = `Reviewing... batch ${chainCurrentBatch.value}/${chainTotalBatches.value}`;
+          }
+        }
+        // If pending_diff is set, we're done
         const { data } = await supabaseClient
           .from('articles')
           .select('pending_diff')
@@ -305,9 +321,10 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       // 202 Accepted — chain review in progress
       if (data?.accepted === true) {
         const totalBatches = data?.chain_state?.totalBatches ?? 0;
+        const chainId = data?.chain_state?.chainId ?? '';
         startChainProgress('Reviewing...', totalBatches);
         showNotification('info', 'Review in progress, you will be notified when complete');
-        pollForChainCompletion(articleId, () => {
+        pollForChainCompletion(chainId, articleId, () => {
           $resetReviewTrigger();
           showNotification('success', 'Review complete — changes applied');
           loading.value = false;

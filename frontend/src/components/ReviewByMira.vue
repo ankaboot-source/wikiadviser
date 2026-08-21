@@ -19,7 +19,7 @@
         </template>
         <span v-if="!$q.screen.lt.md" class="review-label">
           <template v-if="miraStore.chainActive">
-            &nbsp;Reviewing...
+            &nbsp;Reviewing ({{ miraStore.chainTotalBatches }} batches)...
           </template>
           <template v-else>
             &nbsp;Review by&nbsp;<span

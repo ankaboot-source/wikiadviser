@@ -39,6 +39,7 @@ export interface ReviewResponse {
   was_empty?: boolean;
   article_wide_applied?: boolean;
   accepted?: boolean;
+  chain_state?: { batchIndex: number; totalBatches: number };
 }
 
 const DEFAULT_PROMPTS: Prompt[] = [
@@ -76,17 +77,20 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
 
   // --- Chain review progress (self-chaining section-wise fallback) ---
   const chainActive = ref(false);
-  const chainProgress = ref<string>( '');
+  const chainProgress = ref<string>('');
+  const chainTotalBatches = ref(0);
   let chainPollTimer: number | null = null;
 
-  function startChainProgress(message: string) {
+  function startChainProgress(message: string, totalBatches: number) {
     chainActive.value = true;
     chainProgress.value = message;
+    chainTotalBatches.value = totalBatches;
   }
 
   function stopChainProgress() {
     chainActive.value = false;
     chainProgress.value = '';
+    chainTotalBatches.value = 0;
     if (chainPollTimer !== null) {
       clearInterval(chainPollTimer);
       chainPollTimer = null;
@@ -300,7 +304,8 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
 
       // 202 Accepted — chain review in progress
       if (data?.accepted === true) {
-        startChainProgress('Review accepted — processing in batches...');
+        const totalBatches = data?.chain_state?.totalBatches ?? 0;
+        startChainProgress('Reviewing...', totalBatches);
         showNotification('info', 'Review in progress, you will be notified when complete');
         pollForChainCompletion(articleId, () => {
           $resetReviewTrigger();
@@ -391,6 +396,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     // chain progress state
     chainActive,
     chainProgress,
+    chainTotalBatches,
     stopChainProgress,
     loadPromptsFromDB,
     selectPrompt,

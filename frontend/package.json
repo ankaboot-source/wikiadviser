@@ -16,15 +16,15 @@
     "build": "quasar build"
   },
   "dependencies": {
-    "@quasar/cli": "^5.0.6",
-    "@quasar/extras": "^2.0.3",
+    "@quasar/cli": "^5.0.7",
+    "@quasar/extras": "^2.0.4",
     "@sentry/vue": "^10.70.0",
     "@supabase/ssr": "^0.12.4",
     "cheerio": "^1.2.0",
     "dotenv": "^17.4.2",
     "pinia": "^2.1.7",
-    "posthog-js": "^1.415.2",
-    "quasar": "^2.24.0",
+    "posthog-js": "^1.418.0",
+    "quasar": "^2.25.0",
     "vue": "^3.5.41",
     "vue-router": "^4.2.5",
     "zod": "^4.4.3"

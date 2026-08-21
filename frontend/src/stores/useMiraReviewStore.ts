@@ -81,12 +81,14 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   const chainTotalBatches = ref(0);
   const chainCurrentBatch = ref(0);
   let chainPollTimer: number | null = null;
+  let currentChainId: string | null = null;
 
-  function startChainProgress(message: string, totalBatches: number) {
+  function startChainProgress(message: string, totalBatches: number, cId?: string) {
     chainActive.value = true;
     chainProgress.value = message;
     chainTotalBatches.value = totalBatches;
     chainCurrentBatch.value = 0;
+    if (cId) currentChainId = cId;
   }
 
   function stopChainProgress() {
@@ -94,10 +96,26 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     chainProgress.value = '';
     chainTotalBatches.value = 0;
     chainCurrentBatch.value = 0;
+    currentChainId = null;
     if (chainPollTimer !== null) {
       clearInterval(chainPollTimer);
       chainPollTimer = null;
     }
+  }
+
+  async function cancelChain() {
+    if (!currentChainId) return;
+    try {
+      await supabaseClient
+        .from('review_chains')
+        .update({ status: 'cancelled' })
+        .eq('id', currentChainId);
+      showNotification('info', 'Review cancelled');
+    } catch (err) {
+      console.error('Error cancelling chain:', err);
+    }
+    stopChainProgress();
+    loading.value = false;
   }
 
   // Poll review_chains table for live batch progress, then pending_diff on completion.
@@ -326,7 +344,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
       if (data?.accepted === true) {
         const totalBatches = data?.chain_state?.totalBatches ?? 0;
         const chainId = data?.chain_state?.chainId ?? '';
-        startChainProgress('Reviewing...', totalBatches);
+        startChainProgress('Reviewing...', totalBatches, chainId);
         showNotification(
           'info',
           'Review in progress, you will be notified when complete',
@@ -426,6 +444,7 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
     startChainProgress,
     pollForChainCompletion,
     stopChainProgress,
+    cancelChain,
     loadPromptsFromDB,
     selectPrompt,
     savePromptsToDB,

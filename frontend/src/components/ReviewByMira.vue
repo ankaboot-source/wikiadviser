@@ -32,6 +32,17 @@
       </template>
 
       <q-list bordered>
+        <template v-if="miraStore.chainActive">
+          <q-item clickable v-close-popup @click="miraStore.cancelChain">
+            <q-item-section>
+              <q-item-label class="flex items-center text-negative">
+                <q-icon name="cancel" size="xs" class="q-mr-xs" />
+                <span>Cancel review</span>
+              </q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
         <q-item
           v-for="prompt in sortedPrompts"
           :key="prompt.id"

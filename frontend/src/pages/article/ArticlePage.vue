@@ -301,7 +301,11 @@ onBeforeMount(async () => {
     .single();
   if (activeChain) {
     console.log('[ArticlePage] Found active chain review, resuming progress');
-    miraStore.startChainProgress('Reviewing...', activeChain.total_batches, activeChain.id);
+    miraStore.startChainProgress(
+      'Reviewing...',
+      activeChain.total_batches,
+      activeChain.id,
+    );
     miraStore.pollForChainCompletion(activeChain.id, articleId.value, () => {
       miraStore.completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });
       miraStore.showNotification(

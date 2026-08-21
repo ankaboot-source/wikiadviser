@@ -83,7 +83,11 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   let chainPollTimer: number | null = null;
   let currentChainId: string | null = null;
 
-  function startChainProgress(message: string, totalBatches: number, cId?: string) {
+  function startChainProgress(
+    message: string,
+    totalBatches: number,
+    cId?: string,
+  ) {
     chainActive.value = true;
     chainProgress.value = message;
     chainTotalBatches.value = totalBatches;

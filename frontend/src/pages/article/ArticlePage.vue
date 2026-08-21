@@ -304,7 +304,10 @@ onBeforeMount(async () => {
     miraStore.startChainProgress('Reviewing...', activeChain.total_batches);
     miraStore.pollForChainCompletion(activeChain.id, articleId.value, () => {
       miraStore.completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });
-      miraStore.showNotification('success', 'Review complete — changes applied');
+      miraStore.showNotification(
+        'success',
+        'Review complete — changes applied',
+      );
     });
   }
 

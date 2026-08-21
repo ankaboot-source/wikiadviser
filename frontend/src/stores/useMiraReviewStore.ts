@@ -101,7 +101,11 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
   }
 
   // Poll review_chains table for live batch progress, then pending_diff on completion.
-  function pollForChainCompletion(cId: string, articleId: string, onComplete: () => void) {
+  function pollForChainCompletion(
+    cId: string,
+    articleId: string,
+    onComplete: () => void,
+  ) {
     const poll = async () => {
       try {
         // First check batch progress
@@ -323,7 +327,10 @@ export const useMiraReviewStore = defineStore('miraReview', () => {
         const totalBatches = data?.chain_state?.totalBatches ?? 0;
         const chainId = data?.chain_state?.chainId ?? '';
         startChainProgress('Reviewing...', totalBatches);
-        showNotification('info', 'Review in progress, you will be notified when complete');
+        showNotification(
+          'info',
+          'Review in progress, you will be notified when complete',
+        );
         pollForChainCompletion(chainId, articleId, () => {
           // Non-zero revids to trigger navigateToDiff (MwVisualEditor watcher)
           completeReview({ miraBotId: '', oldRevid: 1, newRevid: 1 });

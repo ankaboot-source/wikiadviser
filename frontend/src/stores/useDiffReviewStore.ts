@@ -121,8 +121,15 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   }
 
   function toggleCollapse(revisionId: string, changeIds: string[] = []) {
-    if (allCollapsed.value) expandAll(revisionId, changeIds);
-    else collapseAll(revisionId, changeIds);
+    const cur = revisionCollapse.value[revisionId];
+    const defaultCollapsed = revisionDefault.value[revisionId] === true;
+    const isCurrentlyCollapsed =
+      cur === true || (cur === undefined && defaultCollapsed);
+    if (isCurrentlyCollapsed) {
+      expandAll(revisionId, changeIds);
+    } else {
+      collapseAll(revisionId, changeIds);
+    }
   }
 
   // ---- Filters ----

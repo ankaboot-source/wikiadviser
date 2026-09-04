@@ -569,6 +569,19 @@ const sectionGroups = computed(() =>
 /** All change ids in this revision (for collapse-all/expand-all clearing). */
 const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
 
+/** Whether this revision is currently collapsed at the revision level (taking
+ *  the registered default into account). This is local to the component and
+ *  used to decide the Collapse/Expand-all button label.
+ */
+const allCollapsed = computed(() => {
+  // revisionCollapse and revisionDefault are exposed on the store; they are
+  // unwrapped by Pinia when accessed from components.
+  const rc = (reviewStore.revisionCollapse as any)[revisionId];
+  if (rc === true) return true;
+  if (rc === false) return false;
+  return (reviewStore.revisionDefault as any)[revisionId] === true;
+});
+
 const revisionSummary = computed(() => summarizeRevision(props.revision.items));
 
 const typeCountBadges = computed(() => {
@@ -607,7 +620,7 @@ function toggleTypeFilter(cat: ChangeTypeCategory) {
 
 // ---- Section collapse ----
 function isSectionCollapsed(section: string): boolean {
-  return reviewStore.isCollapsed(revisionId.value, section, '');
+  return reviewStore.isCollapsed(revisionId, section, '');
 }
 
 // ---- Navigation ----
@@ -645,8 +658,8 @@ function afterNavigate() {
   if (!id) return;
   // Reveal the change: expand its section (if collapsed) and the change itself.
   const section = props.sectionMap.get(id) ?? '';
-  if (section && reviewStore.isCollapsed(revisionId.value, section, '')) {
-    reviewStore.toggleSection(revisionId.value, section);
+  if (section && reviewStore.isCollapsed(revisionId, section, '')) {
+    reviewStore.toggleSection(revisionId, section);
   }
   reviewStore.setChangeCollapsed(id, false);
   reviewStore.markReviewed(id);
@@ -678,8 +691,8 @@ function jumpToSection(groupIndex: number) {
   const group = sectionGroups.value[groupIndex];
   if (!group) return;
   // Expand the section and move nav to its first change.
-  if (reviewStore.isCollapsed(revisionId.value, group.section, '')) {
-    reviewStore.toggleSection(revisionId.value, group.section);
+  if (reviewStore.isCollapsed(revisionId, group.section, '')) {
+    reviewStore.toggleSection(revisionId, group.section);
   }
   const firstId = group.items[0]?.id;
   if (firstId) {

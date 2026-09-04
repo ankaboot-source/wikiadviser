@@ -145,14 +145,11 @@
           dense
           no-caps
           size="sm"
-          :icon="allCollapsed ? 'unfold_more' : 'unfold_less'"
-          :label="allCollapsed ? 'Expand all' : 'Collapse all'"
-          @click="reviewStore.toggleCollapse(revisionId, allChangeIds)"
+          :icon="allSectionsCollapsed ? 'unfold_more' : 'unfold_less'"
+          :label="allSectionsCollapsed ? 'Expand sections' : 'Collapse sections'"
+          @click="toggleAllSections"
         >
-          <q-tooltip
-            >{{ allCollapsed ? 'Expand' : 'Collapse' }} every change in this
-            revision</q-tooltip
-          >
+          <q-tooltip>{{ allSectionsCollapsed ? 'Expand' : 'Collapse' }} every section in this revision</q-tooltip>
         </q-btn>
       </div>
 
@@ -267,12 +264,13 @@
         <div
           :ref="(el) => setSectionRef(group.section, el)"
           class="section-header row items-center q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
-          @click="reviewStore.toggleSection(revisionId, group.section)"
+          tabindex="0"
+          @click="handleSectionHeaderClick(group, $event)"
+          @keydown.enter.prevent="handleSectionHeaderKey(group)"
+          @keydown.space.prevent="handleSectionHeaderKey(group)"
         >
           <q-icon
-            :name="
-              isSectionCollapsed(group.section) ? 'expand_more' : 'expand_less'
-            "
+            :name="isSectionCollapsed(group.section) ? 'chevron_right' : 'expand_less'"
             size="sm"
           />
           <span class="text-subtitle2 text-weight-medium q-ml-xs">
@@ -285,11 +283,10 @@
             <q-btn
               flat
               dense
-              no-caps
+              round
               size="sm"
               icon="thumb_up"
               color="positive"
-              label="Accept section"
               @click.stop="bulkAcceptSection(group)"
             >
               <q-tooltip>
@@ -300,11 +297,10 @@
             <q-btn
               flat
               dense
-              no-caps
+              round
               size="sm"
               icon="thumb_down"
               color="negative"
-              label="Reject section"
               @click.stop="bulkRejectSection(group)"
             >
               <q-tooltip>
@@ -569,18 +565,21 @@ const sectionGroups = computed(() =>
 /** All change ids in this revision (for collapse-all/expand-all clearing). */
 const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
 
-/** Whether this revision is currently collapsed at the revision level (taking
- *  the registered default into account). This is local to the component and
- *  used to decide the Collapse/Expand-all button label.
+/** Whether every section in this revision is currently collapsed. Used to
+ *  pick the Expand/Collapse-all button label and icon. This only considers
+ *  section-level collapse state (so the action will not change per-change
+ *  expanded/collapsed state).
  */
-const allCollapsed = computed(() => {
-  // revisionCollapse and revisionDefault are exposed on the store; they are
-  // unwrapped by Pinia when accessed from components.
-  const rc = (reviewStore.revisionCollapse as any)[revisionId];
-  if (rc === true) return true;
-  if (rc === false) return false;
-  return (reviewStore.revisionDefault as any)[revisionId] === true;
+const allSectionsCollapsed = computed(() => {
+  if (!sectionGroups.value || sectionGroups.value.length === 0) return true;
+  return sectionGroups.value.every((g) => reviewStore.isSectionCollapsed(revisionId, g.section));
 });
+
+function toggleAllSections() {
+  const sections = sectionGroups.value.map((g) => g.section);
+  // Pass all change ids so collapsing sections clears per-change overrides
+  reviewStore.toggleSections(revisionId, sections, allChangeIds.value);
+}
 
 const revisionSummary = computed(() => summarizeRevision(props.revision.items));
 
@@ -620,7 +619,7 @@ function toggleTypeFilter(cat: ChangeTypeCategory) {
 
 // ---- Section collapse ----
 function isSectionCollapsed(section: string): boolean {
-  return reviewStore.isCollapsed(revisionId, section, '');
+  return reviewStore.isSectionCollapsed(revisionId, section);
 }
 
 // ---- Navigation ----
@@ -658,7 +657,7 @@ function afterNavigate() {
   if (!id) return;
   // Reveal the change: expand its section (if collapsed) and the change itself.
   const section = props.sectionMap.get(id) ?? '';
-  if (section && reviewStore.isCollapsed(revisionId, section, '')) {
+  if (section && reviewStore.isSectionCollapsed(revisionId, section)) {
     reviewStore.toggleSection(revisionId, section);
   }
   reviewStore.setChangeCollapsed(id, false);
@@ -691,7 +690,7 @@ function jumpToSection(groupIndex: number) {
   const group = sectionGroups.value[groupIndex];
   if (!group) return;
   // Expand the section and move nav to its first change.
-  if (reviewStore.isCollapsed(revisionId, group.section, '')) {
+  if (reviewStore.isSectionCollapsed(revisionId, group.section)) {
     reviewStore.toggleSection(revisionId, group.section);
   }
   const firstId = group.items[0]?.id;
@@ -701,6 +700,43 @@ function jumpToSection(groupIndex: number) {
       navIndex.value = flatIndex;
       afterNavigate();
     }
+  }
+}
+
+// Handle section header clicks so collapsing a section clears per-change
+// expanded overrides for that section (so when re-expanded, changes remain
+// collapsed). This keeps per-change expand explicit and avoids surprises.
+function handleSectionHeaderKey(group: SectionGroup) {
+  // keyboard activation (Enter/Space) — behave the same as click
+  handleSectionToggle(group, null);
+}
+
+function handleSectionHeaderClick(group: SectionGroup, event: Event) {
+  // Determine the originating element and ignore clicks that started on
+  // inner interactive controls (buttons/links).
+  const target = event.target as Element | null;
+  if (target && target.closest && target.closest('button, a, .q-btn')) {
+    return;
+  }
+
+  handleSectionToggle(group, event);
+
+  // If this was a mouse interaction, blur the header so it doesn't keep a
+  // persistent focus background (improves the "stuck hover color" issue).
+  if (event instanceof MouseEvent) {
+    const el = event.currentTarget as HTMLElement | null;
+    el?.blur();
+  }
+}
+
+function handleSectionToggle(group: SectionGroup, event: Event | null) {
+  // Toggle the section
+  reviewStore.toggleSection(revisionId, group.section);
+  // If now collapsed, clear per-change overrides for the changes in the
+  // section so they start collapsed when re-opened.
+  if (reviewStore.isSectionCollapsed(revisionId, group.section)) {
+    const ids = group.items.map((i) => i.id);
+    reviewStore.collapseAllSections(revisionId, [group.section], ids);
   }
 }
 
@@ -820,7 +856,15 @@ async function deleteRevision() {
   max-height: 9.5rem;
   overflow-y: auto;
 }
-.section-header:hover {
-  background-color: #eceff1;
+.section-header {
+  transition: background-color 0.12s ease;
 }
-</style>
+
+.section-header:hover {
+  background-color: #e9eef0 !important; /* slightly different on hover */
+}
+
+.section-header:focus {
+  outline: none;
+  background-color: #e6edf0 !important;
+}</style>

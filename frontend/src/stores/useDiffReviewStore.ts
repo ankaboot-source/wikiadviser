@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia';
-import { ChangeTypeCategory } from 'src/utils/changeGrouping';
-import { COLLAPSE_THRESHOLD } from 'src/utils/consts';
-import { computed, ref } from 'vue';
+import { defineStore } from "pinia";
+import { ChangeTypeCategory } from "src/utils/changeGrouping";
+import { COLLAPSE_THRESHOLD } from "src/utils/consts";
+import { computed, ref } from "vue";
 
 /** A staged bulk accept/reject, undoable until the revision is submitted. */
 export interface PendingBulkAction {
@@ -9,7 +9,7 @@ export interface PendingBulkAction {
   /** Human description, e.g. "Accept 12 formatting changes in §3". */
   label: string;
   changeIds: string[];
-  action: 'accept' | 'reject';
+  action: "accept" | "reject";
   /** changeId -> previous status, for reverting on undo. */
   previousStatuses: Record<string, number>;
 }
@@ -25,7 +25,7 @@ export interface PendingBulkAction {
  * because it depends on the filtered, visible change list which the component
  * computes.
  */
-export const useDiffReviewStore = defineStore('diffReview', () => {
+export const useDiffReviewStore = defineStore("diffReview", () => {
   // ---- Collapse state ----
   /** revisionId -> force-collapsed? `undefined` = use default (threshold-based). */
   const revisionCollapse = ref<Record<string, boolean | undefined>>({});
@@ -40,7 +40,7 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   });
 
   // ---- Filters ----
-  const typeFilter = ref<ChangeTypeCategory | 'all'>('all');
+  const typeFilter = ref<ChangeTypeCategory | "all">("all");
   const unreviewedOnly = ref(false);
 
   // ---- Reviewed marker (resume support) ----
@@ -71,17 +71,22 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     section: string,
     changeId: string,
   ): boolean {
+    const sKey = sectionKey(revisionId, section);
+    // 1) if the section is explicitly collapsed, force the change to be
+    //    collapsed while the section is collapsed.
+    if (sectionCollapse.value[sKey] === true) {
+      return true;
+    }
+    // 2) explicit per-change override wins (only honored when the section is open)
     if (changeId in changeCollapse.value) {
       return changeCollapse.value[changeId];
     }
-    const sKey = sectionKey(revisionId, section);
-    if (sKey in sectionCollapse.value) {
-      return sectionCollapse.value[sKey];
+    // 3) if the revision is explicitly collapsed, treat as collapsed too.
+    if (revisionCollapse.value[revisionId] === true) {
+      return true;
     }
-    if (revisionId in revisionCollapse.value) {
-      return revisionCollapse.value[revisionId] === true;
-    }
-    return revisionDefault.value[revisionId] === true;
+    // 4) default: start collapsed.
+    return true;
   }
 
   function toggleChange(changeId: string) {
@@ -97,6 +102,15 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     const sKey = sectionKey(revisionId, section);
     const cur = sectionCollapse.value[sKey];
     sectionCollapse.value = { ...sectionCollapse.value, [sKey]: !cur };
+  }
+
+  function isSectionCollapsed(revisionId: string, section: string): boolean {
+    const sKey = sectionKey(revisionId, section);
+    if (sKey in sectionCollapse.value) return sectionCollapse.value[sKey];
+    if (revisionId in revisionCollapse.value) {
+      return revisionCollapse.value[revisionId] === true;
+    }
+    return revisionDefault.value[revisionId] === true;
   }
 
   function toggleRevision(revisionId: string) {
@@ -120,11 +134,46 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     changeCollapse.value = next;
   }
 
+  /** Collapse only sections (optionally clearing per-change overrides). */
+  function collapseAllSections(
+    revisionId: string,
+    sections: string[] = [],
+    changeIds: string[] = [],
+  ) {
+    const next = { ...sectionCollapse.value };
+    for (const sec of sections) {
+      next[sectionKey(revisionId, sec)] = true;
+    }
+    sectionCollapse.value = next;
+    if (changeIds.length) {
+      const nextChanges = { ...changeCollapse.value };
+      for (const id of changeIds) delete nextChanges[id];
+      changeCollapse.value = nextChanges;
+    }
+  }
+
+  /** Expand only sections (does not modify per-change collapse state). */
+  function expandAllSections(revisionId: string, sections: string[] = []) {
+    const next = { ...sectionCollapse.value };
+    for (const sec of sections) {
+      next[sectionKey(revisionId, sec)] = false;
+    }
+    sectionCollapse.value = next;
+  }
+
+  function toggleSections(revisionId: string, sections: string[] = [], changeIds: string[] = []) {
+    const allSecCollapsed = sections.length
+      ? sections.every((s) => isSectionCollapsed(revisionId, s))
+      : true;
+    if (allSecCollapsed) expandAllSections(revisionId, sections);
+    else collapseAllSections(revisionId, sections, changeIds);
+  }
+
   function toggleCollapse(revisionId: string, changeIds: string[] = []) {
     const cur = revisionCollapse.value[revisionId];
     const defaultCollapsed = revisionDefault.value[revisionId] === true;
-    const isCurrentlyCollapsed =
-      cur === true || (cur === undefined && defaultCollapsed);
+    const isCurrentlyCollapsed = cur === true ||
+      (cur === undefined && defaultCollapsed);
     if (isCurrentlyCollapsed) {
       expandAll(revisionId, changeIds);
     } else {
@@ -133,7 +182,7 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   }
 
   // ---- Filters ----
-  function setTypeFilter(filter: ChangeTypeCategory | 'all') {
+  function setTypeFilter(filter: ChangeTypeCategory | "all") {
     typeFilter.value = filter;
   }
 
@@ -184,12 +233,16 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     allCollapsed,
     registerRevisionDefault,
     isCollapsed,
+    isSectionCollapsed,
     toggleChange,
     setChangeCollapsed,
     toggleSection,
     toggleRevision,
     collapseAll,
     expandAll,
+    collapseAllSections,
+    expandAllSections,
+    toggleSections,
     toggleCollapse,
     setTypeFilter,
     setUnreviewedOnly,

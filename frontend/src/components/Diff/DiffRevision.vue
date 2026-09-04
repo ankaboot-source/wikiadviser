@@ -145,22 +145,14 @@
           dense
           no-caps
           size="sm"
-          icon="unfold_less"
-          label="Collapse all"
-          @click="reviewStore.collapseAll(revisionId, allChangeIds)"
+          :icon="allCollapsed ? 'unfold_more' : 'unfold_less'"
+          :label="allCollapsed ? 'Expand all' : 'Collapse all'"
+          @click="reviewStore.toggleCollapse(revisionId, allChangeIds)"
         >
-          <q-tooltip>Collapse every change in this revision</q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          no-caps
-          size="sm"
-          icon="unfold_more"
-          label="Expand all"
-          @click="reviewStore.expandAll(revisionId, allChangeIds)"
-        >
-          <q-tooltip>Expand every change in this revision</q-tooltip>
+          <q-tooltip
+            >{{ allCollapsed ? 'Expand' : 'Collapse' }} every change in this
+            revision</q-tooltip
+          >
         </q-btn>
       </div>
 

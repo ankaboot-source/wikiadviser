@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
 import { ChangeTypeCategory } from 'src/utils/changeGrouping';
 import { COLLAPSE_THRESHOLD } from 'src/utils/consts';
+import { computed, ref } from 'vue';
 
 /** A staged bulk accept/reject, undoable until the revision is submitted. */
 export interface PendingBulkAction {
@@ -35,6 +35,9 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   const changeCollapse = ref<Record<string, boolean>>({});
   /** revisionId -> default-collapsed (items.length > COLLAPSE_THRESHOLD). */
   const revisionDefault = ref<Record<string, boolean>>({});
+  const allCollapsed = computed(() => {
+    return Object.values(revisionCollapse.value).every((v) => v === true);
+  });
 
   // ---- Filters ----
   const typeFilter = ref<ChangeTypeCategory | 'all'>('all');
@@ -117,6 +120,11 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     changeCollapse.value = next;
   }
 
+  function toggleCollapse(revisionId: string, changeIds: string[] = []) {
+    if (allCollapsed.value) expandAll(revisionId, changeIds);
+    else collapseAll(revisionId, changeIds);
+  }
+
   // ---- Filters ----
   function setTypeFilter(filter: ChangeTypeCategory | 'all') {
     typeFilter.value = filter;
@@ -166,6 +174,7 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     reviewedChangeIds,
     pendingBulkActions,
     hasPendingBulkActions,
+    allCollapsed,
     registerRevisionDefault,
     isCollapsed,
     toggleChange,
@@ -174,6 +183,7 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     toggleRevision,
     collapseAll,
     expandAll,
+    toggleCollapse,
     setTypeFilter,
     setUnreviewedOnly,
     markReviewed,

@@ -261,57 +261,58 @@
         v-for="(group, groupIndex) in sectionGroups"
         :key="group.section"
       >
-        <div
-          :ref="(el) => setSectionRef(group.section, el)"
-          class="section-header row items-center q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
-          tabindex="0"
-          @click="handleSectionHeaderClick(group, $event)"
-          @keydown.enter.prevent="handleSectionHeaderKey(group)"
-          @keydown.space.prevent="handleSectionHeaderKey(group)"
+        <q-expansion-item
+          :ref="(el) => setSectionRef(group.section, (el as any)?.$el ?? el)"
+          :model-value="!isSectionCollapsed(group.section)"
+          class="section-expansion"
+          hide-expand-icon
+          @update:model-value="(expanded) => handleSectionExpansion(group, expanded)"
         >
-          <q-icon
-            :name="isSectionCollapsed(group.section) ? 'chevron_right' : 'expand_less'"
-            size="sm"
-          />
-          <span class="text-subtitle2 text-weight-medium q-ml-xs">
-            {{ group.section }}
-          </span>
-          <q-badge rounded :label="group.items.length" class="q-ml-xs" />
-          <q-space />
-          <!-- Section-level accept / reject (bulk, undoable) -->
-          <template v-if="reviewerPermission && !viewerPermission">
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="thumb_up"
-              color="positive"
-              @click.stop="bulkAcceptSection(group)"
-            >
-              <q-tooltip>
-                Accept all {{ group.items.length }} changes in this section
-                (undoable)
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              dense
-              round
-              size="sm"
-              icon="thumb_down"
-              color="negative"
-              @click.stop="bulkRejectSection(group)"
-            >
-              <q-tooltip>
-                Reject all {{ group.items.length }} changes in this section
-                (undoable)
-              </q-tooltip>
-            </q-btn>
+          <template #header>
+            <div class="section-header row items-center full-width q-px-md q-py-xs bg-blue-grey-1 cursor-pointer">
+              <q-icon
+                :name="isSectionCollapsed(group.section) ? 'chevron_right' : 'expand_less'"
+                size="sm"
+              />
+              <span class="text-subtitle2 text-weight-medium q-ml-xs">
+                {{ group.section }}
+              </span>
+              <q-badge rounded :label="group.items.length" class="q-ml-xs" />
+              <q-space />
+              <!-- Section-level accept / reject (bulk, undoable) -->
+              <template v-if="reviewerPermission && !viewerPermission">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  icon="thumb_up"
+                  color="positive"
+                  @click.stop="bulkAcceptSection(group)"
+                >
+                  <q-tooltip>
+                    Accept all {{ group.items.length }} changes in this section
+                    (undoable)
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  icon="thumb_down"
+                  color="negative"
+                  @click.stop="bulkRejectSection(group)"
+                >
+                  <q-tooltip>
+                    Reject all {{ group.items.length }} changes in this section
+                    (undoable)
+                  </q-tooltip>
+                </q-btn>
+              </template>
+            </div>
           </template>
-        </div>
 
-        <template v-if="!isSectionCollapsed(group.section)">
           <diff-item
             v-for="(item, index) in group.items"
             :key="item.id"
@@ -326,7 +327,7 @@
               index === group.items.length - 1
             "
           />
-        </template>
+        </q-expansion-item>
       </template>
     </q-list>
 
@@ -703,38 +704,23 @@ function jumpToSection(groupIndex: number) {
   }
 }
 
-// Handle section header clicks so collapsing a section clears per-change
-// expanded overrides for that section (so when re-expanded, changes remain
-// collapsed). This keeps per-change expand explicit and avoids surprises.
-function handleSectionHeaderKey(group: SectionGroup) {
-  // keyboard activation (Enter/Space) — behave the same as click
-  handleSectionToggle(group, null);
-}
+// Handle section expansion state from the Quasar expansion item so that the
+// visible state stays in sync with the store and we clear per-change overrides
+// when a section is collapsed.
+function handleSectionExpansion(group: SectionGroup, expanded: boolean) {
+  const collapsed = !expanded;
+  const current = reviewStore.isSectionCollapsed(revisionId, group.section);
+  if (current === collapsed) return;
 
-function handleSectionHeaderClick(group: SectionGroup, event: Event) {
-  // Determine the originating element and ignore clicks that started on
-  // inner interactive controls (buttons/links).
-  const target = event.target as Element | null;
-  if (target && target.closest && target.closest('button, a, .q-btn')) {
-    return;
+  // Maintain the section-level collapse state and push it into the store.
+  // By default, every section is closed. The element's initial state is
+  // controlled by the model-value binding, so we only need to toggle when the
+  // user changes the expansion state.
+  if (current !== collapsed) {
+    reviewStore.toggleSection(revisionId, group.section);
   }
 
-  handleSectionToggle(group, event);
-
-  // If this was a mouse interaction, blur the header so it doesn't keep a
-  // persistent focus background (improves the "stuck hover color" issue).
-  if (event instanceof MouseEvent) {
-    const el = event.currentTarget as HTMLElement | null;
-    el?.blur();
-  }
-}
-
-function handleSectionToggle(group: SectionGroup, event: Event | null) {
-  // Toggle the section
-  reviewStore.toggleSection(revisionId, group.section);
-  // If now collapsed, clear per-change overrides for the changes in the
-  // section so they start collapsed when re-opened.
-  if (reviewStore.isSectionCollapsed(revisionId, group.section)) {
+  if (collapsed) {
     const ids = group.items.map((i) => i.id);
     reviewStore.collapseAllSections(revisionId, [group.section], ids);
   }
@@ -857,14 +843,31 @@ async function deleteRevision() {
   overflow-y: auto;
 }
 .section-header {
-  transition: background-color 0.12s ease;
+  background-color: transparent;
+  transition: background-color 0.12s ease, filter 0.12s ease;
 }
 
 .section-header:hover {
-  background-color: #e9eef0 !important; /* slightly different on hover */
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
-.section-header:focus {
+.section-header:focus,
+.section-header:focus-visible,
+.section-header:active {
   outline: none;
-  background-color: #e6edf0 !important;
-}</style>
+  background-color: transparent;
+}
+
+.section-expansion {
+  border-radius: 0;
+}
+
+.section-expansion > .q-item {
+  min-height: 0;
+  padding: 0;
+}
+
+.section-expansion .q-item__section--main {
+  min-width: 0;
+}
+</style>

@@ -104,13 +104,22 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
     sectionCollapse.value = { ...sectionCollapse.value, [sKey]: !cur };
   }
 
+  /** Explicitly set a section's collapsed state. Use this from components to
+   * avoid toggle races when the component drives the canonical state. */
+  function setSectionCollapsed(revisionId: string, section: string, collapsed: boolean) {
+    const sKey = sectionKey(revisionId, section);
+    sectionCollapse.value = { ...sectionCollapse.value, [sKey]: collapsed };
+  }
+
   function isSectionCollapsed(revisionId: string, section: string): boolean {
     const sKey = sectionKey(revisionId, section);
     if (sKey in sectionCollapse.value) return sectionCollapse.value[sKey];
     if (revisionId in revisionCollapse.value) {
       return revisionCollapse.value[revisionId] === true;
     }
-    return revisionDefault.value[revisionId] === true;
+    // All sections start closed by default, even for revisions that would
+    // otherwise have an expanded default state.
+    return true;
   }
 
   function toggleRevision(revisionId: string) {
@@ -251,5 +260,7 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
     isReviewed,
     stageBulkAction,
     removeBulkAction,
+    // New explicit setter to avoid toggle races when components drive state.
+    setSectionCollapsed,
   };
 });

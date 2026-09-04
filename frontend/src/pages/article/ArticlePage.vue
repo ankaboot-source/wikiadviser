@@ -7,6 +7,7 @@
         $q.screen.gt.sm ? 'q-pa-md' : 'q-pa-sm',
         { 'focus-mode': isFocusMode },
       ]"
+      :style="{ '--list-width': listWidth + 'px' }"
     >
       <diff-toolbar
         v-show="!isFocusMode"
@@ -29,6 +30,16 @@
         :revision-comments="revisionCommentsMap"
         class="rounded-borders bg-secondary borders list-area"
       />
+
+      <!-- Draggable gutter between card and list (desktop only) -->
+      <div
+        v-if="$q.screen.gt.md && isShowingDiffList && !isFocusMode"
+        class="diff-gutter"
+        @pointerdown="startDrag"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="Resize diff panes"
+      ></div>
 
       <diff-card
         :article="article"
@@ -110,6 +121,38 @@ const firstToggle = computed(() => {
 const isShowingDiffList = computed(() => {
   return activeViewStore.isViewing || $q.screen.gt.sm;
 });
+
+// ---- Resizer state: control right column (list) width in px ----
+const listWidth = ref<number>(400); // default right column width in px
+const minListWidth = 250;
+const maxListWidth = 900;
+let dragging = false;
+let containerEl: HTMLElement | null = null;
+
+function startDrag(e: PointerEvent) {
+  // Only allow on desktop layouts
+  if (!$q.screen.gt.md) return;
+  dragging = true;
+  (e.target as Element).setPointerCapture(e.pointerId);
+  if (!containerEl) containerEl = document.querySelector('.diff-grid');
+  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointerup', stopDrag, { once: true });
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!dragging || !containerEl) return;
+  const rect = containerEl.getBoundingClientRect();
+  // compute listWidth as distance from right edge to pointer x
+  const right = rect.right;
+  let newListWidth = Math.round(right - e.clientX);
+  newListWidth = Math.max(minListWidth, Math.min(maxListWidth, newListWidth));
+  listWidth.value = newListWidth;
+}
+
+function stopDrag() {
+  dragging = false;
+  window.removeEventListener('pointermove', onPointerMove);
+}
 
 watch(
   firstToggle,
@@ -454,6 +497,9 @@ onBeforeUnmount(() => {
   width: 100%;
   height: calc(100vh - 3.5rem);
   gap: 0.5rem;
+  position: relative; /* for gutter positioning */
+  /* default CSS variable for list width */
+  --list-width: 400px;
 }
 /* Desktop*/
 .diff-grid.focus-mode {
@@ -465,7 +511,8 @@ onBeforeUnmount(() => {
 
 @media (min-width: 1700px) {
   .diff-grid {
-    grid-template: auto 1fr / 1fr 0.3fr;
+    /* right column width controlled by --list-width */
+    grid-template: auto 1fr / calc(100% - var(--list-width)) var(--list-width);
     grid-template-areas:
       'toolbar list'
       'card list';
@@ -482,7 +529,8 @@ onBeforeUnmount(() => {
 }
 @media (min-width: 1024px) and (max-width: 1699px) {
   .diff-grid {
-    grid-template: auto 1fr / 1fr 400px;
+    /* right column width controlled by --list-width */
+    grid-template: auto 1fr / calc(100% - var(--list-width)) var(--list-width);
     grid-template-areas:
       'toolbar list'
       'card list';
@@ -531,5 +579,39 @@ onBeforeUnmount(() => {
 }
 .card-area {
   grid-area: card;
+}
+
+/* Gutter (drag handle) */
+.diff-gutter {
+  position: absolute;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 10px;
+  background: transparent;
+  z-index: 30;
+  border-radius: 6px;
+  /* place near the left edge of the right column */
+  left: calc(100% - var(--list-width) - 5px);
+  cursor: col-resize;
+  transition: background-color 120ms ease;
+}
+.diff-gutter:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+.diff-gutter::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 1px;
+}
+@media (max-width: 1023px) {
+  .diff-gutter {
+    display: none;
+  }
 }
 </style>

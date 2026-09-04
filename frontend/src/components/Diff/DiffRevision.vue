@@ -145,22 +145,16 @@
           dense
           no-caps
           size="sm"
-          icon="unfold_less"
-          label="Collapse all"
-          @click="reviewStore.collapseAll(revisionId, allChangeIds)"
+          :icon="allSectionsCollapsed ? 'unfold_more' : 'unfold_less'"
+          :label="
+            allSectionsCollapsed ? 'Expand sections' : 'Collapse sections'
+          "
+          @click="toggleAllSections"
         >
-          <q-tooltip>Collapse every change in this revision</q-tooltip>
-        </q-btn>
-        <q-btn
-          flat
-          dense
-          no-caps
-          size="sm"
-          icon="unfold_more"
-          label="Expand all"
-          @click="reviewStore.expandAll(revisionId, allChangeIds)"
-        >
-          <q-tooltip>Expand every change in this revision</q-tooltip>
+          <q-tooltip
+            >{{ allSectionsCollapsed ? 'Expand' : 'Collapse' }} every section in
+            this revision</q-tooltip
+          >
         </q-btn>
       </div>
 
@@ -272,58 +266,66 @@
         v-for="(group, groupIndex) in sectionGroups"
         :key="group.section"
       >
-        <div
-          :ref="(el) => setSectionRef(group.section, el)"
-          class="section-header row items-center q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
-          @click="reviewStore.toggleSection(revisionId, group.section)"
+        <q-expansion-item
+          :ref="(el) => setSectionRef(group.section, (el as any)?.$el ?? el)"
+          :model-value="!isSectionCollapsed(group.section)"
+          class="section-expansion"
+          hide-expand-icon
+          @update:model-value="
+            (expanded) => handleSectionExpansion(group, expanded)
+          "
         >
-          <q-icon
-            :name="
-              isSectionCollapsed(group.section) ? 'expand_more' : 'expand_less'
-            "
-            size="sm"
-          />
-          <span class="text-subtitle2 text-weight-medium q-ml-xs">
-            {{ group.section }}
-          </span>
-          <q-badge rounded :label="group.items.length" class="q-ml-xs" />
-          <q-space />
-          <!-- Section-level accept / reject (bulk, undoable) -->
-          <template v-if="reviewerPermission && !viewerPermission">
-            <q-btn
-              flat
-              dense
-              no-caps
-              size="sm"
-              icon="thumb_up"
-              color="positive"
-              label="Accept section"
-              @click.stop="bulkAcceptSection(group)"
+          <template #header>
+            <div
+              class="section-header row items-center full-width q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
             >
-              <q-tooltip>
-                Accept all {{ group.items.length }} changes in this section
-                (undoable)
-              </q-tooltip>
-            </q-btn>
-            <q-btn
-              flat
-              dense
-              no-caps
-              size="sm"
-              icon="thumb_down"
-              color="negative"
-              label="Reject section"
-              @click.stop="bulkRejectSection(group)"
-            >
-              <q-tooltip>
-                Reject all {{ group.items.length }} changes in this section
-                (undoable)
-              </q-tooltip>
-            </q-btn>
+              <q-icon
+                :name="
+                  isSectionCollapsed(group.section)
+                    ? 'chevron_right'
+                    : 'expand_less'
+                "
+                size="sm"
+              />
+              <span class="text-subtitle2 text-weight-medium q-ml-xs">
+                {{ group.section }}
+              </span>
+              <q-badge rounded :label="group.items.length" class="q-ml-xs" />
+              <q-space />
+              <!-- Section-level accept / reject (bulk, undoable) -->
+              <template v-if="reviewerPermission && !viewerPermission">
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  icon="thumb_up"
+                  color="positive"
+                  @click.stop="bulkAcceptSection(group)"
+                >
+                  <q-tooltip>
+                    Accept all {{ group.items.length }} changes in this section
+                    (undoable)
+                  </q-tooltip>
+                </q-btn>
+                <q-btn
+                  flat
+                  dense
+                  round
+                  size="sm"
+                  icon="thumb_down"
+                  color="negative"
+                  @click.stop="bulkRejectSection(group)"
+                >
+                  <q-tooltip>
+                    Reject all {{ group.items.length }} changes in this section
+                    (undoable)
+                  </q-tooltip>
+                </q-btn>
+              </template>
+            </div>
           </template>
-        </div>
 
-        <template v-if="!isSectionCollapsed(group.section)">
           <diff-item
             v-for="(item, index) in group.items"
             :key="item.id"
@@ -338,7 +340,7 @@
               index === group.items.length - 1
             "
           />
-        </template>
+        </q-expansion-item>
       </template>
     </q-list>
 
@@ -577,6 +579,24 @@ const sectionGroups = computed(() =>
 /** All change ids in this revision (for collapse-all/expand-all clearing). */
 const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
 
+/** Whether every section in this revision is currently collapsed. Used to
+ *  pick the Expand/Collapse-all button label and icon. This only considers
+ *  section-level collapse state (so the action will not change per-change
+ *  expanded/collapsed state).
+ */
+const allSectionsCollapsed = computed(() => {
+  if (!sectionGroups.value || sectionGroups.value.length === 0) return true;
+  return sectionGroups.value.every((g) =>
+    reviewStore.isSectionCollapsed(revisionId, g.section),
+  );
+});
+
+function toggleAllSections() {
+  const sections = sectionGroups.value.map((g) => g.section);
+  // Pass all change ids so collapsing sections clears per-change overrides
+  reviewStore.toggleSections(revisionId, sections, allChangeIds.value);
+}
+
 const revisionSummary = computed(() => summarizeRevision(props.revision.items));
 
 const typeCountBadges = computed(() => {
@@ -615,7 +635,7 @@ function toggleTypeFilter(cat: ChangeTypeCategory) {
 
 // ---- Section collapse ----
 function isSectionCollapsed(section: string): boolean {
-  return reviewStore.isCollapsed(revisionId.value, section, '');
+  return reviewStore.isSectionCollapsed(revisionId, section);
 }
 
 // ---- Navigation ----
@@ -635,26 +655,34 @@ const navPositionLabel = computed(() => {
 });
 
 function navigatePrev() {
-  if (navIndex.value > 0) {
+  const previousIndex = navIndex.value;
+  if (previousIndex > 0) {
     navIndex.value--;
-    afterNavigate();
+    afterNavigate(previousIndex);
   }
 }
 
 function navigateNext() {
-  if (navIndex.value < filteredItems.value.length - 1) {
+  const previousIndex = navIndex.value;
+  if (previousIndex < filteredItems.value.length - 1) {
     navIndex.value++;
-    afterNavigate();
+    afterNavigate(previousIndex);
   }
 }
 
-function afterNavigate() {
+function afterNavigate(previousIndex: number) {
   const id = currentNavChangeId.value;
   if (!id) return;
+
+  const previousId = filteredItems.value[previousIndex]?.id;
+  if (previousId && previousId !== id) {
+    reviewStore.setChangeCollapsed(previousId, true);
+  }
+
   // Reveal the change: expand its section (if collapsed) and the change itself.
   const section = props.sectionMap.get(id) ?? '';
-  if (section && reviewStore.isCollapsed(revisionId.value, section, '')) {
-    reviewStore.toggleSection(revisionId.value, section);
+  if (section && reviewStore.isSectionCollapsed(revisionId, section)) {
+    reviewStore.setSectionCollapsed(revisionId, section, false);
   }
   reviewStore.setChangeCollapsed(id, false);
   reviewStore.markReviewed(id);
@@ -686,16 +714,39 @@ function jumpToSection(groupIndex: number) {
   const group = sectionGroups.value[groupIndex];
   if (!group) return;
   // Expand the section and move nav to its first change.
-  if (reviewStore.isCollapsed(revisionId.value, group.section, '')) {
-    reviewStore.toggleSection(revisionId.value, group.section);
+  if (reviewStore.isSectionCollapsed(revisionId, group.section)) {
+    reviewStore.toggleSection(revisionId, group.section);
   }
   const firstId = group.items[0]?.id;
   if (firstId) {
     const flatIndex = filteredItems.value.findIndex((i) => i.id === firstId);
     if (flatIndex >= 0) {
+      const previousIndex = navIndex.value;
       navIndex.value = flatIndex;
-      afterNavigate();
+      afterNavigate(previousIndex);
     }
+  }
+}
+
+// Handle section expansion state from the Quasar expansion item so that the
+// visible state stays in sync with the store and we clear per-change overrides
+// when a section is collapsed.
+function handleSectionExpansion(group: SectionGroup, expanded: boolean) {
+  const collapsed = !expanded;
+  const current = reviewStore.isSectionCollapsed(revisionId, group.section);
+  if (current === collapsed) return;
+
+  // Maintain the section-level collapse state and push it into the store.
+  // By default, every section is closed. The element's initial state is
+  // controlled by the model-value binding, so we only need to toggle when the
+  // user changes the expansion state.
+  if (current !== collapsed) {
+    reviewStore.toggleSection(revisionId, group.section);
+  }
+
+  if (collapsed) {
+    const ids = group.items.map((i) => i.id);
+    reviewStore.collapseAllSections(revisionId, [group.section], ids);
   }
 }
 
@@ -815,7 +866,34 @@ async function deleteRevision() {
   max-height: 9.5rem;
   overflow-y: auto;
 }
+.section-header {
+  background-color: transparent;
+  transition:
+    background-color 0.12s ease,
+    filter 0.12s ease;
+}
+
 .section-header:hover {
-  background-color: #eceff1;
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.section-header:focus,
+.section-header:focus-visible,
+.section-header:active {
+  outline: none;
+  background-color: transparent;
+}
+
+.section-expansion {
+  border-radius: 0;
+}
+
+.section-expansion > .q-item {
+  min-height: 0;
+  padding: 0;
+}
+
+.section-expansion .q-item__section--main {
+  min-width: 0;
 }
 </style>

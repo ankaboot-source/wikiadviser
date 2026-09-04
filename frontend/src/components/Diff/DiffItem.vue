@@ -579,6 +579,13 @@ watch(comments.value, () => {
 
 watch(expanded, () => {
   if (expanded.value) {
+    if (props.revisionId && props.section) {
+      if (reviewStore.isSectionCollapsed(props.revisionId, props.section)) {
+        // Explicitly open the section instead of toggling to avoid races
+        // between component model-value and store toggles.
+        reviewStore.setSectionCollapsed(props.revisionId, props.section, false);
+      }
+    }
     nextTick(() => {
       scrollChatToBottom();
     });

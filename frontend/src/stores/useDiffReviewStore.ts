@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
-import { computed, ref } from 'vue';
 import { ChangeTypeCategory } from 'src/utils/changeGrouping';
 import { COLLAPSE_THRESHOLD } from 'src/utils/consts';
+import { computed, ref } from 'vue';
 
 /** A staged bulk accept/reject, undoable until the revision is submitted. */
 export interface PendingBulkAction {
@@ -35,6 +35,9 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
   const changeCollapse = ref<Record<string, boolean>>({});
   /** revisionId -> default-collapsed (items.length > COLLAPSE_THRESHOLD). */
   const revisionDefault = ref<Record<string, boolean>>({});
+  const allCollapsed = computed(() => {
+    return Object.values(revisionCollapse.value).every((v) => v === true);
+  });
 
   // ---- Filters ----
   const typeFilter = ref<ChangeTypeCategory | 'all'>('all');
@@ -68,17 +71,22 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     section: string,
     changeId: string,
   ): boolean {
+    const sKey = sectionKey(revisionId, section);
+    // 1) if the section is explicitly collapsed, force the change to be
+    //    collapsed while the section is collapsed.
+    if (sectionCollapse.value[sKey] === true) {
+      return true;
+    }
+    // 2) explicit per-change override wins (only honored when the section is open)
     if (changeId in changeCollapse.value) {
       return changeCollapse.value[changeId];
     }
-    const sKey = sectionKey(revisionId, section);
-    if (sKey in sectionCollapse.value) {
-      return sectionCollapse.value[sKey];
+    // 3) if the revision is explicitly collapsed, treat as collapsed too.
+    if (revisionCollapse.value[revisionId] === true) {
+      return true;
     }
-    if (revisionId in revisionCollapse.value) {
-      return revisionCollapse.value[revisionId] === true;
-    }
-    return revisionDefault.value[revisionId] === true;
+    // 4) default: start collapsed.
+    return true;
   }
 
   function toggleChange(changeId: string) {
@@ -94,6 +102,28 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     const sKey = sectionKey(revisionId, section);
     const cur = sectionCollapse.value[sKey];
     sectionCollapse.value = { ...sectionCollapse.value, [sKey]: !cur };
+  }
+
+  /** Explicitly set a section's collapsed state. Use this from components to
+   * avoid toggle races when the component drives the canonical state. */
+  function setSectionCollapsed(
+    revisionId: string,
+    section: string,
+    collapsed: boolean,
+  ) {
+    const sKey = sectionKey(revisionId, section);
+    sectionCollapse.value = { ...sectionCollapse.value, [sKey]: collapsed };
+  }
+
+  function isSectionCollapsed(revisionId: string, section: string): boolean {
+    const sKey = sectionKey(revisionId, section);
+    if (sKey in sectionCollapse.value) return sectionCollapse.value[sKey];
+    if (revisionId in revisionCollapse.value) {
+      return revisionCollapse.value[revisionId] === true;
+    }
+    // All sections start closed by default, even for revisions that would
+    // otherwise have an expanded default state.
+    return true;
   }
 
   function toggleRevision(revisionId: string) {
@@ -115,6 +145,57 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     const next = { ...changeCollapse.value };
     for (const id of changeIds) delete next[id];
     changeCollapse.value = next;
+  }
+
+  /** Collapse only sections (optionally clearing per-change overrides). */
+  function collapseAllSections(
+    revisionId: string,
+    sections: string[] = [],
+    changeIds: string[] = [],
+  ) {
+    const next = { ...sectionCollapse.value };
+    for (const sec of sections) {
+      next[sectionKey(revisionId, sec)] = true;
+    }
+    sectionCollapse.value = next;
+    if (changeIds.length) {
+      const nextChanges = { ...changeCollapse.value };
+      for (const id of changeIds) delete nextChanges[id];
+      changeCollapse.value = nextChanges;
+    }
+  }
+
+  /** Expand only sections (does not modify per-change collapse state). */
+  function expandAllSections(revisionId: string, sections: string[] = []) {
+    const next = { ...sectionCollapse.value };
+    for (const sec of sections) {
+      next[sectionKey(revisionId, sec)] = false;
+    }
+    sectionCollapse.value = next;
+  }
+
+  function toggleSections(
+    revisionId: string,
+    sections: string[] = [],
+    changeIds: string[] = [],
+  ) {
+    const allSecCollapsed = sections.length
+      ? sections.every((s) => isSectionCollapsed(revisionId, s))
+      : true;
+    if (allSecCollapsed) expandAllSections(revisionId, sections);
+    else collapseAllSections(revisionId, sections, changeIds);
+  }
+
+  function toggleCollapse(revisionId: string, changeIds: string[] = []) {
+    const cur = revisionCollapse.value[revisionId];
+    const defaultCollapsed = revisionDefault.value[revisionId] === true;
+    const isCurrentlyCollapsed =
+      cur === true || (cur === undefined && defaultCollapsed);
+    if (isCurrentlyCollapsed) {
+      expandAll(revisionId, changeIds);
+    } else {
+      collapseAll(revisionId, changeIds);
+    }
   }
 
   // ---- Filters ----
@@ -166,14 +247,20 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     reviewedChangeIds,
     pendingBulkActions,
     hasPendingBulkActions,
+    allCollapsed,
     registerRevisionDefault,
     isCollapsed,
+    isSectionCollapsed,
     toggleChange,
     setChangeCollapsed,
     toggleSection,
     toggleRevision,
     collapseAll,
     expandAll,
+    collapseAllSections,
+    expandAllSections,
+    toggleSections,
+    toggleCollapse,
     setTypeFilter,
     setUnreviewedOnly,
     markReviewed,
@@ -181,5 +268,7 @@ export const useDiffReviewStore = defineStore('diffReview', () => {
     isReviewed,
     stageBulkAction,
     removeBulkAction,
+    // New explicit setter to avoid toggle races when components drive state.
+    setSectionCollapsed,
   };
 });

@@ -146,10 +146,15 @@
           no-caps
           size="sm"
           :icon="allSectionsCollapsed ? 'unfold_more' : 'unfold_less'"
-          :label="allSectionsCollapsed ? 'Expand sections' : 'Collapse sections'"
+          :label="
+            allSectionsCollapsed ? 'Expand sections' : 'Collapse sections'
+          "
           @click="toggleAllSections"
         >
-          <q-tooltip>{{ allSectionsCollapsed ? 'Expand' : 'Collapse' }} every section in this revision</q-tooltip>
+          <q-tooltip
+            >{{ allSectionsCollapsed ? 'Expand' : 'Collapse' }} every section in
+            this revision</q-tooltip
+          >
         </q-btn>
       </div>
 
@@ -266,12 +271,20 @@
           :model-value="!isSectionCollapsed(group.section)"
           class="section-expansion"
           hide-expand-icon
-          @update:model-value="(expanded) => handleSectionExpansion(group, expanded)"
+          @update:model-value="
+            (expanded) => handleSectionExpansion(group, expanded)
+          "
         >
           <template #header>
-            <div class="section-header row items-center full-width q-px-md q-py-xs bg-blue-grey-1 cursor-pointer">
+            <div
+              class="section-header row items-center full-width q-px-md q-py-xs bg-blue-grey-1 cursor-pointer"
+            >
               <q-icon
-                :name="isSectionCollapsed(group.section) ? 'chevron_right' : 'expand_less'"
+                :name="
+                  isSectionCollapsed(group.section)
+                    ? 'chevron_right'
+                    : 'expand_less'
+                "
                 size="sm"
               />
               <span class="text-subtitle2 text-weight-medium q-ml-xs">
@@ -573,7 +586,9 @@ const allChangeIds = computed(() => props.revision.items.map((i) => i.id));
  */
 const allSectionsCollapsed = computed(() => {
   if (!sectionGroups.value || sectionGroups.value.length === 0) return true;
-  return sectionGroups.value.every((g) => reviewStore.isSectionCollapsed(revisionId, g.section));
+  return sectionGroups.value.every((g) =>
+    reviewStore.isSectionCollapsed(revisionId, g.section),
+  );
 });
 
 function toggleAllSections() {
@@ -844,7 +859,9 @@ async function deleteRevision() {
 }
 .section-header {
   background-color: transparent;
-  transition: background-color 0.12s ease, filter 0.12s ease;
+  transition:
+    background-color 0.12s ease,
+    filter 0.12s ease;
 }
 
 .section-header:hover {

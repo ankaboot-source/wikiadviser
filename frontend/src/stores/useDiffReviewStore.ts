@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
-import { ChangeTypeCategory } from "src/utils/changeGrouping";
-import { COLLAPSE_THRESHOLD } from "src/utils/consts";
-import { computed, ref } from "vue";
+import { defineStore } from 'pinia';
+import { ChangeTypeCategory } from 'src/utils/changeGrouping';
+import { COLLAPSE_THRESHOLD } from 'src/utils/consts';
+import { computed, ref } from 'vue';
 
 /** A staged bulk accept/reject, undoable until the revision is submitted. */
 export interface PendingBulkAction {
@@ -9,7 +9,7 @@ export interface PendingBulkAction {
   /** Human description, e.g. "Accept 12 formatting changes in §3". */
   label: string;
   changeIds: string[];
-  action: "accept" | "reject";
+  action: 'accept' | 'reject';
   /** changeId -> previous status, for reverting on undo. */
   previousStatuses: Record<string, number>;
 }
@@ -25,7 +25,7 @@ export interface PendingBulkAction {
  * because it depends on the filtered, visible change list which the component
  * computes.
  */
-export const useDiffReviewStore = defineStore("diffReview", () => {
+export const useDiffReviewStore = defineStore('diffReview', () => {
   // ---- Collapse state ----
   /** revisionId -> force-collapsed? `undefined` = use default (threshold-based). */
   const revisionCollapse = ref<Record<string, boolean | undefined>>({});
@@ -40,7 +40,7 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
   });
 
   // ---- Filters ----
-  const typeFilter = ref<ChangeTypeCategory | "all">("all");
+  const typeFilter = ref<ChangeTypeCategory | 'all'>('all');
   const unreviewedOnly = ref(false);
 
   // ---- Reviewed marker (resume support) ----
@@ -106,7 +106,11 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
 
   /** Explicitly set a section's collapsed state. Use this from components to
    * avoid toggle races when the component drives the canonical state. */
-  function setSectionCollapsed(revisionId: string, section: string, collapsed: boolean) {
+  function setSectionCollapsed(
+    revisionId: string,
+    section: string,
+    collapsed: boolean,
+  ) {
     const sKey = sectionKey(revisionId, section);
     sectionCollapse.value = { ...sectionCollapse.value, [sKey]: collapsed };
   }
@@ -170,7 +174,11 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
     sectionCollapse.value = next;
   }
 
-  function toggleSections(revisionId: string, sections: string[] = [], changeIds: string[] = []) {
+  function toggleSections(
+    revisionId: string,
+    sections: string[] = [],
+    changeIds: string[] = [],
+  ) {
     const allSecCollapsed = sections.length
       ? sections.every((s) => isSectionCollapsed(revisionId, s))
       : true;
@@ -181,8 +189,8 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
   function toggleCollapse(revisionId: string, changeIds: string[] = []) {
     const cur = revisionCollapse.value[revisionId];
     const defaultCollapsed = revisionDefault.value[revisionId] === true;
-    const isCurrentlyCollapsed = cur === true ||
-      (cur === undefined && defaultCollapsed);
+    const isCurrentlyCollapsed =
+      cur === true || (cur === undefined && defaultCollapsed);
     if (isCurrentlyCollapsed) {
       expandAll(revisionId, changeIds);
     } else {
@@ -191,7 +199,7 @@ export const useDiffReviewStore = defineStore("diffReview", () => {
   }
 
   // ---- Filters ----
-  function setTypeFilter(filter: ChangeTypeCategory | "all") {
+  function setTypeFilter(filter: ChangeTypeCategory | 'all') {
     typeFilter.value = filter;
   }
 

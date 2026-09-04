@@ -655,26 +655,34 @@ const navPositionLabel = computed(() => {
 });
 
 function navigatePrev() {
-  if (navIndex.value > 0) {
+  const previousIndex = navIndex.value;
+  if (previousIndex > 0) {
     navIndex.value--;
-    afterNavigate();
+    afterNavigate(previousIndex);
   }
 }
 
 function navigateNext() {
-  if (navIndex.value < filteredItems.value.length - 1) {
+  const previousIndex = navIndex.value;
+  if (previousIndex < filteredItems.value.length - 1) {
     navIndex.value++;
-    afterNavigate();
+    afterNavigate(previousIndex);
   }
 }
 
-function afterNavigate() {
+function afterNavigate(previousIndex: number) {
   const id = currentNavChangeId.value;
   if (!id) return;
+
+  const previousId = filteredItems.value[previousIndex]?.id;
+  if (previousId && previousId !== id) {
+    reviewStore.setChangeCollapsed(previousId, true);
+  }
+
   // Reveal the change: expand its section (if collapsed) and the change itself.
   const section = props.sectionMap.get(id) ?? '';
   if (section && reviewStore.isSectionCollapsed(revisionId, section)) {
-    reviewStore.toggleSection(revisionId, section);
+    reviewStore.setSectionCollapsed(revisionId, section, false);
   }
   reviewStore.setChangeCollapsed(id, false);
   reviewStore.markReviewed(id);
@@ -713,8 +721,9 @@ function jumpToSection(groupIndex: number) {
   if (firstId) {
     const flatIndex = filteredItems.value.findIndex((i) => i.id === firstId);
     if (flatIndex >= 0) {
+      const previousIndex = navIndex.value;
       navIndex.value = flatIndex;
-      afterNavigate();
+      afterNavigate(previousIndex);
     }
   }
 }

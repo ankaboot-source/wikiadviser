@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@quasar/cli':
-        specifier: ^5.0.8
-        version: 5.0.8
+        specifier: ^5.0.9
+        version: 5.0.9
       '@quasar/extras':
         specifier: ^2.1.0
         version: 2.1.0
@@ -19,7 +19,7 @@ importers:
         version: 10.75.2(pinia@2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))
       '@supabase/ssr':
         specifier: ^0.12.7
-        version: 0.12.7(@supabase/supabase-js@2.117.0)
+        version: 0.12.7(@supabase/supabase-js@2.117.2)
       cheerio:
         specifier: ^1.2.0
         version: 1.2.0
@@ -30,11 +30,11 @@ importers:
         specifier: ^2.1.7
         version: 2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3))
       posthog-js:
-        specifier: ^1.434.7
-        version: 1.434.7
+        specifier: ^1.434.18
+        version: 1.434.18
       quasar:
-        specifier: ^2.33.1
-        version: 2.33.1
+        specifier: ^2.33.2
+        version: 2.33.2
       vue:
         specifier: ^3.5.43
         version: 3.5.43(typescript@5.9.3)
@@ -47,19 +47,19 @@ importers:
     devDependencies:
       '@nuxtbase/auth-ui-vue':
         specifier: ^0.3.6
-        version: 0.3.7(@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.0))(@supabase/supabase-js@2.117.0)
+        version: 0.3.7(@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.2))(@supabase/supabase-js@2.117.2)
       '@quasar/app-vite':
         specifier: ^2.6.2
-        version: 2.6.2(@quasar/extras@2.1.0)(@types/node@26.6.2)(eslint@8.57.1(supports-color@8.1.1))(pinia@2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.1)(rolldown@1.2.4)(sass@1.102.0)(supports-color@8.1.1)(terser@5.38.0)(typescript@5.9.3)(vue-router@4.5.0(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))
+        version: 2.6.2(@quasar/extras@2.1.0)(@types/node@26.6.3)(eslint@8.57.1(supports-color@8.1.1))(pinia@2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.2)(rolldown@1.2.4)(sass@1.102.0)(supports-color@8.1.1)(terser@5.38.0)(typescript@5.9.3)(vue-router@4.5.0(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))
       '@supabase/auth-ui-shared':
         specifier: ^0.1.8
-        version: 0.1.8(@supabase/supabase-js@2.117.0)
+        version: 0.1.8(@supabase/supabase-js@2.117.2)
       '@supabase/supabase-js':
-        specifier: ^2.117.0
-        version: 2.117.0
+        specifier: ^2.117.2
+        version: 2.117.2
       '@types/node':
-        specifier: ^26.6.2
-        version: 26.6.2
+        specifier: ^26.6.3
+        version: 26.6.3
       '@typescript-eslint/eslint-plugin':
         specifier: ^7.0.0
         version: 7.0.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3))(eslint@8.57.1(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)
@@ -82,8 +82,8 @@ importers:
         specifier: ^9.33.0
         version: 9.33.0(eslint@8.57.1(supports-color@8.1.1))(supports-color@8.1.1)
       prettier:
-        specifier: ^3.9.8
-        version: 3.9.8
+        specifier: ^3.9.9
+        version: 3.9.9
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -110,12 +110,12 @@ packages:
   '@bufbuild/protobuf@2.14.0':
     resolution: {integrity: sha512-C3UGsiCwSprE2NKIIFA3hCDlpXTMCAXRZuEVp88L1GY36Y41+rYL5fryE+nOFhp4p4JPQvdV8PQ4DWgHgeTE+w==}
 
-  '@clack/core@1.4.3':
-    resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
+  '@clack/core@1.5.1':
+    resolution: {integrity: sha512-iHTrHA8MtVuLl2TfZySmcKv1qO2PoyC9Z7pfSDozEuV5vtY3/wcOPKJXlqJ5Oq2Cx5DDGQGAMVx6HZfRRoVEbQ==}
     engines: {node: '>= 20.12.0'}
 
-  '@clack/prompts@1.7.0':
-    resolution: {integrity: sha512-y7/yvZ2TPAnR9+jnc00klvNNLkJiXFFrQA/hlLCcxA9a2A4zQIOimyFQ9XfwYKiGD1fb5GY8vbKIIgO8d5Tb2A==}
+  '@clack/prompts@1.8.1':
+    resolution: {integrity: sha512-dlT1m5e/0yUL0kRNcQn7yGLVThkgbB0Ga/1AmfDDC/8ik6AIiSf2QLQO2zPYvefsHP0aFgxO93cVLCCfDp7kzQ==}
     engines: {node: '>= 20.12.0'}
 
   '@esbuild/aix-ppc64@0.27.7':
@@ -637,14 +637,11 @@ packages:
   '@posthog/browser-common@0.9.0':
     resolution: {integrity: sha512-EWoVzs1vVY7ihpn8yOjj3jyjriHUEEMVSBNL/TW3hk09fTriWRe76vJXrRg0G0yjTYxHmtlSkNn4mOV24ZEzzA==}
 
-  '@posthog/core@1.54.3':
-    resolution: {integrity: sha512-Xttyf9OSViNw89aMW1Cdpl9dCY0t00FqzDc1JLJsxhqEwBqUP9aCzNToPt7NVu+I0M9yp7608abNYdO8hal7nQ==}
-
   '@posthog/core@1.55.1':
     resolution: {integrity: sha512-S76bSbCHGVC8oQa1zyue6A6WzkNf1Ue4oRvfvBNLRnFM3UoWnpWnQ4T/4IzrIEtVCQYv1OI7gk8uL8/U6Tuu7w==}
 
-  '@posthog/types@1.412.1':
-    resolution: {integrity: sha512-FxXsb9YOOME8bJI5K09qKeSvLjnZQ2dPV7wZpI7a8sERQtXkAuhBcPB/balCnVE7TYwhgtHj5NQss9BgQ5bAfQ==}
+  '@posthog/core@1.55.2':
+    resolution: {integrity: sha512-2mYxGbDmTLUs096VbcZqSWo0lrI48/BrX65r54NynxxFq409BOx9w73HxOAtOKZ1vblkdV6/GxQTe7KDcIQidg==}
 
   '@posthog/types@1.412.4':
     resolution: {integrity: sha512-Q7lV9O9TbLngjOYw1ucm3bS3tn48xb1B4ZQdDy8gv7yfKe99hCTeWYG4xZ36nJM80VxpTF9TriiJt5hngDOkBg==}
@@ -683,8 +680,8 @@ packages:
   '@quasar/art@1.0.0':
     resolution: {integrity: sha512-IAV8Qg2QM3U2alywUcCELyOlHCUNbJYmiVDRTLgcgmyBlQwo3Wk33eHAyT9cpnV5CqlmuYXe6UZt0Ybi1m0lMA==}
 
-  '@quasar/cli@5.0.8':
-    resolution: {integrity: sha512-/ShglvEX2y48JeQQ+dN/v6e1SWBgfPMdZEzFChz7KqNrc4zfkBtXzBz0G2IVSW78gGUcb3KNnk977mv7HPF1bg==}
+  '@quasar/cli@5.0.9':
+    resolution: {integrity: sha512-q7Xcc4eFlgZ21qO5QZUZdK5MeHJtJDGGk1rnkAW8hQOUSu3zVEC5fEjrNaEixJc62V62gVELWlpXiqgluLEY7w==}
     engines: {node: '>= 20.20.0'}
     hasBin: true
 
@@ -703,8 +700,8 @@ packages:
     resolution: {integrity: sha512-QFg1sxmQW3o7WyHG+gMkdQYperKAfSdDKt/kuOgrjOvWFC0TRsub65rYO47SVnjdnSZUVBgQSzB0F3NB88uYyw==}
     engines: {node: '>= 16'}
 
-  '@quasar/update-notifier@1.0.0':
-    resolution: {integrity: sha512-+DivJjx8aTy8dNsTxJJ1HJNxy3gqjKhuBIODULk1CRwzHzGAjZKnhvMagxXX6y6tT35gB1s4daXSD6sxz/+Cug==}
+  '@quasar/update-notifier@1.1.0':
+    resolution: {integrity: sha512-X5RmiyZ6rtgu1nzwSYWNPLRZgYX8vBZE4dqdk/afuCiXKGtHxlQFuDsfTXOSKOOV/z1plT3XNLZH6GpQHERaeg==}
     engines: {node: '>= 20'}
 
   '@quasar/vite-plugin@1.12.0':
@@ -850,8 +847,8 @@ packages:
       pinia:
         optional: true
 
-  '@supabase/auth-js@2.117.0':
-    resolution: {integrity: sha512-mmKfXHkZ+93fJ57yxMnJ+h+psiHIEBLzqZNgNu7yE7/kNxAKXkKxz/BZO/Ht0NJiMztFICvA+7xOLbIrK723qQ==}
+  '@supabase/auth-js@2.117.2':
+    resolution: {integrity: sha512-Z3WnGwrphYZubrLbxp5Iv0tLA9A5GhvKzJ/ZXglxqwd2QEH2R4dXRltjVJ8sIn4xEW2BSFIGT0yALVJIgZeDYw==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/auth-ui-shared@0.1.8':
@@ -859,19 +856,19 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.21.0
 
-  '@supabase/functions-js@2.117.0':
-    resolution: {integrity: sha512-RC3kdN0DZS8gyLsTDhWCc6xg5FKAyMNz/xt5KD7PSC+PB/7/NhFPo6YrMZu+3xsQMFdOWuVaBlHYdPwdmhqx/w==}
+  '@supabase/functions-js@2.117.2':
+    resolution: {integrity: sha512-6DT4ZIjmZxa9ANKaBIrjc86AyKrX8M376ynvNeOBBVad3eP7x3UHqWfDR2ynFkHGzCuOpr1A+kObmnahxuwuog==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/phoenix@0.4.5':
     resolution: {integrity: sha512-aAn9H9ovVyeApKy11OWOrrOGq8DV68yWeH4ud2lN9fzn4aO8Zb5GLL9m1pUg9nLqIcT+ZDfAcsZe0E/nqdv2lw==}
 
-  '@supabase/postgrest-js@2.117.0':
-    resolution: {integrity: sha512-KG2+dYIkTzOjR8f0Xza3uXzKB6bHQOIjMTJhHuNNSUK0C6zdtd4A8LBjxpPB9R5I95xuN1CCdlIEJTkZ5g8LBA==}
+  '@supabase/postgrest-js@2.117.2':
+    resolution: {integrity: sha512-V1Qhn+M8xzJqCasOxHZ2KG19Fj39PxU7weEAmOK65/KTsWCRXboB4hcQwFvxRvM7ZikeP9IZWNvQkfjvSxzYFw==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/realtime-js@2.117.0':
-    resolution: {integrity: sha512-E+hovHDWTpoOQHCMWdOwahvJmD7M/Vgj8cQTwLMPlEFvTO7wV8zBhrM9iUnKReurpGpl9u6MGbbjBeQJTEE1Kg==}
+  '@supabase/realtime-js@2.117.2':
+    resolution: {integrity: sha512-lYXSAIg3eAKA58riUED6Vb+TCzF8jtx18uOoiCaVJ7ZMre6FWBpwB1MPeW+B6vykJT/hPdiuqwcSB7ILMS21ew==}
     engines: {node: '>=22.0.0'}
 
   '@supabase/ssr@0.12.7':
@@ -879,12 +876,12 @@ packages:
     peerDependencies:
       '@supabase/supabase-js': ^2.114.0
 
-  '@supabase/storage-js@2.117.0':
-    resolution: {integrity: sha512-jFn8MTRKhUls5yzfYogPqItNH0jwzlLvdhAO2nBKRMzQuvI9BgNM2BabcGSxcDAcyEACGEjeIBXjxRfIb8OI5Q==}
+  '@supabase/storage-js@2.117.2':
+    resolution: {integrity: sha512-8gAJoVaxZa/War2kFRfJMxGk4M190Q7lJ70BofwGlRxU/u9pIodd6XyTvmXkxOKXWuIYtkDaYPZrIAUt1T/7FQ==}
     engines: {node: '>=22.0.0'}
 
-  '@supabase/supabase-js@2.117.0':
-    resolution: {integrity: sha512-c9ASbrLEqFBTWIxF4aXuK4hVgdIH+kA6BsT6xjDkXuFYQkGBWL4OqirstgzhS30gr0Vlfbur6F8jlUfWkCy2dw==}
+  '@supabase/supabase-js@2.117.2':
+    resolution: {integrity: sha512-eSG2VKnHR+Clp1PmidZ1/weJ8PJwoybjva3L2GgKqFG4YDS1Iqmc61psKGZP5xw6OMT2O7ZorPR42PY6q1BOXg==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0'
@@ -937,8 +934,8 @@ packages:
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
-  '@types/node@26.6.2':
-    resolution: {integrity: sha512-X1P21scMv4zGKLYqjdGjaKa7COa0RKVYYZZN/NfvLQ1JegxFhdhpZG/Lyn8AXx6CDUavKAd11v6BvfpkDByK8g==}
+  '@types/node@26.6.3':
+    resolution: {integrity: sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg==}
 
   '@types/qs@6.9.18':
     resolution: {integrity: sha512-kK7dgTYDyGqS+e2Q4aK9X3D7q234CIZ1Bv0q/7Z5IwRDoADNU81xXJK/YVyLbLTZCoIwUoDoffFeF+p/eIklAA==}
@@ -2396,8 +2393,8 @@ packages:
     resolution: {integrity: sha512-RRuzqDtt5Y9h3quz5hWhK+TPnsmVs6WwSU6LkJMeY4HstUEDuYTG8UJSdawMRzmzAtV+KEoG8N3Qg2qLy5vM/A==}
     engines: {node: ^10 || ^12 || >=14}
 
-  posthog-js@1.434.7:
-    resolution: {integrity: sha512-WpI0cU78FTgEfE6B8B7aWKe2IKFcmbu0xAR3X24IUDABbFoiskl/aW9eWjEnlNalUvv82z2v8NDy90A5RzTzIA==}
+  posthog-js@1.434.18:
+    resolution: {integrity: sha512-GK2ueRSwD1BBwIBm/HgjJBhHWxL46TRIEwxVJYde5GOk6lq1gaklBSfMBdEBHgqIcFG5BgMmN3M0NqGZ+sDULw==}
     peerDependencies:
       '@types/react': '>=16.8.0'
       react: '>=16.8.0'
@@ -2427,8 +2424,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.9.8:
-    resolution: {integrity: sha512-WRFq3Wn3WId7LLROfMLdH7xaFr2jR62wU8nLO6rQUOLOxNZUviyJQs1M0iIhLexSFy+L+w0ch66wtoO2jRjG0A==}
+  prettier@3.9.9:
+    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -2461,8 +2458,8 @@ packages:
     resolution: {integrity: sha512-+38qI9SOr8tfZ4QmJNplMUxqjbe7LKvvZgWdExBOmd+egZTtjLB67Gu0HRX3u/XOq7UU2Nx6nsjvS16Z9uwfpg==}
     engines: {node: '>=0.6'}
 
-  quasar@2.33.1:
-    resolution: {integrity: sha512-lFuCQYK8nLmK/oCu5+s3DMRMgVsGbz/72yUuhyQ7S1KSX8C0VaruqQfHp34nBFh955PIsAU/gmwdhMUu0dHphQ==}
+  quasar@2.33.2:
+    resolution: {integrity: sha512-ZzskDpI34A7qo00VQuCo+zg6xyKzAIoTFDjYAdbY5R0udYl7KzwtojEDLRcrsybEcwe46GK0mPIA4oQWByKLiQ==}
     engines: {node: '>= 22.0.0'}
 
   query-selector-shadow-dom@1.0.1:
@@ -3119,14 +3116,14 @@ snapshots:
 
   '@bufbuild/protobuf@2.14.0': {}
 
-  '@clack/core@1.4.3':
+  '@clack/core@1.5.1':
     dependencies:
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
 
-  '@clack/prompts@1.7.0':
+  '@clack/prompts@1.8.1':
     dependencies:
-      '@clack/core': 1.4.3
+      '@clack/core': 1.5.1
       fast-string-width: 3.0.2
       fast-wrap-ansi: 0.2.2
       sisteransi: 1.0.5
@@ -3255,122 +3252,122 @@ snapshots:
 
   '@inquirer/ansi@2.0.7': {}
 
-  '@inquirer/checkbox@5.2.1(@types/node@26.6.2)':
+  '@inquirer/checkbox@5.2.1(@types/node@26.6.3)':
     dependencies:
       '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
       '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/confirm@6.1.1(@types/node@26.6.2)':
+  '@inquirer/confirm@6.1.1(@types/node@26.6.3)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/core@11.2.1(@types/node@26.6.2)':
+  '@inquirer/core@11.2.1(@types/node@26.6.3)':
     dependencies:
       '@inquirer/ansi': 2.0.7
       '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
       cli-width: 4.1.0
       fast-wrap-ansi: 0.2.2
       mute-stream: 3.0.0
       signal-exit: 4.1.0
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/editor@5.2.2(@types/node@26.6.2)':
+  '@inquirer/editor@5.2.2(@types/node@26.6.3)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/external-editor': 3.0.3(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/external-editor': 3.0.3(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/expand@5.1.1(@types/node@26.6.2)':
+  '@inquirer/expand@5.1.1(@types/node@26.6.3)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/external-editor@3.0.3(@types/node@26.6.2)':
+  '@inquirer/external-editor@3.0.3(@types/node@26.6.3)':
     dependencies:
       chardet: 2.2.0
       iconv-lite: 0.7.3
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   '@inquirer/figures@2.0.7': {}
 
-  '@inquirer/input@5.1.2(@types/node@26.6.2)':
+  '@inquirer/input@5.1.2(@types/node@26.6.3)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/number@4.1.1(@types/node@26.6.2)':
+  '@inquirer/number@4.1.1(@types/node@26.6.3)':
     dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/password@5.1.1(@types/node@26.6.2)':
-    dependencies:
-      '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
-    optionalDependencies:
-      '@types/node': 26.6.2
-
-  '@inquirer/prompts@8.5.2(@types/node@26.6.2)':
-    dependencies:
-      '@inquirer/checkbox': 5.2.1(@types/node@26.6.2)
-      '@inquirer/confirm': 6.1.1(@types/node@26.6.2)
-      '@inquirer/editor': 5.2.2(@types/node@26.6.2)
-      '@inquirer/expand': 5.1.1(@types/node@26.6.2)
-      '@inquirer/input': 5.1.2(@types/node@26.6.2)
-      '@inquirer/number': 4.1.1(@types/node@26.6.2)
-      '@inquirer/password': 5.1.1(@types/node@26.6.2)
-      '@inquirer/rawlist': 5.3.1(@types/node@26.6.2)
-      '@inquirer/search': 4.2.1(@types/node@26.6.2)
-      '@inquirer/select': 5.2.1(@types/node@26.6.2)
-    optionalDependencies:
-      '@types/node': 26.6.2
-
-  '@inquirer/rawlist@5.3.1(@types/node@26.6.2)':
-    dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
-    optionalDependencies:
-      '@types/node': 26.6.2
-
-  '@inquirer/search@4.2.1(@types/node@26.6.2)':
-    dependencies:
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
-    optionalDependencies:
-      '@types/node': 26.6.2
-
-  '@inquirer/select@5.2.1(@types/node@26.6.2)':
+  '@inquirer/password@5.1.1(@types/node@26.6.3)':
     dependencies:
       '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/figures': 2.0.7
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
-  '@inquirer/type@4.0.7(@types/node@26.6.2)':
+  '@inquirer/prompts@8.5.2(@types/node@26.6.3)':
+    dependencies:
+      '@inquirer/checkbox': 5.2.1(@types/node@26.6.3)
+      '@inquirer/confirm': 6.1.1(@types/node@26.6.3)
+      '@inquirer/editor': 5.2.2(@types/node@26.6.3)
+      '@inquirer/expand': 5.1.1(@types/node@26.6.3)
+      '@inquirer/input': 5.1.2(@types/node@26.6.3)
+      '@inquirer/number': 4.1.1(@types/node@26.6.3)
+      '@inquirer/password': 5.1.1(@types/node@26.6.3)
+      '@inquirer/rawlist': 5.3.1(@types/node@26.6.3)
+      '@inquirer/search': 4.2.1(@types/node@26.6.3)
+      '@inquirer/select': 5.2.1(@types/node@26.6.3)
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
+
+  '@inquirer/rawlist@5.3.1(@types/node@26.6.3)':
+    dependencies:
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
+    optionalDependencies:
+      '@types/node': 26.6.3
+
+  '@inquirer/search@4.2.1(@types/node@26.6.3)':
+    dependencies:
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/figures': 2.0.7
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
+    optionalDependencies:
+      '@types/node': 26.6.3
+
+  '@inquirer/select@5.2.1(@types/node@26.6.3)':
+    dependencies:
+      '@inquirer/ansi': 2.0.7
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/figures': 2.0.7
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
+    optionalDependencies:
+      '@types/node': 26.6.3
+
+  '@inquirer/type@4.0.7(@types/node@26.6.3)':
+    optionalDependencies:
+      '@types/node': 26.6.3
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -3417,10 +3414,10 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.0
 
-  '@nuxtbase/auth-ui-vue@0.3.7(@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.0))(@supabase/supabase-js@2.117.0)':
+  '@nuxtbase/auth-ui-vue@0.3.7(@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.2))(@supabase/supabase-js@2.117.2)':
     dependencies:
-      '@supabase/auth-ui-shared': 0.1.8(@supabase/supabase-js@2.117.0)
-      '@supabase/supabase-js': 2.117.0
+      '@supabase/auth-ui-shared': 0.1.8(@supabase/supabase-js@2.117.2)
+      '@supabase/supabase-js': 2.117.2
 
   '@one-ini/wasm@0.2.1': {}
 
@@ -3586,31 +3583,29 @@ snapshots:
 
   '@posthog/browser-common@0.9.0':
     dependencies:
-      '@posthog/core': 1.54.3
-      '@posthog/types': 1.412.1
-
-  '@posthog/core@1.54.3':
-    dependencies:
-      '@posthog/types': 1.412.1
+      '@posthog/core': 1.55.1
+      '@posthog/types': 1.412.4
 
   '@posthog/core@1.55.1':
     dependencies:
       '@posthog/types': 1.412.4
 
-  '@posthog/types@1.412.1': {}
+  '@posthog/core@1.55.2':
+    dependencies:
+      '@posthog/types': 1.412.4
 
   '@posthog/types@1.412.4': {}
 
-  '@quasar/app-vite@2.6.2(@quasar/extras@2.1.0)(@types/node@26.6.2)(eslint@8.57.1(supports-color@8.1.1))(pinia@2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.1)(rolldown@1.2.4)(sass@1.102.0)(supports-color@8.1.1)(terser@5.38.0)(typescript@5.9.3)(vue-router@4.5.0(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))':
+  '@quasar/app-vite@2.6.2(@quasar/extras@2.1.0)(@types/node@26.6.3)(eslint@8.57.1(supports-color@8.1.1))(pinia@2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.2)(rolldown@1.2.4)(sass@1.102.0)(supports-color@8.1.1)(terser@5.38.0)(typescript@5.9.3)(vue-router@4.5.0(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))':
     dependencies:
       '@quasar/render-ssr-error': 1.0.4
       '@quasar/ssl-certificate': 2.0.0
-      '@quasar/vite-plugin': 1.12.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.1)(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
+      '@quasar/vite-plugin': 1.12.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.2)(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
       '@types/chrome': 0.1.43
       '@types/compression': 1.7.5
       '@types/cordova': 11.0.3
       '@types/express': 5.0.6
-      '@vitejs/plugin-vue': 6.0.8(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
+      '@vitejs/plugin-vue': 6.0.8(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
       archiver: 7.0.1
       chokidar: 5.0.0
       ci-info: 4.4.0
@@ -3625,21 +3620,21 @@ snapshots:
       express: 4.21.2(supports-color@8.1.1)
       fs-extra: 11.4.0
       html-minifier-terser: 7.2.0
-      inquirer: 13.4.3(@types/node@26.6.2)
+      inquirer: 13.4.3(@types/node@26.6.3)
       isbinaryfile: 5.0.4
       kolorist: 1.8.0
       lodash: 4.18.1
       minimist: 1.2.8
       mlly: 1.8.2
       open: 11.0.0
-      quasar: 2.33.1
+      quasar: 2.33.2
       rollup-plugin-visualizer: 7.1.1(rolldown@1.2.4)
       sass-embedded: 1.102.0
       semver: 7.8.5
       serialize-javascript: 7.1.0
       tinyglobby: 0.2.17
       ts-essentials: 10.2.1(typescript@5.9.3)
-      vite: 8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
+      vite: 8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
       vue: 3.5.43(typescript@5.9.3)
       vue-router: 4.5.0(vue@3.5.43(typescript@5.9.3))
       webpack-merge: 6.0.1
@@ -3668,13 +3663,13 @@ snapshots:
 
   '@quasar/art@1.0.0': {}
 
-  '@quasar/cli@5.0.8':
+  '@quasar/cli@5.0.9':
     dependencies:
-      '@clack/prompts': 1.7.0
+      '@clack/prompts': 1.8.1
       '@hono/node-server': 2.1.0(hono@4.13.8)
       '@quasar/art': 1.0.0
       '@quasar/ssl-certificate': 2.1.0
-      '@quasar/update-notifier': 1.0.0
+      '@quasar/update-notifier': 1.1.0
       ci-info: 4.4.0
       cross-spawn: 7.0.6
       fs-extra: 11.4.0
@@ -3698,15 +3693,15 @@ snapshots:
       fs-extra: 11.4.0
       selfsigned: 5.5.0
 
-  '@quasar/update-notifier@1.0.0':
+  '@quasar/update-notifier@1.1.0':
     dependencies:
       ci-info: 4.4.0
 
-  '@quasar/vite-plugin@1.12.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.1)(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))':
+  '@quasar/vite-plugin@1.12.0(@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3)))(quasar@2.33.2)(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))':
     dependencies:
-      '@vitejs/plugin-vue': 6.0.8(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
-      quasar: 2.33.1
-      vite: 8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
+      '@vitejs/plugin-vue': 6.0.8(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))
+      quasar: 2.33.2
+      vite: 8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
       vue: 3.5.43(typescript@5.9.3)
 
   '@rolldown/binding-android-arm64@1.2.4':
@@ -3796,51 +3791,51 @@ snapshots:
     optionalDependencies:
       pinia: 2.3.1(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3))
 
-  '@supabase/auth-js@2.117.0':
+  '@supabase/auth-js@2.117.2':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.0)':
+  '@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.117.2)':
     dependencies:
-      '@supabase/supabase-js': 2.117.0
+      '@supabase/supabase-js': 2.117.2
 
-  '@supabase/functions-js@2.117.0':
+  '@supabase/functions-js@2.117.2':
     dependencies:
       tslib: 2.8.1
 
   '@supabase/phoenix@0.4.5': {}
 
-  '@supabase/postgrest-js@2.117.0':
+  '@supabase/postgrest-js@2.117.2':
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/realtime-js@2.117.0':
+  '@supabase/realtime-js@2.117.2':
     dependencies:
       '@supabase/phoenix': 0.4.5
       tslib: 2.8.1
 
-  '@supabase/ssr@0.12.7(@supabase/supabase-js@2.117.0)':
+  '@supabase/ssr@0.12.7(@supabase/supabase-js@2.117.2)':
     dependencies:
-      '@supabase/supabase-js': 2.117.0
+      '@supabase/supabase-js': 2.117.2
       cookie: 1.1.1
 
-  '@supabase/storage-js@2.117.0':
+  '@supabase/storage-js@2.117.2':
     dependencies:
       iceberg-js: 0.8.1
       tslib: 2.8.1
 
-  '@supabase/supabase-js@2.117.0':
+  '@supabase/supabase-js@2.117.2':
     dependencies:
-      '@supabase/auth-js': 2.117.0
-      '@supabase/functions-js': 2.117.0
-      '@supabase/postgrest-js': 2.117.0
-      '@supabase/realtime-js': 2.117.0
-      '@supabase/storage-js': 2.117.0
+      '@supabase/auth-js': 2.117.2
+      '@supabase/functions-js': 2.117.2
+      '@supabase/postgrest-js': 2.117.2
+      '@supabase/realtime-js': 2.117.2
+      '@supabase/storage-js': 2.117.2
 
   '@types/body-parser@1.19.5':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   '@types/chrome@0.1.43':
     dependencies:
@@ -3853,20 +3848,20 @@ snapshots:
 
   '@types/connect@3.4.38':
     dependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   '@types/cordova@11.0.3': {}
 
   '@types/express-serve-static-core@4.19.6':
     dependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
       '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
   '@types/express-serve-static-core@5.1.3':
     dependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
       '@types/qs': 6.9.18
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -3898,7 +3893,7 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
-  '@types/node@26.6.2':
+  '@types/node@26.6.3':
     dependencies:
       undici-types: 8.9.0
 
@@ -3911,18 +3906,18 @@ snapshots:
   '@types/send@0.17.4':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   '@types/serve-static@1.15.7':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
       '@types/send': 0.17.4
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   '@types/trusted-types@2.0.7':
     optional: true
@@ -4042,10 +4037,10 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))':
+  '@vitejs/plugin-vue@6.0.8(vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0))(vue@3.5.43(typescript@5.9.3))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
+      vite: 8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0)
       vue: 3.5.43(typescript@5.9.3)
 
   '@vue/compiler-core@3.5.43':
@@ -5027,17 +5022,17 @@ snapshots:
 
   ini@1.3.8: {}
 
-  inquirer@13.4.3(@types/node@26.6.2):
+  inquirer@13.4.3(@types/node@26.6.3):
     dependencies:
       '@inquirer/ansi': 2.0.7
-      '@inquirer/core': 11.2.1(@types/node@26.6.2)
-      '@inquirer/prompts': 8.5.2(@types/node@26.6.2)
-      '@inquirer/type': 4.0.7(@types/node@26.6.2)
+      '@inquirer/core': 11.2.1(@types/node@26.6.3)
+      '@inquirer/prompts': 8.5.2(@types/node@26.6.3)
+      '@inquirer/type': 4.0.7(@types/node@26.6.3)
       mute-stream: 3.0.0
       run-async: 4.0.6
       rxjs: 7.8.2
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
 
   ipaddr.js@1.9.1: {}
 
@@ -5439,10 +5434,10 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthog-js@1.434.7:
+  posthog-js@1.434.18:
     dependencies:
       '@posthog/browser-common': 0.9.0
-      '@posthog/core': 1.55.1
+      '@posthog/core': 1.55.2
       '@posthog/types': 1.412.4
       core-js: 3.50.0
       dompurify: 3.4.13
@@ -5462,7 +5457,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.9.8: {}
+  prettier@3.9.9: {}
 
   process-nextick-args@2.0.1: {}
 
@@ -5487,7 +5482,7 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  quasar@2.33.1: {}
+  quasar@2.33.2: {}
 
   query-selector-shadow-dom@1.0.1: {}
 
@@ -5560,7 +5555,7 @@ snapshots:
 
   rollup-plugin-visualizer@7.1.1(rolldown@1.2.4):
     dependencies:
-      open: 11.0.0
+      open: 11.0.4
       picomatch: 4.0.5
       source-map: 0.8.0
       yargs: 18.1.0
@@ -5957,7 +5952,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@8.2.1(@types/node@26.6.2)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0):
+  vite@8.2.1(@types/node@26.6.3)(esbuild@0.27.7)(sass-embedded@1.102.0)(sass@1.102.0)(terser@5.38.0):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.5
@@ -5965,7 +5960,7 @@ snapshots:
       rolldown: 1.2.4
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 26.6.2
+      '@types/node': 26.6.3
       esbuild: 0.27.7
       fsevents: 2.3.3
       sass: 1.102.0

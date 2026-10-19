@@ -1,0 +1,47 @@
+version: "3.1"
+
+services:
+  wikiadviser-caddy:
+    image: wikiadviser-caddy:git
+    container_name: wikiadviser-caddy
+    # Share the mediawiki host network so caddy can reach the apache-served
+    # mediawiki instances on 127.0.0.1:8080(demo)/8081(dev)/8082(prod) and bind
+    # 80/443 directly.
+    network_mode: "host"
+    volumes:
+      - caddy-data:/data
+      - ./Caddyfile.mediawiki:/etc/caddy/Caddyfile:ro
+      - ./robots.txt:/etc/caddy/robots.txt:ro
+      - /var/log/caddy/:/var/log/caddy/
+    build:
+      context: frontend
+      args:
+        SUPABASE_PROJECT_URL_PROD: ${SUPABASE_PROJECT_URL_PROD}
+        SUPABASE_ANON_KEY_PROD: ${SUPABASE_ANON_KEY_PROD}
+        MEDIAWIKI_ENDPOINT_PROD: ${MEDIAWIKI_ENDPOINT_PROD}
+        SENTRY_DSN_FRONTEND_PROD: ${SENTRY_DSN_FRONTEND_PROD}
+        SENTRY_ENV_FRONTEND_PROD: ${SENTRY_ENV_FRONTEND_PROD}
+        USE_MIRA_PROD: ${USE_MIRA_PROD}
+        USE_CHANGE_DESCRIPTION_PROD: ${USE_CHANGE_DESCRIPTION_PROD}
+        SUPABASE_PROJECT_URL_QA: ${SUPABASE_PROJECT_URL_QA}
+        SUPABASE_ANON_KEY_QA: ${SUPABASE_ANON_KEY_QA}
+        MEDIAWIKI_ENDPOINT_QA: ${MEDIAWIKI_ENDPOINT_QA}
+        SENTRY_DSN_FRONTEND_QA: ${SENTRY_DSN_FRONTEND_QA}
+        SENTRY_ENV_FRONTEND_QA: ${SENTRY_ENV_FRONTEND_QA}
+        USE_MIRA_QA: ${USE_MIRA_QA}
+        USE_CHANGE_DESCRIPTION_QA: ${USE_CHANGE_DESCRIPTION_QA}
+        WIKIADVISER_LANGUAGES: ${WIKIADVISER_LANGUAGES}
+        SHARE_LINK_DAY_LIMIT: ${SHARE_LINK_DAY_LIMIT}
+        POSTHOG_API_KEY: ${POSTHOG_API_KEY}
+        POSTHOG_API_HOST: ${POSTHOG_API_HOST}
+    environment:
+      - WIKIADVISER_FRONTEND_ENDPOINT_PROD=${WIKIADVISER_FRONTEND_ENDPOINT_PROD}
+      - WIKIADVISER_FRONTEND_ENDPOINT_QA=${WIKIADVISER_FRONTEND_ENDPOINT_QA}
+      - MEDIAWIKI_DEV_ENDPOINT=${MEDIAWIKI_DEV_ENDPOINT}
+      - SUPABASE_PROJECT_URL_PROD=${SUPABASE_PROJECT_URL_PROD}
+      - SUPABASE_PROJECT_URL_QA=${SUPABASE_PROJECT_URL_QA}
+      - X_API_KEY_PROD=${X_API_KEY_PROD}
+      - X_API_KEY_QA=${X_API_KEY_QA}
+
+volumes:
+  caddy-data:

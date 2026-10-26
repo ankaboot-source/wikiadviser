@@ -1,4 +1,4 @@
-FROM node:lts-alpine as build-stage
+FROM node:lts-alpine as build
 WORKDIR /wikiadviser-frontend
 COPY . .
 
@@ -30,6 +30,6 @@ RUN npm install -g pnpm
 RUN yes | pnpm approve-builds
 RUN pnpm install && pnpm run build
 
-FROM caddy:2.8.0-alpine as production-stage
-COPY --from=build-stage /wikiadviser-frontend/dist/spa /usr/share/caddy/html
+FROM caddy:2.11.7-alpine as production-stage
+COPY --from=build /wikiadviser-frontend/dist/spa /usr/share/caddy/html
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]

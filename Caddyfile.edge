@@ -1,0 +1,47 @@
+# Edge caddy: TLS/ACME owner (80/443). Reverse-proxies each public domain to
+# its dedicated backend caddy on a loopback port.
+#   prod -> 127.0.0.1:8083   qa -> 127.0.0.1:8084   dev -> 127.0.0.1:8085
+
+#Disable bot crawlings
+{$WIKIADVISER_FRONTEND_ENDPOINT_PROD}/robots.txt, {$WIKIADVISER_FRONTEND_ENDPOINT_QA}/robots.txt, {$MEDIAWIKI_DEV_ENDPOINT}/robots.txt {
+  respond "User-agent: *
+  Disallow: /
+  Noindex: /
+  Nofollow: /"
+}
+
+# PROD
+{$WIKIADVISER_FRONTEND_ENDPOINT_PROD} {
+  log {
+    output file /var/log/caddy/access-edge-prod.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+  }
+  reverse_proxy 127.0.0.1:8083
+}
+
+# QA / DEMO
+{$WIKIADVISER_FRONTEND_ENDPOINT_QA} {
+  log {
+    output file /var/log/caddy/access-edge-qa.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+  }
+  reverse_proxy 127.0.0.1:8084
+}
+
+# DEV
+{$MEDIAWIKI_DEV_ENDPOINT} {
+  log {
+    output file /var/log/caddy/access-edge-dev.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+  }
+  reverse_proxy 127.0.0.1:8085
+}

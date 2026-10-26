@@ -1,22 +1,17 @@
-#Disable bot crawlings
-{$WIKIADVISER_FRONTEND_ENDPOINT}/robots.txt {
-  respond "User-agent: *
-  Disallow: /
-  Noindex: /
-  Nofollow: /"
-}
+# QA backend caddy: plain HTTP on the host loopback (TLS/ACME handled by edge).
+# Serves the QA docroot (127.0.0.1:8084), proxies /wiki/* to the demo mediawiki
+# (127.0.0.1:8080), and serves the DEV mediawiki endpoint (127.0.0.1:8085 -> 8081).
 
-# Wikiadviser
-{$WIKIADVISER_FRONTEND_ENDPOINT} {
+http://127.0.0.1:8084 {
   log {
-    output file /var/log/caddy/access-app-prod.log {
+    output file /var/log/caddy/access-app-demo.log {
       roll_size 10MiB
       roll_keep 10
       roll_keep_for 24h
     }
-    }
+  }
 
-  #### Mediawiki Prod ####
+  #### Mediawiki Demo ####
 
   handle /wiki/* {
 
@@ -43,7 +38,7 @@
       uri /functions/v1/restrict-mediawiki-access
       copy_headers X-User X-Client-IP X-Forwarded-Uri
     }
-    
+
     header {
       -X-Frame-Options
       +Content-Security-Policy "frame-ancestors https://*.agircollectif.org";
@@ -51,8 +46,7 @@
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
     # Redirect simple article links to Wikipedia
-    # simple e.g. /wiki/en/index.php/Main_page
-    reverse_proxy wiki:8082 {
+    reverse_proxy 127.0.0.1:8080 {
       handle_response {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
         # Redirect simple articles
@@ -65,16 +59,47 @@
     }
 
   }
-        
-  #### WikiAdviser ####
-      
+
+  #### WikiAdviser QA ####
+
   handle {
     root * /usr/share/caddy/html
     encode gzip
     try_files {path} /index.html
-    file_server      
+    file_server
   }
 }
 
+http://127.0.0.1:8085 {
+  log {
+    output file /var/log/caddy/access-dev.log {
+      roll_size 10MiB
+      roll_keep 10
+      roll_keep_for 24h
+    }
+  }
+  handle /wiki/* {
 
+    # Search articles in Wikipedia
+    @search_articles {
+      query action=query
+      query generator=prefixsearch
+      path_regexp ^/wiki/([a-z]{2})/api.php
+    }
+    handle @search_articles {
+      rewrite * /w/api.php?lang={re.1}&{query}
+      reverse_proxy wiki.adminforge.de:443 {
+        header_up Host wiki.adminforge.de
+        transport http {
+          tls
+        }
+      }
+    }
 
+    header {
+      -X-Frame-Options
+    }
+    rewrite /robots.txt ./robots.txt # Disable search engine indexing
+    reverse_proxy 127.0.0.1:8081
+  }
+}

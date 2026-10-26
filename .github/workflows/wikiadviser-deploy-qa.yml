@@ -1,0 +1,134 @@
+name: Deploy Wikiadviser QA
+# Deploys ONLY the QA wikiadviser (edge + qa backend) on the mediawiki host.
+# Runs on push to main / manual. PROD is NOT restarted by this workflow.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+jobs:
+  deploy-wikiadviser:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Deploy Wikiadviser QA on MediaWiki host
+        uses: appleboy/ssh-action@master
+        env:
+          SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_QA_PROJECT_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_QA_ANON_KEY }}
+          MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_QA }}
+          MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT_QA }}
+          MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME_QA }}
+          MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD_QA }}
+          WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
+          SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
+          WIKIADVISER_FRONTEND_ENDPOINT_PROD: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
+          WIKIADVISER_FRONTEND_ENDPOINT_QA: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT_QA }}
+          MEDIAWIKI_DEV_ENDPOINT: ${{ vars.MEDIAWIKI_DEV_ENDPOINT }}
+          WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          SENTRY_DSN_FRONTEND: ${{ secrets.SENTRY_DSN_FRONTEND_QA }}
+          SENTRY_ENV_FRONTEND: ${{ secrets.SENTRY_ENV_FRONTEND_QA }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_API_HOST: ${{ vars.POSTHOG_API_HOST }}
+          X_API_KEY: ${{ secrets.X_API_KEY_QA }}
+          USE_MIRA: ${{ vars.USE_MIRA_QA }}
+          USE_CHANGE_DESCRIPTION: ${{ vars.USE_CHANGE_DESCRIPTION_QA }}
+        with:
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+          envs: SUPABASE_PROJECT_URL,SUPABASE_ANON_KEY,MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,WIKIADVISER_FRONTEND_ENDPOINT_PROD,WIKIADVISER_FRONTEND_ENDPOINT_QA,MEDIAWIKI_DEV_ENDPOINT,WIKIPEDIA_PROXY,NODE_ENV,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,POSTHOG_API_KEY,POSTHOG_API_HOST,X_API_KEY,USE_MIRA,USE_CHANGE_DESCRIPTION
+          script: |
+            set -euo pipefail
+            wikiadviser_path="$HOME/wikiadviser"
+
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git remote prune origin && git pull --ff-only
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+
+            cd "$wikiadviser_path"
+
+            # Prepare .env.qa (generic names -> QA values + the edge endpoint vars)
+            echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" > $wikiadviser_path/.env.qa
+            echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env.qa
+            echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env.qa
+            echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env.qa
+            echo "POSTHOG_API_KEY=$POSTHOG_API_KEY" >> $wikiadviser_path/.env.qa
+            echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env.qa
+            echo "WIKIADVISER_FRONTEND_ENDPOINT_PROD=$WIKIADVISER_FRONTEND_ENDPOINT_PROD" >> $wikiadviser_path/.env.qa
+            echo "WIKIADVISER_FRONTEND_ENDPOINT_QA=$WIKIADVISER_FRONTEND_ENDPOINT_QA" >> $wikiadviser_path/.env.qa
+            echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env.qa
+            echo "SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL" >> $wikiadviser_path/.env.qa
+            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $wikiadviser_path/.env.qa
+            echo "MEDIAWIKI_ENDPOINT=$MEDIAWIKI_ENDPOINT" >> $wikiadviser_path/.env.qa
+            echo "MEDIAWIKI_INTERNAL_ENDPOINT=$MEDIAWIKI_INTERNAL_ENDPOINT" >> $wikiadviser_path/.env.qa
+            echo "MW_BOT_USERNAME=$MW_BOT_USERNAME" >> $wikiadviser_path/.env.qa
+            echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env.qa
+            echo "SENTRY_DSN_FRONTEND=$SENTRY_DSN_FRONTEND" >> $wikiadviser_path/.env.qa
+            echo "SENTRY_ENV_FRONTEND=$SENTRY_ENV_FRONTEND" >> $wikiadviser_path/.env.qa
+            echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env.qa
+            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env.qa
+            echo "USE_CHANGE_DESCRIPTION=$USE_CHANGE_DESCRIPTION" >> $wikiadviser_path/.env.qa
+
+            # Deploy only edge + qa backend (prod container is untouched)
+            docker compose --env-file .env.qa -f docker-compose.mediawiki.yml up -d \
+              --build \
+              --force-recreate \
+              wikiadviser-edge wikiadviser-frontend-qa
+
+            # Remove unused images/containers/volumes
+            docker system prune -f
+
+  deploy-visual-editor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      matrix:
+        lang: [fr, en]
+        env: [dev, demo]
+    steps:
+      - name: Deploy VisualEditor
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+          script: |
+            wikiadviser_path="/home/wiki-user/wikiadviser"
+            visual_editor_folder_name="MyVisualEditor"
+            extensions_path="/home/wiki-user/wikiadviser/docker/resources/extensions"
+            assets_path="/home/wiki-user/wikiadviser/docker/resources/assets/*"
+
+            # Check if the folder exists
+            if [ -d "$wikiadviser_path" ]; then
+                echo "wikiadviser exists..."
+                cd $wikiadviser_path
+                git pull
+            else
+                echo "wikiadviser doesn't exist, Cloning Repo..."
+                git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
+            fi
+
+            # Copy Visual Editor to Extensions
+            cp -r $extensions_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
+
+            # Copy assets
+            cp -r $assets_path /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/resources/assets/
+
+            # Run update.php in Maintenance Folder
+            # https://www.mediawiki.org/wiki/Manual:Update.php
+            cd /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/maintenance/
+            php update.php --quick

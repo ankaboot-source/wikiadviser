@@ -1415,8 +1415,8 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  hono@4.13.8:
-    resolution: {integrity: sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ==}
+  hono@4.13.13:
+    resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
     engines: {node: '>=16.9.0'}
 
   html-minifier-terser@7.2.0:
@@ -2508,9 +2508,9 @@ snapshots:
 
   '@eslint/js@8.57.1': {}
 
-  '@hono/node-server@2.1.0(hono@4.13.8)':
+  '@hono/node-server@2.1.0(hono@4.13.13)':
     dependencies:
-      hono: 4.13.8
+      hono: 4.13.13
 
   '@humanwhocodes/config-array@0.13.0(supports-color@8.1.1)':
     dependencies:
@@ -2797,14 +2797,14 @@ snapshots:
   '@quasar/cli@5.0.9':
     dependencies:
       '@clack/prompts': 1.8.1
-      '@hono/node-server': 2.1.0(hono@4.13.8)
+      '@hono/node-server': 2.1.0(hono@4.13.13)
       '@quasar/art': 1.0.0
       '@quasar/ssl-certificate': 2.1.0
       '@quasar/update-notifier': 1.1.0
       ci-info: 4.4.0
       cross-spawn: 7.0.6
       fs-extra: 11.4.0
-      hono: 4.13.8
+      hono: 4.13.13
       kolorist: 1.8.0
       open: 11.0.4
 
@@ -3713,7 +3713,7 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  hono@4.13.8: {}
+  hono@4.13.13: {}
 
   html-minifier-terser@7.2.0:
     dependencies:

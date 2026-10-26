@@ -40,11 +40,16 @@ WikiAdviser deploys to the mediawiki host as an **edge + separate frontend caddi
 (`docker-compose.mediawiki.yml`, configs `Caddyfile.edge` / `Caddyfile.frontend-prod` /
 `Caddyfile.frontend-qa`). The backend/API itself is **Supabase edge functions**, not these caddies.
 
-- `wikiadviser-edge` owns **TLS/ACME on 80/443** and reverse-proxies per domain to loopback
-  backend caddies: prod `127.0.0.1:8083`, qa `127.0.0.1:8084`, dev `127.0.0.1:8085`.
-- `wikiadviser-frontend-prod` / `wikiadviser-frontend-qa` serve the SPA and proxy `/wiki/*` to the
-  mediawiki Apache (`8082`/`8080`/`8081`) with `forward_auth` + search/CSP — plain HTTP loopback,
-  no TLS (edge handles it).
+- `wikiadviser-edge` owns **TLS/ACME on host 80/443** (the only container with published host ports)
+  and reverse-proxies per domain to the **private `wikiadviser-net`** network by container name:
+  prod `http://wikiadviser-frontend-prod:8083`, qa `http://wikiadviser-frontend-qa:8084`,
+  dev `http://wikiadviser-frontend-qa:8085`.
+- `wikiadviser-frontend-prod` / `wikiadviser-frontend-qa` run **network-isolated** (no host interface;
+  reachable only from the edge). They serve the SPA and proxy `/wiki/*` to the mediawiki Apache on the
+  host's **private IP** `10.114.0.8:8082/8080/8081` (Apache listens on loopback + `10.114.0.8`, not
+  `0.0.0.0` — see `docker/conf/ports.conf`) with `forward_auth` + search/CSP.
+- Because the frontends are isolated and only reach the host mediawiki via `10.114.0.8`, this keeps
+  `134.<public>:8084` closed and the public page served only through the edge.
 - **Deploys are split** so QA never restarts prod: `wikiadviser-deploy-prod.yml` (release + approval)
   deploys only edge + prod backend; `wikiadviser-deploy-qa.yml` (push/dispatch) deploys only edge + qa.
 - One `frontend/Dockerfile` with **generic** args; values come from `.env.prod` / `.env.qa` (each also

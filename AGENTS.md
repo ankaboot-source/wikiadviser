@@ -34,6 +34,26 @@ Three independently-deployable surfaces:
 
 `profiles_view` is a security-sensitive view queryable **only via the admin client** in edge functions (`get/`). Never expose it to the browser. If the frontend needs its data, move the whole query into an edge function. _(session ses_2633dc7c8)_
 
+## Deployment (prod + QA on the mediawiki host)
+
+WikiAdviser deploys to the mediawiki host as an **edge + separate frontend caddies** topology
+(`docker-compose.mediawiki.yml`, configs `Caddyfile.edge` / `Caddyfile.frontend-prod` /
+`Caddyfile.frontend-qa`). The backend/API itself is **Supabase edge functions**, not these caddies.
+
+- `wikiadviser-edge` owns **TLS/ACME on 80/443** and reverse-proxies per domain to loopback
+  backend caddies: prod `127.0.0.1:8083`, qa `127.0.0.1:8084`, dev `127.0.0.1:8085`.
+- `wikiadviser-frontend-prod` / `wikiadviser-frontend-qa` serve the SPA and proxy `/wiki/*` to the
+  mediawiki Apache (`8082`/`8080`/`8081`) with `forward_auth` + search/CSP — plain HTTP loopback,
+  no TLS (edge handles it).
+- **Deploys are split** so QA never restarts prod: `wikiadviser-deploy-prod.yml` (release + approval)
+  deploys only edge + prod backend; `wikiadviser-deploy-qa.yml` (push/dispatch) deploys only edge + qa.
+- One `frontend/Dockerfile` with **generic** args; values come from `.env.prod` / `.env.qa` (each also
+  carries the 3 static endpoint vars for the edge). Caddy pinned `caddy:2.11.7-alpine`.
+
+Full topology + port map: `docs/INTERNAL-CONNECTIVITY.md`. When touching deployment, keep prod/QA decoupled
+(separate containers/images; only the specified service is `up`'d per workflow) and keep these Caddyfiles
+in sync with `docker-compose.mediawiki.yml`.
+
 ## Conventions
 
 - **pnpm** only. Single quotes (`eslint: quotes ['warn','single']`), prettier `singleQuote`+`semi` (`frontend/.prettierrc`).

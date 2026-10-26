@@ -1,4 +1,7 @@
-name: Deploy Prod
+name: Deploy Wikiadviser Prod
+# Deploys ONLY the PROD wikiadviser (edge + prod backend) on the mediawiki host.
+# Runs on release (with approval). QA is deployed independently by
+# wikiadviser-deploy-qa.yml and is NOT restarted by this workflow.
 on:
   release:
     types: [published]
@@ -17,7 +20,7 @@ jobs:
           secret: ${{ github.TOKEN }}
           approvers: baderdean,zieddhf,J43fura
           minimum-approvals: 1
-          issue-title: "Deploy to Prod"
+          issue-title: "Deploy Wikiadviser Prod"
           issue-body: "Please approve or deny the deployment, comment LGTM! or approved to approve | deny or Denied! to deny"
 
   deploy-wikiadviser:
@@ -27,75 +30,82 @@ jobs:
       pull-requests: write
     needs: approval
     steps:
-      - name: Deploy Wikiadviser Prod
+      - name: Deploy Wikiadviser Prod on MediaWiki host
         uses: appleboy/ssh-action@master
         env:
           SUPABASE_PROJECT_URL: ${{ secrets.SUPABASE_PROD_PROJECT_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_PROD_ANON_KEY }}
-          WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
-          SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
           MEDIAWIKI_ENDPOINT: ${{ vars.MEDIAWIKI_ENDPOINT_PROD }}
-          WIKIADVISER_FRONTEND_ENDPOINT: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
-          NODE_ENV: ${{vars.NODE_ENV}}
-          WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
           MEDIAWIKI_INTERNAL_ENDPOINT: ${{ vars.MEDIAWIKI_INTERNAL_ENDPOINT_PROD }}
           MW_BOT_USERNAME: ${{ secrets.MW_BOT_USERNAME_PROD }}
           MW_BOT_PASSWORD: ${{ secrets.MW_BOT_PASSWORD_PROD }}
-          SENTRY_DSN_FRONTEND: ${{secrets.SENTRY_DSN_FRONTEND_PROD}}
-          SENTRY_ENV_FRONTEND: ${{secrets.SENTRY_ENV_FRONTEND_PROD}}
-          POSTHOG_API_KEY: ${{secrets.POSTHOG_API_KEY}}
-          POSTHOG_API_HOST: ${{vars.POSTHOG_API_HOST}}
-          X_API_KEY: ${{secrets.X_API_KEY_PROD}}
+          WIKIADVISER_LANGUAGES: ${{ vars.WIKIADVISER_LANGUAGES }}
+          SHARE_LINK_DAY_LIMIT: ${{ vars.SHARE_LINK_DAY_LIMIT }}
+          WIKIADVISER_FRONTEND_ENDPOINT_PROD: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT }}
+          WIKIADVISER_FRONTEND_ENDPOINT_QA: ${{ vars.WIKIADVISER_FRONTEND_ENDPOINT_QA }}
+          MEDIAWIKI_DEV_ENDPOINT: ${{ vars.MEDIAWIKI_DEV_ENDPOINT }}
+          WIKIPEDIA_PROXY: ${{ vars.WIKIPEDIA_PROXY }}
+          NODE_ENV: ${{ vars.NODE_ENV }}
+          SENTRY_DSN_FRONTEND: ${{ secrets.SENTRY_DSN_FRONTEND_PROD }}
+          SENTRY_ENV_FRONTEND: ${{ secrets.SENTRY_ENV_FRONTEND_PROD }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_API_HOST: ${{ vars.POSTHOG_API_HOST }}
+          X_API_KEY: ${{ secrets.X_API_KEY_PROD }}
           USE_MIRA: ${{ vars.USE_MIRA_PROD }}
           USE_CHANGE_DESCRIPTION: ${{ vars.USE_CHANGE_DESCRIPTION_PROD }}
         with:
-          host: ${{ vars.WIKIADVISER_PROD_HOST }}
-          key: ${{ secrets.SSH_PRIVATE_WIKIADVISER_PROD }}
-          username: ${{ secrets.SSH_USERNAME_WIKIADVISER_PROD }}
-          envs: USE_MIRA,USE_CHANGE_DESCRIPTION,X_API_KEY,MEDIAWIKI_PROD_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,SUPABASE_ANON_KEY,MEDIAWIKI_ENDPOINT,SUPABASE_PROJECT_URL,WIKIPEDIA_PROXY,MW_BOT_USERNAME,MW_BOT_PASSWORD,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,WIKIADVISER_FRONTEND_ENDPOINT,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,NODE_ENV,POSTHOG_API_KEY,POSTHOG_API_HOST
-
+          host: ${{ vars.MEDIAWIKI_DEMO_HOST }}
+          key: ${{ secrets.MEDIAWIKI_DEMO_PRIVATE_SSH }}
+          username: ${{ secrets.MEDIAWIKI_DEMO_USERNAME }}
+          envs: SUPABASE_PROJECT_URL,SUPABASE_ANON_KEY,MEDIAWIKI_ENDPOINT,MEDIAWIKI_INTERNAL_ENDPOINT,MW_BOT_USERNAME,MW_BOT_PASSWORD,WIKIADVISER_LANGUAGES,SHARE_LINK_DAY_LIMIT,WIKIADVISER_FRONTEND_ENDPOINT_PROD,WIKIADVISER_FRONTEND_ENDPOINT_QA,MEDIAWIKI_DEV_ENDPOINT,WIKIPEDIA_PROXY,NODE_ENV,SENTRY_DSN_FRONTEND,SENTRY_ENV_FRONTEND,POSTHOG_API_KEY,POSTHOG_API_HOST,X_API_KEY,USE_MIRA,USE_CHANGE_DESCRIPTION
           script: |
+            set -euo pipefail
             wikiadviser_path="$HOME/wikiadviser"
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
                 echo "wikiadviser exists..."
                 cd $wikiadviser_path
-                git pull
+                git remote prune origin && git pull --ff-only
             else
                 echo "wikiadviser doesn't exist, Cloning Repo..."
                 git clone git@github.com:ankaboot-source/wikiadviser.git $wikiadviser_path
             fi
 
-            cd $wikiadviser_path; docker compose -f docker-compose.prod.yml down; git pull
+            cd "$wikiadviser_path"
 
-            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" > $wikiadviser_path/.env
-            echo "SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL" >> $wikiadviser_path/.env
-            echo "MEDIAWIKI_INTERNAL_ENDPOINT=$MEDIAWIKI_INTERNAL_ENDPOINT" >> $wikiadviser_path/.env
-            echo "MEDIAWIKI_ENDPOINT=$MEDIAWIKI_ENDPOINT" >> $wikiadviser_path/.env
-            echo "MW_BOT_USERNAME=$MW_BOT_USERNAME" >> $wikiadviser_path/.env
-            echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env
-            echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" >> $wikiadviser_path/.env
-            echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env
-            echo "WIKIADVISER_FRONTEND_ENDPOINT=$WIKIADVISER_FRONTEND_ENDPOINT" >> $wikiadviser_path/.env
-            echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env
-            echo "SENTRY_DSN_FRONTEND=$SENTRY_DSN_FRONTEND" >> $wikiadviser_path/.env
-            echo "SENTRY_ENV_FRONTEND=$SENTRY_ENV_FRONTEND" >> $wikiadviser_path/.env
-            echo "POSTHOG_API_KEY=$POSTHOG_API_KEY" >> $wikiadviser_path/.env
-            echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env
-            echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env
-            echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env
-            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env
-            echo "USE_CHANGE_DESCRIPTION=$USE_CHANGE_DESCRIPTION" >> $wikiadviser_path/.env
+            # Prepare .env.prod (generic names -> prod values + the edge endpoint vars)
+            echo "WIKIADVISER_LANGUAGES=$WIKIADVISER_LANGUAGES" > $wikiadviser_path/.env.prod
+            echo "SHARE_LINK_DAY_LIMIT=$SHARE_LINK_DAY_LIMIT" >> $wikiadviser_path/.env.prod
+            echo "NODE_ENV=$NODE_ENV" >> $wikiadviser_path/.env.prod
+            echo "WIKIPEDIA_PROXY=$WIKIPEDIA_PROXY" >> $wikiadviser_path/.env.prod
+            echo "POSTHOG_API_KEY=$POSTHOG_API_KEY" >> $wikiadviser_path/.env.prod
+            echo "POSTHOG_API_HOST=$POSTHOG_API_HOST" >> $wikiadviser_path/.env.prod
+            echo "WIKIADVISER_FRONTEND_ENDPOINT_PROD=$WIKIADVISER_FRONTEND_ENDPOINT_PROD" >> $wikiadviser_path/.env.prod
+            echo "WIKIADVISER_FRONTEND_ENDPOINT_QA=$WIKIADVISER_FRONTEND_ENDPOINT_QA" >> $wikiadviser_path/.env.prod
+            echo "MEDIAWIKI_DEV_ENDPOINT=$MEDIAWIKI_DEV_ENDPOINT" >> $wikiadviser_path/.env.prod
+            echo "SUPABASE_PROJECT_URL=$SUPABASE_PROJECT_URL" >> $wikiadviser_path/.env.prod
+            echo "SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY" >> $wikiadviser_path/.env.prod
+            echo "MEDIAWIKI_ENDPOINT=$MEDIAWIKI_ENDPOINT" >> $wikiadviser_path/.env.prod
+            echo "MEDIAWIKI_INTERNAL_ENDPOINT=$MEDIAWIKI_INTERNAL_ENDPOINT" >> $wikiadviser_path/.env.prod
+            echo "MW_BOT_USERNAME=$MW_BOT_USERNAME" >> $wikiadviser_path/.env.prod
+            echo "MW_BOT_PASSWORD=$MW_BOT_PASSWORD" >> $wikiadviser_path/.env.prod
+            echo "SENTRY_DSN_FRONTEND=$SENTRY_DSN_FRONTEND" >> $wikiadviser_path/.env.prod
+            echo "SENTRY_ENV_FRONTEND=$SENTRY_ENV_FRONTEND" >> $wikiadviser_path/.env.prod
+            echo "X_API_KEY=$X_API_KEY" >> $wikiadviser_path/.env.prod
+            echo "USE_MIRA=$USE_MIRA" >> $wikiadviser_path/.env.prod
+            echo "USE_CHANGE_DESCRIPTION=$USE_CHANGE_DESCRIPTION" >> $wikiadviser_path/.env.prod
 
-            docker compose --env-file .env -f docker-compose.prod.yml up -d \
+            # Deploy only edge + prod backend (QA container is untouched)
+            docker compose --env-file .env.prod -f docker-compose.mediawiki.yml up -d \
               --build \
-              --force-recreate
+              --force-recreate \
+              wikiadviser-edge wikiadviser-frontend-prod
 
             # Remove unused images/containers/volumes
             docker system prune -f
 
-  deploy-visual-editor-prod:
+  deploy-visual-editor:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -116,7 +126,6 @@ jobs:
             visual_editor_folder_name="MyVisualEditor"
             extensions_path="/home/wiki-user/wikiadviser/docker/resources/extensions"
             assets_path="/home/wiki-user/wikiadviser/docker/resources/assets/*"
-            extensions_base_path="/var/www/wiki-${{ matrix.env }}"
 
             # Check if the folder exists
             if [ -d "$wikiadviser_path" ]; then
@@ -132,7 +141,7 @@ jobs:
             cp -r $extensions_path/$visual_editor_folder_name /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/extensions/
 
             # Copy assets
-            cp -r $assets_path /var/www/wiki-${{ matrix.env }}/${{ matrix.lang }}/wiki/resources/assets/
+            cp -r $assets_path /var/www/wiki-${{ matrix.env }}/wiki/${{ matrix.lang }}/resources/assets/
 
             # Run update.php in Maintenance Folder
             # https://www.mediawiki.org/wiki/Manual:Update.php

@@ -1,5 +1,5 @@
 # Edge caddy: TLS/ACME owner (80/443). Reverse-proxies each public domain to
-# its dedicated backend caddy on a loopback port.
+# its dedicated frontend caddy on a loopback port.
 #   prod -> 127.0.0.1:8083   qa -> 127.0.0.1:8084   dev -> 127.0.0.1:8085
 
 #Disable bot crawlings
@@ -19,7 +19,9 @@
       roll_keep_for 24h
     }
   }
-  reverse_proxy 127.0.0.1:8083
+  handle {
+    reverse_proxy http://wikiadviser-frontend-prod:8083
+  }
 }
 
 # QA / DEMO
@@ -31,7 +33,9 @@
       roll_keep_for 24h
     }
   }
-  reverse_proxy 127.0.0.1:8084
+  handle {
+    reverse_proxy http://wikiadviser-frontend-qa:8084
+  }
 }
 
 # DEV
@@ -43,5 +47,7 @@
       roll_keep_for 24h
     }
   }
-  reverse_proxy 127.0.0.1:8085
+  handle {
+    reverse_proxy http://wikiadviser-frontend-qa:8085
+  }
 }

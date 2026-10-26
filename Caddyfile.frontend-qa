@@ -2,7 +2,7 @@
 # Serves the QA docroot (127.0.0.1:8084), proxies /wiki/* to the demo mediawiki
 # (127.0.0.1:8080), and serves the DEV mediawiki endpoint (127.0.0.1:8085 -> 8081).
 
-http://127.0.0.1:8084 {
+http://:8084 {
   log {
     output file /var/log/caddy/access-app-demo.log {
       roll_size 10MiB
@@ -46,7 +46,7 @@ http://127.0.0.1:8084 {
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
     # Redirect simple article links to Wikipedia
-    reverse_proxy 127.0.0.1:8080 {
+    reverse_proxy 10.114.0.8:8080 {
       handle_response {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
         # Redirect simple articles
@@ -70,7 +70,7 @@ http://127.0.0.1:8084 {
   }
 }
 
-http://127.0.0.1:8085 {
+http://:8085 {
   log {
     output file /var/log/caddy/access-dev.log {
       roll_size 10MiB
@@ -100,6 +100,6 @@ http://127.0.0.1:8085 {
       -X-Frame-Options
     }
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
-    reverse_proxy 127.0.0.1:8081
+    reverse_proxy 10.114.0.8:8081
   }
 }

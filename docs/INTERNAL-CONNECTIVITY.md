@@ -2,41 +2,46 @@
 
 WikiAdviser's deployment on the **mediawiki host** uses an **edge + separate frontend caddies**
 architecture so prod and QA can be deployed independently (a QA deploy never restarts prod).
+The caddy containers are network-isolated — only the edge is exposed to the public interface.
 
-## Containers (all `network_mode: host`)
+## Containers (private docker network `wikiadviser-net`)
 
-| Container | Image | Listens on | Role |
+| Container | Image | Exposed/Internal | Role |
 |---|---|---|---|
-| `wikiadviser-edge` | `caddy:2.11.7-alpine` | host `80`/`443` | **TLS/ACME owner** + per-domain reverse proxy |
-| `wikiadviser-frontend-prod` | `wikiadviser-frontend-prod:git` | `127.0.0.1:8083` | prod SPA + mediawiki proxy |
-| `wikiadviser-frontend-qa` | `wikiadviser-frontend-qa:git` | `127.0.0.1:8084` (+`8085`) | qa SPA + mediawiki proxy (qa & dev) |
+| `wikiadviser-edge` | `caddy:2.11.7-alpine` | **host `80`/`443` (published)** | **TLS/ACME owner** + per-domain reverse proxy |
+| `wikiadviser-frontend-prod` | `wikiadviser-frontend-prod:git` | internal `:8083` | prod SPA + mediawiki proxy |
+| `wikiadviser-frontend-qa` | `wikiadviser-frontend-qa:git` | internal `:8084` (+`:8085`) | qa SPA + mediawiki proxy (qa & dev) |
 
 Compose file: `docker-compose.mediawiki.yml`. Configs: `Caddyfile.edge`, `Caddyfile.frontend-prod`,
 `Caddyfile.frontend-qa`. (The dev-only `docker/conf/Caddyfile.dev` is separate.)
 
-Because they run with **host networking**, all three bind the host's real interfaces and loopback
-directly (no `ports:` mapping) and reach the mediawiki Apache over `127.0.0.1`.
+All three join the **private bridge network `wikiadviser-net`**. Only the **edge publishes host
+ports (80/443)**; the backends expose **no host interface** — they are reachable only from the edge
+(by container name) on the internal network, never from the public IP.
 
 ## Request flow & SSL
 ```
-browser -> https://<domain>  (80/443)
+browser -> https://<domain>  (host 80/443, published only by the edge)
    edge:  Terminates TLS (Caddy auto-provisions Let's Encrypt over ACME).
-          reverse_proxy to loopback backend:
-            prod -> 127.0.0.1:8083
-            qa   -> 127.0.0.1:8084
-            dev  -> 127.0.0.1:8085
-   frontend caddy (plain HTTP on loopback, host-agnostic site):
+          reverse_proxy (over wikiadviser-net, by container name):
+            prod -> http://wikiadviser-frontend-prod:8083
+            qa   -> http://wikiadviser-frontend-qa:8084
+            dev  -> http://wikiadviser-frontend-qa:8085
+   frontend caddy (internal, host-agnostic http://:PORT site, plain HTTP):
       - serves the SPA from /usr/share/caddy/html (root/try_files/file_server)
-      - /wiki/* -> mediawiki Apache:
-            prod -> 127.0.0.1:8082
-            qa   -> 127.0.0.1:8080
-            dev  -> 127.0.0.1:8081
+      - /wiki/* -> mediawiki Apache on the host's PRIVATE IP:
+            prod -> 10.114.0.8:8082
+            qa   -> 10.114.0.8:8080
+            dev  -> 10.114.0.8:8081
       - forward_auth -> Supabase edge function (restrict-mediawiki-access)
       - search-articles -> wiki.adminforge.de (TLS)
 ```
-- **TLS is handled only at the edge.** The backends are plain HTTP on loopback (not exposed
-  externally), so no TLS/ACME between edge↔backend or backend↔mediawiki. Outbound TLS (Supabase,
-  `wiki.adminforge.de`) is from the backends to external services.
+- **TLS is handled only at the edge** (the only container bound to the public interface).
+- **Backend -> mediawiki:** the isolated backend containers reach the mediawiki Apache on the host's
+  **private IP `10.114.0.8`** (`eth1`), which Apache **already binds** — a docker container can route
+  to the host's routable interface IP, so no docker-network/gateway `Listen` is needed. Apache must
+  **not** bind `0.0.0.0` (see `docker/conf/ports.conf`).
+- Outbound TLS (Supabase, `wiki.adminforge.de`) is from the backends to external services.
 
 ## Deployment split
 | Workflow | Trigger | Deploys | Approval |
@@ -55,13 +60,19 @@ the **prod container is never touched**. Prod deploy is the only path that rebui
     (`WIKIADVISER_FRONTEND_ENDPOINT_PROD`, `_QA`, `MEDIAWIKI_DEV_ENDPOINT`).
 - Caddy is pinned to `caddy:2.11.7-alpine`.
 
-## Port map (mediawiki host, all loopback unless noted)
-| Service | Port |
+## MediaWiki Apache listener (`docker/conf/ports.conf`)
+Apache listens on loopback **and** the host's private IP so the docker-networked caddies can reach it,
+while it is **not** exposed publicly:
+```
+Listen 127.0.0.1:${MW_PORT}
+Listen 10.114.0.8:${MW_PORT}
+```
+On the live co-located host the ports are `8080` (demo), `8081` (dev), `8082` (prod) bound on both
+`127.0.0.1` and `10.114.0.8`.
+
+## Port map (mediawiki host)
+| Service | Where |
 |---|---|
-| edge (TLS) | 80 / 443 |
-| prod frontend caddy | 127.0.0.1:8083 |
-| qa frontend caddy | 127.0.0.1:8084 |
-| dev mediawiki (via qa caddy) | 127.0.0.1:8085 |
-| mediawiki prod apache | 127.0.0.1:8082 |
-| mediawiki demo apache | 127.0.0.1:8080 |
-| mediawiki dev apache | 127.0.0.1:8081 |
+| edge (TLS, public) | host 80 / 443 |
+| prod / qa / dev frontend caddy | internal only (`wikiadviser-net`), 8083 / 8084 / 8085 |
+| mediawiki apache (prod / demo / dev) | 10.114.0.8:8082 / 8080 / 8081 (+ 127.0.0.1) |

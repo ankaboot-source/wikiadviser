@@ -1,7 +1,7 @@
 # PROD backend caddy: plain HTTP on the host loopback (TLS/ACME handled by edge).
 # Serves the PROD docroot and proxies /wiki/* to the prod mediawiki (127.0.0.1:8082).
 
-http://127.0.0.1:8083 {
+http://:8083 {
   log {
     output file /var/log/caddy/access-app-prod.log {
       roll_size 10MiB
@@ -45,7 +45,7 @@ http://127.0.0.1:8083 {
     rewrite /robots.txt ./robots.txt # Disable search engine indexing
 
     # Redirect simple article links to Wikipedia
-    reverse_proxy 127.0.0.1:8082 {
+    reverse_proxy 10.114.0.8:8082 {
       handle_response {
         @find_lang_title path_regexp ^/wiki/([a-z]{2})/index.php/([^/?:]+)$
         # Redirect simple articles

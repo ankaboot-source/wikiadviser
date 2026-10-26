@@ -1,10 +1,13 @@
 version: "3.1"
 
-# Edge + separate prod/QA backends so each env can be deployed independently.
-# All containers use host networking on the mediawiki host:
-#   edge (80/443 TLS/ACME) -> prod backend 127.0.0.1:8083, qa 127.0.0.1:8084
-#   prod backend /wiki/* -> mediawiki 127.0.0.1:8082
-#   qa backend /wiki/* -> mediawiki 127.0.0.1:8080 ; dev 127.0.0.1:8085 -> 127.0.0.1:8081
+# Edge + separate prod/QA frontend caddies so each env can be deployed independently.
+# Network isolation (Option B):
+#   - All three join the private bridge network `wikiadviser-net`.
+#   - Only `wikiadviser-edge` publishes host ports (80/443 = TLS/ACME + reverse proxy).
+#   - `wikiadviser-frontend-prod/qa` expose NO host interfaces; they are reachable only
+#     from the edge (by container name) on the internal network.
+#   - Backends reach the mediawiki Apache on the host's PRIVATE IP (10.114.0.8:808x),
+#     which Apache already binds (see docker/conf/ports.conf).
 # Generic var names are resolved from the --env-file passed at deploy time:
 #   prod uses .env.prod, qa uses .env.qa (each carries that env's values + the edge
 #   endpoint vars). Only the deployed service is built/started in each workflow.
@@ -13,7 +16,11 @@ services:
   wikiadviser-edge:
     image: caddy:2.11.7-alpine
     container_name: wikiadviser-edge
-    network_mode: "host"
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - wikiadviser-net
     volumes:
       - caddy-data:/data
       - ./Caddyfile.edge:/etc/caddy/Caddyfile:ro
@@ -26,7 +33,8 @@ services:
   wikiadviser-frontend-prod:
     image: wikiadviser-frontend-prod:git
     container_name: wikiadviser-frontend-prod
-    network_mode: "host"
+    networks:
+      - wikiadviser-net
     volumes:
       - ./Caddyfile.frontend-prod:/etc/caddy/Caddyfile:ro
       - ./robots.txt:/etc/caddy/robots.txt:ro
@@ -53,7 +61,8 @@ services:
   wikiadviser-frontend-qa:
     image: wikiadviser-frontend-qa:git
     container_name: wikiadviser-frontend-qa
-    network_mode: "host"
+    networks:
+      - wikiadviser-net
     volumes:
       - ./Caddyfile.frontend-qa:/etc/caddy/Caddyfile:ro
       - ./robots.txt:/etc/caddy/robots.txt:ro
@@ -76,6 +85,10 @@ services:
     environment:
       - SUPABASE_PROJECT_URL=${SUPABASE_PROJECT_URL}
       - X_API_KEY=${X_API_KEY}
+
+networks:
+  wikiadviser-net:
+    driver: bridge
 
 volumes:
   caddy-data:

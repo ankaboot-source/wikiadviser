@@ -36,7 +36,7 @@
     "@supabase/supabase-js": "^2.119.0",
     "@types/node": "^26.6.6",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^6.18.1",
+    "@typescript-eslint/parser": "^8.74.0",
     "@vue/test-utils": "^2.6.0",
     "autoprefixer": "^10.6.2",
     "eslint": "^8.56.0",
